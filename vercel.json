@@ -18,14 +18,7 @@
       "image/avif",
       "image/webp"
     ],
-    "minimumCacheTTL": 604800,
-    "remotePatterns": [
-      {
-        "protocol": "https",
-        "hostname": "photografikstudios.replit.app",
-        "pathname": "/images/**"
-      }
-    ]
+    "minimumCacheTTL": 604800
   },
   "headers": [
     {
