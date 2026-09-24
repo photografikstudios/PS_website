@@ -482,7 +482,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .quick__body p:not(.eyebrow) { color: rgba(244,242,235,.86); margin: 0 0 26px; max-width: 44ch; }
 .quick .actions { gap: 12px; margin: 0; }
 .eyebrow--rust, .on-dark .eyebrow--rust { color: var(--rust-soft); margin-bottom: 14px; }
-.quick .eyebrow--rust { color: #f1c4a6; text-shadow: 0 1px 12px rgba(0,0,0,.55); }
+.quick .eyebrow--rust { display: inline-block; color: #f6d6c2; background: rgba(21,24,22,.72); padding: 6px 10px; border-radius: 2px; text-shadow: none; }
 .btn--glass { background: rgba(244,242,235,.1); color: var(--ivory); border-color: rgba(244,242,235,.3); backdrop-filter: blur(6px); }
 .btn--glass:hover { background: var(--ivory); color: var(--charcoal); }
 @media (max-width: 860px) { .quick__grid { grid-template-columns: 1fr; } .quick__tile { min-height: 420px; } }
