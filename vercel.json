@@ -7,45 +7,243 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "images": {
-    "sizes": [480, 768, 1080, 1600, 2200],
-    "formats": ["image/avif", "image/webp"],
+    "sizes": [
+      480,
+      768,
+      1080,
+      1600,
+      2200
+    ],
+    "formats": [
+      "image/avif",
+      "image/webp"
+    ],
     "minimumCacheTTL": 604800,
     "remotePatterns": [
-      { "protocol": "https", "hostname": "photografikstudios.replit.app", "pathname": "/images/**" }
+      {
+        "protocol": "https",
+        "hostname": "photografikstudios.replit.app",
+        "pathname": "/images/**"
+      }
     ]
   },
   "headers": [
-    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
-    { "source": "/(.*)", "headers": [
-      { "key": "X-Content-Type-Options", "value": "nosniff" },
-      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-      { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-      { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
-    ]}
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
+    }
   ],
   "redirects": [
-    { "source": "/book", "destination": "https://photografikstudios.hd.pics/order", "permanent": false },
-    { "source": "/home", "destination": "/", "permanent": true },
-    { "source": "/hamptons-media-services", "destination": "/", "permanent": true },
-    { "source": "/hamptons-real-estate-photography", "destination": "/real-estate", "permanent": true },
-    { "source": "/hamptons-real-estate-photography-1", "destination": "/real-estate", "permanent": true },
-    { "source": "/long-island-real-estate-photography", "destination": "/real-estate", "permanent": true },
-    { "source": "/real-estate-photography", "destination": "/real-estate", "permanent": true },
-    { "source": "/real-estate-media", "destination": "/real-estate", "permanent": true },
-    { "source": "/pricing", "destination": "/real-estate/pricing", "permanent": true },
-    { "source": "/pricing-old", "destination": "/real-estate/pricing", "permanent": true },
-    { "source": "/architecture-photography", "destination": "/architecture-design", "permanent": true },
-    { "source": "/architecture-photography-1", "destination": "/architecture-design", "permanent": true },
-    { "source": "/interior-designer-photography", "destination": "/architecture-design", "permanent": true },
-    { "source": "/social-media-management", "destination": "/agent-content", "permanent": true },
-    { "source": "/podcast", "destination": "/creator-studios", "permanent": true },
-    { "source": "/portfolio", "destination": "/work", "permanent": true },
-    { "source": "/about-photografik-studios", "destination": "/about", "permanent": true },
-    { "source": "/contact-us-today", "destination": "/contact", "permanent": true },
-    { "source": "/discovery-session", "destination": "/contact", "permanent": true },
-    { "source": "/insights", "destination": "/", "permanent": false },
-    { "source": "/blog-1", "destination": "/", "permanent": false },
-    { "source": "/articles", "destination": "/", "permanent": false },
-    { "source": "/articles/:path*", "destination": "/real-estate", "permanent": false }
+    {
+      "source": "/book",
+      "destination": "https://photografikstudios.hd.pics/order",
+      "permanent": false
+    },
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/hamptons-media-services",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/hamptons-real-estate-photography",
+      "destination": "/real-estate",
+      "permanent": true
+    },
+    {
+      "source": "/hamptons-real-estate-photography-1",
+      "destination": "/real-estate",
+      "permanent": true
+    },
+    {
+      "source": "/long-island-real-estate-photography",
+      "destination": "/real-estate",
+      "permanent": true
+    },
+    {
+      "source": "/real-estate-photography",
+      "destination": "/real-estate",
+      "permanent": true
+    },
+    {
+      "source": "/real-estate-media",
+      "destination": "/real-estate",
+      "permanent": true
+    },
+    {
+      "source": "/pricing",
+      "destination": "/real-estate/pricing",
+      "permanent": true
+    },
+    {
+      "source": "/pricing-old",
+      "destination": "/real-estate/pricing",
+      "permanent": true
+    },
+    {
+      "source": "/architecture-photography",
+      "destination": "/architecture-design",
+      "permanent": true
+    },
+    {
+      "source": "/architecture-photography-1",
+      "destination": "/architecture-design",
+      "permanent": true
+    },
+    {
+      "source": "/interior-designer-photography",
+      "destination": "/architecture-design",
+      "permanent": true
+    },
+    {
+      "source": "/social-media-management",
+      "destination": "/agent-content",
+      "permanent": true
+    },
+    {
+      "source": "/podcast",
+      "destination": "/creator-studios",
+      "permanent": true
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/work",
+      "permanent": true
+    },
+    {
+      "source": "/about-photografik-studios",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/contact-us-today",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/discovery-session",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/insights",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/blog-1",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/articles",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2026/2/12/your-listing-isnt-just-a-home-its-an-experience-are-you-showing-it",
+      "destination": "/real-estate#video",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide",
+      "destination": "/agent-content",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography",
+      "destination": "/real-estate#drone",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/10/6/capturing-the-essence-of-the-east-end-why-professional-real-estate-photography-matters",
+      "destination": "/real-estate#photography",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/10/5/elevating-suffolk-county-real-estate-photography-with-drone-video",
+      "destination": "/real-estate#drone",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/10/5/unlocking-the-charm-of-long-island-real-estate-meet-your-trusted-real-estate-photographer",
+      "destination": "/about",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/9/28/should-you-use-a-professional-photographer-and-videographer-for-long-island-real-estate",
+      "destination": "/real-estate",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/9/28/unlocking-success-long-island-real-estate-video-editing-and-marketing-tips",
+      "destination": "/real-estate#video",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/9/25/soaring-to-new-heights-the-popularity-and-importance-of-drone-photography-and-videography-in-real-estate",
+      "destination": "/real-estate#drone",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/9/25/long-islands-premier-real-estate-photography-and-social-media-agency",
+      "destination": "/about",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/9/19/capturing-long-islands-real-estate-the-importance-of-photography-in-a-thriving-market",
+      "destination": "/real-estate#photography",
+      "permanent": false
+    },
+    {
+      "source": "/articles/2023/3/28/why-use-a-photographer-for-your-hamptons-listings",
+      "destination": "/real-estate",
+      "permanent": false
+    },
+    {
+      "source": "/articles/so-now-are-we-doing-the-lights-off",
+      "destination": "/real-estate#faq",
+      "permanent": false
+    },
+    {
+      "source": "/articles/why-you-should-get-a-real-estate-video-done",
+      "destination": "/real-estate#video",
+      "permanent": false
+    },
+    {
+      "source": "/articles/how-to-prep-a-home-for-photos",
+      "destination": "/real-estate#faq",
+      "permanent": false
+    }
   ]
 }

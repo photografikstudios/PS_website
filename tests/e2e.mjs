@@ -188,6 +188,16 @@ await check('video: pauses when scrolled offscreen', async () => {
   await p.context().close();
 });
 
+await check('video: every player has a real source (no "Unable to play media")', async () => {
+  const p = await newPage();
+  for (const path of ['/', '/work', '/agent-content', '/real-estate/pricing', '/commercial']) {
+    await p.goto(base + path);
+    const missing = await p.locator('video').evaluateAll((vs) => vs.filter((v) => !v.getAttribute('src')).length);
+    assert(missing === 0, `${path}: ${missing} videos without src`);
+  }
+  await p.context().close();
+});
+
 await check('video: vertical frames are 9:16', async () => {
   const p = await newPage();
   await p.goto(base + '/work');
@@ -227,7 +237,7 @@ await check('booking CTAs point to HD Photo Hub', async () => {
 });
 
 await check('redirects from old Squarespace and Replit routes', async () => {
-  const cases = { '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
+  const cases = { '/articles/how-to-prep-a-home-for-photos': '/real-estate#faq', '/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide': '/agent-content', '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
   for (const [from, to] of Object.entries(cases)) {
     const r = await fetch(base + from, { redirect: 'manual' });
     assert([307, 308].includes(r.status) && r.headers.get('location') === to, `${from} -> ${r.status} ${r.headers.get('location')}`);

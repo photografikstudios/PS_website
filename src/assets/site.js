@@ -59,10 +59,10 @@ const players = new Set();
 
 function loadSource(player) {
   const v = player.querySelector('video');
-  if (!v.getAttribute('src') && v.dataset.src) {
-    v.src = v.dataset.src;
-    v.preload = 'metadata';
+  if (v.preload === 'none') {
     v.addEventListener('loadeddata', () => player.classList.add('has-frame'), { once: true });
+    v.preload = 'metadata';
+    if (v.readyState === 0) v.load();
   }
   return v;
 }

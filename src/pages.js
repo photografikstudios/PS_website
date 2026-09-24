@@ -238,7 +238,7 @@ ${threeSteps()}
 
 <section class="section section--tint">
   <div class="wrap narrow">
-    <p class="eyebrow">Good to know</p>
+    <p class="eyebrow" id="faq">Good to know</p>
     <h2 class="h2 reveal">Booking, preparation and usage.</h2>
     ${faqBlock(faqs['real-estate'])}
   </div>
