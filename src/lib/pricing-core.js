@@ -80,5 +80,39 @@ export function validatePricing(p) {
     });
   }
   for (const r of p.fixed) if (typeof r.amount !== 'number' || r.amount <= 0) errors.push(`${r.id} has no amount`);
+  // Inclusions: every feature key must be in the shared vocabulary; compare views must reference real records.
+  const vocab = new Set(Object.keys(p.features || {}).filter((k) => !k.startsWith('_')));
+  for (const r of [...p.packages, ...p.services]) {
+    if (!r.features) { errors.push(`${r.id} has no features`); continue; }
+    for (const k of Object.keys(r.features)) if (!vocab.has(k)) errors.push(`${r.id} feature "${k}" is not in the vocabulary`);
+  }
+  const ids = new Set([...p.packages, ...p.services].map((r) => r.id));
+  const fixedIds = new Set(p.fixed.map((r) => r.id));
+  for (const v of p.compare?.views || []) {
+    for (const id of v.records) if (!ids.has(id)) errors.push(`compare ${v.id}: unknown record ${id}`);
+    for (const id of v.addons || []) if (!fixedIds.has(id)) errors.push(`compare ${v.id}: unknown add-on ${id}`);
+    for (const row of v.rows) for (const k of row.keys) if (!vocab.has(k)) errors.push(`compare ${v.id}: unknown row key ${k}`);
+  }
   return errors;
+}
+
+/** Inclusion state of a compare row for one record: { state: 'yes' | 'note' | 'no', note? }. */
+export function inclusion(record, keys) {
+  const vals = keys.map((k) => record.features?.[k]);
+  if (vals.some((v) => !v)) return { state: 'no' };
+  const note = vals.find((v) => typeof v === 'string');
+  return note ? { state: 'note', note } : { state: 'yes' };
+}
+
+/** Card list: combine interior + exterior into one line, keep vocabulary order otherwise. */
+export function includeLabels(record, vocab) {
+  const f = record.features || {};
+  const out = [];
+  for (const k of Object.keys(vocab)) {
+    if (k.startsWith('_') || !f[k]) continue;
+    if (k === 'interior' && f.exterior) { out.push('Interior and exterior photography'); continue; }
+    if (k === 'exterior' && f.interior) continue;
+    out.push(vocab[k]);
+  }
+  return out;
 }

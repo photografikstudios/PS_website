@@ -372,6 +372,7 @@ await check('home showcase: Videos/Photos × category, lightbox, View more', asy
   assert((await p.textContent('#lb-caption')) !== t1, 'next photo');
   await p.keyboard.press('Escape');
   assert(!(await p.locator('#lightbox[open]').count()), 'closed on Escape');
+  assert(await p.evaluate(() => document.activeElement.classList.contains('sw-card')), 'focus returns to card');
   await p.selectOption('#sw-kind', 'video');
   await p.selectOption('#sw-cat', 'commercial');
   await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
@@ -379,6 +380,191 @@ await check('home showcase: Videos/Photos × category, lightbox, View more', asy
   assert(p.url().endsWith('/'), 'no route change');
   await p.click('[data-lb-close]');
   assert(!(await p.locator('#lightbox video').count()), 'video removed on close');
+  await p.context().close();
+});
+
+// ---------- Compare what's included (/real-estate#compare) ----------
+const { resolvePrice: rp, formatUSD: usd } = await import('../src/lib/pricing-core.js');
+const pricingJson = JSON.parse(await readFile(new URL('../content/pricing.json', import.meta.url)));
+const allRecs = [...pricingJson.packages, ...pricingJson.services];
+const cmpText = (p, id) => p.locator(`[data-cmp-price="${id}"]`).first().textContent();
+
+await check('compare: 2,800 sq ft gives the same HDPH amounts on compare and pricing pages', async () => {
+  const p = await newPage();
+  const exp = { 'luxury-media': '$2,140', 'signature': '$3,155', 'social-media': '$1,220', 'listing-starter': '$795' };
+  await p.goto(base + '/real-estate?sqft=2800');
+  for (const [id, amt] of Object.entries(exp)) { const t = await cmpText(p, id); assert(t.includes(amt) && t.includes('2,501–3,500 sq ft'), `${id}: ${t}`); }
+  assert((await p.getAttribute('#cmp-pricing', 'href')) === '/real-estate/pricing?sqft=2800', 'link carries size');
+  await p.goto(base + '/real-estate/pricing?sqft=2800');
+  for (const [id, amt] of Object.entries(exp)) assert((await p.textContent(`[data-price-for="${id}"]`)).includes(amt), id);
+  assert((await p.getAttribute('#to-compare', 'href')) === '/real-estate?sqft=2800#compare', 'pricing → compare link carries size');
+  await p.context().close();
+});
+
+await check('compare: every tier boundary of every compared item matches the pricing function', async () => {
+  const p = await newPage();
+  await p.goto(base + '/real-estate');
+  const ids = pricingJson.compare.views.flatMap((v) => v.records);
+  const sizes = [...new Set(ids.flatMap((id) => { const r = allRecs.find((x) => x.id === id); return [...r.tiers.flatMap(([m]) => [m - 1, m]), r.max, r.max + 1]; }))].filter((n) => n > 0).sort((a, b) => a - b);
+  let checks = 0;
+  for (const sq of sizes) {
+    await p.fill('#cmp-sqft', String(sq));
+    const got = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-cmp-price]')].map((e) => [e.dataset.cmpPrice, e.textContent])));
+    for (const id of ids) {
+      const s = rp(allRecs.find((x) => x.id === id), sq);
+      const want = s.kind === 'custom' ? 'Custom quote' : usd(s.amount);
+      assert(got[id].includes(want), `${id} @ ${sq}: ${got[id]} (want ${want})`);
+      checks++;
+    }
+  }
+  assert(checks > 300, `only ${checks} checks`);
+  await p.context().close();
+});
+
+await check('compare: inclusions come from the same data as package cards', async () => {
+  const p = await newPage();
+  await p.goto(base + '/real-estate#compare');
+  const cell = (row, id) => p.evaluate(([row, id]) => { const tr = [...document.querySelectorAll('#cmp-panel-packages tbody tr')].find((t) => t.querySelector('th').textContent === row); return tr.querySelector(`td[data-col="${id}"]`).textContent.trim(); }, [row, id]);
+  assert((await cell('Floor plan', 'social-media')) === 'Not included', 'social floor plan');
+  assert((await cell('Agent on camera', 'signature')).includes('Included'), 'signature agent');
+  assert((await cell('Vertical reel', 'listing-starter')) === 'Not included', 'starter reel');
+  assert((await cell('Horizontal film', 'luxury-media')).includes('Included'), 'luxury film');
+  await p.click('#cmp-tab-video');
+  assert(await p.isVisible('#cmp-panel-video'), 'video view');
+  assert((await p.textContent('#cmp-panel-video')).includes('Film or reel, your choice'), 'video-one note');
+  await p.goto(base + '/real-estate/pricing');
+  const cardList = await p.locator('[data-record="social-media"] .checks li').allTextContents();
+  assert(!cardList.some((t) => /floor plan/i.test(t)) && cardList.some((t) => /reel/i.test(t)), cardList.join('|'));
+  await p.context().close();
+});
+
+await check('compare: keyboard tabs, column choice limit, phone shows two columns without overflow', async () => {
+  const p = await newPage({ width: 390, height: 900 });
+  await p.goto(base + '/real-estate');
+  const cols = () => p.locator('#cmp-panel-packages thead th:not([hidden])').evaluateAll((e) => e.map((x) => x.dataset.col));
+  assert((await cols()).length === 2, `phone cols ${await cols()}`);
+  await p.click('#cmp-panel-packages .cmp__chip[data-col="signature"]');
+  const c = await cols();
+  assert(c.length === 2 && c.includes('signature'), `after choose: ${c}`);
+  const sw = await p.evaluate(() => document.documentElement.scrollWidth);
+  assert(sw <= 390, `overflow ${sw}`);
+  await p.focus('#cmp-tab-packages');
+  await p.keyboard.press('ArrowRight');
+  assert((await p.getAttribute('#cmp-tab-video', 'aria-selected')) === 'true' && await p.evaluate(() => document.activeElement.id) === 'cmp-tab-video', 'arrow key tab');
+  await p.context().close();
+  const d = await newPage();
+  await d.goto(base + '/real-estate');
+  assert((await d.locator('#cmp-panel-packages thead th:not([hidden])').count()) === 4, 'desktop shows four');
+  await d.context().close();
+});
+
+// ---------- Real Estate gallery ----------
+// Fixture tags (test only, not real claims): two Luxury Media pieces (one film, one photo) and one Signature film.
+const FIXTURE_TAGS = { 're-hamptons-beachfront': ['luxury-media'], 'ph-dune-twilight-pool': ['luxury-media'], 're-hamptons-calm': ['signature'] };
+async function reWithTags(p, path = '/real-estate') {
+  await p.route(/\/real-estate(\?.*)?$/, async (route) => {
+    const res = await route.fetch();
+    let html = await res.text();
+    html = html.replace(/(<section[^>]*data-regallery[\s\S]*?<script type="application\/json" data-gallery-items>)([\s\S]*?)(<\/script>)/, (m, a, json, c) => {
+      const items = JSON.parse(json).map((it) => ({ ...it, packages: FIXTURE_TAGS[it.id] || [] }));
+      return a + JSON.stringify(items) + c;
+    });
+    await route.fulfill({ response: res, body: html, headers: { ...res.headers(), 'content-type': 'text/html' } });
+  });
+  await p.goto(base + path);
+}
+const rgShown = (p) => p.locator('#rg-grid .gcard:not([hidden])').count();
+
+await check('RE gallery: package matches, package × type intersection, zero result, reset', async () => {
+  const p = await newPage();
+  await reWithTags(p);
+  const total = await p.locator('#rg-grid .gcard').count();
+  assert(total >= 12, `total ${total}`);
+  await p.selectOption('#rg-package', 'luxury-media');
+  assert(await rgShown(p) === 2 && (await p.textContent('#rg-count')) === '2 pieces', 'luxury 2');
+  assert(p.url().includes('package=luxury-media'), 'url');
+  await p.selectOption('#rg-package', 'signature');
+  assert(await rgShown(p) === 1, 'signature 1');
+  await p.selectOption('#rg-package', 'luxury-media');
+  await p.selectOption('#rg-type', 'photo');
+  assert(await rgShown(p) === 1, 'luxury + photo 1');
+  await p.selectOption('#rg-package', 'signature');
+  assert(await rgShown(p) === 0 && await p.isVisible('#rg-empty'), 'signature + photo empty');
+  assert((await p.textContent('#rg-empty-title')).includes('Signature'), 'empty names package');
+  assert((await p.textContent('#rg-package option[value="signature"]')).includes('(0)'), 'option count reflects type');
+  await p.click('[data-rg-show-all]');
+  assert(await p.inputValue('#rg-package') === '' && await rgShown(p) > 1, 'show all');
+  await p.click('.filters__clear');
+  assert(await p.inputValue('#rg-type') === '' && (await p.textContent('#rg-count')) === `${total} pieces`, 'reset');
+  await p.context().close();
+});
+
+await check('RE gallery: real (untagged) data shows honest empty package state and working type filter', async () => {
+  const p = await newPage();
+  await p.goto(base + '/real-estate?package=signature');
+  assert(await p.isVisible('#rg-empty') && (await p.textContent('#rg-empty-title')).includes('No confirmed Signature'), 'honest empty');
+  await p.goto(base + '/real-estate?type=video');
+  const kinds = await p.locator('#rg-grid .gcard:not([hidden])').evaluateAll((e) => e.map((x) => x.dataset.kind));
+  assert(kinds.length && kinds.every((k) => k === 'video'), kinds.join());
+  await p.context().close();
+});
+
+await check('RE gallery: Load More reveals the next batch, keeps filters, never plays hidden video', async () => {
+  const p = await newPage();
+  await p.goto(base + '/real-estate');
+  const total = await p.locator('#rg-grid .gcard').count();
+  assert(await rgShown(p) === 9, 'first batch 9');
+  await p.click('#rg-more');
+  assert(await rgShown(p) === Math.min(18, total), 'second batch');
+  await p.selectOption('#rg-type', 'photo');
+  const photos = await p.locator('#rg-grid .gcard[data-kind="image"]').count();
+  assert(await rgShown(p) === Math.min(9, photos), 'filter resets to first batch');
+  if (photos > 9) { await p.click('#rg-more'); assert(await rgShown(p) === Math.min(18, photos), 'more within filter'); assert(await p.inputValue('#rg-type') === 'photo', 'filter kept'); }
+  assert(!(await p.locator('#rg-grid .gcard[hidden] video').count()), 'no hidden videos');
+  await p.context().close();
+});
+
+await check('RE gallery: inline mode plays in the card (horizontal and vertical), one at a time', async () => {
+  const p = await newPage();
+  await p.goto(base + '/real-estate?type=video');
+  assert((await p.getAttribute('[data-regallery]', 'data-mode')) === 'inline', 'default inline');
+  await p.locator('#rg-grid .gcard--horizontal:not([hidden]) button.gcard__open').first().click();
+  assert(await p.locator('#rg-grid .gcard video[controls]').count() === 1 && !(await p.locator('dialog[open]').count()), 'inline, no dialog');
+  const vert = p.locator('#rg-grid .gcard--vertical button.gcard__open').first();
+  if (await vert.count()) {
+    await vert.scrollIntoViewIfNeeded(); await vert.click();
+    const playing = await p.locator('#rg-grid video').evaluateAll((vs) => vs.filter((v) => !v.paused).length);
+    assert(playing <= 1, `playing ${playing}`);
+  }
+  assert(!(await p.locator('#rg-grid .gcard[data-kind="image"] button').count()), 'photos not buttons inline');
+  await p.context().close();
+});
+
+await check('RE gallery: lightbox mode (review override) with Escape and focus return', async () => {
+  const p = await newPage();
+  await p.goto(base + '/real-estate?player=lightbox');
+  assert((await p.getAttribute('[data-regallery]', 'data-mode')) === 'lightbox', 'override');
+  const btn = p.locator('#rg-grid .gcard[data-kind="video"]:not([hidden]) .gcard__open').first();
+  await btn.focus(); await p.keyboard.press('Enter');
+  assert(await p.locator('#lightbox[open] video[controls]').count() === 1, 'video lightbox');
+  await p.keyboard.press('Escape');
+  assert(!(await p.locator('#lightbox[open]').count()), 'closed');
+  assert(await p.evaluate(() => document.activeElement.classList.contains('gcard__open')), 'focus returned');
+  await p.selectOption('#rg-type', 'photo');
+  await p.locator('#rg-grid .gcard:not([hidden]) .gcard__open').first().click();
+  assert(await p.locator('#lightbox[open] img').count() === 1, 'photo lightbox');
+  await p.context().close();
+});
+
+await check('one media collection: the same record drives Home, Real Estate and Work', async () => {
+  const p = await newPage();
+  const ids = async (path, sel) => { await p.goto(base + path); return p.evaluate((s) => JSON.parse(document.querySelector(s).textContent).map((x) => x.id), sel); };
+  const home = await ids('/', '[data-showcase] [data-gallery-items]');
+  const re = await ids('/real-estate', '[data-regallery] [data-gallery-items]');
+  await p.goto(base + '/work');
+  const work = await p.locator('#work-grid [data-video]').evaluateAll((e) => e.map((x) => x.dataset.id));
+  for (const id of ['re-hamptons-beachfront', 're-hamptons-calm']) assert(home.includes(id) && re.includes(id) && work.includes(id), id);
+  assert(new Set(re).size === re.length && new Set(home).size === home.length, 'no duplicates');
   await p.context().close();
 });
 

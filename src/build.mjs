@@ -1,10 +1,11 @@
 // Static site build. Usage: node src/build.mjs
 // Reads /content/*.json, renders pages to /dist, copies assets.
-import { readFile, writeFile, mkdir, rm, cp } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rm, cp, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createContext } from './lib/html.js';
 import { validatePricing } from './lib/pricing-core.js';
+import { validateMedia } from './lib/gallery-core.js';
 import { layout } from './layout.js';
 import { buildPages } from './pages.js';
 
@@ -27,8 +28,12 @@ const [site, pricing, work, offers, faqs, seo] = await Promise.all(
 const errors = validatePricing(pricing);
 if (errors.length) { console.error('Pricing table errors:\n - ' + errors.join('\n - ')); process.exit(1); }
 
+const mediaErrors = validateMedia(work, pricing.packages.map((p) => p.id));
+if (mediaErrors.length) { console.error('Media metadata errors:\n - ' + mediaErrors.join('\n - ')); process.exit(1); }
+
 const isApproved = (r) => (r.approval ?? r.rights ?? 'approved') === 'approved';
-const visible = (r) => reviewMode || isApproved(r);
+// Media also needs published !== false: new Drive additions stay out of production until checked.
+const visible = (r) => reviewMode || (isApproved(r) && r.published !== false);
 
 if (!reviewMode) {
   const pending = pricing.packages.filter((r) => !isApproved(r)).map((r) => r.name);
@@ -68,6 +73,15 @@ for (const [route, page] of Object.entries(pages)) {
 // Assets
 await cp(join(root, 'src/assets'), join(out, 'assets'), { recursive: true });
 await cp(join(root, 'src/lib/pricing-core.js'), join(out, 'assets/pricing-core.js'));
+await cp(join(root, 'src/lib/gallery-core.js'), join(out, 'assets/gallery-core.js'));
+// Assets are cached as immutable: version relative module imports the same way the page tags are.
+for (const f of await readdir(join(out, 'assets'))) {
+  if (!f.endsWith('.js')) continue;
+  const fp = join(out, 'assets', f);
+  const js = await readFile(fp, 'utf8');
+  const next = js.replace(/(from\s+['"]\.\/[\w-]+\.js)(['"])/g, `$1?v=${version}$2`);
+  if (next !== js) await writeFile(fp, next);
+}
 
 // robots + sitemap (canonical production URLs only; review builds disallow crawling)
 await writeFile(join(out, 'robots.txt'), reviewMode

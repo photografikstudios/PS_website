@@ -48,12 +48,18 @@ function setError(msg) {
   row.classList.toggle('is-invalid', !!msg);
 }
 
+const toCompare = document.getElementById('to-compare');
+function syncCompareLink(sqft) {
+  if (toCompare) toCompare.href = sqft ? `/real-estate?sqft=${sqft}#compare` : '/real-estate#compare';
+}
+
 function update({ commit = false } = {}) {
   const raw = input.value;
   clearBtn.hidden = raw.trim() === '';
   const parsed = parseSquareFeet(raw);
   if (!parsed.ok) {
     render(null);
+    syncCompareLink(null);
     bandEl.innerHTML = 'Showing starting prices. Enter a size to see yours.';
     // Only show an error once the visitor has finished typing (blur/Enter), and never for an empty box.
     if (commit && parsed.reason !== 'empty') setError(errorMessages[parsed.reason]);
@@ -64,6 +70,7 @@ function update({ commit = false } = {}) {
   setError('');
   const sqft = parsed.value;
   render(sqft);
+  syncCompareLink(sqft);
   const over = sqft > topMax;
   const band = over ? null : { label: `${sqft.toLocaleString('en-US')} sq ft` };
   const key = over ? 'over' : String(data.records.map((r) => resolvePrice(r, sqft).amount ?? 'c').join('-'));

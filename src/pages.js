@@ -1,10 +1,11 @@
 import { esc, join } from './lib/html.js';
-import { formatUSD, resolvePrice } from './lib/pricing-core.js';
+import { formatUSD, resolvePrice, inclusion, includeLabels, tierLabel, findTier } from './lib/pricing-core.js';
+import { facts, editorialOrder, TYPE_FILTERS, optionCounts } from './lib/gallery-core.js';
 
 const arrow = '<span aria-hidden="true">→</span>';
 
 export function buildPages(ctx) {
-  const { site, pricing, work, offers, faqs, img, videoPlayer, needsApproval, visible, ambient } = ctx;
+  const { site, pricing, work, offers, faqs, img, videoPlayer, needsApproval, visible, ambient, reviewMode } = ctx;
   const booking = site.destinations.booking.href;
   const bookBtn = (loc, label = 'Book a Shoot', cls = 'btn btn--solid') =>
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
@@ -42,6 +43,24 @@ export function buildPages(ctx) {
       ${frame}${meta}
     </article>`;
   };
+
+  // ---------- shared gallery pieces (one media collection, several views) ----------
+  const galThumb = (m) => (m.type === 'video' ? (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080)) : (m.thumb || ctx.optimized(m.src, 1080)));
+  const galFull = (m) => (m.type === 'video' ? ctx.mediaUrl(m.src) : ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
+  const galleryItem = (m) => ({
+    id: m.id, title: m.title, sub: [m.client, m.location].filter(Boolean).join(' · '), src: galFull(m),
+    poster: m.type === 'video' ? galThumb(m) : null, alt: m.alt || m.title, category: m.category, orientation: m.orientation, ...facts(m),
+  });
+  const itemsJson = (list) => `<script type="application/json" data-gallery-items>${JSON.stringify(list.map(galleryItem)).replace(/</g, '\\u003c')}</script>`;
+  const playIcon = '<span class="sw-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>';
+  const lightboxDialog = () => `
+  <dialog class="lightbox" id="lightbox" aria-labelledby="lb-title">
+    <div class="lightbox__bar"><p class="lightbox__title" id="lb-title" data-lb-title></p><button type="button" class="lightbox__close" data-lb-close aria-label="Close">×</button></div>
+    <button type="button" class="lightbox__nav lightbox__nav--prev" data-lb-prev aria-label="Previous">‹</button>
+    <div class="lightbox__stage" id="lb-stage" data-lb-stage></div>
+    <button type="button" class="lightbox__nav lightbox__nav--next" data-lb-next aria-label="Next">›</button>
+    <p class="lightbox__caption" id="lb-caption" data-lb-caption aria-live="polite"></p>
+  </dialog>`;
 
   const threeSteps = (dark = false) => `
 <section class="section ${dark ? 'section--ink on-dark' : ''}">
@@ -81,9 +100,8 @@ export function buildPages(ctx) {
 
   // ---------- HOME ----------
   // Home showcase: videos with a poster and all stills, filtered client-side (Videos/Photos × category).
-  const swThumb = (m) => (m.type === 'video' ? (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080)) : (m.thumb || ctx.optimized(m.src, 1080)));
-  const swFull = (m) => (ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
-  const showcase = media.filter((m) => (m.type === 'video' ? !!m.poster : true));
+  const showcase = editorialOrder(media.filter((m) => (m.type === 'video' ? !!m.poster : true)));
+  const homeLimit = site.galleries?.home?.limit || 9;
   const insight = media.find((x) => x.id === 'agent-market-insight');
   pages['/'] = {
     overlay: true,
@@ -146,7 +164,7 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-<section class="section section--ink on-dark showcase" aria-labelledby="work-h" data-showcase>
+<section class="section section--ink on-dark showcase" aria-labelledby="work-h" data-showcase data-limit="${homeLimit}">
   <div class="wrap">
     <div class="showcase__head">
       <div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="work-h">Different briefs. <em>One standard.</em></h2></div>
@@ -158,23 +176,17 @@ export function buildPages(ctx) {
       </div>
     </div>
     <div class="showcase__grid" id="sw-grid">
-      ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${i > 8 ? ' hidden' : ''}>
-        <img src="${esc(swThumb(m))}" alt="" loading="lazy" decoding="async">
-        ${m.type === 'video' ? '<span class="sw-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>' : ''}
+      ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${i >= homeLimit ? ' hidden' : ''}>
+        <img src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async">
+        ${m.type === 'video' ? playIcon : ''}
         <span class="sw-card__title">${esc(m.title)}${m.location ? ` <span class="sw-card__loc">${esc(m.location)}</span>` : ''}</span>
       </button>`)}
     </div>
     <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">start a project</a>.</p>
     <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/work?service=video&amp;category=real-estate" data-track="gallery_view_more">View more</a></div>
   </div>
-  <dialog class="lightbox" id="lightbox" aria-labelledby="lb-title">
-    <div class="lightbox__bar"><p class="lightbox__title" id="lb-title"></p><button type="button" class="lightbox__close" data-lb-close aria-label="Close">×</button></div>
-    <button type="button" class="lightbox__nav lightbox__nav--prev" data-lb-prev aria-label="Previous">‹</button>
-    <div class="lightbox__stage" id="lb-stage"></div>
-    <button type="button" class="lightbox__nav lightbox__nav--next" data-lb-next aria-label="Next">›</button>
-    <p class="lightbox__caption" id="lb-caption" aria-live="polite"></p>
-  </dialog>
-  <script type="application/json" id="sw-data">${JSON.stringify(showcase.map((m) => ({ kind: m.type === 'video' ? 'video' : 'image', title: m.title, sub: [m.client, m.location].filter(Boolean).join(' · '), src: m.type === 'video' ? ctx.mediaUrl(m.src) : swFull(m), poster: m.type === 'video' ? swThumb(m) : null, category: m.category, orientation: m.orientation }))).replace(/</g, '\\u003c')}</script>
+  ${lightboxDialog()}
+  ${itemsJson(showcase)}
 </section>
 
 <section class="section" aria-labelledby="pkg-h">
@@ -226,9 +238,108 @@ ${splitCta('Ready when you are.')}`,
   };
 
   // ---------- REAL ESTATE ----------
-  const reMedia = ['re-hamptons-standout', 'agent-on-camera', 're-hamptons-calm', 'lauryn-lead', 're-penniman-ln'].map((id) => media.find((m) => m.id === id)).filter(Boolean);
+  // Compare what's included: rendered from the same pricing records and tiers as the calculator.
+  const recById = Object.fromEntries([...pricing.packages, ...pricing.services].map((r) => [r.id, r]));
+  const fixedById = Object.fromEntries(pricing.fixed.map((r) => [r.id, r]));
+  const cmpViews = pricing.compare.views.map((v) => ({ ...v, recs: v.records.map((id) => recById[id]).filter(visible) })).filter((v) => v.recs.length);
+  const cmpCell = (r, row) => {
+    const inc = inclusion(r, row.keys);
+    if (inc.state === 'yes') return '<span class="cmp__yes"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Included</span>';
+    if (inc.state === 'note') return `<span class="cmp__yes cmp__note">${esc(inc.note)}</span>`;
+    return '<span class="cmp__no">Not included</span>';
+  };
+  const cmpView = (v, vi) => {
+    const defaults = v.defaults || v.records;
+    // Keep the table to real differences: rows every option includes become one summary line.
+    const common = v.rows.filter((row) => v.recs.every((r) => inclusion(r, row.keys).state === 'yes'));
+    const rows = v.rows.filter((row) => !common.includes(row));
+    const sameMax = v.recs.every((r) => r.max === v.recs[0].max);
+    const noun = v.id === 'packages' ? 'Every package' : 'Every option here';
+    return `<div class="cmp__panel" role="tabpanel" id="cmp-panel-${v.id}" aria-labelledby="cmp-tab-${v.id}" ${vi ? 'hidden' : ''} data-view="${v.id}">
+      <fieldset class="cmp__pick"><legend>Compare <span class="cmp__limit-note"></span></legend>
+        ${join(v.recs, (r) => `<button type="button" class="cmp__chip" data-col="${esc(r.id)}" aria-pressed="${defaults.includes(r.id)}">${esc(r.name)}</button>`)}
+      </fieldset>
+      ${common.length || sameMax ? `<p class="cmp__common">${noun} ${common.length ? `includes ${esc(common.map((r) => r.label.toLowerCase()).join(' and '))}` : ''}${common.length && sameMax ? ', and is ' : sameMax ? 'is ' : ''}${sameMax ? `priced for homes up to ${v.recs[0].max.toLocaleString('en-US')} sq ft` : ''}.</p>` : ''}
+      <table class="cmp__table">
+        <caption class="sr-only">${esc(v.label)}: what each option includes</caption>
+        <thead><tr><td class="cmp__corner"></td>${join(v.recs, (r) => `<th scope="col" data-col="${esc(r.id)}"><span class="cmp__name">${esc(r.name)}</span>${r.role ? `<span class="cmp__role">${esc(r.role === 'Premium' ? 'Premium anchor' : r.role)}</span>` : ''}</th>`)}</tr></thead>
+        <tbody>
+          <tr class="cmp__row--suits"><th scope="row">Best for</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}">${esc(r.suits)}</td>`)}</tr>
+          <tr class="cmp__row--price"><th scope="row">Price</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}"><span class="cmp__price" data-cmp-price="${esc(r.id)}"><span class="cmp__plabel">Starting at</span> <strong>${starting(r)}</strong></span> ${needsApproval(r)}</td>`)}</tr>
+          ${join(rows, (row) => `<tr><th scope="row">${esc(row.label)}</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}">${cmpCell(r, row)}</td>`)}</tr>`)}
+          ${sameMax ? '' : `<tr class="cmp__row--size"><th scope="row">Published sizes</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}">Up to ${r.max.toLocaleString('en-US')} sq ft</td>`)}</tr>`}
+        </tbody>
+      </table>
+      ${(v.addons || []).length ? `<div class="cmp__addons"><p class="cmp__addons-h">Add-ons, priced separately</p><ul>${join(v.addons.map((id) => fixedById[id]).filter(visible), (f) => `<li><span>${esc(f.name)}</span> <strong>${formatUSD(f.amount)}</strong></li>`)}</ul></div>` : ''}
+    </div>`;
+  };
+  const compareSection = () => `
+<section class="section cmp" id="compare" aria-labelledby="cmp-h" data-compare>
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Compare what's included</p><h2 class="h2 reveal" id="cmp-h">See the differences side by side.</h2></div>
+      <div class="cmp__size">
+        <label for="cmp-sqft">Property size <span>(optional)</span></label>
+        <div class="cmp__size-row"><input id="cmp-sqft" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 3,200" aria-describedby="cmp-band"><span aria-hidden="true">sq ft</span></div>
+        <p class="cmp__band" id="cmp-band" aria-live="polite">Showing starting prices.</p>
+      </div>
+    </div>
+    <div class="cmp__tabs" role="tablist" aria-label="Compare by type">
+      ${join(cmpViews, (v, i) => `<button type="button" role="tab" class="tabs__tab" id="cmp-tab-${v.id}" aria-controls="cmp-panel-${v.id}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${esc(v.label)}</button>`)}
+    </div>
+    ${join(cmpViews, cmpView)}
+    <p class="sr-only" id="cmp-live" aria-live="polite"></p>
+    <div class="cmp__cta">
+      ${bookBtn('re_compare', 'Book on HD Photo Hub', 'btn btn--solid')}
+      <a class="link-arrow" id="cmp-pricing" href="/real-estate/pricing">Full price list by size ${arrow}</a>
+      <p class="small">You will choose the package and confirm the property size in our booking portal. Travel fees and sales tax are added at checkout where they apply.</p>
+    </div>
+  </div>
+  <script type="application/json" id="cmp-data">${JSON.stringify({ maxSqft: pricing.maxSqft, records: cmpViews.flatMap((v) => v.recs).map((r) => ({ id: r.id, max: r.max, tiers: r.tiers })) }).replace(/</g, '\\u003c')}</script>
+</section>`;
+
+  // Real Estate gallery: the same media records as Home and Work, filtered by verified package tag and media type.
+  const reItems = editorialOrder(media.filter((m) => m.category === 'real-estate' && (m.type !== 'video' || m.poster)));
+  const reCfg = site.galleries?.realEstate || {};
+  const reBatch = reCfg.batch || 9;
+  const reFacts = reItems.map(facts);
+  const pkgOptions = pricing.packages.filter(visible);
+  const pkgCounts = optionCounts(reFacts, { type: '' }, 'pkg', ['', ...pkgOptions.map((p) => p.id)]);
+  const typeCounts = optionCounts(reFacts, { pkg: '' }, 'type', TYPE_FILTERS.map((t) => t.id));
+  const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}"${i >= reBatch ? ' hidden' : ''}>
+      <button type="button" class="gcard__open" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}">
+        <img src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
+        ${m.type === 'video' ? playIcon : ''}
+      </button>
+      <div class="gcard__meta"><p class="gcard__title">${esc(m.title)}</p><p class="gcard__sub">${esc([m.location, m.type === 'video' ? (m.orientation === 'vertical' ? 'Vertical reel' : 'Film') : 'Photo', m.capturedYear].filter(Boolean).join(' · '))}${m.packageIds.length ? ` · <span class="gcard__pkg">${esc(m.packageIds.map((id) => pkg[id]?.name).filter(Boolean).join(', '))}</span>` : ''} ${needsApproval(m.published === false ? { note: 'Unpublished: awaiting title, rights and tag checks' } : { approval: 'approved' })}</p></div>
+    </article>`;
+  const reGallery = () => `
+<section class="section section--ink on-dark regallery" id="portfolio" aria-labelledby="rg-h" data-regallery data-player="${esc(reCfg.player || 'inline')}" data-batch="${reBatch}"${reviewMode ? ' data-allow-player-override' : ''}>
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Real estate portfolio</p><h2 class="h2 reveal" id="rg-h">Listings, filmed and photographed.</h2></div><a class="link-arrow" href="/work?category=real-estate">All work ${arrow}</a></div>
+    <form class="filters filters--inline" data-rg-filters aria-label="Filter real estate work" onsubmit="return false">
+      <div class="filters__field"><label for="rg-package">Package</label>
+        <select id="rg-package" name="package"><option value="">All packages</option>${join(pkgOptions, (p) => `<option value="${p.id}">${esc(p.name)} (${pkgCounts[p.id]})</option>`)}</select></div>
+      <div class="filters__field"><label for="rg-type">Media</label>
+        <select id="rg-type" name="type">${join(TYPE_FILTERS.filter((t) => !t.id || typeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}${t.id ? ` (${typeCounts[t.id]})` : ''}</option>`)}</select></div>
+      <button type="reset" class="filters__clear" hidden>Reset filters</button>
+    </form>
+    <p class="filters__count" id="rg-count" aria-live="polite">${reItems.length} pieces</p>
+    <p class="regallery__note">We tag work with a package only after confirming what was delivered, so some pieces appear under All packages only.</p>
+    <div class="regallery__grid" id="rg-grid">${join(reItems, reCard)}</div>
+    <div class="empty" id="rg-empty" hidden>
+      <p class="h3" id="rg-empty-title">No confirmed examples for this package yet.</p>
+      <p>We only show a package example once we have checked what was delivered. See all real estate work in the meantime, or ask us for examples when you book.</p>
+      <p><button type="button" class="btn btn--gold" data-rg-show-all>Show all real estate work</button></p>
+    </div>
+    <div class="regallery__more"><button type="button" class="btn btn--light" id="rg-more" hidden>Load more</button></div>
+  </div>
+  ${lightboxDialog()}
+  ${itemsJson(reItems)}
+</section>`;
+
   pages['/real-estate'] = {
     overlay: true,
+    scripts: ['compare.js', 're-gallery.js'],
     body: `${pageHero({
       eyebrow: 'Real estate media',
       title: 'Listing media that shows sellers <em>how you work.</em>',
@@ -253,7 +364,7 @@ ${splitCta('Ready when you are.')}`,
 
 <section class="section section--tint">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Packages</p><h2 class="h2 reveal">Start with the right package.</h2></div><a class="link-arrow" href="/real-estate/pricing">Pricing by property size ${arrow}</a></div>
+    <div class="section-head"><div><p class="eyebrow">Packages</p><h2 class="h2 reveal">Start with the right package.</h2></div><div class="section-head__links"><a class="link-arrow" href="#compare">Compare what's included ${arrow}</a><a class="link-arrow" href="/real-estate/pricing">Pricing by property size ${arrow}</a></div></div>
     <div class="ladder ladder--4">
       ${join(pricing.packages.filter(visible), (p) => `
       <div class="ladder__item ${p.role === 'Recommended' ? 'ladder__item--featured' : ''}">
@@ -266,12 +377,9 @@ ${splitCta('Ready when you are.')}`,
   </div>
 </section>
 
-<section class="section section--ink on-dark">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Real estate work</p><h2 class="h2 reveal">From recent listings.</h2></div><a class="link-arrow" href="/work?category=real-estate">More real estate work ${arrow}</a></div>
-    <div class="justified">${join(reMedia, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
-  </div>
-</section>
+${compareSection()}
+
+${reGallery()}
 
 ${threeSteps()}
 
@@ -315,7 +423,7 @@ ${threeSteps()}
         <h3 class="h3" id="pk-${esc(p.id)}">${esc(p.name)} ${needsApproval(p)}</h3>
         <p class="pcard__for">${esc(p.for)}</p>
         ${priceCell(p)}
-        <ul class="checks">${join(p.includes, (i) => `<li>${esc(i)}</li>`)}</ul>
+        <ul class="checks">${join(includeLabels(p, pricing.features), (i) => `<li>${esc(i)}</li>`)}</ul>
         <a class="btn ${p.role === 'Recommended' ? 'btn--solid' : 'btn--outline'} pcard__cta" href="${booking}" data-track="book_click" data-track-location="pricing_card" data-track-package="${esc(p.id)}">Book ${esc(p.name)}</a>
       </div>
     </article>`;
@@ -367,6 +475,7 @@ ${threeSteps()}
       </div>
       <p class="sizer__error" id="sqft-error" role="alert" hidden></p>
       <p class="sizer__band" id="sqft-band">Showing starting prices. Enter a size to see yours.</p>
+      <p class="sizer__compare"><a class="link-arrow" id="to-compare" href="/real-estate#compare" data-track="compare_nav" data-track-location="pricing_sizer">Compare what's included ${arrow}</a></p>
     </div>
     <p class="sr-only" id="price-live" aria-live="polite" aria-atomic="true"></p>
 

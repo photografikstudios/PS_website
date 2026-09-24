@@ -38,7 +38,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
 </head>
 <body class="${[dark ? 'page--dark' : '', overlay ? 'has-overlay' : ''].join(' ').trim()}">
 <a class="skip" href="#main">Skip to content</a>
-${reviewMode ? `<div class="review-bar" role="note"><strong>Review preview</strong> · Not public<span class="review-bar__long">. Prices, policies and items tagged <span class="needs-approval">Needs approval</span> are waiting on sign-off</span>.</div>` : ''}
+${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</strong> · Pricing pending sign-off<span class="review-bar__long">. Not the approved public site: policies and items tagged <span class="needs-approval">Needs approval</span> are also awaiting sign-off</span>.</div>` : ''}
 <header class="site-header">
   <div class="wrap site-header__inner">
     <a class="brand" href="/" aria-label="Photografik Studios, home">

@@ -7,13 +7,31 @@
   "phoneHref": "tel:+16319989661",
   "serviceArea": "Long Island, the Hamptons and the North Fork, with selected projects across Suffolk, Nassau and New York City.",
   "social": [
-    { "label": "Instagram", "href": "https://www.instagram.com/photografikstudios" },
-    { "label": "Facebook", "href": "https://www.facebook.com/photografikstudios" }
+    {
+      "label": "Instagram",
+      "href": "https://www.instagram.com/photografikstudios"
+    },
+    {
+      "label": "Facebook",
+      "href": "https://www.facebook.com/photografikstudios"
+    }
   ],
   "destinations": {
-    "booking": { "href": "https://photografikstudios.hd.pics/order", "verified": true, "note": "HD Photo Hub order form. Loads and shows products; no verified query-string handoff for size or package." },
-    "inquiryEndpoint": { "env": "INQUIRY_WEBHOOK_URL", "verified": false, "note": "No approved CRM or inbox integration yet. Without the env var the form falls back to a prepared email." },
-    "creatorBooking": { "href": "/contact?type=creator-studios", "verified": false, "note": "Creator Studios booking destination not confirmed." }
+    "booking": {
+      "href": "https://photografikstudios.hd.pics/order",
+      "verified": true,
+      "note": "HD Photo Hub order form. Loads and shows products; no verified query-string handoff for size or package."
+    },
+    "inquiryEndpoint": {
+      "env": "INQUIRY_WEBHOOK_URL",
+      "verified": false,
+      "note": "No approved CRM or inbox integration yet. Without the env var the form falls back to a prepared email."
+    },
+    "creatorBooking": {
+      "href": "/contact?type=creator-studios",
+      "verified": false,
+      "note": "Creator Studios booking destination not confirmed."
+    }
   },
   "media": {
     "_readme": "Media is served from the Replit reference build during review. Move to self-hosted storage before launch.",
@@ -24,27 +42,95 @@
     "heroAlt": "A shingle-style estate at twilight with warm light in every window"
   },
   "nav": [
-    { "label": "Real Estate", "href": "/real-estate", "children": [
-      { "label": "Real Estate Media", "href": "/real-estate" },
-      { "label": "Pricing", "href": "/real-estate/pricing" },
-      { "label": "Agent Content", "href": "/agent-content" }
-    ]},
-    { "label": "Architecture & Design", "href": "/architecture-design" },
-    { "label": "Commercial", "href": "/commercial" },
-    { "label": "Agencies", "href": "/agency-partnerships" },
-    { "label": "Work", "href": "/work" },
-    { "label": "About", "href": "/about" }
+    {
+      "label": "Real Estate",
+      "href": "/real-estate",
+      "children": [
+        {
+          "label": "Real Estate Media",
+          "href": "/real-estate"
+        },
+        {
+          "label": "Pricing",
+          "href": "/real-estate/pricing"
+        },
+        {
+          "label": "Agent Content",
+          "href": "/agent-content"
+        }
+      ]
+    },
+    {
+      "label": "Architecture & Design",
+      "href": "/architecture-design"
+    },
+    {
+      "label": "Commercial",
+      "href": "/commercial"
+    },
+    {
+      "label": "Agencies",
+      "href": "/agency-partnerships"
+    },
+    {
+      "label": "Work",
+      "href": "/work"
+    },
+    {
+      "label": "About",
+      "href": "/about"
+    }
   ],
   "footerNav": [
-    { "label": "Real Estate Media", "href": "/real-estate" },
-    { "label": "Real Estate Pricing", "href": "/real-estate/pricing" },
-    { "label": "Agent Content", "href": "/agent-content" },
-    { "label": "Architecture & Design", "href": "/architecture-design" },
-    { "label": "Commercial Production", "href": "/commercial" },
-    { "label": "Agency Partnerships", "href": "/agency-partnerships" },
-    { "label": "Creator Studios", "href": "/creator-studios" },
-    { "label": "Work", "href": "/work" },
-    { "label": "About", "href": "/about" },
-    { "label": "Start a Project", "href": "/contact" }
-  ]
+    {
+      "label": "Real Estate Media",
+      "href": "/real-estate"
+    },
+    {
+      "label": "Real Estate Pricing",
+      "href": "/real-estate/pricing"
+    },
+    {
+      "label": "Agent Content",
+      "href": "/agent-content"
+    },
+    {
+      "label": "Architecture & Design",
+      "href": "/architecture-design"
+    },
+    {
+      "label": "Commercial Production",
+      "href": "/commercial"
+    },
+    {
+      "label": "Agency Partnerships",
+      "href": "/agency-partnerships"
+    },
+    {
+      "label": "Creator Studios",
+      "href": "/creator-studios"
+    },
+    {
+      "label": "Work",
+      "href": "/work"
+    },
+    {
+      "label": "About",
+      "href": "/about"
+    },
+    {
+      "label": "Start a Project",
+      "href": "/contact"
+    }
+  ],
+  "galleries": {
+    "_readme": "Gallery settings. realEstate.player: 'inline' (plays in the card, original brief) or 'lightbox' (opens a viewer, like Home Selected Work). Awaiting James's choice; review builds also accept ?player=inline|lightbox on /real-estate to compare. batch = cards shown before Load More.",
+    "realEstate": {
+      "player": "inline",
+      "batch": 9
+    },
+    "home": {
+      "limit": 9
+    }
+  }
 }
