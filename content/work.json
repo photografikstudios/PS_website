@@ -1,0 +1,371 @@
+{
+  "_readme": "Portfolio records and gallery taxonomy. Add a project to 'projects' and its media to 'media'. Filter labels live in 'taxonomy'. Media paths are relative to site.json media.base unless they start with http. rights: 'approved' | 'pending'.",
+  "taxonomy": {
+    "service": [
+      {
+        "id": "photography",
+        "label": "Photography"
+      },
+      {
+        "id": "video",
+        "label": "Video & Film"
+      },
+      {
+        "id": "drone",
+        "label": "Drone"
+      },
+      {
+        "id": "studio",
+        "label": "Studio & Podcast"
+      }
+    ],
+    "category": [
+      {
+        "id": "real-estate",
+        "label": "Real Estate"
+      },
+      {
+        "id": "agent-content",
+        "label": "Agent Content"
+      },
+      {
+        "id": "architecture-design",
+        "label": "Architecture & Design"
+      },
+      {
+        "id": "commercial",
+        "label": "Commercial & Brand"
+      },
+      {
+        "id": "creator-studios",
+        "label": "Creator Studios"
+      }
+    ]
+  },
+  "projects": [
+    {
+      "slug": "lauryn-koke-daniel-gale-sothebys",
+      "title": "Lauryn Koke, Daniel Gale Sotheby's International Realty",
+      "shortTitle": "Lloyd Harbor listing",
+      "client": "Lauryn Koke, Daniel Gale Sotheby's International Realty",
+      "category": "real-estate",
+      "location": "Lloyd Harbor",
+      "services": [
+        "Photography",
+        "Twilight",
+        "Aerial",
+        "Floor plan"
+      ],
+      "summary": "Listing photography, twilight, aerial coverage and a floor plan for a residential property.",
+      "story": "A coordinated listing day built around how the home would be marketed: a complete stills set for the room flow and finishes, twilight frames for the launch, aerial context for the setting and a floor plan so buyers understand the layout before they visit.",
+      "hero": "/images/photografik-2027/curated/lauryn-hero.webp",
+      "heroAlt": "Arched front entry of the Lloyd Harbor listing, lit at dusk",
+      "rights": "approved",
+      "rightsNote": "Client names and media approved for display by James, Sept 23 2026. Outcome claims still need client approval.",
+      "heroOrientation": "vertical"
+    },
+    {
+      "slug": "property-tour-agent-media",
+      "title": "Property Tour & Agent Media",
+      "shortTitle": "Property tour & agent media",
+      "client": null,
+      "category": "agent-content",
+      "location": "Lloyd Harbor",
+      "services": [
+        "Photography",
+        "Teaser",
+        "Agent on camera",
+        "Film"
+      ],
+      "summary": "Property photography and an agent-facing video package captured in one coordinated production day.",
+      "story": "One production day, two jobs: complete property media for the listing and on-camera pieces the agent can keep using long after the sale.",
+      "hero": "/images/photografik-2027/curated/agent-hero.webp",
+      "heroAlt": "Modern farmhouse exterior at dusk, Lloyd Harbor",
+      "rights": "approved",
+      "rightsNote": "Approved for display Sept 23 2026.",
+      "heroOrientation": "horizontal"
+    },
+    {
+      "slug": "yankee-home-builders",
+      "title": "Yankee Home Builders",
+      "shortTitle": "Yankee Home Builders",
+      "client": "Yankee Home Builders",
+      "category": "architecture-design",
+      "location": "Amagansett",
+      "services": [
+        "Project photography",
+        "Architecture film"
+      ],
+      "summary": "Project photography and an architecture film documenting exterior form and material detail.",
+      "story": "Coverage planned around the builder's portfolio: the full exterior form, the way the house sits on its site and the material details that show the quality of the build.",
+      "hero": "/images/photografik-2027/curated/yankee-hero.webp",
+      "heroAlt": "Vaulted great room with exposed timber trusses, Amagansett",
+      "rights": "approved",
+      "rightsNote": "Approved for display Sept 23 2026. Film needs an MP4 export before it can be shown.",
+      "heroOrientation": "vertical"
+    },
+    {
+      "slug": "peterson-ramlowtan",
+      "title": "Peterson & Ramlowtan",
+      "shortTitle": "Peterson & Ramlowtan",
+      "client": "Peterson & Ramlowtan",
+      "category": "architecture-design",
+      "location": "East Hampton",
+      "services": [
+        "Architecture",
+        "Interiors",
+        "Exteriors"
+      ],
+      "summary": "Architecture, interior and exterior photography documenting a finished residence.",
+      "story": "A finished residence photographed the way the designers think about it: light, proportion and how each space leads to the next.",
+      "hero": "/images/photografik-2027/curated/peterson-hero.webp",
+      "heroAlt": "Walnut kitchen in an East Hampton residence by Peterson & Ramlowtan",
+      "rights": "approved",
+      "rightsNote": "Approved for display Sept 23 2026.",
+      "heroOrientation": "horizontal"
+    },
+    {
+      "slug": "revivaluxe",
+      "title": "RevivaLuxe",
+      "shortTitle": "RevivaLuxe",
+      "client": "RevivaLuxe",
+      "category": "commercial",
+      "location": "Long Island",
+      "services": [
+        "Brand photography",
+        "Brand film",
+        "Social content"
+      ],
+      "summary": "Brand photography and a brand film for a medical-aesthetics business.",
+      "story": "Brand stills and a vertical brand film for a medical-aesthetics practice, made to introduce the space and the people clients will meet.",
+      "hero": "/images/photografik-2027/curated/revivaluxe-hero.webp",
+      "heroAlt": "RevivaLuxe founder in the practice reception area",
+      "rights": "approved",
+      "rightsNote": "Approved for display Sept 23 2026.",
+      "heroOrientation": "vertical"
+    },
+    {
+      "slug": "creator-studios",
+      "title": "Creator Studios Sessions",
+      "shortTitle": "Creator Studios sessions",
+      "client": null,
+      "category": "creator-studios",
+      "location": "Bohemia",
+      "services": [
+        "Podcast",
+        "Interview",
+        "Social cutdowns"
+      ],
+      "summary": "Podcast and interview production in Creator Studios, with long-form and short-form edits.",
+      "story": "Multi-camera podcast and interview sessions in our Bohemia studio, with hands-on direction on ideas, pacing and delivery.",
+      "hero": "/images/photografik-2027/curated/creator-project-hero.webp",
+      "heroAlt": "Podcast guest recording on set at Creator Studios, Bohemia",
+      "rights": "approved",
+      "rightsNote": "Approved for display Sept 23 2026.",
+      "heroOrientation": "vertical"
+    }
+  ],
+  "media": [
+    {
+      "id": "revivaluxe-film",
+      "type": "video",
+      "project": "revivaluxe",
+      "title": "RevivaLuxe brand story",
+      "service": [
+        "video"
+      ],
+      "category": "commercial",
+      "orientation": "vertical",
+      "src": "/media/photografik-2027/commercial-revivaluxe.mp4",
+      "poster": "/images/photografik-2027/curated/revivaluxe-card.webp",
+      "duration": 33,
+      "dialogue": true,
+      "captions": null,
+      "transcript": null,
+      "featured": true,
+      "rights": "approved",
+      "alt": null
+    },
+    {
+      "id": "lauryn-lead",
+      "type": "image",
+      "project": "lauryn-koke-daniel-gale-sothebys",
+      "title": "Lauryn Koke, Daniel Gale Sotheby's",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/images/photografik-2027/curated/lauryn-card.webp",
+      "alt": "White colonial home in Lloyd Harbor at dusk, lights on",
+      "featured": true,
+      "rights": "approved"
+    },
+    {
+      "id": "agent-market-insight",
+      "type": "video",
+      "project": null,
+      "title": "Agent Engine: market insight",
+      "service": [
+        "video"
+      ],
+      "category": "agent-content",
+      "orientation": "vertical",
+      "src": "/media/photografik-2027/just-sold-story.mp4",
+      "poster": null,
+      "duration": 15,
+      "dialogue": true,
+      "captions": "burned-in",
+      "transcript": null,
+      "featured": true,
+      "rights": "approved",
+      "posterTime": 1.5
+    },
+    {
+      "id": "yankee-lead",
+      "type": "image",
+      "project": "yankee-home-builders",
+      "title": "Yankee Home Builders",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/images/photografik-2027/curated/yankee-card.webp",
+      "alt": "Great room with tall windows in an Amagansett home by Yankee Home Builders",
+      "featured": true,
+      "rights": "approved"
+    },
+    {
+      "id": "agent-expertise",
+      "type": "video",
+      "project": null,
+      "title": "Agent Engine: on-camera expertise",
+      "service": [
+        "video"
+      ],
+      "category": "agent-content",
+      "orientation": "vertical",
+      "src": "/media/photografik-2027/jb-andreassi.mp4",
+      "poster": null,
+      "duration": 32,
+      "dialogue": true,
+      "captions": "burned-in",
+      "transcript": null,
+      "featured": false,
+      "rights": "approved",
+      "posterTime": 3
+    },
+    {
+      "id": "peterson-lead",
+      "type": "image",
+      "project": "peterson-ramlowtan",
+      "title": "Peterson & Ramlowtan",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/images/photografik-2027/curated/peterson-card.webp",
+      "alt": "Galley bar with walnut cabinetry in an East Hampton residence",
+      "featured": false,
+      "rights": "approved"
+    },
+    {
+      "id": "agent-on-camera",
+      "type": "video",
+      "project": "property-tour-agent-media",
+      "title": "Agent on camera: waterfront tour",
+      "service": [
+        "video"
+      ],
+      "category": "agent-content",
+      "orientation": "vertical",
+      "src": "/media/photografik-2027/agent-property-tour.mp4",
+      "poster": null,
+      "duration": 15,
+      "dialogue": true,
+      "captions": null,
+      "transcript": null,
+      "featured": false,
+      "rights": "approved",
+      "posterTime": 3
+    },
+    {
+      "id": "agent-lead",
+      "type": "image",
+      "project": "property-tour-agent-media",
+      "title": "Property Tour & Agent Media",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/images/photografik-2027/curated/agent-card.webp",
+      "alt": "Open-plan kitchen and living space from a Lloyd Harbor property shoot",
+      "featured": false,
+      "rights": "approved"
+    },
+    {
+      "id": "revivaluxe-still",
+      "type": "image",
+      "project": "revivaluxe",
+      "title": "RevivaLuxe brand photography",
+      "service": [
+        "photography"
+      ],
+      "category": "commercial",
+      "orientation": "vertical",
+      "src": "/images/photografik-2027/curated/revivaluxe-gallery.webp",
+      "alt": "RevivaLuxe client holding a hand mirror during a consultation",
+      "featured": false,
+      "rights": "approved"
+    },
+    {
+      "id": "creator-still",
+      "type": "image",
+      "project": "creator-studios",
+      "title": "Creator Studios interview",
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "orientation": "vertical",
+      "src": "/images/photografik-2027/curated/creator-project-card.webp",
+      "alt": "Guest speaking into a microphone during a Creator Studios podcast recording",
+      "featured": false,
+      "rights": "approved"
+    },
+    {
+      "id": "lauryn-interior",
+      "type": "image",
+      "project": "lauryn-koke-daniel-gale-sothebys",
+      "title": "Lloyd Harbor interior",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/images/photografik-2027/curated/lauryn-gallery.webp",
+      "alt": "Bright double-height foyer with a staircase in the Lloyd Harbor listing",
+      "featured": false,
+      "rights": "approved"
+    },
+    {
+      "id": "peterson-detail",
+      "type": "image",
+      "project": "peterson-ramlowtan",
+      "title": "Peterson & Ramlowtan detail",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/images/photografik-2027/curated/peterson-gallery.webp",
+      "alt": "Brass faucet and marble backsplash detail, East Hampton residence",
+      "featured": false,
+      "rights": "approved"
+    }
+  ]
+}

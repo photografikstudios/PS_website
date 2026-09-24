@@ -1,0 +1,11 @@
+{
+  "_readme": "FAQs by page. approval: 'approved' | 'pending'. Pending answers show only in review builds.",
+  "real-estate": [
+    { "q": "Where do you work?", "a": "Our focus is the East End, the Hamptons and the North Fork. We also take on larger and full-package listings across Suffolk and Nassau, and selected projects in New York City.", "approval": "pending" },
+    { "q": "What is the difference between horizontal and vertical video?", "a": "Horizontal film is made for the listing page, YouTube, email and presentations. Vertical reels are made for Instagram, TikTok and Reels, where people watch on their phones. They are filmed differently, so we plan for each rather than cropping one into the other.", "approval": "pending" },
+    { "q": "Why add drone and a floor plan?", "a": "Drone shows the setting: the water, the land and what is nearby. A floor plan lets buyers understand the layout before they visit, so the people who book showings are better prepared.", "approval": "pending" },
+    { "q": "How should the home be prepared?", "a": "Please have the home photo-ready by the appointment time so the full booking goes to making the work. We send a preparation checklist with your confirmation.", "approval": "pending" },
+    { "q": "What if I need to reschedule?", "a": "You can reschedule in the booking portal up to 24 hours before the appointment. Inside 24 hours, email or call us. Weather rescheduling is free when conditions would undermine the visuals. A same-day cancellation for a non-weather reason carries a $150 fee.", "approval": "pending" },
+    { "q": "Can I share the media with the homeowner or another agent?", "a": "Listing media is licensed to you for marketing that listing. Sharing with a homeowner, another agent, a builder, a publication or anyone else needs our knowledge and, where it applies, a separate license. Just ask and we will sort it out.", "approval": "pending" }
+  ]
+}

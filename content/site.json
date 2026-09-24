@@ -1,0 +1,50 @@
+{
+  "_readme": "Global settings: contact details, booking and inquiry destinations, navigation. Destinations marked verified:false need confirmation before launch.",
+  "name": "Photografik Studios",
+  "canonicalOrigin": "https://www.photografikstudios.com",
+  "email": "info@photografikstudios.com",
+  "phone": "631-998-9661",
+  "phoneHref": "tel:+16319989661",
+  "serviceArea": "Long Island, the Hamptons and the North Fork, with selected projects across Suffolk, Nassau and New York City.",
+  "social": [
+    { "label": "Instagram", "href": "https://www.instagram.com/photografikstudios" },
+    { "label": "Facebook", "href": "https://www.facebook.com/photografikstudios" }
+  ],
+  "destinations": {
+    "booking": { "href": "https://photografikstudios.hd.pics/order", "verified": true, "note": "HD Photo Hub order form. Loads and shows products; no verified query-string handoff for size or package." },
+    "inquiryEndpoint": { "env": "INQUIRY_WEBHOOK_URL", "verified": false, "note": "No approved CRM or inbox integration yet. Without the env var the form falls back to a prepared email." },
+    "creatorBooking": { "href": "/contact?type=creator-studios", "verified": false, "note": "Creator Studios booking destination not confirmed." }
+  },
+  "media": {
+    "_readme": "Media is served from the Replit reference build during review. Move to self-hosted storage before launch.",
+    "base": "https://photografikstudios.replit.app",
+    "logo": "/images/photografik-2027/brand/photografik-logo.webp",
+    "creatorLogo": "/images/photografik-2027/brand/creator-logo.webp",
+    "hero": "/images/photografik-2027/curated/home-estate-twilight.webp",
+    "heroAlt": "A shingle-style estate at twilight with warm light in every window"
+  },
+  "nav": [
+    { "label": "Real Estate", "href": "/real-estate", "children": [
+      { "label": "Real Estate Media", "href": "/real-estate" },
+      { "label": "Pricing", "href": "/real-estate/pricing" },
+      { "label": "Agent Content", "href": "/agent-content" }
+    ]},
+    { "label": "Architecture & Design", "href": "/architecture-design" },
+    { "label": "Commercial", "href": "/commercial" },
+    { "label": "Agencies", "href": "/agency-partnerships" },
+    { "label": "Work", "href": "/work" },
+    { "label": "About", "href": "/about" }
+  ],
+  "footerNav": [
+    { "label": "Real Estate Media", "href": "/real-estate" },
+    { "label": "Real Estate Pricing", "href": "/real-estate/pricing" },
+    { "label": "Agent Content", "href": "/agent-content" },
+    { "label": "Architecture & Design", "href": "/architecture-design" },
+    { "label": "Commercial Production", "href": "/commercial" },
+    { "label": "Agency Partnerships", "href": "/agency-partnerships" },
+    { "label": "Creator Studios", "href": "/creator-studios" },
+    { "label": "Work", "href": "/work" },
+    { "label": "About", "href": "/about" },
+    { "label": "Start a Project", "href": "/contact" }
+  ]
+}

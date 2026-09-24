@@ -1,0 +1,51 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "node src/build.mjs",
+  "installCommand": "",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "images": {
+    "sizes": [480, 768, 1080, 1600, 2200],
+    "formats": ["image/avif", "image/webp"],
+    "minimumCacheTTL": 604800,
+    "remotePatterns": [
+      { "protocol": "https", "hostname": "photografikstudios.replit.app", "pathname": "/images/**" }
+    ]
+  },
+  "headers": [
+    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/(.*)", "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+      { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+      { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+    ]}
+  ],
+  "redirects": [
+    { "source": "/book", "destination": "https://photografikstudios.hd.pics/order", "permanent": false },
+    { "source": "/home", "destination": "/", "permanent": true },
+    { "source": "/hamptons-media-services", "destination": "/", "permanent": true },
+    { "source": "/hamptons-real-estate-photography", "destination": "/real-estate", "permanent": true },
+    { "source": "/hamptons-real-estate-photography-1", "destination": "/real-estate", "permanent": true },
+    { "source": "/long-island-real-estate-photography", "destination": "/real-estate", "permanent": true },
+    { "source": "/real-estate-photography", "destination": "/real-estate", "permanent": true },
+    { "source": "/real-estate-media", "destination": "/real-estate", "permanent": true },
+    { "source": "/pricing", "destination": "/real-estate/pricing", "permanent": true },
+    { "source": "/pricing-old", "destination": "/real-estate/pricing", "permanent": true },
+    { "source": "/architecture-photography", "destination": "/architecture-design", "permanent": true },
+    { "source": "/architecture-photography-1", "destination": "/architecture-design", "permanent": true },
+    { "source": "/interior-designer-photography", "destination": "/architecture-design", "permanent": true },
+    { "source": "/social-media-management", "destination": "/agent-content", "permanent": true },
+    { "source": "/podcast", "destination": "/creator-studios", "permanent": true },
+    { "source": "/portfolio", "destination": "/work", "permanent": true },
+    { "source": "/about-photografik-studios", "destination": "/about", "permanent": true },
+    { "source": "/contact-us-today", "destination": "/contact", "permanent": true },
+    { "source": "/discovery-session", "destination": "/contact", "permanent": true },
+    { "source": "/insights", "destination": "/", "permanent": false },
+    { "source": "/blog-1", "destination": "/", "permanent": false },
+    { "source": "/articles", "destination": "/", "permanent": false },
+    { "source": "/articles/:path*", "destination": "/real-estate", "permanent": false }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "_readme": "Residential price table. Edit amounts here only; pages read from this file. Bands are inclusive. A record with approval other than 'approved' renders only in review builds and blocks a production build.",
+  "effectiveDate": "2026-09-14",
+  "source": "September 14, 2026 residential pricing matrix (photografik-business-context.md, photografik-business-brain-full.md)",
+  "bands": [
+    { "id": "b1", "min": 1, "max": 2500, "label": "Up to 2,500 sq ft" },
+    { "id": "b2", "min": 2501, "max": 3500, "label": "2,501–3,500 sq ft" },
+    { "id": "b3", "min": 3501, "max": 4500, "label": "3,501–4,500 sq ft" },
+    { "id": "b4", "min": 4501, "max": 5500, "label": "4,501–5,500 sq ft" }
+  ],
+  "overMaxMessage": "Request a custom quote",
+  "packages": [
+    {
+      "id": "luxury-media",
+      "name": "Luxury Media",
+      "role": "Recommended",
+      "for": "The complete campaign for agents who want the listing and their own standard to stand out. Everything a strong launch needs, captured in one coordinated visit.",
+      "includes": ["Interior and exterior photography", "Drone photography", "Horizontal cinematic video", "Vertical cinematic reel", "Schematic floor plan"],
+      "prices": { "b1": 1845, "b2": 2010, "b3": 2180, "b4": 2345 },
+      "approval": "pending",
+      "note": "HD Photo Hub currently lists 1,970 / 2,140 / 2,315 / 2,485."
+    },
+    {
+      "id": "signature",
+      "name": "Signature",
+      "role": "Premium",
+      "for": "For properties and launches that deserve the full evening treatment: twilight stills and day-to-night film in both orientations.",
+      "includes": ["Interior and exterior photography", "Twilight photography", "Drone photography", "Horizontal day-to-night cinematic video", "Vertical day-to-night cinematic reel", "Schematic floor plan"],
+      "prices": { "b1": 2795, "b2": 3130, "b3": 3365, "b4": 3530 },
+      "approval": "pending",
+      "note": "HD Photo Hub currently lists 2,985 / 3,155 / 3,325 / 3,495 and includes Agent on Camera."
+    },
+    {
+      "id": "social-media",
+      "name": "Social Media",
+      "role": null,
+      "for": "For listings launching mainly on Instagram, TikTok and Reels, where a vertical film carries the story.",
+      "includes": ["Interior and exterior photography", "Drone photography", "Vertical cinematic reel"],
+      "prices": { "b1": 1125, "b2": 1225, "b3": 1325, "b4": 1425 },
+      "approval": "pending",
+      "note": "HD Photo Hub currently lists 1,120 / 1,220 / 1,320 / 1,420."
+    },
+    {
+      "id": "social-media-floor-plan",
+      "name": "Social Media + Floor Plan",
+      "role": null,
+      "for": "The Social Media package with a schematic floor plan, so buyers understand the layout before the showing.",
+      "includes": ["Interior and exterior photography", "Drone photography", "Vertical cinematic reel", "Schematic floor plan"],
+      "prices": { "b1": 1350, "b2": 1470, "b3": 1595, "b4": 1715 },
+      "approval": "pending",
+      "note": "Not currently offered as a product in HD Photo Hub."
+    },
+    {
+      "id": "listing-starter",
+      "name": "Listing Starter",
+      "role": "Fundamentals",
+      "for": "The fundamentals, done properly: a complete photo set, aerial context and a floor plan.",
+      "includes": ["Interior and exterior photography", "Drone photography", "Schematic floor plan"],
+      "prices": { "b1": 720, "b2": 795, "b3": 870, "b4": 940 },
+      "approval": "pending",
+      "note": "Matches HD Photo Hub."
+    }
+  ],
+  "services": [
+    { "id": "photography", "group": "photography", "name": "Photography", "detail": "Interior and exterior stills, with vertical social-ready frames where appropriate.", "prices": { "b1": 250, "b2": 305, "b3": 360, "b4": 415 }, "approval": "pending", "note": "Matches HD Photo Hub." },
+    { "id": "photo-floor-plan", "group": "photography", "name": "Photography + floor plan", "detail": "Full stills set plus a schematic floor plan.", "prices": { "b1": 450, "b2": 520, "b3": 595, "b4": 665 }, "approval": "pending", "note": "Matches HD Photo Hub." },
+    { "id": "floor-plan", "group": "photography", "name": "Floor plan", "detail": "Schematic floor plan on its own.", "prices": { "b1": 250, "b2": 275, "b3": 300, "b4": 325 }, "approval": "pending", "note": "Matches HD Photo Hub." },
+    { "id": "exterior-drone", "group": "photography", "name": "Exterior-only ground + drone photography", "detail": "Exterior and aerial coverage without interiors.", "prices": { "b1": 400, "b2": 450, "b3": 500, "b4": 550 }, "approval": "pending", "note": "Matches HD Photo Hub." },
+    { "id": "video-one", "group": "video", "name": "Cinematic video, one orientation", "detail": "Choose a horizontal film or a vertical reel.", "prices": { "b1": 695, "b2": 750, "b3": 805, "b4": 860 }, "approval": "pending", "note": "Matches HD Photo Hub (Cinematic Video / Cinematic Reel)." },
+    { "id": "video-both", "group": "video", "name": "Cinematic video, both orientations", "detail": "A horizontal film and a vertical reel from the same shoot.", "prices": { "b1": 1320, "b2": 1425, "b3": 1530, "b4": 1635 }, "approval": "pending", "note": "HD Photo Hub 'Cinematic Package' lists 1,325 / 1,430 / 1,535 / 1,640." },
+    { "id": "d2n-one", "group": "video", "name": "Day-to-night video, one orientation", "detail": "Daylight to evening transitions in a horizontal film or vertical reel.", "prices": { "b1": 1110, "b2": 1165, "b3": 1220, "b4": 1275 }, "approval": "pending", "note": "HD Photo Hub offers only a fixed 'Add Day to Night' at $500." },
+    { "id": "d2n-both", "group": "video", "name": "Day-to-night video, both orientations", "detail": "Day-to-night treatment in both formats.", "prices": { "b1": 1625, "b2": 1725, "b3": 1825, "b4": 1925 }, "approval": "pending", "note": "HD Photo Hub offers only a fixed 'Add Day to Night' at $500." }
+  ],
+  "fixed": [
+    { "id": "aerial-photos", "group": "addons", "name": "Aerial photos only", "amount": 300, "approval": "pending", "note": "Matches HD Photo Hub (Drone Photography)." },
+    { "id": "aerial-video", "group": "addons", "name": "Aerial video only", "amount": 475, "approval": "pending", "note": "Matches HD Photo Hub (Drone Video)." },
+    { "id": "aerial-both", "group": "addons", "name": "Aerial photo + video", "amount": 700, "approval": "pending", "note": "Matches HD Photo Hub." },
+    { "id": "aerial-addon", "group": "addons", "name": "Add aerial photos to a shoot", "amount": 275, "approval": "pending", "note": "Matches HD Photo Hub (Add Drone Photography). HD Photo Hub also lists an 'Add Drone' at $350." },
+    { "id": "twilight-drone", "group": "addons", "name": "Twilight drone", "amount": 400, "approval": "pending", "note": "Matches HD Photo Hub." },
+    { "id": "listing-engine", "group": "engines", "name": "Listing Engine", "amount": 1000, "detail": "Three to four short listing-cycle or location videos, captured alongside the listing media.", "approval": "pending", "note": "Matches HD Photo Hub add-on price; standalone listed at $1,200." },
+    { "id": "agent-engine", "group": "engines", "name": "Agent Engine", "amount": 1000, "detail": "Three to four agent-focused vertical videos using the property as a premium backdrop.", "approval": "pending", "note": "Matches HD Photo Hub add-on price; standalone listed at $1,200." },
+    { "id": "full-engine", "group": "engines", "name": "Full Engine Bundle", "amount": 1700, "detail": "Listing Engine and Agent Engine together.", "approval": "pending", "note": "HD Photo Hub lists $1,900 as an add-on and $2,200 standalone." }
+  ],
+  "startingOnly": [
+    { "id": "twilight", "group": "addons", "name": "Twilight photography", "amount": 500, "detail": "Uses its own size rule (up to 5,000 sq ft, then 5,001–8,500 sq ft). Confirmed in the booking portal.", "approval": "pending", "note": "Documents list $500 / $575. HD Photo Hub shows five twilight tiers ($500–$725). Model by size only after confirming current bands." }
+  ]
+}
