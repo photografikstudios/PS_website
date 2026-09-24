@@ -561,7 +561,7 @@ ${cp.length || b2b.length ? `<section class="section">
       eyebrow: 'Creator Studios · Bohemia, NY',
       title: 'A studio, and a team <em>that helps you sound like yourself.</em>',
       lede: 'Podcasts, interviews and studio content with hands-on production support: ideas, scripts, pacing, delivery and retakes. Not just a room with cameras.',
-      cta: `<a class="btn btn--solid" href="${creatorHref}" data-track="creator_click" data-track-location="creator_hero">Book a Studio Session</a> ${needsApproval({ approval: site.destinations.creatorBooking.verified ? 'approved' : 'pending' }, 'Booking destination not confirmed')}`,
+      cta: `<a class="btn btn--solid" href="${creatorHref}" data-track="creator_click" data-track-location="creator_hero">Request a Studio Session</a> ${needsApproval({ approval: site.destinations.creatorBooking.verified ? 'approved' : 'pending' }, 'Booking destination not confirmed')}`,
       image: '/images/photografik-2027/curated/creator-project-card.webp', imageAlt: 'Guest speaking into a microphone during a Creator Studios podcast recording',
     })}
 <section class="section">
@@ -592,7 +592,7 @@ ${cp.length || b2b.length ? `<section class="section">
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
     <h2 class="h2 reveal">Ready to record?</h2>
-    <a class="btn btn--gold" href="${creatorHref}" data-track="creator_click" data-track-location="creator_final">Book a Studio Session</a>
+    <a class="btn btn--gold" href="${creatorHref}" data-track="creator_click" data-track-location="creator_final">Request a Studio Session</a>
   </div>
 </section>`,
   };
@@ -714,8 +714,6 @@ ${splitCta('Let us help with the next one.')}`,
       <div class="form__grid">
         <div class="field"><label for="i-name">Your name <span aria-hidden="true">*</span></label><input id="i-name" name="name" autocomplete="name" required></div>
         <div class="field"><label for="i-email">Email <span aria-hidden="true">*</span></label><input id="i-email" name="email" type="email" autocomplete="email" required></div>
-        <div class="field"><label for="i-phone">Phone</label><input id="i-phone" name="phone" type="tel" autocomplete="tel"></div>
-        <div class="field"><label for="i-company">Company or brokerage</label><input id="i-company" name="company" autocomplete="organization"></div>
         <div class="field"><label for="i-type">Project type <span aria-hidden="true">*</span></label>
           <select id="i-type" name="type" required>
             <option value="">Choose one</option>
@@ -723,19 +721,26 @@ ${splitCta('Let us help with the next one.')}`,
             <option value="commercial">Commercial or brand content</option>
             <option value="agency">Agency production partnership</option>
             <option value="agent-content">Agent content or monthly plan</option>
-            <option value="real-estate-large">Real estate over 5,500 sq ft or custom listing</option>
+            <option value="real-estate-large">Real estate over 30,000 sq ft or custom listing</option>
             <option value="creator-studios">Creator Studios session</option>
             <option value="other">Something else</option>
           </select></div>
+        <div class="field field--full"><label for="i-deliverables">What do you need, and where will it be used?</label><textarea id="i-deliverables" name="deliverables" rows="3" placeholder="Deliverables, channels and intended usage. For example: 20 photos and a 60-second film for our website and award submissions."></textarea></div>
+        <details class="field field--full more" id="more-details">
+          <summary>Add timing, budget and other details <span class="muted">(optional)</span></summary>
+          <div class="form__grid">
+        <div class="field"><label for="i-phone">Phone</label><input id="i-phone" name="phone" type="tel" autocomplete="tel"></div>
+        <div class="field"><label for="i-company">Company or brokerage</label><input id="i-company" name="company" autocomplete="organization"></div>
         <div class="field"><label for="i-location">Location</label><input id="i-location" name="location" placeholder="Town, or several locations"></div>
         <div class="field"><label for="i-timing">Target timing</label><input id="i-timing" name="timing" placeholder="e.g. mid-October, or flexible"></div>
         <div class="field"><label for="i-budget">Approximate budget</label>
           <select id="i-budget" name="budget"><option value="">Prefer to discuss</option><option>Under $2,500</option><option>$2,500 to $5,000</option><option>$5,000 to $15,000</option><option>$15,000 to $50,000</option><option>$50,000 or more (annual program)</option></select></div>
-        <div class="field field--full"><label for="i-deliverables">What do you need, and where will it be used?</label><textarea id="i-deliverables" name="deliverables" rows="4" placeholder="Deliverables, channels and intended usage. For example: 20 photos and a 60-second film for our website and award submissions."></textarea></div>
         <fieldset class="field field--full field--inline"><legend>Is this for an agency client or white-label?</legend>
           <label><input type="radio" name="agency" value="yes"> Yes</label><label><input type="radio" name="agency" value="no"> No</label><label><input type="radio" name="agency" value="unsure"> Not sure</label></fieldset>
         <div class="field"><label for="i-decision">Who else approves the work?</label><input id="i-decision" name="decision" placeholder="Optional"></div>
         <div class="field"><label for="i-source">How did you find us?</label><input id="i-source" name="source" placeholder="Optional"></div>
+          </div>
+        </details>
         <div class="hp" aria-hidden="true"><label for="i-website">Leave this empty</label><input id="i-website" name="website" tabindex="-1" autocomplete="off"></div>
       </div>
       <p class="form__error" id="form-error" role="alert" hidden></p>
@@ -748,10 +753,13 @@ ${splitCta('Let us help with the next one.')}`,
     </div>
     <div class="form-done" id="form-fallback" hidden tabindex="-1">
       <h2 class="h2">Your inquiry has not been sent yet.</h2>
-      <p>The form could not deliver your message directly, so we prepared a draft email with your details. Your email app should open now. Press send and it will reach us at ${site.email}.</p>
-      <p><a class="btn btn--solid" id="fallback-mailto" href="mailto:${site.email}">Open email again</a></p>
-      <details><summary>Copy the details instead</summary><pre id="fallback-text" class="fallback-text"></pre></details>
+      <p>We could not deliver it from this page, so we prepared an email to ${site.email} with everything you entered. Open it in your email app and press send, or copy the details into any email.</p>
+      <div class="actions"><a class="btn btn--solid" id="fallback-mailto" href="mailto:${site.email}">Open in my email app</a><button type="button" class="btn btn--outline" id="fallback-copy">Copy details</button></div>
+      <p class="small muted" id="fallback-status" role="status" aria-live="polite"></p>
+      <pre id="fallback-text" class="fallback-text"></pre>
+      <p><button type="button" class="link-arrow link-button" id="fallback-back">Back to edit my details</button></p>
     </div>
+  </div>
   </div>
 </section>`,
   };

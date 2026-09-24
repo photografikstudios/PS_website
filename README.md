@@ -23,16 +23,30 @@ Every price, offer and FAQ has an `approval` field. `"pending"` items show in re
 3. Filter options appear automatically when at least one item uses them.
 
 ### Change a price
-Edit the number in `content/pricing.json`. Band edges are inclusive (`min`–`max`). `npm test` checks the table shape and the published boundaries.
+Prices mirror HD Photo Hub. Each item in `content/pricing.json` has its own `tiers` (`[minimum sq ft, price]`) and `max`; above `max` shows a custom quote. `npm test` checks every tier boundary. Production builds stay blocked until `releaseApproved` is `true`.
 
 ## Commands
 ```
 npm run build             # review build (default)
-npm run build:production  # production build; fails while packages are unapproved
+npm run build:production  # production build; fails until pricing releaseApproved is true
 npm run serve             # local server on :4173 with Vercel-like routing
 npm test                  # pricing unit tests
-npm run test:e2e          # browser tests (needs Playwright + Chromium installed)
+npm run test:e2e          # 24 browser checks (Playwright + Chromium, see below)
 ```
+
+Browser tests, one-time setup on a Mac with network access:
+
+```
+npm install --no-save playwright@1   # adds node_modules/playwright only
+npx playwright install chromium
+SKIP_MEDIA=1 node src/build.mjs && npm run test:e2e
+```
+
+The e2e suite serves `dist/` locally and stubs remote and `/v/` media with a small fixture, so it needs no Drive or Replit access.
+
+Video media: `node scripts/media.mjs` (run by Vercel after the page build) downloads the Drive originals listed in
+`content/media-sources.json`, encodes web MP4 + poster + short loops into `dist/v/`, and caches them in
+`node_modules/.cache/pgk-media`. Set `SKIP_MEDIA=1` to skip it locally.
 
 ## Deploy
 Vercel project **ps-website** (team Creator Studios) is linked to `photografikstudios/PS_website`. Every branch push creates a preview. `VERCEL_ENV=production` switches the build to production mode.

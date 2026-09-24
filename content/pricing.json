@@ -1000,5 +1000,7 @@
    "detail": "Listing Engine and Agent Engine together.",
    "approval": "approved"
   }
- ]
+ ],
+ "releaseApproved": false,
+ "_release": "Prices mirror HD Photo Hub (James: HDPH is the authority). Keep releaseApproved false until James and Codex sign off the reconciliation; production builds fail while false."
 }

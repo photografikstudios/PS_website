@@ -32,6 +32,10 @@ const visible = (r) => reviewMode || isApproved(r);
 
 if (!reviewMode) {
   const pending = pricing.packages.filter((r) => !isApproved(r)).map((r) => r.name);
+  if (pricing.releaseApproved !== true) {
+    console.error('Production build blocked: content/pricing.json "releaseApproved" is not true. The HD Photo Hub reconciliation needs sign-off first.');
+    process.exit(1);
+  }
   if (pending.length) {
     console.error(`Production build blocked: these residential packages are not approved yet: ${pending.join(', ')}.\nSet "approval": "approved" in content/pricing.json after sign-off. Other pending items are hidden automatically.`);
     process.exit(1);

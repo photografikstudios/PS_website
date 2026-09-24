@@ -228,6 +228,22 @@ await check('contact: required-field errors, then mailto fallback without email 
   await p.waitForSelector('#form-fallback:not([hidden])');
   const href = await p.getAttribute('#fallback-mailto', 'href');
   assert(href.startsWith('mailto:info@photografikstudios.com') && href.includes('Test%20Person'), href);
+  assert(mailto === null, 'email app must not open automatically');
+  const events = await p.evaluate(() => (window.dataLayer || []).map((e) => e.event));
+  assert(!events.includes('inquiry_submit') && events.includes('inquiry_draft_prepared'), events.join());
+  assert((await p.textContent('#form-fallback h2')).includes('not been sent'), 'labelled unsent');
+  await p.click('#fallback-back');
+  assert((await p.inputValue('#i-name')) === 'Test Person', 'details retained after going back');
+  await p.context().close();
+});
+
+await check('contact: first view is short; extra questions are optional and collapsed', async () => {
+  const p = await newPage();
+  await p.goto(base + '/contact');
+  const visibleFields = await p.locator('#inquiry input:visible:not([name=website]), #inquiry select:visible, #inquiry textarea:visible').count();
+  assert(visibleFields <= 4, `visible fields ${visibleFields}`);
+  await p.click('#more-details summary');
+  assert(await p.isVisible('#i-timing'), 'optional details open');
   await p.context().close();
 });
 

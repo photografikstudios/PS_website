@@ -64,3 +64,24 @@ test('input parsing rejects blank, zero, negative and non-numeric values politel
 test('currency formatting', () => {
   assert.equal(formatUSD(2985), '$2,985');
 });
+
+test('every distinct tier boundary of every item: below, at and above', () => {
+  let checks = 0;
+  for (const r of [...pricing.packages, ...pricing.services]) {
+    r.tiers.forEach(([min, price], i) => {
+      assert.equal(resolvePrice(r, min).amount, price, `${r.id} @ ${min}`);
+      if (i > 0) assert.equal(resolvePrice(r, min - 1).amount, r.tiers[i - 1][1], `${r.id} @ ${min - 1}`);
+      const next = r.tiers[i + 1];
+      const top = next ? next[0] - 1 : r.max;
+      assert.equal(resolvePrice(r, top).amount, price, `${r.id} @ ${top}`);
+      checks += 3;
+    });
+    assert.equal(resolvePrice(r, r.max + 1).kind, 'custom', `${r.id} above ${r.max}`);
+  }
+  assert.ok(checks > 300, `ran ${checks} checks`);
+});
+
+test('2,800 sq ft matches HD Photo Hub for every item', () => {
+  const expected = { 'luxury-media': 2140, 'signature': 3155, 'social-media': 1220, 'listing-starter': 795, 'photography': 305, 'photo-floor-plan': 520, 'floor-plan': 275, 'exterior-drone': 400, 'twilight': 500, 'video-one': 750, 'video-both': 1430 };
+  for (const [id, amt] of Object.entries(expected)) assert.equal(at(id, 2800).amount, amt, id);
+});

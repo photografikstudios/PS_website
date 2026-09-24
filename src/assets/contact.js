@@ -84,14 +84,26 @@ form.addEventListener('submit', async (e) => {
     track('inquiry_submit', { type: data.type, delivery: 'server' });
     return;
   }
-  // Fallback: prepared email to the studio inbox.
+  // Fallback: an unsent draft. The visitor chooses to open their email app; nothing is counted as submitted.
   const text = summary(data);
   const href = `mailto:${EMAIL}?subject=${encodeURIComponent(`Project inquiry: ${typeSel.selectedOptions[0]?.textContent || ''}`)}&body=${encodeURIComponent(text)}`;
-  document.getElementById('fallback-mailto').href = href;
+  const link = document.getElementById('fallback-mailto');
+  link.href = href;
+  link.onclick = () => track('inquiry_draft_open', { type: data.type });
   document.getElementById('fallback-text').textContent = text;
   form.hidden = true;
   const fb = document.getElementById('form-fallback');
   fb.hidden = false; fb.focus();
-  track('inquiry_submit', { type: data.type, delivery: 'mailto_fallback' });
-  location.href = href;
+  track('inquiry_draft_prepared', { type: data.type });
+});
+
+document.getElementById('fallback-copy')?.addEventListener('click', async () => {
+  const status = document.getElementById('fallback-status');
+  const text = `To: ${EMAIL}\n\n${document.getElementById('fallback-text').textContent}`;
+  try { await navigator.clipboard.writeText(text); status.textContent = `Copied. Paste into an email to ${EMAIL}.`; track('inquiry_draft_copy'); } catch { status.textContent = 'Copy is not available here. Select the text below instead.'; }
+});
+document.getElementById('fallback-back')?.addEventListener('click', () => {
+  document.getElementById('form-fallback').hidden = true;
+  form.hidden = false;
+  form.elements.name.focus();
 });

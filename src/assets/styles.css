@@ -487,3 +487,11 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 @media (max-width: 860px) { .quick__grid { grid-template-columns: 1fr; } .quick__tile { min-height: 420px; } }
 @media (prefers-reduced-motion: reduce) { .quick__tile:hover .quick__media img { transform: none; } }
 @media (max-width: 559px) { .paths--4 { grid-template-columns: 1fr; gap: 44px; } .paths--4 .path__img { aspect-ratio: 16 / 10; } }
+/* Progressive inquiry details */
+.more { border-top: 1px solid var(--line); padding-top: 18px; }
+.more > summary { cursor: pointer; font: 400 12px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; list-style: none; display: flex; gap: 10px; align-items: center; min-height: 44px; }
+.more > summary::before { content: "+"; font: 400 18px/1 var(--sans); }
+.more[open] > summary::before { content: "–"; }
+.more > summary::-webkit-details-marker { display: none; }
+.more > .form__grid { margin-top: 18px; }
+.link-button { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit; }
