@@ -166,22 +166,22 @@
     },
     {
       "source": "/insights",
-      "destination": "/",
+      "destination": "/field-notes",
       "permanent": false
     },
     {
       "source": "/blog-1",
-      "destination": "/",
+      "destination": "/field-notes",
       "permanent": false
     },
     {
       "source": "/articles",
-      "destination": "/",
+      "destination": "/field-notes",
       "permanent": false
     },
     {
       "source": "/articles/2026/2/12/your-listing-isnt-just-a-home-its-an-experience-are-you-showing-it",
-      "destination": "/real-estate#video",
+      "destination": "/field-notes/listing-video-horizontal-or-vertical",
       "permanent": false
     },
     {
@@ -191,7 +191,7 @@
     },
     {
       "source": "/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography",
-      "destination": "/real-estate#drone",
+      "destination": "/field-notes/twilight-drone-floor-plans",
       "permanent": false
     },
     {
@@ -201,7 +201,7 @@
     },
     {
       "source": "/articles/2023/10/5/elevating-suffolk-county-real-estate-photography-with-drone-video",
-      "destination": "/real-estate#drone",
+      "destination": "/field-notes/twilight-drone-floor-plans",
       "permanent": false
     },
     {
@@ -221,7 +221,7 @@
     },
     {
       "source": "/articles/2023/9/25/soaring-to-new-heights-the-popularity-and-importance-of-drone-photography-and-videography-in-real-estate",
-      "destination": "/real-estate#drone",
+      "destination": "/field-notes/twilight-drone-floor-plans",
       "permanent": false
     },
     {
@@ -246,7 +246,7 @@
     },
     {
       "source": "/articles/why-you-should-get-a-real-estate-video-done",
-      "destination": "/real-estate#video",
+      "destination": "/field-notes/listing-video-horizontal-or-vertical",
       "permanent": false
     },
     {

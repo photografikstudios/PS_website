@@ -237,6 +237,138 @@ ${threeSteps(true)}
 ${splitCta('Ready when you are.')}`,
   };
 
+  // ---------- FIELD NOTES ----------
+  // One structured collection (content/field-notes.json). Review builds render draft/review pieces with a
+  // Draft tag; production renders only published, approved pieces. 'source-needed' entries never render.
+  const fn = ctx.fieldNotes;
+  const fnTopic = Object.fromEntries(fn.topics.map((t) => [t.id, t.label]));
+  const fnVisible = fn.articles.filter((a) => (a.status === 'published' && a.approvedBy) || (reviewMode && ['draft', 'review'].includes(a.status)));
+  const mediaById = Object.fromEntries(work.media.map((m) => [m.id, m]));
+  const fnDate = (d) => (d ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '');
+  const draftTag = (a) => (a.status === 'published' ? '' : `<span class="needs-approval" title="${esc(a.author?.confirm || 'Awaiting James\'s review')}">Draft for review</span>`);
+  const fnHeroImg = (a, opts = {}) => {
+    const m = a.hero?.media ? mediaById[a.hero.media] : null;
+    if (!m) return '';
+    const src = m.type === 'video' ? m.poster : (m.src);
+    return img(src, { alt: m.type === 'video' ? '' : (m.alt || m.title), sizes: opts.sizes || '(min-width: 900px) 33vw, 100vw', eager: !!opts.eager });
+  };
+  const fnMedia = (id) => {
+    const m = mediaById[id];
+    if (!m) return '';
+    return m.type === 'video'
+      ? `<figure class="fn-figure fn-figure--${esc(m.orientation)}">${videoPlayer(m, { sizes: '(min-width: 900px) 720px, 100vw' })}<figcaption>${esc(m.title)}${m.location ? `, ${esc(m.location)}` : ''}</figcaption></figure>`
+      : `<figure class="fn-figure">${img(m.src, { alt: m.alt || m.title, sizes: '(min-width: 900px) 720px, 100vw' })}<figcaption>${esc(m.title)}</figcaption></figure>`;
+  };
+  const sectionId = (h) => h.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const fnCard = (a) => `<article class="fn-card">
+      <a class="fn-card__media" href="/field-notes/${esc(a.slug)}" tabindex="-1" aria-hidden="true">${fnHeroImg(a)}</a>
+      <div class="fn-card__body">
+        <p class="fn-card__meta">${esc(fnTopic[a.topic] || '')}${a.datePublished ? ` · ${esc(fnDate(a.datePublished))}` : ''} ${draftTag(a)}</p>
+        <h3 class="fn-card__title"><a href="/field-notes/${esc(a.slug)}">${esc(a.title)}</a></h3>
+        <p class="fn-card__summary">${esc(a.summary)}</p>
+      </div>
+    </article>`;
+
+  if (fnVisible.length) {
+    const topicsUsed = fn.topics.filter((t) => fnVisible.some((a) => a.topic === t.id));
+    pages['/field-notes'] = {
+      seo: { title: 'Field Notes | Answers for agents, builders and brands | Photografik', description: 'Practical answers about listing photography, video, drone and brand production from the Photografik Studios team.' },
+      body: `
+<section class="section fn-head">
+  <div class="wrap">
+    <p class="eyebrow">Field Notes</p>
+    <h1 class="display">Straight answers from the shoot.</h1>
+    <p class="lede">Questions agents, builders and brands ask us before they book, answered from how we actually plan and produce the work.</p>
+  </div>
+</section>
+${join(topicsUsed, (t) => `
+<section class="section fn-topic" aria-labelledby="fn-t-${t.id}">
+  <div class="wrap">
+    <h2 class="h3 fn-topic__h" id="fn-t-${t.id}">${esc(t.label)}</h2>
+    <div class="fn-grid">${join(fnVisible.filter((a) => a.topic === t.id), fnCard)}</div>
+  </div>
+</section>`)}
+<section class="section section--tint">
+  <div class="wrap cta-band cta-band--light">
+    <h2 class="h2">Have a question we have not answered?</h2>
+    <p>Ask us directly, or go straight to pricing for your property.</p>
+    <div class="actions"><a class="btn btn--solid" href="/contact">Ask a Question</a><a class="link-arrow" href="/real-estate/pricing">Real estate pricing ${arrow}</a></div>
+  </div>
+</section>`,
+      jsonLd: {
+        '@context': 'https://schema.org', '@type': 'Blog', name: 'Field Notes', url: `${site.canonicalOrigin}/field-notes`,
+        publisher: { '@type': 'Organization', name: site.name },
+      },
+    };
+
+    for (const a of fnVisible) {
+      const url = `${site.canonicalOrigin}/field-notes/${a.slug}`;
+      const heroM = a.hero?.media ? mediaById[a.hero.media] : null;
+      const heroSrc = heroM ? (heroM.type === 'video' ? heroM.poster : heroM.src) : site.media.hero;
+      const absImg = (p) => { const u = ctx.mediaUrl(p); return u.startsWith('/') ? site.canonicalOrigin + u : u; };
+      const toc = a.sections.length >= 4;
+      const related = fnVisible.filter((x) => x.slug !== a.slug && x.topic === a.topic).slice(0, 2);
+      pages[`/field-notes/${a.slug}`] = {
+        seo: { title: a.seo?.title || `${a.title} | Photografik`, description: a.seo?.description || a.summary, image: heroSrc },
+        ogType: 'article',
+        jsonLd: [
+          Object.fromEntries(Object.entries({
+            '@context': 'https://schema.org', '@type': 'BlogPosting', headline: a.title, description: a.summary,
+            image: [absImg(heroSrc)], author: { '@type': a.author?.name === site.name ? 'Organization' : 'Person', name: a.author?.name || site.name },
+            publisher: { '@type': 'Organization', name: site.name, logo: { '@type': 'ImageObject', url: absImg(site.media.logo) } },
+            datePublished: a.datePublished || undefined, dateModified: a.dateModified || a.datePublished || undefined,
+            mainEntityOfPage: url,
+          }).filter(([, v]) => v !== undefined)),
+          {
+            '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Field Notes', item: `${site.canonicalOrigin}/field-notes` },
+              { '@type': 'ListItem', position: 2, name: a.title, item: url },
+            ],
+          },
+        ],
+        body: `
+<article class="fn-article">
+  <header class="section fn-article__head">
+    <div class="wrap fn-narrow">
+      <nav class="fn-crumbs" aria-label="Breadcrumb"><a href="/field-notes">Field Notes</a> <span aria-hidden="true">/</span> <span>${esc(fnTopic[a.topic] || '')}</span></nav>
+      <h1 class="display fn-article__title">${esc(a.title)}</h1>
+      <p class="fn-byline">By ${esc(a.author?.name || site.name)}${a.datePublished ? ` · <time datetime="${esc(a.datePublished)}">${esc(fnDate(a.datePublished))}</time>` : ''}${a.dateModified && a.dateModified !== a.datePublished ? ` · Updated <time datetime="${esc(a.dateModified)}">${esc(fnDate(a.dateModified))}</time>` : ''} ${draftTag(a)}</p>
+      <p class="fn-answer">${esc(a.answer)}</p>
+    </div>
+  </header>
+  <div class="wrap fn-narrow fn-body">
+    ${toc ? `<nav class="fn-toc" aria-label="In this article"><p class="fn-toc__h">In this article</p><ol>${join(a.sections, (s) => `<li><a href="#${sectionId(s.h)}">${esc(s.h)}</a></li>`)}</ol></nav>` : ''}
+    ${join(a.sections, (s) => `
+    <section class="fn-section" aria-labelledby="${sectionId(s.h)}">
+      <h2 class="h3" id="${sectionId(s.h)}">${esc(s.h)}</h2>
+      ${join(s.p || [], (t) => `<p>${esc(t)}</p>`)}
+      ${s.list ? `<ul class="fn-list">${join(s.list, (t) => `<li>${esc(t)}</li>`)}</ul>` : ''}
+      ${s.note ? `<p class="fn-note">${esc(s.note)}</p>` : ''}
+      ${s.media ? fnMedia(s.media) : ''}
+    </section>`)}
+    <aside class="fn-next">
+      <p class="eyebrow">Next step</p>
+      <p class="fn-next__t">${esc(a.cta?.lead || 'Ready to plan the media for your next listing?')}</p>
+      <div class="actions"><a class="btn btn--solid" href="${esc(a.cta?.href || '/contact')}" data-track="field_notes_cta" data-track-location="${esc(a.slug)}">${esc(a.cta?.label || 'Start a Project')}</a>${bookBtn('field_notes', 'Book a Shoot', 'link-arrow')}</div>
+    </aside>
+    ${related.length ? `<section class="fn-related" aria-labelledby="fn-rel"><h2 class="h3" id="fn-rel">More Field Notes</h2><div class="fn-grid fn-grid--2">${join(related, fnCard)}</div></section>` : ''}
+  </div>
+</article>`,
+      };
+    }
+  }
+  const fnTeaser = (topic) => {
+    const list = fnVisible.filter((a) => a.topic === topic).slice(0, 3);
+    if (!list.length) return '';
+    return `
+<section class="section fn-teaser" aria-labelledby="fn-teaser-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Field Notes</p><h2 class="h2 reveal" id="fn-teaser-h">Questions agents ask us.</h2></div><a class="link-arrow" href="/field-notes">All Field Notes ${arrow}</a></div>
+    <div class="fn-grid">${join(list, fnCard)}</div>
+  </div>
+</section>`;
+  };
+
   // ---------- REAL ESTATE ----------
   // Compare what's included: rendered from the same pricing records and tiers as the calculator.
   const recById = Object.fromEntries([...pricing.packages, ...pricing.services].map((r) => [r.id, r]));
@@ -390,6 +522,7 @@ ${threeSteps()}
     ${faqBlock(faqs['real-estate'])}
   </div>
 </section>
+${fnTeaser('real-estate-media')}
 
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
@@ -603,7 +736,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       eyebrow: 'Commercial production',
       title: 'Consistent content, <em>without building an in-house team.</em>',
       lede: 'Brand photography, film, testimonials, podcasts and short-form content for healthcare, legal, hospitality, automotive and corporate teams. One partner for planning, production, editing and delivery.',
-      cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="call_click" data-track-location="com_hero">Schedule a Call</a>`,
+      cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Start a Project</a>`,
       image: '/images/photografik-2027/curated/home-path-studio.webp', imageAlt: 'Lighting and camera setup during a studio production',
     })}
 <section class="section">
@@ -643,7 +776,7 @@ ${cp.length || b2b.length ? `<section class="section">
   <div class="wrap cta-band">
     <h2 class="h2 reveal">Tell us what you need to make.</h2>
     <p>A short call is the fastest way to scope a campaign or a recurring program.</p>
-    <a class="btn btn--gold" href="/contact?type=commercial" data-track="call_click" data-track-location="com_final">Schedule a Call</a>
+    <a class="btn btn--gold" href="/contact?type=commercial" data-track="project_click" data-track-location="com_final">Start a Project</a>
   </div>
 </section>`,
   };

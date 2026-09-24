@@ -17,10 +17,10 @@ async function newPage(viewport = { width: 1280, height: 900 }, opts = {}) {
   const page = await ctx.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
-  await page.route(/replit\.app\/media\//, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: fixture }));
+  await page.route(/\/media\/photografik-2027\//, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: fixture }));
   await page.route(/\/v\/[^/]+\.mp4/, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: fixture }));
   await page.route(/\/v\/[^/]+\.webp/, (r) => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="#55615c"/></svg>' }));
-  await page.route(/replit\.app\/images\//, (r) => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000"><rect width="100%" height="100%" fill="#6b7a78"/></svg>' }));
+  await page.route(/\/images\/photografik-2027\//, (r) => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000"><rect width="100%" height="100%" fill="#6b7a78"/></svg>' }));
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
   return page;
 }
@@ -258,7 +258,7 @@ await check('booking CTAs point to HD Photo Hub', async () => {
 });
 
 await check('redirects from old Squarespace and Replit routes', async () => {
-  const cases = { '/articles/how-to-prep-a-home-for-photos': '/real-estate#faq', '/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide': '/agent-content', '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
+  const cases = { '/articles/how-to-prep-a-home-for-photos': '/real-estate#faq', '/blog-1': '/field-notes', '/articles': '/field-notes', '/articles/why-you-should-get-a-real-estate-video-done': '/field-notes/listing-video-horizontal-or-vertical', '/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography': '/field-notes/twilight-drone-floor-plans', '/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide': '/agent-content', '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
   for (const [from, to] of Object.entries(cases)) {
     const r = await fetch(base + from, { redirect: 'manual' });
     assert([307, 308].includes(r.status) && r.headers.get('location') === to, `${from} -> ${r.status} ${r.headers.get('location')}`);
@@ -267,7 +267,7 @@ await check('redirects from old Squarespace and Replit routes', async () => {
 
 await check('all internal links resolve (no 404s)', async () => {
   const p = await newPage();
-  const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/agency-partnerships', '/creator-studios', '/work', '/about', '/contact'];
+  const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/agency-partnerships', '/creator-studios', '/work', '/about', '/contact', '/field-notes', '/field-notes/listing-video-horizontal-or-vertical', '/field-notes/twilight-drone-floor-plans'];
   const hrefs = new Set();
   for (const path of pages) {
     await p.goto(base + path);
@@ -565,6 +565,78 @@ await check('one media collection: the same record drives Home, Real Estate and 
   const work = await p.locator('#work-grid [data-video]').evaluateAll((e) => e.map((x) => x.dataset.id));
   for (const id of ['re-hamptons-beachfront', 're-hamptons-calm']) assert(home.includes(id) && re.includes(id) && work.includes(id), id);
   assert(new Set(re).size === re.length && new Set(home).size === home.length, 'no duplicates');
+  await p.context().close();
+});
+
+// ---------- Field Notes ----------
+await check('Field Notes: nav, index, article answer-first with truthful schema', async () => {
+  const p = await newPage();
+  await p.goto(base + '/');
+  assert(await p.locator('#site-nav a[href="/field-notes"]').count() === 1, 'primary nav');
+  assert(await p.locator('.site-footer a[href="/field-notes"]').count() === 1, 'footer');
+  await p.goto(base + '/field-notes');
+  assert((await p.textContent('h1')).length > 5, 'index h1');
+  const cards = await p.locator('.fn-card').count();
+  assert(cards === 2, `cards ${cards}`);
+  assert(await p.locator('.fn-card .needs-approval').count() === 2, 'drafts tagged in review');
+  await p.click('.fn-card__title a >> nth=0');
+  await p.waitForURL(/\/field-notes\/.+/);
+  const h1 = (await p.textContent('h1')).trim();
+  const answer = await p.textContent('.fn-answer');
+  assert(answer.length > 120, 'direct answer first');
+  const ld = await p.locator('script[type="application/ld+json"]').evaluateAll((els) => els.map((e) => JSON.parse(e.textContent)));
+  const post = ld.find((x) => x['@type'] === 'BlogPosting');
+  const crumbs = ld.find((x) => x['@type'] === 'BreadcrumbList');
+  assert(post && post.headline === h1, 'BlogPosting headline matches h1');
+  assert(!post.datePublished, 'no invented publish date on a draft');
+  assert((await p.textContent('.fn-byline')).includes(post.author.name), 'author matches byline');
+  assert(crumbs.itemListElement.length === 2, 'breadcrumb');
+  assert((await p.getAttribute('link[rel=canonical]', 'href')).endsWith(new URL(p.url()).pathname), 'canonical');
+  assert((await p.getAttribute('meta[property="og:type"]', 'content')) === 'article', 'og:type');
+  assert(await p.locator('meta[name=robots][content*=noindex]').count() === 1, 'review noindex');
+  await p.context().close();
+});
+
+await check('Field Notes: phone reading, keyboard TOC, inline video, sitemap excludes drafts', async () => {
+  const p = await newPage({ width: 375, height: 812 });
+  await p.goto(base + '/field-notes/listing-video-horizontal-or-vertical');
+  assert(await p.evaluate(() => document.documentElement.scrollWidth) <= 375, 'no overflow');
+  const toc = p.locator('.fn-toc a').first();
+  await toc.focus(); await p.keyboard.press('Enter');
+  assert(p.url().includes('#'), 'toc anchor');
+  assert(await p.locator('.fn-section [data-video]').count() >= 2, 'real films inline');
+  const fontSize = await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.fn-body p')).fontSize));
+  assert(fontSize >= 16, `body ${fontSize}px`);
+  const sm = await (await fetch(base + '/sitemap.xml')).text();
+  assert(!sm.includes('/field-notes/'), 'drafts not in sitemap');
+  await p.goto(base + '/real-estate');
+  assert(await p.locator('.fn-teaser .fn-card').count() === 2, 'teaser on Real Estate');
+  await p.context().close();
+});
+
+await check('no Replit requests; legacy media served from the site', async () => {
+  const p = await newPage();
+  const hits = [];
+  p.on('request', (r) => { if (/replit/.test(r.url())) hits.push(r.url()); });
+  for (const path of ['/', '/real-estate', '/work', '/agent-content', '/commercial', '/creator-studios', '/about', '/field-notes', '/work/lauryn-koke-daniel-gale-sothebys']) {
+    await p.goto(base + path);
+    await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  }
+  const html = await (await fetch(base + '/')).text();
+  assert(!/replit/.test(html) && hits.length === 0, `replit refs: ${hits.slice(0, 3).join(', ')}`);
+  await p.context().close();
+});
+
+await check('call-to-action labels match their destinations', async () => {
+  const p = await newPage();
+  await p.goto(base + '/commercial');
+  const labels = await p.locator('a[href^="/contact"]').allTextContents();
+  assert(!labels.some((t) => /schedule/i.test(t)), labels.join('|'));
+  for (const path of ['/', '/real-estate', '/agent-content', '/architecture-design', '/agency-partnerships', '/creator-studios', '/about']) {
+    await p.goto(base + path);
+    const bad = await p.locator('a[href^="/contact"]').evaluateAll((els) => els.map((e) => e.textContent.trim()).filter((t) => /schedule|book a call|book a studio/i.test(t)));
+    assert(!bad.length, `${path}: ${bad}`);
+  }
   await p.context().close();
 });
 

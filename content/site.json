@@ -34,8 +34,8 @@
     }
   },
   "media": {
-    "_readme": "Media is served from the Replit reference build during review. Move to self-hosted storage before launch.",
-    "base": "https://photografikstudios.replit.app",
+    "_readme": "Media paths are served from this deployment. /v/ = Drive originals encoded by scripts/media.mjs; /images/photografik-2027 and /media/photografik-2027 = legacy stills/clips copied into the build by the same script (see content/media-sources.json legacyOrigin). No runtime third-party media host.",
+    "base": "",
     "logo": "/images/photografik-2027/brand/photografik-logo.webp",
     "creatorLogo": "/images/photografik-2027/brand/creator-logo.webp",
     "hero": "/images/photografik-2027/curated/home-estate-twilight.webp",
@@ -77,6 +77,10 @@
       "href": "/work"
     },
     {
+      "label": "Field Notes",
+      "href": "/field-notes"
+    },
+    {
       "label": "About",
       "href": "/about"
     }
@@ -113,6 +117,10 @@
     {
       "label": "Work",
       "href": "/work"
+    },
+    {
+      "label": "Field Notes",
+      "href": "/field-notes"
     },
     {
       "label": "About",

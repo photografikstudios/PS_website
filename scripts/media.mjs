@@ -144,4 +144,45 @@ for (const it of items) {
   }
 }
 await writeFile(join(out, 'manifest.json'), JSON.stringify(manifest));
+
+// ---------- Legacy stills and clips (formerly loaded from the Replit reference build) ----------
+// Every /images/photografik-2027/... or /media/photografik-2027/... path referenced by the built pages is
+// copied into dist/ at the same path, so the site makes no runtime request to Replit. The origin is read
+// once per file and kept in the build cache; replace a file by committing it under static/ (static wins).
+const { legacyOrigin } = JSON.parse(await readFile(join(root, 'content/media-sources.json'), 'utf8'));
+const { readdir } = await import('node:fs/promises');
+async function walk(dir) {
+  const acc = [];
+  for (const e of await readdir(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) acc.push(...(await walk(p)));
+    else if (e.name.endsWith('.html') || e.name.endsWith('.xml')) acc.push(p);
+  }
+  return acc;
+}
+const refs = new Set();
+for (const f of await walk(join(root, 'dist'))) {
+  const txt = decodeURIComponent((await readFile(f, 'utf8')).replace(/%(?![0-9A-Fa-f]{2})/g, '%25'));
+  for (const m of txt.matchAll(/\/(?:images|media)\/photografik-2027\/[\w\-./]+?\.(?:webp|jpe?g|png|mp4)/g)) refs.add(m[0]);
+}
+let legacyOk = 0; let legacyFailed = 0;
+for (const ref of refs) {
+  const dest = join(root, 'dist', ref);
+  const cached = join(cache, 'legacy', ref);
+  const committed = join(root, 'static', ref);
+  try {
+    await mkdir(dirname(dest), { recursive: true });
+    if (await has(committed)) { await copyFile(committed, dest); legacyOk++; continue; }
+    if (!(await has(cached))) {
+      if (!legacyOrigin) throw new Error('no legacyOrigin and not committed under static/');
+      const r = await fetch(legacyOrigin + ref);
+      if (!r.ok) throw new Error(`origin ${r.status}`);
+      await mkdir(dirname(cached), { recursive: true });
+      await pipeline(Readable.fromWeb(r.body), createWriteStream(cached));
+    }
+    await copyFile(cached, dest);
+    legacyOk++;
+  } catch (e) { legacyFailed++; failed++; console.error(`media: FAILED legacy ${ref}: ${e.message}`); }
+}
+console.log(`media: legacy assets ${legacyOk} ok, ${legacyFailed} failed`);
 console.log(`media: done in ${Math.round((Date.now() - t0) / 1000)}s, ${Object.keys(manifest).length} ok, ${failed} failed`);

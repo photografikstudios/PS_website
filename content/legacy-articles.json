@@ -1,0 +1,149 @@
+{
+  "_readme": "One row per legacy Squarespace article/blog URL. status: 'index' (listing page to /field-notes), 'mapped' (target is an existing Field Notes article), 'planned' (target article not written yet; review build keeps a temporary redirect), 'decision' (no article equivalent; James decides). Production builds fail unless every row resolves to a published article, /field-notes, or a decision with approvedBy. vercel.json redirects are checked against this file by tests/field-notes.test.mjs.",
+  "items": [
+    {
+      "from": "/insights",
+      "status": "index",
+      "target": "/field-notes",
+      "reviewRedirect": "/",
+      "note": "Old insights index to Field Notes index.",
+      "approvedBy": null
+    },
+    {
+      "from": "/blog-1",
+      "status": "index",
+      "target": "/field-notes",
+      "reviewRedirect": "/",
+      "note": "Old blog index to Field Notes index.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles",
+      "status": "index",
+      "target": "/field-notes",
+      "reviewRedirect": "/",
+      "note": "Blog index to Field Notes index.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2026/2/12/your-listing-isnt-just-a-home-its-an-experience-are-you-showing-it",
+      "status": "mapped",
+      "target": "/field-notes/listing-video-horizontal-or-vertical",
+      "reviewRedirect": "/real-estate#video",
+      "note": "Same question (what listing video shows buyers). Confirm with James after he compares the original.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide",
+      "status": "planned",
+      "target": "/field-notes/social-media-for-listing-agents",
+      "reviewRedirect": "/agent-content",
+      "note": "Agent marketing topic; the 2024 framing is dated. Refresh as an evergreen piece or retire; James to decide.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography",
+      "status": "mapped",
+      "target": "/field-notes/twilight-drone-floor-plans",
+      "reviewRedirect": "/real-estate#drone",
+      "note": "Drone value; refreshed piece answers when drone adds value.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/10/6/capturing-the-essence-of-the-east-end-why-professional-real-estate-photography-matters",
+      "status": "planned",
+      "target": "/field-notes/why-professional-listing-photography",
+      "reviewRedirect": "/real-estate#photography",
+      "note": "Four old posts ask the same question (why hire a professional). Propose one refreshed article; needs James's source text and examples.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/10/5/elevating-suffolk-county-real-estate-photography-with-drone-video",
+      "status": "mapped",
+      "target": "/field-notes/twilight-drone-floor-plans",
+      "reviewRedirect": "/real-estate#drone",
+      "note": "Drone value, same question.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/10/5/unlocking-the-charm-of-long-island-real-estate-meet-your-trusted-real-estate-photographer",
+      "status": "decision",
+      "target": "/about",
+      "reviewRedirect": "/about",
+      "note": "Studio introduction rather than an answer. Propose permanent redirect to About as its true equivalent; James to confirm.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/9/28/should-you-use-a-professional-photographer-and-videographer-for-long-island-real-estate",
+      "status": "planned",
+      "target": "/field-notes/why-professional-listing-photography",
+      "reviewRedirect": "/real-estate",
+      "note": "Same question as above.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/9/28/unlocking-success-long-island-real-estate-video-editing-and-marketing-tips",
+      "status": "planned",
+      "target": "/field-notes/getting-more-from-a-listing-video",
+      "reviewRedirect": "/real-estate#video",
+      "note": "Distribution and reuse of listing video; needs source text.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/9/25/soaring-to-new-heights-the-popularity-and-importance-of-drone-photography-and-videography-in-real-estate",
+      "status": "mapped",
+      "target": "/field-notes/twilight-drone-floor-plans",
+      "reviewRedirect": "/real-estate#drone",
+      "note": "Drone value, same question.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/9/25/long-islands-premier-real-estate-photography-and-social-media-agency",
+      "status": "decision",
+      "target": "/about",
+      "reviewRedirect": "/about",
+      "note": "Studio introduction. Propose redirect to About; James to confirm.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/9/19/capturing-long-islands-real-estate-the-importance-of-photography-in-a-thriving-market",
+      "status": "planned",
+      "target": "/field-notes/why-professional-listing-photography",
+      "reviewRedirect": "/real-estate#photography",
+      "note": "Same question as above.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/2023/3/28/why-use-a-photographer-for-your-hamptons-listings",
+      "status": "planned",
+      "target": "/field-notes/why-professional-listing-photography",
+      "reviewRedirect": "/real-estate",
+      "note": "Same question as above.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/so-now-are-we-doing-the-lights-off",
+      "status": "planned",
+      "target": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+      "reviewRedirect": "/real-estate#faq",
+      "note": "Lights on or off on shoot day is a preparation question; fold into the prep article if James agrees, else its own short note.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/why-you-should-get-a-real-estate-video-done",
+      "status": "mapped",
+      "target": "/field-notes/listing-video-horizontal-or-vertical",
+      "reviewRedirect": "/real-estate#video",
+      "note": "Same question (should a listing have video, which kind). Confirm with James.",
+      "approvedBy": null
+    },
+    {
+      "from": "/articles/how-to-prep-a-home-for-photos",
+      "status": "planned",
+      "target": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+      "reviewRedirect": "/real-estate#faq",
+      "note": "Refresh of James's article. Needs his original text (Squarespace export) before drafting.",
+      "approvedBy": null
+    }
+  ]
+}

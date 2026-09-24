@@ -1,6 +1,6 @@
 import { esc, attrs, join } from './lib/html.js';
 
-export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = false, overlay = false }) {
+export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = false, overlay = false, ogType = 'website' }) {
   const { site, reviewMode, img, mediaUrl } = ctx;
   const canonical = site.canonicalOrigin + (route === '/' ? '/' : route);
   const booking = site.destinations.booking.href;
@@ -21,12 +21,12 @@ export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = fal
 <meta name="description" content="${esc(seo.description)}">
 <link rel="canonical" href="${esc(canonical)}">
 ${reviewMode ? '<meta name="robots" content="noindex, nofollow">' : ''}
-<meta property="og:type" content="website">
+<meta property="og:type" content="${esc(ogType)}">
 <meta property="og:site_name" content="Photografik Studios">
 <meta property="og:title" content="${esc(seo.title)}">
 <meta property="og:description" content="${esc(seo.description)}">
 <meta property="og:url" content="${esc(canonical)}">
-<meta property="og:image" content="${esc(mediaUrl(seo.image || site.media.hero))}">
+<meta property="og:image" content="${esc((() => { const u = mediaUrl(seo.image || site.media.hero); return u.startsWith('/') ? site.canonicalOrigin + u : u; })())}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#212623">
 <link rel="icon" href="${esc(ctx.optimized(site.media.logo, 480))}">
@@ -34,7 +34,7 @@ ${reviewMode ? '<meta name="robots" content="noindex, nofollow">' : ''}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=Space+Mono&display=swap">
 <link rel="stylesheet" href="/assets/styles.css?v=${ctx.version}">
-${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
+${join([].concat(jsonLd || []), (j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`)}
 </head>
 <body class="${[dark ? 'page--dark' : '', overlay ? 'has-overlay' : ''].join(' ').trim()}">
 <a class="skip" href="#main">Skip to content</a>

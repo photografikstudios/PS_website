@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { createContext } from './lib/html.js';
 import { validatePricing } from './lib/pricing-core.js';
 import { validateMedia } from './lib/gallery-core.js';
+import { validateFieldNotes, legacyLaunchBlockers } from './lib/field-notes-core.js';
 import { layout } from './layout.js';
 import { buildPages } from './pages.js';
 
@@ -21,9 +22,11 @@ const siteMode = process.env.SITE_MODE || (vercelEnv === 'production' ? 'product
 const reviewMode = siteMode !== 'production';
 const onVercel = !!process.env.VERCEL && process.env.LOCAL_IMAGES !== '1';
 
-const [site, pricing, work, offers, faqs, seo] = await Promise.all(
-  ['site.json', 'pricing.json', 'work.json', 'offers.json', 'faqs.json', 'seo.json'].map(readJSON),
+const [site, pricing, work, offers, faqs, seo, fieldNotes, legacyArticles] = await Promise.all(
+  ['site.json', 'pricing.json', 'work.json', 'offers.json', 'faqs.json', 'seo.json', 'field-notes.json', 'legacy-articles.json'].map(readJSON),
 );
+const fnErrors = validateFieldNotes(fieldNotes, legacyArticles, work);
+if (fnErrors.length) { console.error('Field Notes errors:\n - ' + fnErrors.join('\n - ')); process.exit(1); }
 
 const errors = validatePricing(pricing);
 if (errors.length) { console.error('Pricing table errors:\n - ' + errors.join('\n - ')); process.exit(1); }
@@ -41,6 +44,11 @@ if (!reviewMode) {
     console.error('Production build blocked: content/pricing.json "releaseApproved" is not true. The HD Photo Hub reconciliation needs sign-off first.');
     process.exit(1);
   }
+  const blockers = legacyLaunchBlockers(fieldNotes, legacyArticles);
+  if (blockers.length) {
+    console.error('Production build blocked: legacy article URLs without an approved destination:\n - ' + blockers.join('\n - ') + '\nPublish the target Field Note or record James\'s decision (approvedBy) in content/legacy-articles.json.');
+    process.exit(1);
+  }
   if (pending.length) {
     console.error(`Production build blocked: these residential packages are not approved yet: ${pending.join(', ')}.\nSet "approval": "approved" in content/pricing.json after sign-off. Other pending items are hidden automatically.`);
     process.exit(1);
@@ -48,8 +56,13 @@ if (!reviewMode) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
 const pages = buildPages(ctx);
+// Field Notes appears in navigation only when it has at least one visible article.
+if (!pages['/field-notes']) {
+  site.nav = site.nav.filter((n) => n.href !== '/field-notes');
+  site.footerNav = site.footerNav.filter((n) => n.href !== '/field-notes');
+}
 
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
@@ -63,7 +76,7 @@ const orgLd = {
 const routes = [];
 for (const [route, page] of Object.entries(pages)) {
   const pageSeo = page.seo || seo[route] || seo['/'];
-  const html = layout(ctx, { route, body: page.body, seo: pageSeo, scripts: page.scripts, dark: page.dark, overlay: page.overlay, jsonLd: route === '/' ? orgLd : null });
+  const html = layout(ctx, { route, body: page.body, seo: pageSeo, scripts: page.scripts, dark: page.dark, overlay: page.overlay, ogType: page.ogType, jsonLd: route === '/' ? orgLd : page.jsonLd || null });
   const file = route === '/' ? 'index.html' : `${route.slice(1)}.html`;
   await mkdir(dirname(join(out, file)), { recursive: true });
   await writeFile(join(out, file), html);
@@ -87,7 +100,10 @@ for (const f of await readdir(join(out, 'assets'))) {
 await writeFile(join(out, 'robots.txt'), reviewMode
   ? 'User-agent: *\nDisallow: /\n'
   : `User-agent: *\nAllow: /\n\nSitemap: ${site.canonicalOrigin}/sitemap.xml\n`);
-const sitemapRoutes = routes.filter((r) => !r.startsWith('/work/') || work.projects.find((p) => `/work/${p.slug}` === r && isApproved(p)));
+const publishedNote = (r) => fieldNotes.articles.some((a) => `/field-notes/${a.slug}` === r && a.status === 'published' && a.approvedBy);
+const sitemapRoutes = routes.filter((r) => (!r.startsWith('/work/') || work.projects.find((p) => `/work/${p.slug}` === r && isApproved(p)))
+  && (!r.startsWith('/field-notes/') || publishedNote(r))
+  && (r !== '/field-notes' || fieldNotes.articles.some((a) => a.status === 'published' && a.approvedBy)));
 await writeFile(join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapRoutes.map((r) => `  <url><loc>${site.canonicalOrigin}${r === '/' ? '/' : r}</loc></url>`).join('\n')}\n</urlset>\n`);
 
 console.log(`Built ${routes.length + 1} pages in ${reviewMode ? 'REVIEW' : 'PRODUCTION'} mode${onVercel ? ' (Vercel image optimization on)' : ''}.`);

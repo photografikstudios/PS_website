@@ -9,7 +9,7 @@
     "build": "node src/build.mjs",
     "build:production": "SITE_MODE=production node src/build.mjs",
     "serve": "node tests/serve.mjs",
-    "test": "node --test tests/pricing.test.mjs tests/gallery.test.mjs",
+    "test": "node --test tests/pricing.test.mjs tests/gallery.test.mjs tests/field-notes.test.mjs",
     "test:e2e": "node tests/e2e.mjs"
   }
 }
