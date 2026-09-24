@@ -117,7 +117,11 @@ export function initVideos(root = document) {
   const vis = new IntersectionObserver((entries) => {
     for (const e of entries) {
       const v = e.target.querySelector('video');
-      if (e.intersectionRatio < 0.25 && !v.paused) v.pause();
+      if (v.paused || e.intersectionRatio >= 0.25) continue;
+      // Entries can be queued from an earlier scroll position; confirm against the live layout.
+      const r = e.target.getBoundingClientRect();
+      const shown = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+      if (r.height && shown / r.height < 0.25) v.pause();
     }
   }, { threshold: [0, 0.25] });
   players.forEach((p) => { near.observe(p); vis.observe(p); });
