@@ -726,12 +726,12 @@ ${splitCta('Let us help with the next one.')}`,
       <p class="small muted">We use these details only to respond to your inquiry. Prefer email? Write to <a href="mailto:${site.email}">${site.email}</a> or call <a href="${site.phoneHref}">${site.phone}</a>.</p>
     </form>
     <div class="form-done" id="form-done" hidden tabindex="-1">
-      <h2 class="h2 reveal">Thank you. We have your details.</h2>
+      <h2 class="h2">Thank you. We have your details.</h2>
       <p>We will reply within one business day with next steps.</p>
     </div>
     <div class="form-done" id="form-fallback" hidden tabindex="-1">
-      <h2 class="h2 reveal">One more step.</h2>
-      <p>Your email app should open with your details filled in. Press send and it will reach us at ${site.email}.</p>
+      <h2 class="h2">Your inquiry has not been sent yet.</h2>
+      <p>The form could not deliver your message directly, so we prepared a draft email with your details. Your email app should open now. Press send and it will reach us at ${site.email}.</p>
       <p><a class="btn btn--solid" id="fallback-mailto" href="mailto:${site.email}">Open email again</a></p>
       <details><summary>Copy the details instead</summary><pre id="fallback-text" class="fallback-text"></pre></details>
     </div>
