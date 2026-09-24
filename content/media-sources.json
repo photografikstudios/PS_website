@@ -1,0 +1,163 @@
+{
+ "_readme": "Source videos from James's '2026 Website Refresh' Google Drive folder (shared by link). scripts/media.mjs downloads each, transcodes to web H.264 + poster, and writes /media/<id>.mp4. 'loop' also makes a short muted background clip for hero and tiles.",
+ "items": [
+  {
+   "id": "re-hampton-luxury-home",
+   "drive": "1lLiXcO-L60Jx7NlHQPGEZHlmSXs7ntsa",
+   "file": "hampton-luxury-home-cinematic-real-estate-video-photografik-studios.mp4",
+   "posterAt": 8
+  },
+  {
+   "id": "re-hamptons-aesthetic",
+   "drive": "1leY0zwvbVN1Dd-OLSS2ato_TItCKc3-_",
+   "file": "hamptons-aesthetic-luxury-home-cinematic-real-estate-video-photografik-studios.mp4",
+   "posterAt": 8
+  },
+  {
+   "id": "re-hamptons-beachfront",
+   "drive": "1KgW1DWFTxfH9zGmN_iTZnItvbKdK4715",
+   "file": "hamptons-luxury-beachfront-home-cinematic-video-photografik-studios.mp4",
+   "loop": [
+    4,
+    14
+   ],
+   "loopHeight": 1080,
+   "posterAt": 6
+  },
+  {
+   "id": "re-hamptons-home-aesthetic",
+   "drive": "1NoneUP8jJm0_Nqh969gen6oejm2CO25v",
+   "file": "hamptons-luxury-home-aesthetic-cinematic-video-photografik-studios.mp4",
+   "posterAt": 8
+  },
+  {
+   "id": "re-hamptons-calm",
+   "drive": "1bxwcZ1zQdYA_9yPc2Ge-mqpLRaFebrj-",
+   "file": "hamptons-luxury-home-calm-cinematic-video-photografik-studios.mp4",
+   "loop": [
+    10,
+    10
+   ],
+   "posterAt": 12
+  },
+  {
+   "id": "re-hamptons-standout",
+   "drive": "1NC8VfCI9yafwdcdy-OwEZ84xXq6fZb9E",
+   "file": "hamptons-luxury-home-cinematic-video-standout-listing-photografik-studios.mp4",
+   "posterAt": 6
+  },
+  {
+   "id": "re-hamptons-upbeat",
+   "drive": "1OEHdsBPtJQk5ReWbk7aBtk_wyAogAxud",
+   "file": "hamptons-luxury-home-upbeat-cinematic-video-photografik-studios.mp4",
+   "posterAt": 6
+  },
+  {
+   "id": "re-hamptons-cinematic",
+   "drive": "1Y8RTo33pl9em63KglS7rHgXZFuZNbxRX",
+   "file": "hamptons-real-estate-cinematic-video-photografik-studios.mp4",
+   "posterAt": 8
+  },
+  {
+   "id": "re-penniman-ln",
+   "drive": "1nHCJYPwfb0Is-sAXfG6KIErvWloCM8s7",
+   "file": "V4_9 Penniman Ln.mp4",
+   "posterAt": 4
+  },
+  {
+   "id": "arch-99-hedges-amagansett",
+   "drive": "1O-vETA5YW88RHSVgW7mFIacslP8viZOZ",
+   "file": "Copy of 99 Hedges Ln, Amagansett - Horizontal.mp4",
+   "loop": [
+    12,
+    10
+   ],
+   "posterAt": 14
+  },
+  {
+   "id": "biz-bpe-ironworks",
+   "drive": "1IMHxLNE_GVzfvSbHamu7_pXnUF1ym016",
+   "file": "bpe-ironworks-structural-steel-full-project-process-video-photografik-studios.mp4",
+   "posterAt": 10
+  },
+  {
+   "id": "biz-eestairs-gramercy",
+   "drive": "1GagtGp-3h4kPQvOwDgbUL6tz8zs9LI-0",
+   "file": "eestairs-gramercy-staircase-design-video-photografik-studios.mp4",
+   "posterAt": 6
+  },
+  {
+   "id": "biz-rachel-lynch-pools",
+   "drive": "1n7WHj-OulBFm6tMRfqQEawS-HEJ82OLD",
+   "file": "rachel-lynch-pools-luxury-hamptons-showcase-video-photografik-studios.mp4",
+   "posterAt": 8
+  },
+  {
+   "id": "biz-revivaluxe-tour",
+   "drive": "1RAJ90pEpXiIOJIgsQykfOE1fbzc59agR",
+   "file": "revivaluxe-luxury-aesthetic-clinic-tour-video-photografik-studios.mp4",
+   "loop": [
+    6,
+    10
+   ],
+   "posterAt": 8
+  },
+  {
+   "id": "biz-torella-pools",
+   "drive": "1ssuEZHAF5_UJslck8W04vT6F9CWgUxd0",
+   "file": "torella-pools-luxury-pool-showcase-video-photografik-studios.mp4",
+   "posterAt": 6
+  },
+  {
+   "id": "cs-jm2-architecture",
+   "drive": "1CMpQIj9YaK5nBD5vY4K6OzZbt9ibbGYP",
+   "file": "li-creator-studios-long-island-ny-jm2-architecture-podcast-business-clip.mp4",
+   "loop": [
+    3,
+    10
+   ],
+   "posterAt": 4
+  },
+  {
+   "id": "cs-noah-knows-short",
+   "drive": "1DWbEDY6f3GHm3bz413pZZT4AFNTHc0jD",
+   "file": "li-creator-studios-long-island-ny-noah-knows-podcast-short-form-video.mp4",
+   "posterAt": 4
+  },
+  {
+   "id": "cs-tick",
+   "drive": "1wZ3LfUWv4HdRilxlFDdxkRESp3I1Rp3T",
+   "file": "li-creator-studios-long-island-ny-tick-podcast-social-media-clip.mp4",
+   "posterAt": 4
+  }
+ ],
+ "docs": [
+  {
+   "id": "re-horizontal",
+   "drive": "1MjmExTJ0B5QrHHuADDqkBtYbtFppunDq"
+  },
+  {
+   "id": "biz-horizontal",
+   "drive": "1_QfLKj1AMMbcGLpTYAbNiGqMydYVk899"
+  },
+  {
+   "id": "arch-horizontal",
+   "drive": "12Debb4Y7ssUzlDIuwJ8waHvlzIba6DrT"
+  },
+  {
+   "id": "podcast-clips",
+   "drive": "1iBBLwdoNYVujVCWjMhssctpzIaYmba7x"
+  },
+  {
+   "id": "website-instructions",
+   "drive": "1cUG-GElpoJbE1u6S56zrB3hHsyo4umPl"
+  }
+ ],
+ "_notOnSiteYet": [
+  "arch-amagansett-reel (identical file to 99 Hedges)",
+  "biz-eestairs-installation",
+  "biz-evolution-gc (lawn aeration, off-positioning)",
+  "cs-noah-knows-clip",
+  "cs-sean"
+ ]
+}

@@ -1,5 +1,5 @@
 // Square-footage pricing: one structured table drives every card and row.
-import { parseSquareFeet, errorMessages, resolvePrice, formatUSD, findBand } from './pricing-core.js';
+import { parseSquareFeet, errorMessages, resolvePrice, formatUSD } from './pricing-core.js';
 import { track } from './site.js';
 
 const data = JSON.parse(document.getElementById('pricing-data').textContent);
@@ -10,7 +10,7 @@ const errorEl = document.getElementById('sqft-error');
 const bandEl = document.getElementById('sqft-band');
 const live = document.getElementById('price-live');
 const clearBtn = document.querySelector('.sizer__clear');
-const topMax = data.bands.at(-1).max;
+const topMax = data.maxSqft;
 let lastBand = 'none';
 let announceTimer;
 
@@ -18,7 +18,7 @@ function render(sqft) {
   for (const el of document.querySelectorAll('[data-price-for]')) {
     const rec = byId[el.dataset.priceFor];
     if (!rec) continue;
-    const s = resolvePrice(rec, data.bands, sqft);
+    const s = resolvePrice(rec, sqft);
     const hint = document.querySelector(`[data-hint-for="${rec.id}"]`);
     const card = el.closest('[data-record]');
     card?.classList.toggle('is-custom', s.kind === 'custom');
@@ -26,10 +26,10 @@ function render(sqft) {
       el.innerHTML = `<span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span>`;
       hint.textContent = 'Enter square footage for your price.';
     } else if (s.kind === 'band') {
-      el.innerHTML = `<span class="pcard__label">Published base price for ${s.band.label}</span> <span class="pcard__amount">${formatUSD(s.amount)}</span>`;
-      hint.textContent = 'Subject to scope, location and booking rules.';
+      el.innerHTML = `<span class="pcard__label">Price for ${s.band.label}</span> <span class="pcard__amount">${formatUSD(s.amount)}</span>`;
+      hint.textContent = 'Same price as our booking portal. Travel fees may apply.';
     } else {
-      el.innerHTML = `<span class="pcard__label">Over ${topMax.toLocaleString('en-US')} sq ft</span> <span class="pcard__amount"><a href="/contact?type=real-estate-large" data-track="custom_quote_click">Request a custom quote</a></span>`;
+      el.innerHTML = `<span class="pcard__label">Over ${s.max.toLocaleString('en-US')} sq ft</span> <span class="pcard__amount"><a href="/contact?type=real-estate-large" data-track="custom_quote_click">Request a custom quote</a></span>`;
       hint.textContent = 'We scope larger homes individually.';
     }
   }
@@ -63,15 +63,16 @@ function update({ commit = false } = {}) {
   setError('');
   const sqft = parsed.value;
   render(sqft);
-  const band = findBand(data.bands, sqft);
-  const key = band ? band.id : 'over';
+  const over = sqft > topMax;
+  const band = over ? null : { label: `${sqft.toLocaleString('en-US')} sq ft` };
+  const key = over ? 'over' : String(data.records.map((r) => resolvePrice(r, sqft).amount ?? 'c').join('-'));
   bandEl.innerHTML = band
-    ? `Showing published base prices for <strong>${band.label}</strong> (${sqft.toLocaleString('en-US')} sq ft entered).`
-    : `<strong>${sqft.toLocaleString('en-US')} sq ft</strong> is above our published sizes. Size-based items need a custom quote; fixed add-ons are unchanged.`;
+    ? `Showing prices for a <strong>${sqft.toLocaleString('en-US')} sq ft</strong> home.`
+    : `<strong>${sqft.toLocaleString('en-US')} sq ft</strong> is above our published sizes (up to ${topMax.toLocaleString('en-US')} sq ft). Size-based items need a custom quote; fixed add-ons are unchanged.`;
   if (key !== lastBand) {
     lastBand = key;
     announce(band ? `Prices updated for ${band.label}.` : 'Above published sizes. Size-based items show request a custom quote.');
-    track('pricing_size_band', { band: key });
+    track('pricing_size_band', { over });
   }
 }
 

@@ -26,29 +26,40 @@ export const errorMessages = {
   'too-large': 'That size is outside our published range. Request a custom quote and we will scope it with you.'
 };
 
-/** Find the inclusive band for a size, or null when above the top band. */
-export function findBand(bands, sqft) {
-  return bands.find((b) => sqft >= b.min && sqft <= b.max) ?? null;
+/**
+ * Size tiers per record: tiers = [[minSqft, price], ...] ascending; a tier runs to one below the
+ * next tier's minimum, and the last tier runs to record.max (inclusive). Mirrors HD Photo Hub.
+ */
+export function findTier(record, sqft) {
+  if (sqft > record.max) return null;
+  let hit = null;
+  record.tiers.forEach(([min, price], i) => {
+    if (sqft >= min) {
+      const next = record.tiers[i + 1];
+      hit = { min, max: next ? next[0] - 1 : record.max, price };
+    }
+  });
+  return hit;
 }
 
-/** Lowest (first-band) price for a size-based record. */
-export function startingPrice(record, bands) {
-  return record.prices[bands[0].id];
+export const tierLabel = (t) => (t.min <= 1 ? `up to ${t.max.toLocaleString('en-US')} sq ft` : `${t.min.toLocaleString('en-US')}–${t.max.toLocaleString('en-US')} sq ft`);
+
+/** Lowest (first-tier) price for a size-based record. */
+export function startingPrice(record) {
+  return record.tiers[0][1];
 }
 
 /**
  * Resolve the price state for a size-based record.
  * - no size entered: { kind: 'starting', amount }
- * - within bands:    { kind: 'band', amount, band }
- * - above bands:     { kind: 'custom' }
+ * - within tiers:    { kind: 'band', amount, band: { min, max, label } }
+ * - above max:       { kind: 'custom', max }
  */
-export function resolvePrice(record, bands, sqft) {
-  if (sqft == null) return { kind: 'starting', amount: startingPrice(record, bands) };
-  const band = findBand(bands, sqft);
-  if (!band) return { kind: 'custom' };
-  const amount = record.prices[band.id];
-  if (typeof amount !== 'number') return { kind: 'custom' };
-  return { kind: 'band', amount, band };
+export function resolvePrice(record, sqft) {
+  if (sqft == null) return { kind: 'starting', amount: startingPrice(record) };
+  const t = findTier(record, sqft);
+  if (!t) return { kind: 'custom', max: record.max };
+  return { kind: 'band', amount: t.price, band: { min: t.min, max: t.max, label: tierLabel(t) } };
 }
 
 export function formatUSD(n) {
@@ -58,18 +69,16 @@ export function formatUSD(n) {
 /** Validate the table shape so a bad edit fails the build instead of the page. */
 export function validatePricing(p) {
   const errors = [];
-  const ids = p.bands.map((b) => b.id);
-  p.bands.forEach((b, i) => {
-    if (!(Number.isInteger(b.min) && Number.isInteger(b.max) && b.min <= b.max)) errors.push(`band ${b.id} has invalid range`);
-    if (i > 0 && b.min !== p.bands[i - 1].max + 1) errors.push(`band ${b.id} does not start right after ${p.bands[i - 1].id}`);
-  });
   for (const r of [...p.packages, ...p.services]) {
-    for (const id of ids) {
-      if (typeof r.prices?.[id] !== 'number' || r.prices[id] <= 0) errors.push(`${r.id} is missing a price for ${id}`);
-    }
+    if (!Number.isInteger(r.max) || r.max < 1) errors.push(`${r.id} has no max`);
+    if (!Array.isArray(r.tiers) || !r.tiers.length) { errors.push(`${r.id} has no tiers`); continue; }
+    if (r.tiers[0][0] !== 1) errors.push(`${r.id} must start at 1 sq ft`);
+    r.tiers.forEach(([min, price], i) => {
+      if (!(Number.isInteger(min) && price > 0)) errors.push(`${r.id} tier ${i} is invalid`);
+      if (i && min <= r.tiers[i - 1][0]) errors.push(`${r.id} tiers are not ascending at ${i}`);
+      if (min > r.max) errors.push(`${r.id} tier ${i} starts above max`);
+    });
   }
-  for (const r of [...p.fixed, ...(p.startingOnly || [])]) {
-    if (typeof r.amount !== 'number' || r.amount <= 0) errors.push(`${r.id} has no amount`);
-  }
+  for (const r of p.fixed) if (typeof r.amount !== 'number' || r.amount <= 0) errors.push(`${r.id} has no amount`);
   return errors;
 }

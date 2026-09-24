@@ -11,20 +11,21 @@ export const attrs = (o) => Object.entries(o)
 export const join = (arr, fn) => arr.map(fn).join('');
 
 export function createContext({ site, reviewMode, onVercel }) {
-  const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) ? p : site.media.base + p);
+  const isLocal = (p) => typeof p === 'string' && p.startsWith('/v/');
+  const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) || isLocal(p) ? p : site.media.base + p);
 
   // Vercel Image Optimization for remote sources. Locally we fall back to the original URL.
   const WIDTHS = [480, 768, 1080, 1600, 2200];
   const optimized = (p, w, q = 75) => {
     const u = mediaUrl(p);
-    if (!onVercel) return u;
+    if (!onVercel || isLocal(p)) return u;
     return `/_vercel/image?url=${encodeURIComponent(u)}&w=${w}&q=${q}`;
   };
-  const srcset = (p, widths = WIDTHS) => (onVercel ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
+  const srcset = (p, widths = WIDTHS) => (onVercel && !isLocal(p) ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
 
   function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height } = {}) {
     return `<img ${attrs({
-      src: optimized(p, 1080), srcset: srcset(p, widths), sizes: onVercel ? sizes : null, alt,
+      src: optimized(p, 1080), srcset: srcset(p, widths), sizes: onVercel && !isLocal(p) ? sizes : null, alt,
       class: cls || null, loading: eager ? 'eager' : 'lazy', decoding: 'async',
       fetchpriority: eager ? 'high' : null, width, height,
     })}>`;
@@ -54,5 +55,11 @@ export function createContext({ site, reviewMode, onVercel }) {
 </div>`;
   }
 
-  return { mediaUrl, optimized, img, needsApproval, videoPlayer };
+  /** Muted, looping background video (hero and tiles). Decorative: poster shows when motion is reduced or before load. */
+  function ambient(id, { cls = '', eager = false } = {}) {
+    return `<video class="ambient ${cls}" data-ambient muted loop playsinline ${eager ? 'preload="auto"' : 'preload="none"'} poster="/v/${esc(id)}.webp" aria-hidden="true" tabindex="-1" disableremoteplayback>
+    <source src="/v/${esc(id)}-loop.mp4" type="video/mp4"></video>`;
+  }
+
+  return { mediaUrl, optimized, img, needsApproval, videoPlayer, ambient, isLocal };
 }

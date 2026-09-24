@@ -18,6 +18,8 @@ async function newPage(viewport = { width: 1280, height: 900 }, opts = {}) {
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
   await page.route(/replit\.app\/media\//, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: fixture }));
+  await page.route(/\/v\/[^/]+\.mp4/, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: fixture }));
+  await page.route(/\/v\/[^/]+\.webp/, (r) => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="100%" height="100%" fill="#55615c"/></svg>' }));
   await page.route(/replit\.app\/images\//, (r) => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000"><rect width="100%" height="100%" fill="#6b7a78"/></svg>' }));
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
   return page;
@@ -34,18 +36,20 @@ await check('pricing: starting prices shown before entry', async () => {
   const p = await newPage();
   await p.goto(base + '/real-estate/pricing');
   const lux = await p.textContent('[data-price-for="luxury-media"]');
-  assert(lux.includes('Starting at') && lux.includes('$1,845'), lux);
+  assert(lux.includes('Starting at') && lux.includes('$1,970'), lux);
   await p.context().close();
 });
 
 const boundaryCases = [
-  [2500, { 'luxury-media': '$1,845', 'signature': '$2,795', 'photography': '$250' }],
-  [2501, { 'luxury-media': '$2,010', 'signature': '$3,130', 'photography': '$305' }],
-  [3500, { 'luxury-media': '$2,010', 'listing-starter': '$795' }],
-  [3501, { 'luxury-media': '$2,180', 'listing-starter': '$870' }],
-  [4500, { 'social-media': '$1,325', 'video-both': '$1,530' }],
-  [4501, { 'social-media': '$1,425', 'video-both': '$1,635' }],
-  [5500, { 'social-media-floor-plan': '$1,715', 'd2n-both': '$1,925' }],
+  [2500, { 'luxury-media': '$1,970', 'signature': '$2,985', 'photography': '$250' }],
+  [2501, { 'luxury-media': '$2,140', 'signature': '$3,155', 'photography': '$305' }],
+  [3500, { 'luxury-media': '$2,140', 'listing-starter': '$795' }],
+  [3501, { 'luxury-media': '$2,315', 'listing-starter': '$870' }],
+  [4500, { 'social-media': '$1,320', 'video-both': '$1,535' }],
+  [4501, { 'social-media': '$1,420', 'video-both': '$1,640' }],
+  [5500, { 'social-media': '$1,420', 'twilight': '$575' }],
+  [5501, { 'social-media': '$1,515', 'floor-plan': '$350' }],
+  [30000, { 'signature': '$7,560', 'floor-plan': '$950' }],
 ];
 await check('pricing: every boundary updates all cards from one table', async () => {
   const p = await newPage();
@@ -54,16 +58,16 @@ await check('pricing: every boundary updates all cards from one table', async ()
     await p.fill('#sqft', String(sq));
     for (const [id, amt] of Object.entries(exp)) {
       const t = await p.textContent(`[data-price-for="${id}"]`);
-      assert(t.includes(amt) && t.includes('Published base price'), `${sq} ${id}: ${t}`);
+      assert(t.includes(amt) && t.includes('Price for'), `${sq} ${id}: ${t}`);
     }
   }
   await p.context().close();
 });
 
-await check('pricing: 5,501 shows custom quote, fixed add-ons unchanged', async () => {
+await check('pricing: 30,001 shows custom quote, fixed add-ons unchanged', async () => {
   const p = await newPage();
   await p.goto(base + '/real-estate/pricing');
-  await p.fill('#sqft', '5501');
+  await p.fill('#sqft', '30001');
   const t = await p.textContent('[data-price-for="signature"]');
   assert(t.includes('Request a custom quote'), t);
   const fixed = await p.textContent('[data-fixed="listing-engine"]');
@@ -95,7 +99,7 @@ await check('pricing: live region announces band once (debounced)', async () => 
   await p.type('#sqft', '3200', { delay: 30 });
   await p.waitForTimeout(900);
   const live = await p.textContent('#price-live');
-  assert(live === 'Prices updated for 2,501–3,500 sq ft.', live);
+  assert(live === 'Prices updated for 3,200 sq ft.', live);
   await p.context().close();
 });
 
@@ -115,7 +119,7 @@ await check('pricing: ?sqft= deep link', async () => {
   const p = await newPage();
   await p.goto(base + '/real-estate/pricing?sqft=4501');
   const t = await p.textContent('[data-price-for="luxury-media"]');
-  assert(t.includes('$2,345'), t);
+  assert(t.includes('$2,485'), t);
   await p.context().close();
 });
 
@@ -131,7 +135,8 @@ await check('gallery: filters intersect, clear works, empty state is honest', as
   const both = await p.locator('#work-grid .card:not([hidden])').evaluateAll((els) => els.map((e) => [e.dataset.service, e.dataset.category]));
   assert(both.length > 0 && both.every(([s, c]) => s.includes('video') && c === 'agent-content'), JSON.stringify(both));
   assert(p.url().includes('service=video') && p.url().includes('category=agent-content'), 'url sync');
-  await p.selectOption('#f-category', 'architecture-design');
+  await p.selectOption('#f-service', 'studio');
+  await p.selectOption('#f-category', 'real-estate');
   assert(await p.isVisible('#work-empty'), 'empty state visible');
   await p.click('[data-clear-filters]');
   assert((await p.locator('#work-grid .card:not([hidden])').count()) === total, 'cleared');
@@ -192,7 +197,7 @@ await check('video: every player has a real source (no "Unable to play media")',
   const p = await newPage();
   for (const path of ['/', '/work', '/agent-content', '/real-estate/pricing', '/commercial']) {
     await p.goto(base + path);
-    const missing = await p.locator('video').evaluateAll((vs) => vs.filter((v) => !v.getAttribute('src')).length);
+    const missing = await p.locator('video').evaluateAll((vs) => vs.filter((v) => !v.getAttribute('src') && !v.querySelector('source[src]')).length);
     assert(missing === 0, `${path}: ${missing} videos without src`);
   }
   await p.context().close();
@@ -301,6 +306,32 @@ await check('mobile: menu opens and closes with Escape', async () => {
   assert(await p.isVisible('#site-nav'), 'open');
   await p.keyboard.press('Escape');
   assert(!(await p.isVisible('#site-nav')), 'closed');
+  await p.context().close();
+});
+
+// ---------- Home ----------
+await check('home: video hero, two quick-book tiles, four video path tiles', async () => {
+  const p = await newPage();
+  await p.goto(base + '/');
+  assert((await p.locator('.hero video[data-ambient]').count()) === 1, 'hero video');
+  assert((await p.locator('.quick__tile').count()) === 2, 'quick tiles');
+  const book = await p.locator('.quick__tile').first().locator('a[href*="hd.pics/order"]').count();
+  assert(book === 1, 'listing tile books via HD Photo Hub');
+  const project = await p.locator('.quick__tile').nth(1).locator('a[href="/contact"]').count();
+  assert(project === 1, 'brand tile starts a project');
+  const tiles = await p.locator('.paths--4 .path').evaluateAll((els) => els.map((e) => [e.getAttribute('href'), !!e.querySelector('video[data-ambient] source')]));
+  assert(tiles.length === 4 && tiles.every(([, v]) => v) && tiles[3][0] === '/creator-studios', JSON.stringify(tiles));
+  assert(!(await p.locator('text=Good-enough media').count()), 'old statement removed');
+  await p.context().close();
+});
+
+await check('home: background video respects reduced motion and has a pause control', async () => {
+  const p = await newPage({ width: 1280, height: 900 }, { reducedMotion: 'reduce' });
+  await p.goto(base + '/');
+  await p.waitForTimeout(400);
+  const playing = await p.locator('video[data-ambient]').evaluateAll((vs) => vs.filter((v) => !v.paused).length);
+  assert(playing === 0, `playing under reduced motion: ${playing}`);
+  assert((await p.getAttribute('[data-motion-toggle]', 'aria-pressed')) === 'true', 'toggle reflects paused');
   await p.context().close();
 });
 

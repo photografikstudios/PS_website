@@ -129,3 +129,42 @@ export function initVideos(root = document) {
 
 document.addEventListener('visibilitychange', () => { if (document.hidden) pauseOthers(null); });
 initVideos();
+
+// ---------- Ambient background video (hero + home tiles) ----------
+// Muted loops that play only while on screen. Never autoplay when the visitor prefers reduced motion;
+// the poster frame shows instead. The hero toggle pauses every ambient video (WCAG 2.2.2).
+const ambients = [...document.querySelectorAll('video[data-ambient]')];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+let motionOff = reduce.matches;
+try { if (localStorage.getItem('pgk-motion') === 'off') motionOff = true; } catch { /* storage unavailable */ }
+const toggleBtn = document.querySelector('[data-motion-toggle]');
+const inView = new WeakMap();
+
+function syncAmbient(v) {
+  if (motionOff || !inView.get(v) || document.hidden) { if (!v.paused) v.pause(); return; }
+  if (v.preload === 'none') v.preload = 'auto';
+  v.muted = true;
+  const p = v.play();
+  if (p && p.catch) p.catch(() => { /* autoplay refused: poster stays */ });
+}
+function setMotion(off, remember) {
+  motionOff = off;
+  if (toggleBtn) {
+    toggleBtn.setAttribute('aria-pressed', String(off));
+    toggleBtn.querySelector('.motion-toggle__label').textContent = off ? 'Play background video' : 'Pause background video';
+  }
+  if (remember) { try { localStorage.setItem('pgk-motion', off ? 'off' : 'on'); } catch { /* ignore */ } }
+  ambients.forEach(syncAmbient);
+}
+if (ambients.length) {
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) { inView.set(e.target, e.isIntersecting); syncAmbient(e.target); }
+    }, { rootMargin: '120px 0px', threshold: 0.01 });
+    ambients.forEach((v) => io.observe(v));
+  } else ambients.forEach((v) => { inView.set(v, true); syncAmbient(v); });
+  reduce.addEventListener?.('change', (m) => setMotion(m.matches, false));
+  document.addEventListener('visibilitychange', () => ambients.forEach(syncAmbient));
+  toggleBtn?.addEventListener('click', () => setMotion(!motionOff, true));
+  setMotion(motionOff, false);
+}

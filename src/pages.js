@@ -4,7 +4,7 @@ import { formatUSD, resolvePrice } from './lib/pricing-core.js';
 const arrow = '<span aria-hidden="true">→</span>';
 
 export function buildPages(ctx) {
-  const { site, pricing, work, offers, faqs, img, videoPlayer, needsApproval, visible } = ctx;
+  const { site, pricing, work, offers, faqs, img, videoPlayer, needsApproval, visible, ambient } = ctx;
   const booking = site.destinations.booking.href;
   const bookBtn = (loc, label = 'Book a Shoot', cls = 'btn btn--solid') =>
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
@@ -13,7 +13,7 @@ export function buildPages(ctx) {
   const catLabel = Object.fromEntries(work.taxonomy.category.map((c) => [c.id, c.label]));
   const svcLabel = Object.fromEntries(work.taxonomy.service.map((c) => [c.id, c.label]));
   const pkg = Object.fromEntries(pricing.packages.map((p) => [p.id, p]));
-  const starting = (rec) => formatUSD(resolvePrice(rec, pricing.bands, null).amount);
+  const starting = (rec) => formatUSD(resolvePrice(rec, null).amount);
 
   // ---------- shared pieces ----------
   const pageHero = ({ eyebrow, title, lede, cta = '', image, imageAlt = '', tone = 'dark' }) => `
@@ -35,9 +35,9 @@ export function buildPages(ctx) {
       : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { alt: m.alt || '', sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
     const meta = showMeta ? `<div class="card__meta">
         <p class="card__title">${href ? `<a href="${href}">${esc(m.title)}</a>` : esc(m.title)}</p>
-        <p class="card__sub">${esc(catLabel[m.category] || '')}${project?.location ? ` · ${esc(project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}</p>
+        <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}</p>
       </div>` : '';
-    return `<article class="card card--${m.orientation} card--${m.type} reveal" style="--ar:${m.orientation === 'vertical' ? '0.5625' : '1.5'}"
+    return `<article class="card card--${m.orientation} card--${m.type} reveal" style="--ar:${m.orientation === 'vertical' ? '0.5625' : m.type === 'video' ? '1.7778' : '1.5'}"
       data-service="${esc(m.service.join(' '))}" data-category="${esc(m.category)}" data-kind="${m.type}">
       ${frame}${meta}
     </article>`;
@@ -80,13 +80,14 @@ export function buildPages(ctx) {
   const pages = {};
 
   // ---------- HOME ----------
-  const featured = media.filter((m) => m.featured).slice(0, 4);
+  const featuredIds = ['re-hamptons-beachfront', 'revivaluxe-film', 'arch-99-hedges-amagansett', 'lauryn-lead', 'biz-torella-pools', 'agent-market-insight'];
+  const featured = featuredIds.map((id) => media.find((m) => m.id === id)).filter(Boolean);
   const insight = media.find((x) => x.id === 'agent-market-insight');
   pages['/'] = {
     overlay: true,
     body: `
-<section class="hero">
-  <div class="hero__media">${img(site.media.hero, { alt: site.media.heroAlt, eager: true, sizes: '100vw', widths: [768, 1080, 1600, 2200] })}</div>
+<section class="hero hero--video">
+  <div class="hero__media">${ambient('re-hamptons-beachfront', { eager: true, cls: 'hero__video' })}</div>
   <div class="wrap hero__inner">
     <p class="eyebrow">Photography · Film · Drone · Content</p>
     <h1 class="display display--xl">Media that markets the property, <em>and the professional behind it.</em></h1>
@@ -98,36 +99,47 @@ export function buildPages(ctx) {
       <p class="hero__meta">East End · Hamptons · North Fork<br>Suffolk · Nassau · NYC</p>
     </div>
   </div>
+  <button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span class="motion-toggle__icon" aria-hidden="true"></span><span class="motion-toggle__label">Pause background video</span></button>
 </section>
 
-<section class="section">
-  <div class="wrap split">
-    <div class="split__label"><p class="eyebrow">Why it matters</p></div>
-    <div>
-      <p class="statement reveal">Good-enough media makes serious work look interchangeable. It documents the house, leaves you coordinating separate vendors, and says little about <em>the standard you bring.</em></p>
-      <p class="lede reveal" style="margin-top:36px">You are protecting a reputation, not ordering files. We plan every shoot around how the media will be used, then make it with care, so the listing, the project or the brand is presented the way you would present it yourself.</p>
-    </div>
+<section class="quick on-dark" aria-label="Book or start a project">
+  <div class="wrap quick__grid">
+    <article class="quick__tile reveal">
+      <div class="quick__media">${img('/v/re-hamptons-standout.webp', { alt: '' })}</div>
+      <div class="quick__body">
+        <p class="eyebrow eyebrow--rust">For your listings</p>
+        <h2 class="quick__title">Listing Media</h2>
+        <p>Photo, film, drone and floor plans for the property in front of you, booked online in a few minutes.</p>
+        <div class="actions">${bookBtn('home_quick', 'Book a Shoot', 'btn btn--rust')}<a class="btn btn--glass" href="/real-estate/pricing" data-track="pricing_nav" data-track-location="home_quick">See pricing</a></div>
+      </div>
+    </article>
+    <article class="quick__tile reveal">
+      <div class="quick__media">${img('/v/biz-revivaluxe-tour.webp', { alt: '' })}</div>
+      <div class="quick__body">
+        <p class="eyebrow eyebrow--rust">For your brand</p>
+        <h2 class="quick__title">Brand &amp; Business Media</h2>
+        <p>Brand films, project stories and monthly content for builders, designers and local businesses.</p>
+        <div class="actions"><a class="btn btn--rust" href="/contact" data-track="project_click" data-track-location="home_quick">Start a Project</a><a class="btn btn--glass" href="/commercial">Learn more</a></div>
+      </div>
+    </article>
   </div>
 </section>
 
 <section class="section section--tint" aria-labelledby="paths-h">
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Who we work with</p><h2 class="h2 reveal" id="paths-h">Find your starting point.</h2></div></div>
-    <div class="paths">
-      <a class="path reveal" href="/real-estate">
-        <span class="path__img">${img('/images/photografik-2027/curated/lauryn-card.webp', { alt: '', sizes: '(min-width: 900px) 33vw, 100vw' })}</span>
-        <span class="path__body"><span class="path__num">01 / Real estate</span><span class="path__title">Listing campaigns and agent media</span><span class="path__text">Photo, horizontal and vertical film, drone, twilight and floor plans, plus on-camera content that keeps working after the sale.</span><span class="path__go">Real estate →</span></span>
-      </a>
-      <a class="path reveal" href="/architecture-design">
-        <span class="path__img">${img('/images/photografik-2027/curated/yankee-hero.webp', { alt: '', sizes: '(min-width: 900px) 33vw, 100vw' })}</span>
-        <span class="path__body"><span class="path__num">02 / Architecture & commercial</span><span class="path__title">Builders, designers and brands</span><span class="path__text">Project photography and film planned around your portfolio, your partners and how the work will be used.</span><span class="path__go">Architecture & design →</span></span>
-      </a>
-      <a class="path reveal" href="/agency-partnerships">
-        <span class="path__img">${img('/images/photografik-2027/curated/home-path-on-location.webp', { alt: '', sizes: '(min-width: 900px) 33vw, 100vw' })}</span>
-        <span class="path__body"><span class="path__num">03 / Agencies & recurring</span><span class="path__title">A production partner on call</span><span class="path__text">Crew, studio, filming and editing for agencies and teams that need steady, dependable output.</span><span class="path__go">Partnerships →</span></span>
-      </a>
+    <div class="paths paths--4">
+      ${join([
+        { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, horizontal and vertical film, drone, twilight and floor plans.', go: 'Real estate' },
+        { href: '/architecture-design', vid: 'arch-99-hedges-amagansett', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
+        { href: '/commercial', vid: 'biz-revivaluxe-tour', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
+        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'Creator Studios' },
+      ], (c) => `
+      <a class="path reveal" href="${c.href}">
+        <span class="path__img">${ambient(c.vid)}</span>
+        <span class="path__body"><span class="path__num">${c.n}</span><span class="path__title">${c.t}</span><span class="path__text">${c.x}</span><span class="path__go">${c.go} →</span></span>
+      </a>`)}
     </div>
-    <p class="aside-line">Recording a podcast or studio content? <a href="/creator-studios">Creator Studios</a> is our production studio in Bohemia.</p>
   </div>
 </section>
 
@@ -187,7 +199,7 @@ ${splitCta('Ready when you are.')}`,
   };
 
   // ---------- REAL ESTATE ----------
-  const reMedia = media.filter((m) => m.category === 'real-estate' || m.category === 'agent-content').slice(0, 4);
+  const reMedia = ['re-hamptons-standout', 'agent-on-camera', 're-hamptons-calm', 'lauryn-lead', 're-penniman-ln'].map((id) => media.find((m) => m.id === id)).filter(Boolean);
   pages['/real-estate'] = {
     overlay: true,
     body: `${pageHero({
@@ -215,7 +227,7 @@ ${splitCta('Ready when you are.')}`,
 <section class="section section--tint">
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Packages</p><h2 class="h2 reveal">Start with the right package.</h2></div><a class="link-arrow" href="/real-estate/pricing">Pricing by property size ${arrow}</a></div>
-    <div class="ladder ladder--5">
+    <div class="ladder ladder--4">
       ${join(pricing.packages.filter(visible), (p) => `
       <div class="ladder__item ${p.role === 'Recommended' ? 'ladder__item--featured' : ''}">
         ${p.role ? `<p class="tag">${esc(p.role === 'Premium' ? 'Premium anchor' : p.role)}</p>` : ''}
@@ -255,7 +267,7 @@ ${threeSteps()}
 
   // ---------- PRICING ----------
   const priceCell = (rec) => {
-    const s = resolvePrice(rec, pricing.bands, null);
+    const s = resolvePrice(rec, null);
     return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span></p>
       <p class="pcard__hint" data-hint-for="${esc(rec.id)}">Enter square footage for your price.</p>`;
   };
@@ -263,7 +275,6 @@ ${threeSteps()}
     'luxury-media': { type: 'image', src: '/images/photografik-2027/curated/lauryn-card.webp', alt: 'White colonial listing at dusk, photographed for a Luxury Media campaign' },
     'signature': { type: 'image', src: '/images/photografik-2027/curated/home-estate-twilight.webp', alt: 'Shingle-style estate at twilight' },
     'social-media': { type: 'video', id: 'agent-on-camera' },
-    'social-media-floor-plan': { type: 'image', src: '/images/photografik-2027/curated/home-path-real-estate.webp', alt: 'Bright bedroom with water views' },
     'listing-starter': { type: 'image', src: '/images/photografik-2027/curated/agent-card.webp', alt: 'Open-plan kitchen and living room' },
   };
   const packageCard = (p) => {
@@ -288,20 +299,20 @@ ${threeSteps()}
     </li>`;
   const fixedRow = (f, label = 'Fixed price') => `<li class="prow prow--fixed" data-fixed="${esc(f.id)}">
       <div class="prow__text"><h3 class="prow__name">${esc(f.name)} ${needsApproval(f)}</h3>${f.detail ? `<p class="prow__detail">${esc(f.detail)}</p>` : ''}</div>
-      <div class="prow__price"><p class="pcard__price"><span class="pcard__label">${label}</span> <span class="pcard__amount">${formatUSD(f.amount)}</span></p><p class="pcard__hint">Not affected by square footage.</p></div>
+      <div class="prow__price"><p class="pcard__price"><span class="pcard__label">${f.standalone ? 'Added to a shoot' : label}</span> <span class="pcard__amount">${formatUSD(f.amount)}</span></p><p class="pcard__hint">${f.standalone ? `${formatUSD(f.standalone)} on its own.` : 'Not affected by square footage.'}</p></div>
     </li>`;
   const svc = (g) => pricing.services.filter((s) => s.group === g).filter(visible);
   const fixedG = (g) => pricing.fixed.filter((s) => s.group === g).filter(visible);
   const pricingData = {
-    bands: pricing.bands,
-    records: [...pricing.packages, ...pricing.services].filter(visible).map((r) => ({ id: r.id, name: r.name, prices: r.prices })),
+    maxSqft: pricing.maxSqft,
+    records: [...pricing.packages, ...pricing.services].filter(visible).map((r) => ({ id: r.id, name: r.name, max: r.max, tiers: r.tiers })),
   };
   const tabs = [
     { id: 'packages', label: 'Packages', html: `<div class="pcards">${join(pricing.packages.filter(visible), packageCard)}</div>` },
     { id: 'photo', label: 'Photo', html: `<ul class="prows">${join(svc('photography'), serviceRow)}</ul>` },
-    { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}</ul>
+    { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}${join(fixedG('video'), (f) => fixedRow(f))}</ul>
         <div class="explain"><h3 class="h3">Horizontal or vertical?</h3><p>Horizontal film is for the listing page, YouTube, email and presentations. Vertical reels are for Instagram, TikTok and Reels. Choose one, or both from the same shoot.</p></div>` },
-    { id: 'addons', label: 'Add-ons', html: `<ul class="prows">${join(fixedG('addons'), (f) => fixedRow(f))}${join((pricing.startingOnly || []).filter(visible), (f) => fixedRow(f, 'Starting at'))}</ul>
+    { id: 'addons', label: 'Add-ons', html: `<ul class="prows">${join(fixedG('addons'), (f) => fixedRow(f))}</ul>
         <h3 class="h3 prows-head">Content add-ons</h3>
         <ul class="prows">${join(fixedG('engines'), (f) => fixedRow(f))}</ul>
         <div class="explain"><p>Listing Engine and Agent Engine are captured on the same shoot day. <a href="/agent-content">How the engines work ${arrow}</a></p></div>` },
@@ -314,7 +325,7 @@ ${threeSteps()}
   <div class="wrap page-hero__inner">
     <p class="eyebrow">Real estate media pricing</p>
     <h1 class="display">Pricing for your property.</h1>
-    <p class="lede">Enter the home's size and every package and service below updates to the published base price for that size.</p>
+    <p class="lede">Enter the home's size, up to ${pricing.maxSqft.toLocaleString('en-US')} sq ft, and every package and service below updates to the same price you will see in our booking portal.</p>
   </div>
 </section>
 <section class="section section--pricing">
@@ -340,8 +351,8 @@ ${threeSteps()}
     </div>
 
     <div class="pricing-notes">
-      <p><strong>About these prices.</strong> Prices shown after you enter a size are the published base price for that size, subject to approved scope, location and booking rules. They are not an all-in total. Travel, rush, homeowner and rental use, commercial property and non-standard licensing are quoted separately.</p>
-      <p>Homes over ${pricing.bands.at(-1).max.toLocaleString('en-US')} square feet: <a href="/contact?type=real-estate-large">request a custom quote</a>.</p>
+      <p><strong>About these prices.</strong> These match our booking portal, HD Photo Hub. They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
+      <p>Homes over ${pricing.maxSqft.toLocaleString('en-US')} square feet: <a href="/contact?type=real-estate-large">request a custom quote</a>.</p>
       <p>You will confirm property size, package and date in our booking portal, HD Photo Hub. ${bookBtn('pricing_notes', 'Go to booking', 'link-arrow')}</p>
     </div>
   </div>
@@ -371,10 +382,10 @@ ${threeSteps()}
     <p class="eyebrow">Listing Engine & Agent Engine</p>
     <h2 class="h2 reveal">Turn one shoot day into weeks of content.</h2>
     <div class="compare">
-      <div class="compare__col"><h3 class="h3">Listing Engine</h3><p>Three to four short videos about the property and its launch cycle, such as Coming Soon, Just Listed, Under Contract and Just Sold, or a nearby lifestyle feature. Captured alongside the listing media, using the property footage.</p>${(() => { const e = engines.find((x) => x.id === 'listing-engine'); return e ? `<p class="price-line"><strong>${formatUSD(e.amount)}</strong> add-on ${needsApproval(e)}</p>` : ''; })()}</div>
-      <div class="compare__col"><h3 class="h3">Agent Engine</h3><p>Three to four videos about you, with the listing as a premium backdrop: the market, your town, your background, your process and what you do differently.</p>${(() => { const e = engines.find((x) => x.id === 'agent-engine'); return e ? `<p class="price-line"><strong>${formatUSD(e.amount)}</strong> add-on ${needsApproval(e)}</p>` : ''; })()}</div>
+      <div class="compare__col"><h3 class="h3">Listing Engine</h3><p>Three to four short videos about the property and its launch cycle, such as Coming Soon, Just Listed, Under Contract and Just Sold, or a nearby lifestyle feature. Captured alongside the listing media, using the property footage.</p>${(() => { const e = engines.find((x) => x.id === 'listing-engine'); return e ? `<p class="price-line"><strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}</div>
+      <div class="compare__col"><h3 class="h3">Agent Engine</h3><p>Three to four videos about you, with the listing as a premium backdrop: the market, your town, your background, your process and what you do differently.</p>${(() => { const e = engines.find((x) => x.id === 'agent-engine'); return e ? `<p class="price-line"><strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}</div>
     </div>
-    ${(() => { const e = engines.find((x) => x.id === 'full-engine'); return e ? `<p class="aside-line">Both together as the Full Engine Bundle: <strong>${formatUSD(e.amount)}</strong> ${needsApproval(e)}</p>` : ''; })()}
+    ${(() => { const e = engines.find((x) => x.id === 'full-engine'); return e ? `<p class="aside-line">Both together as the Full Engine: <strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}
   </div>
 </section>
 <section class="section">
@@ -570,6 +581,12 @@ ${cp.length || b2b.length ? `<section class="section">
       <p><a class="link-arrow" href="/work/creator-studios">See a studio project ${arrow}</a></p>
     </div>
     <div class="two-col__media">${img('/images/photografik-2027/curated/creator-project-hero.webp', { alt: 'Podcast guest recording on set at Creator Studios', sizes: '(min-width: 900px) 40vw, 100vw' })}</div>
+  </div>
+</section>
+<section class="section section--ink on-dark">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Recorded here</p><h2 class="h2 reveal">Clips from recent sessions.</h2></div><a class="link-arrow" href="/work?category=creator-studios">More studio work ${arrow}</a></div>
+    <div class="justified">${join(media.filter((m) => m.category === 'creator-studios' && m.type === 'video'), (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
   </div>
 </section>
 <section class="section section--brand on-dark">

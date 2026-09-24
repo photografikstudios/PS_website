@@ -1,87 +1,1004 @@
 {
-  "_readme": "Residential price table. Edit amounts here only; pages read from this file. Bands are inclusive. A record with approval other than 'approved' renders only in review builds and blocks a production build.",
-  "effectiveDate": "2026-09-14",
-  "source": "September 14, 2026 residential pricing matrix (photografik-business-context.md, photografik-business-brain-full.md)",
-  "bands": [
-    { "id": "b1", "min": 1, "max": 2500, "label": "Up to 2,500 sq ft" },
-    { "id": "b2", "min": 2501, "max": 3500, "label": "2,501–3,500 sq ft" },
-    { "id": "b3", "min": 3501, "max": 4500, "label": "3,501–4,500 sq ft" },
-    { "id": "b4", "min": 4501, "max": 5500, "label": "4,501–5,500 sq ft" }
-  ],
-  "overMaxMessage": "Request a custom quote",
-  "packages": [
-    {
-      "id": "luxury-media",
-      "name": "Luxury Media",
-      "role": "Recommended",
-      "for": "The complete campaign for agents who want the listing and their own standard to stand out. Everything a strong launch needs, captured in one coordinated visit.",
-      "includes": ["Interior and exterior photography", "Drone photography", "Horizontal cinematic video", "Vertical cinematic reel", "Schematic floor plan"],
-      "prices": { "b1": 1845, "b2": 2010, "b3": 2180, "b4": 2345 },
-      "approval": "pending",
-      "note": "HD Photo Hub currently lists 1,970 / 2,140 / 2,315 / 2,485."
-    },
-    {
-      "id": "signature",
-      "name": "Signature",
-      "role": "Premium",
-      "for": "For properties and launches that deserve the full evening treatment: twilight stills and day-to-night film in both orientations.",
-      "includes": ["Interior and exterior photography", "Twilight photography", "Drone photography", "Horizontal day-to-night cinematic video", "Vertical day-to-night cinematic reel", "Schematic floor plan"],
-      "prices": { "b1": 2795, "b2": 3130, "b3": 3365, "b4": 3530 },
-      "approval": "pending",
-      "note": "HD Photo Hub currently lists 2,985 / 3,155 / 3,325 / 3,495 and includes Agent on Camera."
-    },
-    {
-      "id": "social-media",
-      "name": "Social Media",
-      "role": null,
-      "for": "For listings launching mainly on Instagram, TikTok and Reels, where a vertical film carries the story.",
-      "includes": ["Interior and exterior photography", "Drone photography", "Vertical cinematic reel"],
-      "prices": { "b1": 1125, "b2": 1225, "b3": 1325, "b4": 1425 },
-      "approval": "pending",
-      "note": "HD Photo Hub currently lists 1,120 / 1,220 / 1,320 / 1,420."
-    },
-    {
-      "id": "social-media-floor-plan",
-      "name": "Social Media + Floor Plan",
-      "role": null,
-      "for": "The Social Media package with a schematic floor plan, so buyers understand the layout before the showing.",
-      "includes": ["Interior and exterior photography", "Drone photography", "Vertical cinematic reel", "Schematic floor plan"],
-      "prices": { "b1": 1350, "b2": 1470, "b3": 1595, "b4": 1715 },
-      "approval": "pending",
-      "note": "Not currently offered as a product in HD Photo Hub."
-    },
-    {
-      "id": "listing-starter",
-      "name": "Listing Starter",
-      "role": "Fundamentals",
-      "for": "The fundamentals, done properly: a complete photo set, aerial context and a floor plan.",
-      "includes": ["Interior and exterior photography", "Drone photography", "Schematic floor plan"],
-      "prices": { "b1": 720, "b2": 795, "b3": 870, "b4": 940 },
-      "approval": "pending",
-      "note": "Matches HD Photo Hub."
-    }
-  ],
-  "services": [
-    { "id": "photography", "group": "photography", "name": "Photography", "detail": "Interior and exterior stills, with vertical social-ready frames where appropriate.", "prices": { "b1": 250, "b2": 305, "b3": 360, "b4": 415 }, "approval": "pending", "note": "Matches HD Photo Hub." },
-    { "id": "photo-floor-plan", "group": "photography", "name": "Photography + floor plan", "detail": "Full stills set plus a schematic floor plan.", "prices": { "b1": 450, "b2": 520, "b3": 595, "b4": 665 }, "approval": "pending", "note": "Matches HD Photo Hub." },
-    { "id": "floor-plan", "group": "photography", "name": "Floor plan", "detail": "Schematic floor plan on its own.", "prices": { "b1": 250, "b2": 275, "b3": 300, "b4": 325 }, "approval": "pending", "note": "Matches HD Photo Hub." },
-    { "id": "exterior-drone", "group": "photography", "name": "Exterior-only ground + drone photography", "detail": "Exterior and aerial coverage without interiors.", "prices": { "b1": 400, "b2": 450, "b3": 500, "b4": 550 }, "approval": "pending", "note": "Matches HD Photo Hub." },
-    { "id": "video-one", "group": "video", "name": "Cinematic video, one orientation", "detail": "Choose a horizontal film or a vertical reel.", "prices": { "b1": 695, "b2": 750, "b3": 805, "b4": 860 }, "approval": "pending", "note": "Matches HD Photo Hub (Cinematic Video / Cinematic Reel)." },
-    { "id": "video-both", "group": "video", "name": "Cinematic video, both orientations", "detail": "A horizontal film and a vertical reel from the same shoot.", "prices": { "b1": 1320, "b2": 1425, "b3": 1530, "b4": 1635 }, "approval": "pending", "note": "HD Photo Hub 'Cinematic Package' lists 1,325 / 1,430 / 1,535 / 1,640." },
-    { "id": "d2n-one", "group": "video", "name": "Day-to-night video, one orientation", "detail": "Daylight to evening transitions in a horizontal film or vertical reel.", "prices": { "b1": 1110, "b2": 1165, "b3": 1220, "b4": 1275 }, "approval": "pending", "note": "HD Photo Hub offers only a fixed 'Add Day to Night' at $500." },
-    { "id": "d2n-both", "group": "video", "name": "Day-to-night video, both orientations", "detail": "Day-to-night treatment in both formats.", "prices": { "b1": 1625, "b2": 1725, "b3": 1825, "b4": 1925 }, "approval": "pending", "note": "HD Photo Hub offers only a fixed 'Add Day to Night' at $500." }
-  ],
-  "fixed": [
-    { "id": "aerial-photos", "group": "addons", "name": "Aerial photos only", "amount": 300, "approval": "pending", "note": "Matches HD Photo Hub (Drone Photography)." },
-    { "id": "aerial-video", "group": "addons", "name": "Aerial video only", "amount": 475, "approval": "pending", "note": "Matches HD Photo Hub (Drone Video)." },
-    { "id": "aerial-both", "group": "addons", "name": "Aerial photo + video", "amount": 700, "approval": "pending", "note": "Matches HD Photo Hub." },
-    { "id": "aerial-addon", "group": "addons", "name": "Add aerial photos to a shoot", "amount": 275, "approval": "pending", "note": "Matches HD Photo Hub (Add Drone Photography). HD Photo Hub also lists an 'Add Drone' at $350." },
-    { "id": "twilight-drone", "group": "addons", "name": "Twilight drone", "amount": 400, "approval": "pending", "note": "Matches HD Photo Hub." },
-    { "id": "listing-engine", "group": "engines", "name": "Listing Engine", "amount": 1000, "detail": "Three to four short listing-cycle or location videos, captured alongside the listing media.", "approval": "pending", "note": "Matches HD Photo Hub add-on price; standalone listed at $1,200." },
-    { "id": "agent-engine", "group": "engines", "name": "Agent Engine", "amount": 1000, "detail": "Three to four agent-focused vertical videos using the property as a premium backdrop.", "approval": "pending", "note": "Matches HD Photo Hub add-on price; standalone listed at $1,200." },
-    { "id": "full-engine", "group": "engines", "name": "Full Engine Bundle", "amount": 1700, "detail": "Listing Engine and Agent Engine together.", "approval": "pending", "note": "HD Photo Hub lists $1,900 as an add-on and $2,200 standalone." }
-  ],
-  "startingOnly": [
-    { "id": "twilight", "group": "addons", "name": "Twilight photography", "amount": 500, "detail": "Uses its own size rule (up to 5,000 sq ft, then 5,001–8,500 sq ft). Confirmed in the booking portal.", "approval": "pending", "note": "Documents list $500 / $575. HD Photo Hub shows five twilight tiers ($500–$725). Model by size only after confirming current bands." }
-  ]
+ "_readme": "Residential prices mirror HD Photo Hub, the approved source (James, 2026-09-23). Each size-based record has its own tiers: [minimum sq ft, price]. A tier runs from its minimum to one below the next tier's minimum; the last tier runs to the record's max. Above max = custom quote. Edit amounts here only.",
+ "source": "HD Photo Hub order form (photografikstudios.hd.pics/order), read 2026-09-23",
+ "effectiveDate": "2026-09-23",
+ "maxSqft": 30000,
+ "overMaxMessage": "Request a custom quote",
+ "packages": [
+  {
+   "id": "luxury-media",
+   "name": "Luxury Media",
+   "role": "Recommended",
+   "for": "The complete launch for agents who want the listing and their own standard to stand out, captured in one coordinated visit.",
+   "includes": [
+    "Interior and exterior photography",
+    "Drone photography",
+    "Schematic floor plan",
+    "Horizontal cinematic video",
+    "Vertical cinematic reel"
+   ],
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     1970
+    ],
+    [
+     2501,
+     2140
+    ],
+    [
+     3501,
+     2315
+    ],
+    [
+     4501,
+     2485
+    ],
+    [
+     5501,
+     2655
+    ],
+    [
+     6501,
+     2825
+    ],
+    [
+     7501,
+     3000
+    ],
+    [
+     8501,
+     3175
+    ],
+    [
+     9501,
+     3355
+    ],
+    [
+     10501,
+     3525
+    ],
+    [
+     11501,
+     3695
+    ],
+    [
+     12501,
+     3865
+    ],
+    [
+     13501,
+     4035
+    ],
+    [
+     14501,
+     4210
+    ],
+    [
+     15501,
+     4380
+    ],
+    [
+     16501,
+     4550
+    ],
+    [
+     17501,
+     4725
+    ],
+    [
+     18501,
+     4895
+    ],
+    [
+     19501,
+     5075
+    ],
+    [
+     20501,
+     5670
+    ],
+    [
+     25501,
+     6345
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "signature",
+   "name": "Signature",
+   "role": "Premium",
+   "for": "The full evening treatment for properties that deserve it: twilight stills, day-to-night film in both orientations and the agent on camera.",
+   "includes": [
+    "Interior and exterior photography",
+    "Twilight photography",
+    "Drone photography",
+    "Schematic floor plan",
+    "Horizontal cinematic video",
+    "Vertical cinematic reel",
+    "Day-to-night transitions",
+    "Agent on camera"
+   ],
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     2985
+    ],
+    [
+     2501,
+     3155
+    ],
+    [
+     3501,
+     3325
+    ],
+    [
+     4501,
+     3495
+    ],
+    [
+     5501,
+     3735
+    ],
+    [
+     6501,
+     3905
+    ],
+    [
+     7501,
+     4080
+    ],
+    [
+     8501,
+     4300
+    ],
+    [
+     9501,
+     4480
+    ],
+    [
+     10501,
+     4650
+    ],
+    [
+     11501,
+     4820
+    ],
+    [
+     12501,
+     5035
+    ],
+    [
+     13501,
+     5205
+    ],
+    [
+     14501,
+     5380
+    ],
+    [
+     15501,
+     5550
+    ],
+    [
+     16501,
+     5720
+    ],
+    [
+     17501,
+     5895
+    ],
+    [
+     18501,
+     6110
+    ],
+    [
+     19501,
+     6290
+    ],
+    [
+     20501,
+     6885
+    ],
+    [
+     25501,
+     7560
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "social-media",
+   "name": "Social Media",
+   "role": null,
+   "for": "For listings launching mainly on Instagram, TikTok and Reels, where a vertical film carries the story.",
+   "includes": [
+    "Interior and exterior photography",
+    "Drone photography",
+    "Vertical cinematic reel"
+   ],
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     1120
+    ],
+    [
+     2501,
+     1220
+    ],
+    [
+     3501,
+     1320
+    ],
+    [
+     4501,
+     1420
+    ],
+    [
+     5501,
+     1515
+    ],
+    [
+     6501,
+     1615
+    ],
+    [
+     7501,
+     1720
+    ],
+    [
+     8501,
+     1820
+    ],
+    [
+     9501,
+     1920
+    ],
+    [
+     10501,
+     2020
+    ],
+    [
+     11501,
+     2120
+    ],
+    [
+     12501,
+     2220
+    ],
+    [
+     13501,
+     2320
+    ],
+    [
+     14501,
+     2415
+    ],
+    [
+     15501,
+     2515
+    ],
+    [
+     16501,
+     2615
+    ],
+    [
+     17501,
+     2720
+    ],
+    [
+     18501,
+     2815
+    ],
+    [
+     19501,
+     2920
+    ],
+    [
+     20501,
+     3240
+    ],
+    [
+     25501,
+     3600
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "listing-starter",
+   "name": "Listing Starter",
+   "role": "Fundamentals",
+   "for": "The fundamentals, done properly: a complete photo set, aerial context and a floor plan.",
+   "includes": [
+    "Interior and exterior photography",
+    "Drone photography",
+    "Schematic floor plan"
+   ],
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     720
+    ],
+    [
+     2501,
+     795
+    ],
+    [
+     3501,
+     870
+    ],
+    [
+     4501,
+     940
+    ],
+    [
+     5501,
+     1015
+    ],
+    [
+     6501,
+     1085
+    ],
+    [
+     7501,
+     1160
+    ],
+    [
+     8501,
+     1230
+    ],
+    [
+     9501,
+     1305
+    ],
+    [
+     10501,
+     1375
+    ],
+    [
+     11501,
+     1450
+    ],
+    [
+     12501,
+     1520
+    ],
+    [
+     13501,
+     1595
+    ],
+    [
+     14501,
+     1665
+    ],
+    [
+     15501,
+     1740
+    ],
+    [
+     16501,
+     1810
+    ],
+    [
+     17501,
+     1885
+    ],
+    [
+     18501,
+     1955
+    ],
+    [
+     19501,
+     2030
+    ],
+    [
+     20501,
+     2100
+    ],
+    [
+     25501,
+     2175
+    ]
+   ],
+   "approval": "approved"
+  }
+ ],
+ "services": [
+  {
+   "id": "photography",
+   "group": "photography",
+   "name": "Photography",
+   "detail": "Interior and exterior stills.",
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     250
+    ],
+    [
+     2501,
+     305
+    ],
+    [
+     3501,
+     360
+    ],
+    [
+     4501,
+     415
+    ],
+    [
+     5501,
+     470
+    ],
+    [
+     6501,
+     525
+    ],
+    [
+     7501,
+     585
+    ],
+    [
+     8501,
+     640
+    ],
+    [
+     9501,
+     695
+    ],
+    [
+     10501,
+     750
+    ],
+    [
+     11501,
+     805
+    ],
+    [
+     12501,
+     860
+    ],
+    [
+     13501,
+     915
+    ],
+    [
+     14501,
+     970
+    ],
+    [
+     15501,
+     1025
+    ],
+    [
+     16501,
+     1080
+    ],
+    [
+     17501,
+     1140
+    ],
+    [
+     18501,
+     1195
+    ],
+    [
+     19501,
+     1250
+    ],
+    [
+     20501,
+     1400
+    ],
+    [
+     25001,
+     1600
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "photo-floor-plan",
+   "group": "photography",
+   "name": "Photography + floor plan",
+   "detail": "Full stills set plus a schematic floor plan.",
+   "max": 12500,
+   "tiers": [
+    [
+     1,
+     450
+    ],
+    [
+     2501,
+     520
+    ],
+    [
+     3501,
+     595
+    ],
+    [
+     4501,
+     665
+    ],
+    [
+     5501,
+     740
+    ],
+    [
+     6501,
+     810
+    ],
+    [
+     7501,
+     885
+    ],
+    [
+     8501,
+     955
+    ],
+    [
+     9501,
+     1030
+    ],
+    [
+     10501,
+     1100
+    ],
+    [
+     11501,
+     1175
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "floor-plan",
+   "group": "photography",
+   "name": "Floor plan",
+   "detail": "Schematic floor plan on its own.",
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     250
+    ],
+    [
+     2501,
+     275
+    ],
+    [
+     3501,
+     300
+    ],
+    [
+     4501,
+     325
+    ],
+    [
+     5501,
+     350
+    ],
+    [
+     6501,
+     375
+    ],
+    [
+     7501,
+     400
+    ],
+    [
+     8501,
+     425
+    ],
+    [
+     9501,
+     450
+    ],
+    [
+     10501,
+     475
+    ],
+    [
+     11501,
+     500
+    ],
+    [
+     12501,
+     525
+    ],
+    [
+     13501,
+     550
+    ],
+    [
+     14501,
+     575
+    ],
+    [
+     15501,
+     600
+    ],
+    [
+     16501,
+     625
+    ],
+    [
+     17501,
+     650
+    ],
+    [
+     18501,
+     675
+    ],
+    [
+     19501,
+     700
+    ],
+    [
+     20501,
+     800
+    ],
+    [
+     25001,
+     950
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "exterior-drone",
+   "group": "photography",
+   "name": "Exterior-only ground + drone photography",
+   "detail": "Exterior and aerial coverage without interiors.",
+   "max": 20000,
+   "tiers": [
+    [
+     1,
+     400
+    ],
+    [
+     4001,
+     450
+    ],
+    [
+     6001,
+     500
+    ],
+    [
+     8001,
+     550
+    ],
+    [
+     10001,
+     600
+    ],
+    [
+     12001,
+     650
+    ],
+    [
+     14001,
+     750
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "twilight",
+   "group": "photography",
+   "name": "Twilight photography",
+   "detail": "Dusk exteriors with the home lit from within.",
+   "max": 20000,
+   "tiers": [
+    [
+     1,
+     500
+    ],
+    [
+     5001,
+     575
+    ],
+    [
+     8501,
+     625
+    ],
+    [
+     12501,
+     675
+    ],
+    [
+     15001,
+     725
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "video-one",
+   "group": "video",
+   "name": "Cinematic video or cinematic reel",
+   "detail": "A horizontal film or a vertical reel.",
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     695
+    ],
+    [
+     2501,
+     750
+    ],
+    [
+     3501,
+     805
+    ],
+    [
+     4501,
+     860
+    ],
+    [
+     5501,
+     915
+    ],
+    [
+     6501,
+     970
+    ],
+    [
+     7501,
+     1025
+    ],
+    [
+     8501,
+     1080
+    ],
+    [
+     9501,
+     1140
+    ],
+    [
+     10501,
+     1195
+    ],
+    [
+     11501,
+     1250
+    ],
+    [
+     12501,
+     1305
+    ],
+    [
+     13501,
+     1360
+    ],
+    [
+     14501,
+     1415
+    ],
+    [
+     15501,
+     1470
+    ],
+    [
+     16501,
+     1525
+    ],
+    [
+     17501,
+     1580
+    ],
+    [
+     18501,
+     1635
+    ],
+    [
+     19501,
+     1695
+    ],
+    [
+     20501,
+     1900
+    ],
+    [
+     25001,
+     2100
+    ]
+   ],
+   "approval": "approved"
+  },
+  {
+   "id": "video-both",
+   "group": "video",
+   "name": "Cinematic package: video + reel",
+   "detail": "A horizontal film and a vertical reel from the same shoot.",
+   "max": 30000,
+   "tiers": [
+    [
+     1,
+     1325
+    ],
+    [
+     2501,
+     1430
+    ],
+    [
+     3501,
+     1535
+    ],
+    [
+     4501,
+     1640
+    ],
+    [
+     5501,
+     1745
+    ],
+    [
+     6501,
+     1855
+    ],
+    [
+     7501,
+     1960
+    ],
+    [
+     8501,
+     2065
+    ],
+    [
+     9501,
+     2175
+    ],
+    [
+     10501,
+     2280
+    ],
+    [
+     11501,
+     2385
+    ],
+    [
+     12501,
+     2490
+    ],
+    [
+     13501,
+     2595
+    ],
+    [
+     14501,
+     2700
+    ],
+    [
+     15501,
+     2805
+    ],
+    [
+     16501,
+     2910
+    ],
+    [
+     17501,
+     3015
+    ],
+    [
+     18501,
+     3120
+    ],
+    [
+     19501,
+     3230
+    ],
+    [
+     20501,
+     3600
+    ],
+    [
+     25001,
+     3900
+    ]
+   ],
+   "approval": "approved"
+  }
+ ],
+ "fixed": [
+  {
+   "id": "aerial-photos",
+   "group": "addons",
+   "name": "Drone photography only",
+   "amount": 300,
+   "approval": "approved"
+  },
+  {
+   "id": "aerial-video",
+   "group": "addons",
+   "name": "Drone video only",
+   "amount": 475,
+   "approval": "approved"
+  },
+  {
+   "id": "aerial-both",
+   "group": "addons",
+   "name": "Drone photo + video",
+   "amount": 700,
+   "approval": "approved"
+  },
+  {
+   "id": "aerial-addon",
+   "group": "addons",
+   "name": "Add drone photography to a shoot",
+   "amount": 275,
+   "approval": "approved"
+  },
+  {
+   "id": "twilight-drone",
+   "group": "addons",
+   "name": "Twilight drone",
+   "amount": 400,
+   "approval": "approved"
+  },
+  {
+   "id": "day-to-night",
+   "group": "video",
+   "name": "Add day-to-night to a video",
+   "amount": 500,
+   "approval": "approved"
+  },
+  {
+   "id": "agent-on-camera",
+   "group": "video",
+   "name": "Add agent on camera",
+   "amount": 125,
+   "approval": "approved"
+  },
+  {
+   "id": "vertical-cut",
+   "group": "video",
+   "name": "Vertical cinematic cut of your video",
+   "amount": 150,
+   "approval": "approved"
+  },
+  {
+   "id": "teaser",
+   "group": "video",
+   "name": "15-second teaser",
+   "amount": 50,
+   "approval": "approved"
+  },
+  {
+   "id": "listing-engine",
+   "group": "engines",
+   "name": "Listing Engine",
+   "amount": 1000,
+   "standalone": 1200,
+   "detail": "Three to four short listing-cycle or location videos, captured alongside the listing media.",
+   "approval": "approved"
+  },
+  {
+   "id": "agent-engine",
+   "group": "engines",
+   "name": "Agent Engine",
+   "amount": 1000,
+   "standalone": 1200,
+   "detail": "Three to four agent-focused vertical videos using the property as a premium backdrop.",
+   "approval": "approved"
+  },
+  {
+   "id": "full-engine",
+   "group": "engines",
+   "name": "Full Engine",
+   "amount": 1900,
+   "standalone": 2200,
+   "detail": "Listing Engine and Agent Engine together.",
+   "approval": "approved"
+  }
+ ]
 }

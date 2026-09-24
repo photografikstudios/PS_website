@@ -1,49 +1,51 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { parseSquareFeet, findBand, resolvePrice, validatePricing, formatUSD } from '../src/lib/pricing-core.js';
+import { parseSquareFeet, resolvePrice, validatePricing, formatUSD, findTier } from '../src/lib/pricing-core.js';
 
 const pricing = JSON.parse(await readFile(new URL('../content/pricing.json', import.meta.url)));
-const { bands } = pricing;
 const rec = (id) => [...pricing.packages, ...pricing.services].find((r) => r.id === id);
+const at = (id, sq) => resolvePrice(rec(id), sq);
 
 test('price table is structurally valid', () => {
   assert.deepEqual(validatePricing(pricing), []);
 });
 
-test('band boundaries are inclusive on both sides', () => {
-  const cases = [[1, 'b1'], [2500, 'b1'], [2501, 'b2'], [3500, 'b2'], [3501, 'b3'], [4500, 'b3'], [4501, 'b4'], [5500, 'b4'], [5501, null]];
-  for (const [sqft, id] of cases) assert.equal(findBand(bands, sqft)?.id ?? null, id, `sqft ${sqft}`);
-});
-
-test('every package and service resolves to the Sept 14 matrix at each boundary', () => {
-  const expected = {
-    'signature': [2795, 3130, 3365, 3530], 'luxury-media': [1845, 2010, 2180, 2345], 'social-media': [1125, 1225, 1325, 1425],
-    'social-media-floor-plan': [1350, 1470, 1595, 1715], 'listing-starter': [720, 795, 870, 940],
-    'photography': [250, 305, 360, 415], 'video-one': [695, 750, 805, 860], 'video-both': [1320, 1425, 1530, 1635],
-    'floor-plan': [250, 275, 300, 325], 'photo-floor-plan': [450, 520, 595, 665], 'exterior-drone': [400, 450, 500, 550],
-    'd2n-one': [1110, 1165, 1220, 1275], 'd2n-both': [1625, 1725, 1825, 1925],
+test('package prices match HD Photo Hub at every boundary (read 2026-09-23)', () => {
+  const cases = {
+    'luxury-media': [[1, 1970], [2500, 1970], [2501, 2140], [2800, 2140], [3500, 2140], [3501, 2315], [4500, 2315], [4501, 2485], [5500, 2485], [5501, 2655], [20500, 5075], [20501, 5670], [25500, 5670], [25501, 6345], [30000, 6345]],
+    'signature': [[2500, 2985], [2501, 3155], [3501, 3325], [4501, 3495], [12501, 5035], [30000, 7560]],
+    'social-media': [[2500, 1120], [2501, 1220], [5501, 1515], [30000, 3600]],
+    'listing-starter': [[2500, 720], [2501, 795], [3501, 870], [4501, 940], [30000, 2175]],
   };
-  const probes = [[2500, 2501], [3500, 3501], [4500, 4501], [5500, 5501]];
-  for (const [id, amounts] of Object.entries(expected)) {
-    const r = rec(id);
-    assert.ok(r, id);
-    assert.equal(resolvePrice(r, bands, 1).amount, amounts[0]);
-    probes.forEach(([lo, hi], i) => {
-      assert.equal(resolvePrice(r, bands, lo).amount, amounts[i], `${id} @ ${lo}`);
-      if (i < 3) assert.equal(resolvePrice(r, bands, hi).amount, amounts[i + 1], `${id} @ ${hi}`);
-      else assert.equal(resolvePrice(r, bands, hi).kind, 'custom', `${id} @ ${hi} must be custom quote`);
-    });
-  }
+  for (const [id, pairs] of Object.entries(cases)) for (const [sq, amt] of pairs) assert.equal(at(id, sq).amount, amt, `${id} @ ${sq}`);
 });
 
-test('no size entered shows the approved starting price', () => {
-  const s = resolvePrice(rec('luxury-media'), bands, null);
-  assert.deepEqual(s, { kind: 'starting', amount: 1845 });
+test('service tiers match HD Photo Hub, including their own top bands', () => {
+  assert.equal(at('photography', 25000).amount, 1400);
+  assert.equal(at('photography', 25001).amount, 1600);
+  assert.equal(at('video-one', 2800).amount, 750);
+  assert.equal(at('video-both', 2800).amount, 1430);
+  assert.equal(at('floor-plan', 30000).amount, 950);
+  assert.equal(at('exterior-drone', 4000).amount, 400);
+  assert.equal(at('exterior-drone', 4001).amount, 450);
+  assert.equal(at('twilight', 5000).amount, 500);
+  assert.equal(at('twilight', 5001).amount, 575);
 });
 
-test('above the top band never extrapolates', () => {
-  for (const sq of [5501, 6000, 12000]) assert.equal(resolvePrice(rec('signature'), bands, sq).kind, 'custom');
+test('each item switches to custom quote above its own maximum, never extrapolating', () => {
+  assert.equal(at('luxury-media', 30001).kind, 'custom');
+  assert.equal(at('photo-floor-plan', 12500).amount, 1175);
+  assert.equal(at('photo-floor-plan', 12501).kind, 'custom');
+  assert.equal(at('exterior-drone', 20001).kind, 'custom');
+  assert.equal(at('twilight', 20001).kind, 'custom');
+});
+
+test('no size entered shows the starting price; tier labels are readable', () => {
+  assert.deepEqual(at('luxury-media', null), { kind: 'starting', amount: 1970 });
+  assert.equal(at('luxury-media', 2800).band.label, '2,501–3,500 sq ft');
+  assert.equal(at('luxury-media', 900).band.label, 'up to 2,500 sq ft');
+  assert.equal(findTier(rec('signature'), 30000).max, 30000);
 });
 
 test('input parsing rejects blank, zero, negative and non-numeric values politely', () => {
@@ -60,5 +62,5 @@ test('input parsing rejects blank, zero, negative and non-numeric values politel
 });
 
 test('currency formatting', () => {
-  assert.equal(formatUSD(2795), '$2,795');
+  assert.equal(formatUSD(2985), '$2,985');
 });
