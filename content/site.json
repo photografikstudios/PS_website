@@ -124,7 +124,7 @@
     }
   ],
   "galleries": {
-    "_readme": "Gallery settings. realEstate.player: 'inline' (plays in the card, original brief) or 'lightbox' (opens a viewer, like Home Selected Work). Awaiting James's choice; review builds also accept ?player=inline|lightbox on /real-estate to compare. batch = cards shown before Load More.",
+    "_readme": "Gallery settings. Decided Sept 24 (James via Codex): Home Selected Work opens a lightbox; the Real Estate gallery plays inline (realEstate.player 'inline'). 'lightbox' remains available here, and review builds accept /real-estate?player=lightbox for comparison. batch = cards shown before Load More (6 on phones).",
     "realEstate": {
       "player": "inline",
       "batch": 9

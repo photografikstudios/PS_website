@@ -47,7 +47,7 @@ export function createLightbox(dlg, items, { where = 'gallery' } = {}) {
     show(order[(pos + dir + order.length) % order.length]);
   }
 
-  dlg.querySelector('[data-lb-close]').addEventListener('click', () => dlg.close());
+  dlg.querySelector('[data-lb-close]').addEventListener('click', () => { stop(); dlg.close(); });
   prev.addEventListener('click', () => step(-1));
   next.addEventListener('click', () => step(1));
   dlg.addEventListener('keydown', (e) => {
@@ -55,7 +55,7 @@ export function createLightbox(dlg, items, { where = 'gallery' } = {}) {
     if (e.key === 'ArrowRight') step(1);
     if (e.key === 'ArrowLeft') step(-1);
   });
-  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) { stop(); dlg.close(); } });
   dlg.addEventListener('close', () => { stop(); opener?.focus(); });
 
   return {
