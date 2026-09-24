@@ -317,11 +317,13 @@ await check('mobile: no horizontal overflow at 360px', async () => {
 
 await check('mobile: menu opens and closes with Escape', async () => {
   const p = await newPage({ width: 390, height: 800 }, { isMobile: true, hasTouch: true });
-  await p.goto(base + '/');
-  await p.click('.menu-toggle');
-  assert(await p.isVisible('#site-nav'), 'open');
-  await p.keyboard.press('Escape');
-  assert(!(await p.isVisible('#site-nav')), 'closed');
+  for (const path of ['/', '/real-estate/pricing', '/work', '/contact']) {
+    await p.goto(base + path);
+    await p.click('.menu-toggle');
+    assert(await p.isVisible('#site-nav'), `open on ${path}`);
+    await p.keyboard.press('Escape');
+    assert(!(await p.isVisible('#site-nav')), `closed on ${path}`);
+  }
   await p.context().close();
 });
 
@@ -348,6 +350,35 @@ await check('home: background video respects reduced motion and has a pause cont
   const playing = await p.locator('video[data-ambient]').evaluateAll((vs) => vs.filter((v) => !v.paused).length);
   assert(playing === 0, `playing under reduced motion: ${playing}`);
   assert((await p.getAttribute('[data-motion-toggle]', 'aria-pressed')) === 'true', 'toggle reflects paused');
+  await p.context().close();
+});
+
+await check('home showcase: Videos/Photos × category, lightbox, View more', async () => {
+  const p = await newPage();
+  await p.goto(base + '/');
+  const shown = () => p.locator('#sw-grid .sw-card:not([hidden])').evaluateAll((els) => els.map((e) => [e.dataset.kind, e.dataset.category]));
+  let v = await shown();
+  assert(v.length > 0 && v.length <= 9 && v.every(([k, c]) => k === 'video' && c === 'real-estate'), JSON.stringify(v));
+  assert((await p.getAttribute('#sw-more', 'href')) === '/work?service=video&category=real-estate', 'view more href');
+  await p.selectOption('#sw-kind', 'image');
+  await p.selectOption('#sw-cat', 'architecture-design');
+  v = await shown();
+  assert(v.length > 0 && v.every(([k, c]) => k === 'image' && c === 'architecture-design'), JSON.stringify(v));
+  assert((await p.getAttribute('#sw-more', 'href')) === '/work?service=photography&category=architecture-design', 'photo view more');
+  await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
+  assert(await p.locator('#lightbox[open] img').isVisible(), 'photo lightbox');
+  const t1 = await p.textContent('#lb-caption');
+  await p.keyboard.press('ArrowRight');
+  assert((await p.textContent('#lb-caption')) !== t1, 'next photo');
+  await p.keyboard.press('Escape');
+  assert(!(await p.locator('#lightbox[open]').count()), 'closed on Escape');
+  await p.selectOption('#sw-kind', 'video');
+  await p.selectOption('#sw-cat', 'commercial');
+  await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
+  assert(await p.locator('#lightbox[open] video[controls]').count() === 1, 'video lightbox');
+  assert(p.url().endsWith('/'), 'no route change');
+  await p.click('[data-lb-close]');
+  assert(!(await p.locator('#lightbox video').count()), 'video removed on close');
   await p.context().close();
 });
 

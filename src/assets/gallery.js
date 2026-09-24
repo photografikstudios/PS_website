@@ -1,5 +1,6 @@
 // Two independent, combinable filters for the Work gallery (service × industry).
-import { track } from './site.js';
+// Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
+const track = (name, props) => window.pgkTrack?.(name, props);
 
 const form = document.querySelector('[data-filters]');
 const grid = document.getElementById('work-grid');

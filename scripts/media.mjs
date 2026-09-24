@@ -60,7 +60,7 @@ async function download(id, driveId) {
   const url = `https://drive.usercontent.google.com/download?id=${driveId}&export=download&confirm=t`;
   const r = await fetch(url, { redirect: 'follow' });
   const type = r.headers.get('content-type') || '';
-  if (!r.ok || !/video|octet-stream/.test(type)) throw new Error(`drive ${r.status} ${type}`);
+  if (!r.ok || !/video|image|octet-stream/.test(type)) throw new Error(`drive ${r.status} ${type}`);
   await pipeline(Readable.fromWeb(r.body), createWriteStream(file));
   return file;
 }
@@ -84,6 +84,27 @@ let failed = 0;
 const t0 = Date.now();
 
 for (const it of items) {
+  if (it.image) {
+    // Stills: full-size WebP (max 2000px wide) for the lightbox and a 900px card version.
+    const big = join(cache, `${it.id}-img1.webp`);
+    const sm = join(cache, `${it.id}-img1-sm.webp`);
+    const meta = join(cache, `${it.id}-img1.json`);
+    try {
+      if (!(await has(big)) || !(await has(sm)) || !(await has(meta))) {
+        const src = await download(it.id, it.drive);
+        const { w, h } = probe(ff, src);
+        run(ff, ['-i', src, '-vf', "scale='min(2000,iw)':-2:flags=lanczos", '-c:v', 'libwebp', '-quality', '80', big]);
+        run(ff, ['-i', src, '-vf', "scale='min(900,iw)':-2:flags=lanczos", '-c:v', 'libwebp', '-quality', '76', sm]);
+        await writeFile(meta, JSON.stringify({ orientation: h > w ? 'vertical' : 'horizontal', width: w, height: h }));
+        await rm(src, { force: true });
+        console.log(`media: image ${it.id} ${w}x${h}`);
+      }
+      await copyFile(big, join(out, `${it.id}.webp`));
+      await copyFile(sm, join(out, `${it.id}-sm.webp`));
+      manifest[it.id] = JSON.parse(await readFile(meta, 'utf8'));
+    } catch (e) { failed++; console.error(`media: FAILED ${it.id}: ${e.message}`); }
+    continue;
+  }
   const key = `${it.id}-${VERSION}`;
   const full = join(cache, `${key}.mp4`);
   const poster = join(cache, `${key}.webp`);

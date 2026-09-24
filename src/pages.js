@@ -80,11 +80,14 @@ export function buildPages(ctx) {
   const pages = {};
 
   // ---------- HOME ----------
-  const featuredIds = ['re-hamptons-beachfront', 'revivaluxe-film', 'arch-99-hedges-amagansett', 'lauryn-lead', 'biz-torella-pools', 'agent-market-insight'];
-  const featured = featuredIds.map((id) => media.find((m) => m.id === id)).filter(Boolean);
+  // Home showcase: videos with a poster and all stills, filtered client-side (Videos/Photos × category).
+  const swThumb = (m) => (m.type === 'video' ? (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080)) : (m.thumb || ctx.optimized(m.src, 1080)));
+  const swFull = (m) => (ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
+  const showcase = media.filter((m) => (m.type === 'video' ? !!m.poster : true));
   const insight = media.find((x) => x.id === 'agent-market-insight');
   pages['/'] = {
     overlay: true,
+    scripts: ['showcase.js'],
     body: `
 <section class="hero hero--video">
   <div class="hero__media">${ambient('re-hamptons-beachfront', { eager: true, cls: 'hero__video' })}</div>
@@ -143,11 +146,35 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-<section class="section section--ink on-dark" aria-labelledby="work-h">
+<section class="section section--ink on-dark showcase" aria-labelledby="work-h" data-showcase>
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="work-h">Different briefs. <em>One standard.</em></h2></div><a class="link-arrow" href="/work">See all work →</a></div>
-    <div class="justified">${join(featured, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
+    <div class="showcase__head">
+      <div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="work-h">Different briefs. <em>One standard.</em></h2></div>
+      <div class="showcase__filters" role="group" aria-label="Filter selected work">
+        <label class="sr-only" for="sw-kind">Media type</label>
+        <select id="sw-kind" class="pill-select"><option value="video">Videos</option><option value="image">Photos</option></select>
+        <label class="sr-only" for="sw-cat">Category</label>
+        <select id="sw-cat" class="pill-select">${join(work.taxonomy.category.filter((c) => showcase.some((m) => m.category === c.id)), (c) => `<option value="${c.id}">${esc(c.label)}</option>`)}</select>
+      </div>
+    </div>
+    <div class="showcase__grid" id="sw-grid">
+      ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${i > 8 ? ' hidden' : ''}>
+        <img src="${esc(swThumb(m))}" alt="" loading="lazy" decoding="async">
+        ${m.type === 'video' ? '<span class="sw-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>' : ''}
+        <span class="sw-card__title">${esc(m.title)}${m.location ? ` <span class="sw-card__loc">${esc(m.location)}</span>` : ''}</span>
+      </button>`)}
+    </div>
+    <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">start a project</a>.</p>
+    <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/work?service=video&amp;category=real-estate" data-track="gallery_view_more">View more</a></div>
   </div>
+  <dialog class="lightbox" id="lightbox" aria-labelledby="lb-title">
+    <div class="lightbox__bar"><p class="lightbox__title" id="lb-title"></p><button type="button" class="lightbox__close" data-lb-close aria-label="Close">×</button></div>
+    <button type="button" class="lightbox__nav lightbox__nav--prev" data-lb-prev aria-label="Previous">‹</button>
+    <div class="lightbox__stage" id="lb-stage"></div>
+    <button type="button" class="lightbox__nav lightbox__nav--next" data-lb-next aria-label="Next">›</button>
+    <p class="lightbox__caption" id="lb-caption" aria-live="polite"></p>
+  </dialog>
+  <script type="application/json" id="sw-data">${JSON.stringify(showcase.map((m) => ({ kind: m.type === 'video' ? 'video' : 'image', title: m.title, sub: [m.client, m.location].filter(Boolean).join(' · '), src: m.type === 'video' ? ctx.mediaUrl(m.src) : swFull(m), poster: m.type === 'video' ? swThumb(m) : null, category: m.category, orientation: m.orientation }))).replace(/</g, '\\u003c')}</script>
 </section>
 
 <section class="section" aria-labelledby="pkg-h">

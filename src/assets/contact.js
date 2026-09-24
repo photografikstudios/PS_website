@@ -1,5 +1,6 @@
 // Custom inquiry form: validation, server submit, and an email fallback so no inquiry is lost.
-import { track } from './site.js';
+// Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
+const track = (name, props) => window.pgkTrack?.(name, props);
 
 const form = document.getElementById('inquiry');
 const errBox = document.getElementById('form-error');

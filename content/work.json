@@ -792,6 +792,467 @@
       "alt": "Brass faucet and marble backsplash detail, East Hampton residence",
       "featured": false,
       "rights": "approved"
+    },
+    {
+      "id": "ph-dune-twilight-pool",
+      "type": "image",
+      "project": null,
+      "title": "Dune Road estate at twilight",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-dune-twilight-pool.webp",
+      "thumb": "/v/ph-dune-twilight-pool-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Dune Road estate at twilight",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-dartmouth-twilight",
+      "type": "image",
+      "project": null,
+      "title": "Dartmouth residence, twilight",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-dartmouth-twilight.webp",
+      "thumb": "/v/ph-dartmouth-twilight-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Dartmouth residence, twilight",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-hampton-aerial-pool-beach",
+      "type": "image",
+      "project": null,
+      "title": "Oceanfront estate from the air",
+      "service": [
+        "photography",
+        "drone"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-hampton-aerial-pool-beach.webp",
+      "thumb": "/v/ph-hampton-aerial-pool-beach-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Oceanfront estate from the air",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-hamptons-infinity-pool",
+      "type": "image",
+      "project": null,
+      "title": "Infinity pool and garden",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-hamptons-infinity-pool.webp",
+      "thumb": "/v/ph-hamptons-infinity-pool-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Infinity pool and garden",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-hamptons-kitchen",
+      "type": "image",
+      "project": null,
+      "title": "Black and white kitchen",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-hamptons-kitchen.webp",
+      "thumb": "/v/ph-hamptons-kitchen-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Black and white kitchen",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-hamptons-bedroom-beach",
+      "type": "image",
+      "project": null,
+      "title": "Primary bedroom with beach view",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-hamptons-bedroom-beach.webp",
+      "thumb": "/v/ph-hamptons-bedroom-beach-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Primary bedroom with beach view",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-hamptons-pool-fireplace",
+      "type": "image",
+      "project": null,
+      "title": "Pool terrace and outdoor fireplace",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-hamptons-pool-fireplace.webp",
+      "thumb": "/v/ph-hamptons-pool-fireplace-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Pool terrace and outdoor fireplace",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-hamptons-bathroom",
+      "type": "image",
+      "project": null,
+      "title": "Primary bath",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-hamptons-bathroom.webp",
+      "thumb": "/v/ph-hamptons-bathroom-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Primary bath",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-hampton-exterior",
+      "type": "image",
+      "project": null,
+      "title": "Shingle-style exterior",
+      "service": [
+        "photography"
+      ],
+      "category": "real-estate",
+      "orientation": "horizontal",
+      "src": "/v/ph-hampton-exterior.webp",
+      "thumb": "/v/ph-hampton-exterior-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Shingle-style exterior",
+      "location": "The Hamptons",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-99-hedges-4",
+      "type": "image",
+      "project": null,
+      "title": "99 Hedges Lane",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/v/ph-99-hedges-4.webp",
+      "thumb": "/v/ph-99-hedges-4-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "99 Hedges Lane",
+      "location": "Amagansett",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-99-hedges-17",
+      "type": "image",
+      "project": null,
+      "title": "99 Hedges Lane, interior",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/v/ph-99-hedges-17.webp",
+      "thumb": "/v/ph-99-hedges-17-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "99 Hedges Lane, interior",
+      "location": "Amagansett",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-38-woodland",
+      "type": "image",
+      "project": null,
+      "title": "38 Woodland",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/v/ph-38-woodland.webp",
+      "thumb": "/v/ph-38-woodland-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "38 Woodland",
+      "location": "Southampton",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-142-two-holes",
+      "type": "image",
+      "project": null,
+      "title": "142 Two Holes of Water",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/v/ph-142-two-holes.webp",
+      "thumb": "/v/ph-142-two-holes-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "142 Two Holes of Water",
+      "location": "East Hampton",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-50-hawthorne",
+      "type": "image",
+      "project": null,
+      "title": "50 Hawthorne",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/v/ph-50-hawthorne.webp",
+      "thumb": "/v/ph-50-hawthorne-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "50 Hawthorne",
+      "location": "Southampton",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-66-exchange",
+      "type": "image",
+      "project": null,
+      "title": "66 Exchange Place",
+      "service": [
+        "photography"
+      ],
+      "category": "architecture-design",
+      "orientation": "horizontal",
+      "src": "/v/ph-66-exchange.webp",
+      "thumb": "/v/ph-66-exchange-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "66 Exchange Place",
+      "location": "Westhampton Beach",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-rachel-lynch-infinity",
+      "type": "image",
+      "project": null,
+      "title": "Rachel Lynch Pools: modern infinity pool",
+      "service": [
+        "photography"
+      ],
+      "category": "commercial",
+      "orientation": "horizontal",
+      "src": "/v/ph-rachel-lynch-infinity.webp",
+      "thumb": "/v/ph-rachel-lynch-infinity-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Rachel Lynch Pools: modern infinity pool",
+      "location": "Long Island",
+      "client": "Rachel Lynch Pools",
+      "source": "drive"
+    },
+    {
+      "id": "ph-torella-aerial",
+      "type": "image",
+      "project": null,
+      "title": "Torella Pools: waterfront backyard",
+      "service": [
+        "photography",
+        "drone"
+      ],
+      "category": "commercial",
+      "orientation": "horizontal",
+      "src": "/v/ph-torella-aerial.webp",
+      "thumb": "/v/ph-torella-aerial-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Torella Pools: waterfront backyard",
+      "location": "Long Island",
+      "client": "Torella Pools",
+      "source": "drive"
+    },
+    {
+      "id": "ph-revivaluxe-treatment",
+      "type": "image",
+      "project": null,
+      "title": "RevivaLuxe treatment room",
+      "service": [
+        "photography"
+      ],
+      "category": "commercial",
+      "orientation": "horizontal",
+      "src": "/v/ph-revivaluxe-treatment.webp",
+      "thumb": "/v/ph-revivaluxe-treatment-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "RevivaLuxe treatment room",
+      "location": "Long Island",
+      "client": "RevivaLuxe",
+      "source": "drive"
+    },
+    {
+      "id": "ph-revivaluxe-portrait",
+      "type": "image",
+      "project": null,
+      "title": "RevivaLuxe team portrait",
+      "service": [
+        "photography"
+      ],
+      "category": "commercial",
+      "orientation": "horizontal",
+      "src": "/v/ph-revivaluxe-portrait.webp",
+      "thumb": "/v/ph-revivaluxe-portrait-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "RevivaLuxe team portrait",
+      "location": "Long Island",
+      "client": "RevivaLuxe",
+      "source": "drive"
+    },
+    {
+      "id": "ph-bpe-steel",
+      "type": "image",
+      "project": null,
+      "title": "BPE Ironworks: steel installation",
+      "service": [
+        "photography"
+      ],
+      "category": "commercial",
+      "orientation": "horizontal",
+      "src": "/v/ph-bpe-steel.webp",
+      "thumb": "/v/ph-bpe-steel-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "BPE Ironworks: steel installation",
+      "location": "Southampton",
+      "client": "BPE Ironworks",
+      "source": "drive"
+    },
+    {
+      "id": "ph-clos-lighting",
+      "type": "image",
+      "project": null,
+      "title": "CLOS Lighting: landscape lighting",
+      "service": [
+        "photography"
+      ],
+      "category": "commercial",
+      "orientation": "horizontal",
+      "src": "/v/ph-clos-lighting.webp",
+      "thumb": "/v/ph-clos-lighting-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "CLOS Lighting: landscape lighting",
+      "location": "Long Island",
+      "client": "CLOS Lighting",
+      "source": "drive"
+    },
+    {
+      "id": "ph-noah-knows",
+      "type": "image",
+      "project": null,
+      "title": "Noah Knows podcast, episode 10",
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "orientation": "horizontal",
+      "src": "/v/ph-noah-knows.webp",
+      "thumb": "/v/ph-noah-knows-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Noah Knows podcast, episode 10",
+      "location": "Bohemia",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-network-effect",
+      "type": "image",
+      "project": null,
+      "title": "The Network Effect podcast",
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "orientation": "horizontal",
+      "src": "/v/ph-network-effect.webp",
+      "thumb": "/v/ph-network-effect-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "The Network Effect podcast",
+      "location": "Bohemia",
+      "client": null,
+      "source": "drive"
+    },
+    {
+      "id": "ph-dan-dan",
+      "type": "image",
+      "project": null,
+      "title": "Dan Dan podcast session",
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "orientation": "horizontal",
+      "src": "/v/ph-dan-dan.webp",
+      "thumb": "/v/ph-dan-dan-sm.webp",
+      "featured": false,
+      "rights": "approved",
+      "alt": "Dan Dan podcast session",
+      "location": "Bohemia",
+      "client": null,
+      "source": "drive"
     }
   ]
 }

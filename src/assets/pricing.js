@@ -1,6 +1,7 @@
 // Square-footage pricing: one structured table drives every card and row.
 import { parseSquareFeet, errorMessages, resolvePrice, formatUSD } from './pricing-core.js';
-import { track } from './site.js';
+// Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
+const track = (name, props) => window.pgkTrack?.(name, props);
 
 const data = JSON.parse(document.getElementById('pricing-data').textContent);
 const byId = Object.fromEntries(data.records.map((r) => [r.id, r]));
