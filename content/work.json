@@ -1130,7 +1130,7 @@
         "photography"
       ],
       "category": "architecture-design",
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "src": "/v/ph-99-hedges-4.webp",
       "thumb": "/v/ph-99-hedges-4-sm.webp",
       "featured": false,
@@ -1338,7 +1338,7 @@
         "photography"
       ],
       "category": "commercial",
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "src": "/v/ph-revivaluxe-portrait.webp",
       "thumb": "/v/ph-revivaluxe-portrait-sm.webp",
       "featured": false,
@@ -1456,7 +1456,7 @@
         "studio"
       ],
       "category": "creator-studios",
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "src": "/v/ph-dan-dan.webp",
       "thumb": "/v/ph-dan-dan-sm.webp",
       "featured": false,
