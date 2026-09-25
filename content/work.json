@@ -676,13 +676,14 @@
       "featured": false,
       "rights": "approved",
       "alt": null,
-      "location": "Bohemia",
+      "location": null,
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_locationNote": "Frames show the same kitchen-island set as the Episode 10 stills; the Drive notes say LI Creator Studios, but the location is not verified. Label withheld until James confirms."
     },
     {
       "id": "biz-bpe-ironworks",

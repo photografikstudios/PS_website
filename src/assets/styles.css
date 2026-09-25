@@ -700,7 +700,8 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 
 /* ---------- Home quick tiles: owner-selected stills, framed for the text block ---------- */
 .quick__media--listings img { object-position: 50% 58%; }
-.quick__media--brand img { object-position: 50% 42%; }
+.quick__media--brand img { object-position: 45% 40%; }
+@media (min-width: 900px) { .quick__tile { min-height: clamp(520px, 46vw, 660px); } }
 
 /* ---------- Commercial: client-by-client groups ---------- */
 .proj-group { padding-top: clamp(36px, 5vw, 64px); margin-top: clamp(36px, 5vw, 64px); border-top: 1px solid var(--line-dark); }
@@ -725,3 +726,11 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 @media (max-width: 640px) { .formats, .steps--4 { grid-template-columns: 1fr; } }
 .hero-credit--home { position: absolute; left: 0; right: 0; bottom: clamp(16px, 3vw, 36px); margin: 0 auto; pointer-events: none; z-index: 2; }
 @media (max-width: 700px) { .hero-credit--home { display: none; } }
+/* Review builds: keep hero controls and credits clear of the fixed review bar. */
+.has-review-bar .hero .motion-toggle, .has-review-bar .page-hero .motion-toggle { bottom: calc(clamp(16px, 3vw, 36px) + var(--review-bar-h, 56px)); }
+.has-review-bar .hero-credit--home { bottom: calc(clamp(16px, 3vw, 36px) + var(--review-bar-h, 56px)); }
+.has-review-bar .hero__inner, .has-review-bar .page-hero--video .page-hero__inner { padding-bottom: calc(clamp(56px, 8vh, 96px) + var(--review-bar-h, 56px)); }
+@media (max-width: 700px) { .has-review-bar { --review-bar-h: 36px; } }
+/* Hero films move and can be bright: a deeper left-side scrim keeps the headline and lede at AA contrast. */
+.page-hero--video .page-hero__media::after, .hero--video .hero__media::after { background: linear-gradient(90deg, rgba(21,24,22,.88) 0%, rgba(21,24,22,.66) 45%, rgba(21,24,22,.18) 82%), linear-gradient(180deg, rgba(21,24,22,.5) 0%, rgba(21,24,22,0) 24%, rgba(21,24,22,0) 55%, rgba(21,24,22,.78) 100%); }
+@media (max-width: 700px) { .page-hero--video .page-hero__media::after, .hero--video .hero__media::after { background: linear-gradient(180deg, rgba(21,24,22,.55) 0%, rgba(21,24,22,.4) 30%, rgba(21,24,22,.92) 72%); } }
