@@ -33,6 +33,12 @@ const errors = validatePricing(pricing);
 if (errors.length) { console.error('Pricing table errors:\n - ' + errors.join('\n - ')); process.exit(1); }
 
 const mediaErrors = validateMedia(work, pricing.packages.map((p) => p.id));
+// Rights gate: media whose rights/consent James has not confirmed never enters a deployed build, in any mode.
+// REVIEW mode (and the public review alias) is not private, so noindex/published:false do not protect people's images.
+// Local-only candidate review: INCLUDE_RIGHTS_PENDING=1 node src/build.mjs (never set this on Vercel).
+const rightsPending = work.media.filter((m) => m.rights !== 'approved');
+if (process.env.INCLUDE_RIGHTS_PENDING !== '1') work.media = work.media.filter((m) => m.rights === 'approved');
+if (rightsPending.length) console.log(`Rights gate: ${rightsPending.length} media record(s) awaiting James's rights/consent ${process.env.INCLUDE_RIGHTS_PENDING === '1' ? 'INCLUDED (local candidate review only)' : 'excluded'}.`);
 if (mediaErrors.length) { console.error('Media metadata errors:\n - ' + mediaErrors.join('\n - ')); process.exit(1); }
 
 const isApproved = (r) => (r.approval ?? r.rights ?? 'approved') === 'approved';

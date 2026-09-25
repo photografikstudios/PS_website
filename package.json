@@ -13,6 +13,7 @@
     "serve": "node tests/serve.mjs",
     "test": "node --test tests/pricing.test.mjs tests/gallery.test.mjs tests/field-notes.test.mjs",
     "test:e2e": "node tests/e2e.mjs",
-    "check:legacy": "node scripts/legacy-check.mjs"
+    "check:legacy": "node scripts/legacy-check.mjs",
+    "fetch:legacy": "node scripts/fetch-legacy.mjs"
   }
 }

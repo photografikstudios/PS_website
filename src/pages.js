@@ -42,7 +42,7 @@ export function buildPages(ctx) {
     <h1 class="display">${title}</h1>
     ${lede ? `<p class="lede">${lede}</p>` : ''}
     ${cta || hf.button ? `<div class="actions">${cta}${hf.button}</div>` : ''}
-    ${video && allMediaById[video.credit || video.film || video.loop] ? `<p class="hero-credit">On screen: ${esc(allMediaById[video.credit || video.film || video.loop].title)}</p>` : video?.creditText ? `<p class="hero-credit">${esc(video.creditText)}</p>` : ''}
+    ${video && allMediaById[video.credit || video.film || video.loop] ? `<p class="hero-credit">On screen: ${esc(allMediaById[video.credit || video.film || video.loop].title)}</p>` : video?.creditText ? `<p class="hero-credit">${esc(video.creditText)} ${video.pending ? needsApproval({ approval: 'pending' }, video.pending) : ''}</p>` : ''}
   </div>
   ${hf.stage}
   ${video ? motionToggle : ''}
@@ -616,7 +616,7 @@ ${fnTeaser('real-estate-media')}
   <div class="wrap page-hero__inner">
     <p class="eyebrow">Real estate media pricing</p>
     <h1 class="display">Pricing for your property.</h1>
-    <p class="lede">Enter the home's size, up to ${pricing.maxSqft.toLocaleString('en-US')} sq ft, and every package and service below updates to the same price you will see in our booking portal.</p>
+    <p class="lede">Enter the home's size, up to ${pricing.maxSqft.toLocaleString('en-US')} sq ft, and every package and service below updates using the size tiers in our booking portal. Your final price is confirmed there at checkout.</p>
   </div>
 </section>
 <section class="section section--pricing">
@@ -635,6 +635,7 @@ ${fnTeaser('real-estate-media')}
     </div>
     <p class="sr-only" id="price-live" aria-live="polite" aria-atomic="true"></p>
 
+    <h2 class="sr-only">Packages, services and add-ons</h2>
     <div class="tabs" data-tabs>
       <div class="tabs__list" role="tablist" aria-label="Price categories">
         ${join(tabs, (t, i) => `<button type="button" role="tab" class="tabs__tab" id="tab-${t.id}" aria-controls="panel-${t.id}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${t.label}</button>`)}
@@ -643,7 +644,7 @@ ${fnTeaser('real-estate-media')}
     </div>
 
     <div class="pricing-notes">
-      <p><strong>About these prices.</strong> These match our booking portal, HD Photo Hub. They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
+      <p><strong>About these prices.</strong> These are calculated from the size tiers in our booking portal, HD Photo Hub, and are confirmed there at checkout. ${needsApproval({ approval: pricing.releaseApproved ? 'approved' : 'pending' }, 'A few HD Photo Hub size bands are being reconciled with James before launch')} They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
       <p>Homes over ${pricing.maxSqft.toLocaleString('en-US')} square feet: <a href="/contact?type=real-estate-large">request a custom quote</a>.</p>
       <p>You will confirm property size, package and date in our booking portal, HD Photo Hub. ${bookBtn('pricing_notes', 'Go to booking', 'link-arrow')}</p>
     </div>
@@ -1007,7 +1008,7 @@ ${csPhotos.length || csClips.length ? `<section class="section section--ink on-d
       title: 'Find the work <em>that fits.</em>',
       lede: 'Listings, architecture, brands and studio sessions. Filter by service and industry below, and play any film right on the page.',
       cta: '<a class="btn btn--solid" href="#work-filters">Browse the work</a>',
-      video: { loop: 'work-reel', creditText: 'On screen: a silent reel of published listing, architecture and brand films.' },
+      video: { loop: 'work-reel', creditText: 'On screen: a silent reel of published listing, architecture and brand films.', pending: 'Work reel cut awaiting James\'s review' },
     })}
 <section class="section work-head on-dark" id="work-filters">
   <div class="wrap">
@@ -1074,6 +1075,7 @@ ${splitCta('Have a project like these?')}`,
     })}
 <section class="section">
   <div class="wrap">
+    <h2 class="sr-only">How we work</h2>
     <div class="features">
       <div class="feature reveal"><h3 class="h3">Quality over quantity</h3><p>A complete, considered set instead of a padded gallery of near-duplicates. Every frame earns its place.</p></div>
       <div class="feature reveal"><h3 class="h3">Marketing judgment</h3><p>We think about where the media will be used and what it needs to do there, then plan the shoot around it.</p></div>

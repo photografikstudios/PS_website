@@ -744,12 +744,11 @@ await check('creator studios: story, formats with scope, conversations, process,
   for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Clarify the story']) assert(text.includes(s), s);
   assert(await p.locator('.scope-tag--out').count() >= 2, 'separately scoped formats labelled');
   assert(await p.locator('.plan .needs-approval').count() === 2, 'session prices still pending');
-  const photos = p.locator('#cs-proof-h').locator('xpath=ancestor::section').locator('.card--image');
-  assert(await photos.count() >= 6 && await photos.count() <= 12, 'curated set, not the whole folder');
-  const newPhotos = p.locator('.card--image:has(img[src*="/v/cs-ph-"])');
-  assert(await newPhotos.count() === 8, 'eight curated new photos in review');
-  const subs = await newPhotos.locator('.card__sub').allTextContents();
-  assert(!subs.some((t) => /Bohemia|in studio/i.test(t)), 'no unverified studio location on new photos: ' + subs.join('|'));
+  // Rights gate: the eight rights-pending candidates must not reach any deployed page or file.
+  assert(await p.locator('img[src*="cs-ph-"], img[srcset*="cs-ph-"]').count() === 0, 'rights-pending photos rendered');
+  assert(!(await p.content()).includes('cs-ph-'), 'rights-pending ids in HTML');
+  const direct = await fetch(base + '/v/cs-ph-cc-onsite.webp');
+  assert(direct.status === 404, 'rights-pending file served: ' + direct.status);
   const noah = await p.locator('.card--image:has(img[src*="ph-noah-knows"]) .card__sub').allTextContents();
   assert(!noah.some((t) => /Bohemia/.test(t)), 'Noah Knows kitchen shoot not labelled Bohemia');
   const cta = p.locator('main a:has-text("Request a Studio Session")').first();

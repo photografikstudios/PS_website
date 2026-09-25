@@ -25,7 +25,12 @@ const VERSION = 'v3'; // bump to force re-encoding
 
 if (process.env.SKIP_MEDIA === '1') { console.log('media: skipped (SKIP_MEDIA=1)'); process.exit(0); }
 
-const { items } = JSON.parse(await readFile(join(root, 'content/media-sources.json'), 'utf8'));
+const { items: allItems } = JSON.parse(await readFile(join(root, 'content/media-sources.json'), 'utf8'));
+// Rights gate (mirrors src/build.mjs): never encode or publish files for media whose rights James has not confirmed.
+const workRecords = JSON.parse(await readFile(join(root, 'content/work.json'), 'utf8')).media;
+const pendingIds = new Set(workRecords.filter((m) => m.rights !== 'approved').map((m) => m.id));
+const items = process.env.INCLUDE_RIGHTS_PENDING === '1' ? allItems : allItems.filter((it) => !pendingIds.has(it.id));
+if (allItems.length !== items.length) console.log(`media: rights gate skipped ${allItems.length - items.length} pending item(s)`);
 await mkdir(out, { recursive: true });
 await mkdir(cache, { recursive: true });
 await mkdir(tmp, { recursive: true });
