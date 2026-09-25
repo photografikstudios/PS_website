@@ -702,6 +702,16 @@ await check('primary-nav pages open with a silent autoplaying 16:9 hero video, p
   assert((await blHero.locator('[data-motion-toggle]').textContent()).includes('Play video'), 'autoplay blocked: control offers Play');
   assert(await blHero.locator('h1').isVisible(), 'autoplay blocked: headline readable');
   await bl.context().close();
+  const ab = await newPage();
+  await ab.addInitScript(() => { HTMLMediaElement.prototype.play = function () { return new Promise((_, rej) => setTimeout(() => rej(new DOMException('interrupted by pause', 'AbortError')), 600)); }; });
+  await ab.goto(base + '/commercial');
+  const abToggle = ab.locator('main > section').first().locator('[data-motion-toggle]');
+  await abToggle.click();
+  await ab.waitForTimeout(900);
+  assert((await abToggle.textContent()).includes('Play video'), 'pause while loading: stays paused (AbortError is not treated as blocked)');
+  await abToggle.click();
+  assert((await abToggle.textContent()).includes('Pause video'), 'pause while loading: Play resumes');
+  await ab.context().close();
   const ph = await newPage({ width: 390, height: 844 });
   for (const path of Object.keys(heroPages)) {
     await ph.goto(base + path);

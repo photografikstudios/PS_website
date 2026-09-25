@@ -145,13 +145,16 @@ function syncAmbient(v) {
   if (v.preload === 'none') v.preload = 'auto';
   v.muted = true;
   const p = v.play();
-  if (p && p.catch) p.catch(() => {
+  if (p && p.catch) p.catch((e) => {
+    // Only a policy refusal counts as blocked. An AbortError just means the visitor paused before loading finished.
+    if (!e || e.name !== 'NotAllowedError' || motionOff) return;
     // Autoplay refused (browser policy, data saver): the poster stays and the control offers Play.
     if (v.closest('.hero, .page-hero') && toggleBtn) { toggleBtn.setAttribute('aria-pressed', 'true'); toggleBtn.querySelector('.motion-toggle__label').textContent = 'Play video'; toggleBtn.dataset.blocked = '1'; }
   });
 }
 function setMotion(off, remember) {
   motionOff = off;
+  if (toggleBtn) delete toggleBtn.dataset.blocked;
   if (toggleBtn) {
     toggleBtn.setAttribute('aria-pressed', String(off));
     toggleBtn.querySelector('.motion-toggle__label').textContent = off ? 'Play video' : 'Pause video';
