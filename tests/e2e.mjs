@@ -662,7 +662,7 @@ await check('nav: Creator Studios replaces Agencies; agency partnerships stay re
 });
 
 const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-99-hedges-amagansett', '/commercial': 'biz-rachel-lynch-pools', '/work': 'work-reel' };
-await check('primary-nav pages open with a silent 16:9 hero film, poster, pause control, in-page full film', async () => {
+await check('primary-nav pages open with a silent autoplaying 16:9 hero video, poster, pause/play control, no Watch the film prompt', async () => {
   for (const [path, id] of Object.entries(heroPages)) {
     const p = await newPage();
     await p.goto(base + path);
@@ -673,20 +673,18 @@ await check('primary-nav pages open with a silent 16:9 hero film, poster, pause 
     assert(await v.getAttribute('poster') === `/v/${id}.webp`, `${path} poster`);
     assert(await v.evaluate((el) => el.muted && el.hasAttribute('muted')), `${path} muted`);
     assert(await first.locator('[data-motion-toggle]').count() === 1, `${path} pause control`);
-    const open = first.locator('[data-hero-film-open]');
-    if (id !== 'work-reel') {
-      await open.click();
-      await p.waitForTimeout(400);
-      assert(await first.locator('[data-hero-film]').isVisible(), `${path} film stage`);
-      assert(await p.locator('dialog[open]').count() === 0, `${path} no dialog`);
-      const vid = first.locator('[data-hero-film] video');
-      assert(await vid.evaluate((el) => el.hasAttribute('controls') || el.controls), `${path} native controls (pause/mute)`);
-      assert(await v.evaluate((el) => el.paused), `${path} loop paused while film plays`);
-      await first.locator('[data-hero-film-close]').click();
-      assert(await first.locator('[data-hero-film]').isHidden(), `${path} closes`);
-      assert(await vid.evaluate((el) => el.paused), `${path} film stops on close`);
-      assert(await p.evaluate(() => document.activeElement?.hasAttribute('data-hero-film-open')), `${path} focus returns`);
-    } else assert(await open.count() === 0, 'Work reel has no full film');
+    assert(await p.getByText('Watch the film').count() === 0, `${path} has no Watch the film prompt`);
+    assert(await first.locator('[data-hero-film], [data-hero-film-open]').count() === 0, `${path} has no separate film stage`);
+    assert(await v.evaluate((el) => el.hasAttribute('playsinline') && el.hasAttribute('loop')), `${path} playsinline loop`);
+    assert(await first.locator('.actions a, .actions button').count() >= 1, `${path} keeps its primary CTA`);
+    await p.waitForFunction((sel) => { const el = document.querySelector(sel); return el && !el.paused; }, 'main > section:first-of-type video[data-ambient]', { timeout: 8000 });
+    const toggle = first.locator('[data-motion-toggle]');
+    assert((await toggle.textContent()).includes('Pause video'), `${path} control reads Pause video`);
+    await toggle.click();
+    assert(await v.evaluate((el) => el.paused), `${path} pauses`);
+    assert((await toggle.textContent()).includes('Play video'), `${path} control reads Play video`);
+    await toggle.click();
+    await p.waitForFunction((sel) => !document.querySelector(sel).paused, 'main > section:first-of-type video[data-ambient]', { timeout: 8000 });
     assert((await first.locator('.hero-credit').textContent()).length > 10, `${path} says what is on screen`);
     await p.context().close();
   }
@@ -695,6 +693,15 @@ await check('primary-nav pages open with a silent 16:9 hero film, poster, pause 
   await rm.waitForTimeout(300);
   assert(await rm.locator('main > section').first().locator('video[data-ambient]').evaluate((el) => el.paused), 'reduced motion: poster only');
   await rm.context().close();
+  const bl = await newPage();
+  await bl.addInitScript(() => { HTMLMediaElement.prototype.play = function () { return Promise.reject(new DOMException('blocked', 'NotAllowedError')); }; });
+  await bl.goto(base + '/real-estate');
+  await bl.waitForTimeout(500);
+  const blHero = bl.locator('main > section').first();
+  assert(await blHero.locator('video[data-ambient]').evaluate((el) => el.paused && !!el.poster), 'autoplay blocked: poster still frame');
+  assert((await blHero.locator('[data-motion-toggle]').textContent()).includes('Play video'), 'autoplay blocked: control offers Play');
+  assert(await blHero.locator('h1').isVisible(), 'autoplay blocked: headline readable');
+  await bl.context().close();
   const ph = await newPage({ width: 390, height: 844 });
   for (const path of Object.keys(heroPages)) {
     await ph.goto(base + path);

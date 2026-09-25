@@ -19,19 +19,10 @@ export function buildPages(ctx) {
   // ---------- shared pieces ----------
   const allMediaById = Object.fromEntries(work.media.map((m) => [m.id, m]));
   const mmss = (d) => `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
-  // Hero film: a silent 16:9 loop behind the headline (paused for reduced motion, pausable by the visitor) and,
-  // when a full film exists, a "Watch the film" button that plays it with sound in the hero itself, never in a dialog.
-  const heroFilm = (filmId) => {
-    const film = filmId ? allMediaById[filmId] : null;
-    if (!film || !visible(film)) return { button: '', stage: '' };
-    return {
-      button: `<button type="button" class="btn btn--glass" data-hero-film-open aria-controls="hero-film" aria-expanded="false">Watch the film${film.duration ? ` <span class="btn__meta">${mmss(film.duration)}</span>` : ''}</button>`,
-      stage: `<div class="hero-film" id="hero-film" data-hero-film hidden><div class="hero-film__frame">${videoPlayer(film, { sizes: '100vw' })}</div><button type="button" class="hero-film__close" data-hero-film-close>Close film <span aria-hidden="true">×</span></button></div>`,
-    };
-  };
-  const motionToggle = '<button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span class="motion-toggle__icon" aria-hidden="true"></span><span class="motion-toggle__label">Pause background video</span></button>';
+  // Hero video: the page's relevant 16:9 footage autoplays silently in its frame (muted, playsinline, poster first).
+  // No separate film stage or play prompt; the visitor can pause it, and reduced motion or blocked autoplay keeps the poster.
+  const motionToggle = '<button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span class="motion-toggle__icon" aria-hidden="true"></span><span class="motion-toggle__label">Pause video</span></button>';
   const pageHero = ({ eyebrow, title, lede, cta = '', image, imageAlt = '', tone = 'dark', video }) => {
-    const hf = video ? heroFilm(video.film) : { button: '', stage: '' };
     const kind = video ? 'page-hero--image page-hero--video' : image ? 'page-hero--image' : 'page-hero--plain';
     return `
 <section class="page-hero ${kind} ${tone === 'dark' || video ? 'on-dark' : 'page-hero--ivory'}"${video ? ` data-hero-source="${esc(video.loop)}"` : ''}>
@@ -41,10 +32,9 @@ export function buildPages(ctx) {
     ${eyebrow ? `<p class="eyebrow">${esc(eyebrow)}</p>` : ''}
     <h1 class="display">${title}</h1>
     ${lede ? `<p class="lede">${lede}</p>` : ''}
-    ${cta || hf.button ? `<div class="actions">${cta}${hf.button}</div>` : ''}
+    ${cta ? `<div class="actions">${cta}</div>` : ''}
     ${video && allMediaById[video.credit || video.film || video.loop] ? `<p class="hero-credit">On screen: ${esc(allMediaById[video.credit || video.film || video.loop].title)}</p>` : video?.creditText ? `<p class="hero-credit">${esc(video.creditText)} ${video.pending ? needsApproval({ approval: 'pending' }, video.pending) : ''}</p>` : ''}
   </div>
-  ${hf.stage}
   ${video ? motionToggle : ''}
 </section>`;
   };
@@ -136,13 +126,12 @@ export function buildPages(ctx) {
     <div class="hero__foot">
       <div>
         <p class="lede">Listing campaigns, architecture and brand production for agents, builders and businesses across the Hamptons, the North Fork and Long Island.</p>
-        <div class="actions">${bookBtn('home_hero', 'Book a Shoot', 'btn btn--rust')}<a class="link-arrow" href="/contact" data-track="project_click" data-track-location="home_hero">Start a Project →</a>${heroFilm('re-hamptons-beachfront').button}</div>
+        <div class="actions">${bookBtn('home_hero', 'Book a Shoot', 'btn btn--rust')}<a class="link-arrow" href="/contact" data-track="project_click" data-track-location="home_hero">Start a Project →</a></div>
       </div>
       <p class="hero__meta">East End · Hamptons · North Fork<br>Suffolk · Nassau · NYC</p>
     </div>
   </div>
   <p class="hero-credit hero-credit--home wrap">On screen: ${esc(allMediaById['re-hamptons-beachfront']?.title || '')}</p>
-  ${heroFilm('re-hamptons-beachfront').stage}
   ${motionToggle}
 </section>
 

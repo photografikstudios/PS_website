@@ -145,13 +145,16 @@ function syncAmbient(v) {
   if (v.preload === 'none') v.preload = 'auto';
   v.muted = true;
   const p = v.play();
-  if (p && p.catch) p.catch(() => { /* autoplay refused: poster stays */ });
+  if (p && p.catch) p.catch(() => {
+    // Autoplay refused (browser policy, data saver): the poster stays and the control offers Play.
+    if (v.closest('.hero, .page-hero') && toggleBtn) { toggleBtn.setAttribute('aria-pressed', 'true'); toggleBtn.querySelector('.motion-toggle__label').textContent = 'Play video'; toggleBtn.dataset.blocked = '1'; }
+  });
 }
 function setMotion(off, remember) {
   motionOff = off;
   if (toggleBtn) {
     toggleBtn.setAttribute('aria-pressed', String(off));
-    toggleBtn.querySelector('.motion-toggle__label').textContent = off ? 'Play background video' : 'Pause background video';
+    toggleBtn.querySelector('.motion-toggle__label').textContent = off ? 'Play video' : 'Pause video';
   }
   if (remember) { try { localStorage.setItem('pgk-motion', off ? 'off' : 'on'); } catch { /* ignore */ } }
   ambients.forEach(syncAmbient);
@@ -165,37 +168,10 @@ if (ambients.length) {
   } else ambients.forEach((v) => { inView.set(v, true); syncAmbient(v); });
   reduce.addEventListener?.('change', (m) => setMotion(m.matches, false));
   document.addEventListener('visibilitychange', () => ambients.forEach(syncAmbient));
-  toggleBtn?.addEventListener('click', () => setMotion(!motionOff, true));
+  toggleBtn?.addEventListener('click', () => {
+    // After a blocked autoplay the click is a user gesture, so Play can start the footage.
+    if (toggleBtn.dataset.blocked) { delete toggleBtn.dataset.blocked; setMotion(false, true); } else setMotion(!motionOff, true);
+  });
   setMotion(motionOff, false);
 }
 
-// ---------- Hero film: "Watch the film" plays the full film with sound inside the hero (never a dialog) ----------
-// Opening pauses the silent background loop; closing stops the film and restores the visitor's motion choice.
-const heroStage = document.querySelector('[data-hero-film]');
-const heroOpen = document.querySelector('[data-hero-film-open]');
-if (heroStage && heroOpen) {
-  const hero = heroStage.closest('section');
-  const player = heroStage.querySelector('[data-video]');
-  const video = player.querySelector('video');
-  let motionBefore = motionOff;
-  const close = () => {
-    video.pause();
-    heroStage.hidden = true;
-    hero.classList.remove('is-film-open');
-    heroOpen.setAttribute('aria-expanded', 'false');
-    if (ambients.length) setMotion(motionBefore, false);
-    heroOpen.focus();
-  };
-  heroOpen.addEventListener('click', () => {
-    motionBefore = motionOff;
-    if (ambients.length) setMotion(true, false);
-    heroStage.hidden = false;
-    hero.classList.add('is-film-open');
-    heroOpen.setAttribute('aria-expanded', 'true');
-    player.querySelector('.vplayer__start')?.click();
-    track('hero_film_open', { video: player.dataset.id });
-  });
-  heroStage.querySelector('[data-hero-film-close]').addEventListener('click', close);
-  heroStage.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-  video.addEventListener('ended', close);
-}

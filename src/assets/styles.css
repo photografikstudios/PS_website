@@ -684,17 +684,8 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .page-hero--video .page-hero__media { background: #151816; }
 .btn__meta { font: 400 10.5px/1 var(--mono); letter-spacing: .12em; opacity: .8; margin-left: 6px; }
 .hero-credit { margin: 22px 0 0; font: 400 10.5px/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: rgba(244,242,235,.78); }
-.hero-film { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: clamp(84px, 11vh, 110px) clamp(12px, 3vw, 40px) clamp(16px, 3vh, 40px); background: #0e100f; }
-.hero-film[hidden] { display: none; }
-.hero-film__frame { width: min(100%, calc((100svh - 150px) * 16 / 9)); }
-.hero-film__frame .vplayer { width: 100%; }
-.hero-film__close { position: absolute; top: clamp(78px, 10vh, 100px); right: clamp(12px, 3vw, 40px); z-index: 2; min-height: 40px; padding: 8px 14px; border: 1px solid rgba(244,242,235,.4); background: rgba(21,24,22,.6); color: var(--ivory); font: 400 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
-.hero-film__close:hover { background: var(--ivory); color: var(--charcoal); }
-.hero.is-film-open .hero__inner, .page-hero.is-film-open .page-hero__inner, .is-film-open .motion-toggle { visibility: hidden; }
 @media (max-width: 700px) {
   .page-hero--video { min-height: 78svh; }
-  .hero-film { padding-top: 120px; }
-  .hero-film__close { top: 72px; }
 }
 .work-head { padding-top: clamp(40px, 6vh, 64px); }
 
