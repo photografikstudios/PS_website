@@ -51,6 +51,7 @@ export function legacyLaunchBlockers(fn, legacy) {
   return legacy.items.filter((r) => {
     if (r.status === 'index') return !anyPublished;
     if (r.status === 'decision') return !r.approvedBy;
+    if (r.status === 'mapped' && r.audit !== 'content-verified') return true;
     return !published.has(r.target);
-  }).map((r) => `${r.from} (${r.status}: ${r.target})`);
+  }).map((r) => `${r.from} (${r.status}${r.audit && r.audit !== 'content-verified' ? `, ${r.audit}` : ''}: ${r.target})`);
 }

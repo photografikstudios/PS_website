@@ -17,16 +17,37 @@ export function buildPages(ctx) {
   const starting = (rec) => formatUSD(resolvePrice(rec, null).amount);
 
   // ---------- shared pieces ----------
-  const pageHero = ({ eyebrow, title, lede, cta = '', image, imageAlt = '', tone = 'dark' }) => `
-<section class="page-hero ${image ? 'page-hero--image' : 'page-hero--plain'} ${tone === 'dark' ? 'on-dark' : 'page-hero--ivory'}">
-  ${image ? `<div class="page-hero__media">${img(image, { alt: imageAlt, eager: true, sizes: '100vw', widths: [768, 1080, 1600, 2200] })}</div>` : ''}
+  const allMediaById = Object.fromEntries(work.media.map((m) => [m.id, m]));
+  const mmss = (d) => `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
+  // Hero film: a silent 16:9 loop behind the headline (paused for reduced motion, pausable by the visitor) and,
+  // when a full film exists, a "Watch the film" button that plays it with sound in the hero itself, never in a dialog.
+  const heroFilm = (filmId) => {
+    const film = filmId ? allMediaById[filmId] : null;
+    if (!film || !visible(film)) return { button: '', stage: '' };
+    return {
+      button: `<button type="button" class="btn btn--glass" data-hero-film-open aria-controls="hero-film" aria-expanded="false">Watch the film${film.duration ? ` <span class="btn__meta">${mmss(film.duration)}</span>` : ''}</button>`,
+      stage: `<div class="hero-film" id="hero-film" data-hero-film hidden><div class="hero-film__frame">${videoPlayer(film, { sizes: '100vw' })}</div><button type="button" class="hero-film__close" data-hero-film-close>Close film <span aria-hidden="true">×</span></button></div>`,
+    };
+  };
+  const motionToggle = '<button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span class="motion-toggle__icon" aria-hidden="true"></span><span class="motion-toggle__label">Pause background video</span></button>';
+  const pageHero = ({ eyebrow, title, lede, cta = '', image, imageAlt = '', tone = 'dark', video }) => {
+    const hf = video ? heroFilm(video.film) : { button: '', stage: '' };
+    const kind = video ? 'page-hero--image page-hero--video' : image ? 'page-hero--image' : 'page-hero--plain';
+    return `
+<section class="page-hero ${kind} ${tone === 'dark' || video ? 'on-dark' : 'page-hero--ivory'}"${video ? ` data-hero-source="${esc(video.loop)}"` : ''}>
+  ${video ? `<div class="page-hero__media">${ambient(video.loop, { eager: true, cls: 'hero__video' })}</div>`
+    : image ? `<div class="page-hero__media">${img(image, { alt: imageAlt, eager: true, sizes: '100vw', widths: [768, 1080, 1600, 2200] })}</div>` : ''}
   <div class="wrap page-hero__inner">
     ${eyebrow ? `<p class="eyebrow">${esc(eyebrow)}</p>` : ''}
     <h1 class="display">${title}</h1>
     ${lede ? `<p class="lede">${lede}</p>` : ''}
-    ${cta ? `<div class="actions">${cta}</div>` : ''}
+    ${cta || hf.button ? `<div class="actions">${cta}${hf.button}</div>` : ''}
+    ${video && allMediaById[video.credit || video.film || video.loop] ? `<p class="hero-credit">On screen: ${esc(allMediaById[video.credit || video.film || video.loop].title)}</p>` : video?.creditText ? `<p class="hero-credit">${esc(video.creditText)}</p>` : ''}
   </div>
+  ${hf.stage}
+  ${video ? motionToggle : ''}
 </section>`;
+  };
 
   const mediaCard = (m, { showMeta = true, sizes } = {}) => {
     const project = m.project ? projectBySlug[m.project] : null;
@@ -107,7 +128,7 @@ export function buildPages(ctx) {
     overlay: true,
     scripts: ['showcase.js'],
     body: `
-<section class="hero hero--video">
+<section class="hero hero--video" data-hero-source="re-hamptons-beachfront">
   <div class="hero__media">${ambient('re-hamptons-beachfront', { eager: true, cls: 'hero__video' })}</div>
   <div class="wrap hero__inner">
     <p class="eyebrow">Photography · Film · Drone · Content</p>
@@ -115,18 +136,20 @@ export function buildPages(ctx) {
     <div class="hero__foot">
       <div>
         <p class="lede">Listing campaigns, architecture and brand production for agents, builders and businesses across the Hamptons, the North Fork and Long Island.</p>
-        <div class="actions">${bookBtn('home_hero', 'Book a Shoot', 'btn btn--rust')}<a class="link-arrow" href="/contact" data-track="project_click" data-track-location="home_hero">Start a Project →</a></div>
+        <div class="actions">${bookBtn('home_hero', 'Book a Shoot', 'btn btn--rust')}<a class="link-arrow" href="/contact" data-track="project_click" data-track-location="home_hero">Start a Project →</a>${heroFilm('re-hamptons-beachfront').button}</div>
       </div>
       <p class="hero__meta">East End · Hamptons · North Fork<br>Suffolk · Nassau · NYC</p>
     </div>
   </div>
-  <button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span class="motion-toggle__icon" aria-hidden="true"></span><span class="motion-toggle__label">Pause background video</span></button>
+  <p class="hero-credit hero-credit--home wrap">On screen: ${esc(allMediaById['re-hamptons-beachfront']?.title || '')}</p>
+  ${heroFilm('re-hamptons-beachfront').stage}
+  ${motionToggle}
 </section>
 
 <section class="quick on-dark" aria-label="Book or start a project">
   <div class="wrap quick__grid">
     <article class="quick__tile reveal">
-      <div class="quick__media">${img('/v/re-hamptons-standout.webp', { alt: '' })}</div>
+      <div class="quick__media quick__media--listings"><img src="/v/home-listings-twilight.webp" srcset="/v/home-listings-twilight-sm.webp 900w, /v/home-listings-twilight.webp 2000w" sizes="(min-width: 700px) 50vw, 100vw" alt="White Westhampton residence at dusk with its windows lit" loading="lazy" decoding="async"></div>
       <div class="quick__body">
         <p class="eyebrow eyebrow--rust">For your listings</p>
         <h2 class="quick__title">Listing Media</h2>
@@ -135,7 +158,7 @@ export function buildPages(ctx) {
       </div>
     </article>
     <article class="quick__tile reveal">
-      <div class="quick__media">${img('/v/biz-revivaluxe-tour.webp', { alt: '' })}</div>
+      <div class="quick__media quick__media--brand"><img src="/v/home-brand-conversation.webp" srcset="/v/home-brand-conversation-sm.webp 900w, /v/home-brand-conversation.webp 2000w" sizes="(min-width: 700px) 50vw, 100vw" alt="Two professionals in conversation at a kitchen island while two cameras record" loading="lazy" decoding="async"></div>
       <div class="quick__body">
         <p class="eyebrow eyebrow--rust">For your brand</p>
         <h2 class="quick__title">Brand &amp; Business Media</h2>
@@ -477,7 +500,7 @@ ${join(topicsUsed, (t) => `
       title: 'Listing media that shows sellers <em>how you work.</em>',
       lede: 'Photography, cinematic video, vertical reels, drone and floor plans for Long Island, the Hamptons and the North Fork. The property sets the production plan. Your standard stays the same at every price point.',
       cta: `${bookBtn('re_hero')}<a class="link-arrow" href="/real-estate/pricing">See pricing ${arrow}</a>`,
-      image: '/images/photografik-2027/curated/home-estate-exterior.webp', imageAlt: 'Modern home at dusk with a lit interior',
+      video: { loop: 're-hamptons-calm', film: 're-hamptons-calm' },
     })}
 <section class="section">
   <div class="wrap">
@@ -696,7 +719,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       title: 'Your work, presented with <em>the care it was built with.</em>',
       lede: 'Project photography and film for builders, architects, interior designers and specialty trades. We plan coverage around how the work will be used, then define deliverables and licensing before the shoot.',
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Start a Project</a>`,
-      image: '/images/photografik-2027/curated/yankee-card.webp', imageAlt: 'Great room with tall windows in an Amagansett home by Yankee Home Builders',
+      video: { loop: 'arch-99-hedges-amagansett', film: 'arch-99-hedges-amagansett' },
     })}
 <section class="section section--ink on-dark">
   <div class="wrap">
@@ -728,6 +751,25 @@ ${agentMonthly.length ? `<section class="section section--tint">
 
   // ---------- COMMERCIAL ----------
   const comMedia = media.filter((m) => m.category === 'commercial');
+  // Group by verified project or client only (never by category alone). Unassigned media go to a general group.
+  const comGroups = (() => {
+    const groups = new Map();
+    for (const m of comMedia) {
+      const project = m.project ? projectBySlug[m.project] : null;
+      const key = m.clientId || 'general';
+      const name = m.clientId ? (m.client || project?.title) : 'More commercial work';
+      if (!groups.has(key)) groups.set(key, { key, name, items: [], href: null, general: !m.clientId });
+      const g = groups.get(key);
+      g.items.push(m);
+      if (project && project.category === 'commercial' && visible(project)) g.href = `/work/${project.slug}`;
+    }
+    const order = ['revivaluxe', 'rachel-lynch-pools', 'torella-pools'];
+    return [...groups.values()].map((g) => {
+      const films = g.items.filter((m) => m.type === 'video').length;
+      const stills = g.items.length - films;
+      return { ...g, summary: [films ? `${films} film${films > 1 ? 's' : ''}` : '', stills ? `${stills} photo${stills > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ') };
+    }).sort((a, b) => (a.general - b.general) || ((order.indexOf(a.key) + 1 || 99) - (order.indexOf(b.key) + 1 || 99)));
+  })();
   const cp = offers.commercialProperty.filter(visible);
   const b2b = offers.businessMonthly.filter(visible);
   pages['/commercial'] = {
@@ -737,17 +779,20 @@ ${agentMonthly.length ? `<section class="section section--tint">
       title: 'Consistent content, <em>without building an in-house team.</em>',
       lede: 'Brand photography, film, testimonials, podcasts and short-form content for healthcare, legal, hospitality, automotive and corporate teams. One partner for planning, production, editing and delivery.',
       cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Start a Project</a>`,
-      image: '/images/photografik-2027/curated/home-path-studio.webp', imageAlt: 'Lighting and camera setup during a studio production',
+      video: { loop: 'biz-rachel-lynch-pools', film: 'biz-rachel-lynch-pools' },
     })}
-<section class="section">
-  <div class="wrap two-col">
-    <div>
-      <p class="eyebrow">Project story</p>
-      <h2 class="h2 reveal">RevivaLuxe</h2>
-      <p>Brand photography and a vertical brand film for a medical-aesthetics practice, made to introduce the space and the people clients will meet.</p>
-      <p><a class="link-arrow" href="/work/revivaluxe">View the project ${arrow}</a></p>
-    </div>
-    <div class="vrow vrow--2">${join(comMedia, (m) => mediaCard(m, { showMeta: false, sizes: '(min-width: 900px) 22vw, 45vw' }))}</div>
+<section class="section section--ink on-dark" aria-labelledby="com-work-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">Recent brand projects, <em>client by client.</em></h2></div><a class="link-arrow" href="/work?category=commercial">All commercial work ${arrow}</a></div>
+    ${join(comGroups, (g) => `
+    <section class="proj-group" aria-labelledby="pg-${esc(g.key)}">
+      <div class="proj-group__head">
+        <h3 class="h3" id="pg-${esc(g.key)}">${esc(g.name)}</h3>
+        <p class="proj-group__meta">${esc(g.summary)}</p>
+        ${g.href ? `<a class="link-arrow" href="${g.href}">View the project ${arrow}</a>` : ''}
+      </div>
+      <div class="justified">${join(g.items, (m) => mediaCard(m, { sizes: '(min-width: 1100px) 30vw, (min-width: 700px) 45vw, 100vw' }))}<span class="justified__spacer" aria-hidden="true"></span></div>
+    </section>`)}
   </div>
 </section>
 <section class="section section--tint">
@@ -772,6 +817,18 @@ ${cp.length || b2b.length ? `<section class="section">
     </div>
   </div>
 </section>` : ''}
+<section class="section" id="agencies" aria-labelledby="agency-h">
+  <div class="wrap two-col two-col--top">
+    <div>
+      <p class="eyebrow">For agencies</p>
+      <h2 class="h2 reveal" id="agency-h">Production capacity for <em>advertising and marketing agencies.</em></h2>
+    </div>
+    <div>
+      <p>Crew, studio or on-location production, filming, editing and project management for your clients. Client-facing, behind the scenes, collaborative or white-label, with roles and approvals agreed before we start.</p>
+      <div class="actions"><a class="btn btn--ink" href="/agency-partnerships" data-track="partnership_click" data-track-location="com_agency">Agency partnerships</a><a class="link-arrow" href="/contact?type=agency" data-track="partnership_click" data-track-location="com_agency">Discuss a Partnership ${arrow}</a></div>
+    </div>
+  </div>
+</section>
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
     <h2 class="h2 reveal">Tell us what you need to make.</h2>
@@ -824,23 +881,100 @@ ${cp.length || b2b.length ? `<section class="section">
   // ---------- CREATOR STUDIOS ----------
   const sessions = offers.creatorSessions.filter(visible);
   const creatorHref = site.destinations.creatorBooking.href;
+  const csPhotos = editorialOrder(media.filter((m) => m.category === 'creator-studios' && m.type === 'image'));
+  const csClips = media.filter((m) => m.category === 'creator-studios' && m.type === 'video');
+  const csStart = (loc, label = 'Request a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}" data-track="creator_click" data-track-location="${loc}">${label}</a>`;
+  const scope = (included) => `<span class="scope-tag scope-tag--${included ? 'in' : 'out'}">${included ? 'Part of a session' : 'Scoped separately'}</span>`;
   pages['/creator-studios'] = {
     overlay: true,
+    seo: { title: 'Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
     body: `${pageHero({
       eyebrow: 'Creator Studios · Bohemia, NY',
-      title: 'A studio, and a team <em>that helps you sound like yourself.</em>',
-      lede: 'Podcasts, interviews and studio content with hands-on production support: ideas, scripts, pacing, delivery and retakes. Not just a room with cameras.',
-      cta: `<a class="btn btn--solid" href="${creatorHref}" data-track="creator_click" data-track-location="creator_hero">Request a Studio Session</a> ${needsApproval({ approval: site.destinations.creatorBooking.verified ? 'approved' : 'pending' }, 'Booking destination not confirmed')}`,
+      title: 'Show people <em>who is behind the business.</em>',
+      lede: 'Podcasts, interviews and on-camera content for business owners, agents, founders and experts, recorded with a team that helps you sound like yourself.',
+      cta: `${csStart('creator_hero')}<a class="link-arrow" href="#formats">What you can make ${arrow}</a> ${needsApproval({ approval: site.destinations.creatorBooking.verified ? 'approved' : 'pending' }, 'Direct studio booking not confirmed; this opens a Creator Studios inquiry')}`,
       image: '/images/photografik-2027/curated/creator-project-card.webp', imageAlt: 'Guest speaking into a microphone during a Creator Studios podcast recording',
     })}
-<section class="section">
+<section class="section" aria-labelledby="cs-story-h">
   <div class="wrap">
-    <p class="eyebrow">Sessions</p>
-    <h2 class="h2 reveal">Two ways to start.</h2>
-    <div class="plans plans--2">${join(sessions, (s) => `<div class="plan reveal"><h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">Starting at <strong>${formatUSD(s.amount)}</strong></p><p>${esc(s.detail)}</p></div>`)}</div>
-    <p class="aside-line">Editing and clip packages are being updated. Ask us about them when you book.</p>
+    <div class="split">
+      <div class="split__label"><p class="eyebrow">Your story</p></div>
+      <div>
+        <h2 class="h2 reveal" id="cs-story-h">People choose who they work with <em>before they ever call.</em></h2>
+        <p class="lede reveal">Your website lists what you do. It rarely shows why you started, what you believe or how you think through a problem. A recorded conversation lets customers hear that in your own words, so the first meeting starts further along.</p>
+      </div>
+    </div>
+    <div class="features">
+      <div class="feature reveal"><h3 class="h3">The person</h3><p>Where you came from, why you do this work and what keeps you at it. The part of the business customers connect with first.</p></div>
+      <div class="feature reveal"><h3 class="h3">The purpose</h3><p>What you believe about your field, what you will and will not do, and the standard you hold your work to.</p></div>
+      <div class="feature reveal"><h3 class="h3">The expertise</h3><p>The questions you answer every week, explained properly. Knowledge customers would otherwise only hear after they hire you.</p></div>
+    </div>
   </div>
 </section>
+
+<section class="section section--tint" id="formats" aria-labelledby="cs-formats-h">
+  <div class="wrap">
+    <p class="eyebrow">Formats</p>
+    <h2 class="h2 reveal" id="cs-formats-h">What you can make here.</h2>
+    <div class="formats">
+      <div class="format reveal"><h3 class="h3">Solo on-camera pieces</h3><p>You to camera: explainers, updates, answers to common questions. Recorded in a studio content session.</p>${scope(true)}</div>
+      <div class="format reveal"><h3 class="h3">Podcasts and guest conversations</h3><p>A host and one or more guests, recorded as a conversation rather than a script.</p>${scope(true)}</div>
+      <div class="format reveal"><h3 class="h3">Multi-camera interviews</h3><p>Several angles switched as you record, so the conversation looks considered and stays watchable.</p>${scope(true)}</div>
+      <div class="format reveal"><h3 class="h3">Long-form episodes</h3><p>The full recorded episode, delivered after a podcast session, ready for YouTube, your website or your podcast feed.</p>${scope(true)}</div>
+      <div class="format reveal"><h3 class="h3">Short-form clips and reels</h3><p>The strongest moments cut into vertical clips for Instagram, TikTok, Reels and LinkedIn. Not part of the standard sessions; we scope clip editing with you.</p>${scope(false)}</div>
+      <div class="format reveal"><h3 class="h3">Planned for your channels</h3><p>Topic planning, a publishing plan and distribution for the channels you actually use. Available as part of a larger or recurring program.</p>${scope(false)}</div>
+    </div>
+    <p class="aside-line">Sessions cover studio time, production support and the recorded episode or session. Editing, clip packages, strategy and distribution are quoted separately. Editing and clip packages are being updated; ask us about them when you inquire.</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="cs-conv-h">
+  <div class="wrap two-col two-col--top">
+    <div>
+      <p class="eyebrow">Conversations and relationships</p>
+      <h2 class="h2 reveal" id="cs-conv-h">A good conversation is <em>also a good reason to connect.</em></h2>
+    </div>
+    <div>
+      <p>Invite a client, a referral partner, a peer you respect or an expert your customers should hear from. Real discussion explains an idea better than a script, and it lets your audience hear more than one point of view.</p>
+      <p>The recording is also time well spent with the guest: a shared piece of work you both can use, and a professional relationship that continues after the cameras stop.</p>
+      <p class="small muted">We cannot promise leads, revenue or a particular reach. What we can do is help you have a clear, well-produced conversation that shows people who you are.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section--ink on-dark" aria-labelledby="cs-process-h">
+  <div class="wrap">
+    <div class="split">
+      <div class="split__label"><p class="eyebrow">How it works ${needsApproval({ approval: 'pending' }, 'Process wording awaiting James\'s confirmation against current studio practice')}</p></div>
+      <div><h2 class="h2 reveal" id="cs-process-h">From an idea to content you can use.</h2></div>
+    </div>
+    <ol class="steps steps--4">
+      <li class="reveal"><span class="steps__n">01 / Story</span><h3>Clarify the story and the audience.</h3><p>Who you want to reach, what they should understand about you, and what a useful episode or piece looks like for them.</p></li>
+      <li class="reveal"><span class="steps__n">02 / Plan</span><h3>Plan the topic or the guests.</h3><p>A focused topic for a solo piece, or the guests and the questions for a conversation.</p></li>
+      <li class="reveal"><span class="steps__n">03 / Record</span><h3>Record with direction.</h3><p>We handle cameras, sound and switching, coach pacing and delivery, and suggest a retake when a moment could land better.</p></li>
+      <li class="reveal"><span class="steps__n">04 / Use</span><h3>Choose what to make from it.</h3><p>The full episode, and if you want them, short clips for social. Then decide where each piece goes next.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="cs-sessions-h">
+  <div class="wrap">
+    <p class="eyebrow">Sessions</p>
+    <h2 class="h2 reveal" id="cs-sessions-h">Two ways to start.</h2>
+    <div class="plans plans--2">${join(sessions, (s) => `<div class="plan reveal"><h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">Starting at <strong>${formatUSD(s.amount)}</strong></p><p>${esc(s.detail)}</p></div>`)}</div>
+    <div class="actions">${csStart('creator_sessions')}</div>
+  </div>
+</section>
+
+${csPhotos.length || csClips.length ? `<section class="section section--ink on-dark" aria-labelledby="cs-proof-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Recent sessions</p><h2 class="h2 reveal" id="cs-proof-h">Recorded with real businesses.</h2></div><a class="link-arrow" href="/work?category=creator-studios">More studio work ${arrow}</a></div>
+    ${csClips.length ? `<h3 class="h3 proof-sub">Clips</h3><div class="justified">${join(csClips, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>` : ''}
+    ${csPhotos.length ? `<h3 class="h3 proof-sub">On set</h3><div class="justified">${join(csPhotos, (m) => `${mediaCard(m)}`)}<span class="justified__spacer" aria-hidden="true"></span></div>
+    <p class="small proof-note">Captions name the show or client. We label a session in studio or on location only where that is confirmed.${csPhotos.some((m) => m.published === false) ? ` ${needsApproval({ approval: 'pending' }, 'New photos from the Podcast Action Photos folder: rights, consent and publication approval pending with James')}` : ''}</p>` : ''}
+  </div>
+</section>` : ''}
+
 <section class="section section--tint">
   <div class="wrap two-col">
     <div>
@@ -852,16 +986,11 @@ ${cp.length || b2b.length ? `<section class="section">
     <div class="two-col__media">${img('/images/photografik-2027/curated/creator-project-hero.webp', { alt: 'Podcast guest recording on set at Creator Studios', sizes: '(min-width: 900px) 40vw, 100vw' })}</div>
   </div>
 </section>
-<section class="section section--ink on-dark">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Recorded here</p><h2 class="h2 reveal">Clips from recent sessions.</h2></div><a class="link-arrow" href="/work?category=creator-studios">More studio work ${arrow}</a></div>
-    <div class="justified">${join(media.filter((m) => m.category === 'creator-studios' && m.type === 'video'), (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
-  </div>
-</section>
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
-    <h2 class="h2 reveal">Ready to record?</h2>
-    <a class="btn btn--gold" href="${creatorHref}" data-track="creator_click" data-track-location="creator_final">Request a Studio Session</a>
+    <h2 class="h2 reveal">Plan your first session.</h2>
+    <p>Tell us who you want to reach and what you want to talk about. We will suggest a format and a starting point.</p>
+    <div class="actions">${csStart('creator_final', 'Request a Studio Session', 'btn btn--gold')}<a class="link-arrow" href="${creatorHref}" data-track="creator_click" data-track-location="creator_final_plan">Plan Your Content ${arrow}</a></div>
   </div>
 </section>`,
   };
@@ -872,11 +1001,17 @@ ${cp.length || b2b.length ? `<section class="section">
   pages['/work'] = {
     scripts: ['gallery.js'],
     dark: true,
-    body: `
-<section class="section work-head on-dark">
+    overlay: true,
+    body: `${pageHero({
+      eyebrow: 'Selected work',
+      title: 'Find the work <em>that fits.</em>',
+      lede: 'Listings, architecture, brands and studio sessions. Filter by service and industry below, and play any film right on the page.',
+      cta: '<a class="btn btn--solid" href="#work-filters">Browse the work</a>',
+      video: { loop: 'work-reel', creditText: 'On screen: a silent reel of published listing, architecture and brand films.' },
+    })}
+<section class="section work-head on-dark" id="work-filters">
   <div class="wrap">
-    <p class="eyebrow">Selected work</p>
-    <h1 class="display">Find the work that fits.</h1>
+    <h2 class="sr-only">Filter the work</h2>
     <form class="filters" data-filters aria-label="Filter work" onsubmit="return false">
       <div class="filters__field"><label for="f-service">Service type</label>
         <select id="f-service" name="service"><option value="">All</option>${join(usedSvc, (t) => `<option value="${t.id}">${esc(t.label)}</option>`)}</select></div>

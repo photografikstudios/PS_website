@@ -677,3 +677,51 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 @media (max-width: 620px) { .fn-grid, .fn-grid--2 { grid-template-columns: 1fr; } .fn-body p, .fn-list { font-size: 17px; } }
 @media (prefers-reduced-motion: reduce) { .fn-card__media img { transition: none; } .fn-card:hover .fn-card__media img { transform: none; } }
 .cta-band--light p { color: var(--muted); }
+
+/* ---------- Hero films (every primary-nav opener) ---------- */
+.page-hero--video { min-height: 88svh; display: flex; align-items: flex-end; }
+.page-hero__media .ambient { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.page-hero--video .page-hero__media { background: #151816; }
+.btn__meta { font: 400 10.5px/1 var(--mono); letter-spacing: .12em; opacity: .8; margin-left: 6px; }
+.hero-credit { margin: 22px 0 0; font: 400 10.5px/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: rgba(244,242,235,.78); }
+.hero-film { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: clamp(84px, 11vh, 110px) clamp(12px, 3vw, 40px) clamp(16px, 3vh, 40px); background: #0e100f; }
+.hero-film[hidden] { display: none; }
+.hero-film__frame { width: min(100%, calc((100svh - 150px) * 16 / 9)); }
+.hero-film__frame .vplayer { width: 100%; }
+.hero-film__close { position: absolute; top: clamp(78px, 10vh, 100px); right: clamp(12px, 3vw, 40px); z-index: 2; min-height: 40px; padding: 8px 14px; border: 1px solid rgba(244,242,235,.4); background: rgba(21,24,22,.6); color: var(--ivory); font: 400 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.hero-film__close:hover { background: var(--ivory); color: var(--charcoal); }
+.hero.is-film-open .hero__inner, .page-hero.is-film-open .page-hero__inner, .is-film-open .motion-toggle { visibility: hidden; }
+@media (max-width: 700px) {
+  .page-hero--video { min-height: 78svh; }
+  .hero-film { padding-top: 120px; }
+  .hero-film__close { top: 72px; }
+}
+.work-head { padding-top: clamp(40px, 6vh, 64px); }
+
+/* ---------- Home quick tiles: owner-selected stills, framed for the text block ---------- */
+.quick__media--listings img { object-position: 50% 58%; }
+.quick__media--brand img { object-position: 50% 42%; }
+
+/* ---------- Commercial: client-by-client groups ---------- */
+.proj-group { padding-top: clamp(36px, 5vw, 64px); margin-top: clamp(36px, 5vw, 64px); border-top: 1px solid var(--line-dark); }
+.proj-group:first-of-type { margin-top: 8px; }
+.proj-group__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; margin-bottom: 24px; }
+.proj-group__head .h3 { margin: 0; }
+.proj-group__meta { margin: 0; font: 400 10.5px/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--on-dark-muted); }
+.proj-group__head .link-arrow { margin-left: auto; }
+
+/* ---------- Creator Studios ---------- */
+.formats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 8px; }
+.format { background: var(--ivory); padding: clamp(24px, 2.4vw, 36px); display: flex; flex-direction: column; align-items: flex-start; }
+.section--tint .format { background: #ecE9df; }
+.format p { color: var(--muted); margin: 0 0 20px; flex: 1; }
+.scope-tag { font: 400 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 6px 8px; border: 1px solid currentColor; }
+.scope-tag--in { color: #2f5a3f; }
+.scope-tag--out { color: var(--rust); }
+.steps--4 { grid-template-columns: repeat(4, 1fr); }
+.proof-sub { margin: 36px 0 18px; }
+.proof-note { color: var(--on-dark-muted); margin-top: 24px; }
+@media (max-width: 1000px) { .formats { grid-template-columns: 1fr 1fr; } .steps--4 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .formats, .steps--4 { grid-template-columns: 1fr; } }
+.hero-credit--home { position: absolute; left: 0; right: 0; bottom: clamp(16px, 3vw, 36px); margin: 0 auto; pointer-events: none; z-index: 2; }
+@media (max-width: 700px) { .hero-credit--home { display: none; } }

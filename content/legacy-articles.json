@@ -1,5 +1,5 @@
 {
-  "_readme": "One row per legacy Squarespace article/blog URL. status: 'index' (listing page to /field-notes), 'mapped' (target is an existing Field Notes article), 'planned' (target article not written yet; review build keeps a temporary redirect), 'decision' (no article equivalent; James decides). Production builds fail unless every row resolves to a published article, /field-notes, or a decision with approvedBy. vercel.json redirects are checked against this file by tests/field-notes.test.mjs.",
+  "_readme": "One row per legacy Squarespace article/blog URL. status: 'index' (listing page to /field-notes), 'mapped' (target is an existing Field Notes article), 'planned' (target article not written yet; review build keeps a temporary redirect), 'decision' (no article equivalent; James decides). Production builds fail unless every row resolves to a published article, /field-notes, or a decision with approvedBy. vercel.json redirects are checked against this file by tests/field-notes.test.mjs. audit: 'content-verified' (target compared with the original article's content), 'title-only' (matched by title only; needs a content comparison before the redirect can be made permanent). Production requires content-verified for every mapped row.",
   "items": [
     {
       "from": "/insights",
@@ -30,8 +30,9 @@
       "status": "mapped",
       "target": "/field-notes/listing-video-horizontal-or-vertical",
       "reviewRedirect": "/real-estate#video",
-      "note": "Same question (what listing video shows buyers). Confirm with James after he compares the original.",
-      "approvedBy": null
+      "note": "Same question (what listing video shows buyers). Confirm with James after he compares the original. Matched by title only; Claude cannot read the original (robots-blocked). Needs a content comparison before the redirect becomes permanent.",
+      "approvedBy": null,
+      "audit": "title-only"
     },
     {
       "from": "/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide",
@@ -46,8 +47,9 @@
       "status": "mapped",
       "target": "/field-notes/twilight-drone-floor-plans",
       "reviewRedirect": "/real-estate#drone",
-      "note": "Drone value; refreshed piece answers when drone adds value.",
-      "approvedBy": null
+      "note": "Drone value; refreshed piece answers when drone adds value. Matched by title only; Claude cannot read the original (robots-blocked). Needs a content comparison before the redirect becomes permanent.",
+      "approvedBy": null,
+      "audit": "title-only"
     },
     {
       "from": "/articles/2023/10/6/capturing-the-essence-of-the-east-end-why-professional-real-estate-photography-matters",
@@ -62,8 +64,9 @@
       "status": "mapped",
       "target": "/field-notes/twilight-drone-floor-plans",
       "reviewRedirect": "/real-estate#drone",
-      "note": "Drone value, same question.",
-      "approvedBy": null
+      "note": "Drone value, same question. Matched by title only; Claude cannot read the original (robots-blocked). Needs a content comparison before the redirect becomes permanent.",
+      "approvedBy": null,
+      "audit": "title-only"
     },
     {
       "from": "/articles/2023/10/5/unlocking-the-charm-of-long-island-real-estate-meet-your-trusted-real-estate-photographer",
@@ -94,8 +97,9 @@
       "status": "mapped",
       "target": "/field-notes/twilight-drone-floor-plans",
       "reviewRedirect": "/real-estate#drone",
-      "note": "Drone value, same question.",
-      "approvedBy": null
+      "note": "Drone value, same question. Matched by title only; Claude cannot read the original (robots-blocked). Needs a content comparison before the redirect becomes permanent.",
+      "approvedBy": null,
+      "audit": "title-only"
     },
     {
       "from": "/articles/2023/9/25/long-islands-premier-real-estate-photography-and-social-media-agency",
@@ -131,19 +135,22 @@
     },
     {
       "from": "/articles/why-you-should-get-a-real-estate-video-done",
-      "status": "mapped",
-      "target": "/field-notes/listing-video-horizontal-or-vertical",
+      "status": "planned",
+      "target": "/field-notes/is-a-listing-video-worth-it",
       "reviewRedirect": "/real-estate#video",
-      "note": "Same question (should a listing have video, which kind). Confirm with James.",
-      "approvedBy": null
+      "note": "Original argues why to get a listing video; the horizontal/vertical format article does not answer that. Needs its own replacement (or a reasons section) written from the original text. Temporary redirect to the Real Estate video section.",
+      "approvedBy": null,
+      "audit": null
     },
     {
       "from": "/articles/how-to-prep-a-home-for-photos",
-      "status": "planned",
+      "status": "mapped",
       "target": "/field-notes/how-to-prepare-a-home-for-listing-photos",
       "reviewRedirect": "/real-estate#faq",
-      "note": "Refresh of James's article. Needs his original text (Squarespace export) before drafting.",
-      "approvedBy": null
+      "note": "Room-by-room checklist preserved from the original. Lighting advice awaits James's confirmation.",
+      "approvedBy": null,
+      "audit": "content-verified",
+      "auditBy": "Codex source notes (HOME_PREP_SOURCE_NOTES.md), Sep 24 2026"
     }
   ]
 }

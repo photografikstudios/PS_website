@@ -1,11 +1,26 @@
 {
   "_readme": "Field Notes: one structured article collection. status: 'source-needed' (planned, waiting for James's original text; never rendered), 'draft' / 'review' (rendered only in review builds, with a Draft tag, excluded from sitemap), 'published' (production, index, sitemap; requires approvedBy and datePublished). Sections: { h, p: [paragraphs], list: [items], media: work.json media id, note }. Only facts from approved site copy, HD Photo Hub, or James. legacyUrls = old Squarespace paths this article replaces one-to-one (vercel.json must redirect each of them here). See LEGACY_ARTICLES inventory in content/legacy-articles.json.",
   "topics": [
-    { "id": "real-estate-media", "label": "Real Estate Media" },
-    { "id": "agent-marketing", "label": "Agent Marketing" },
-    { "id": "architecture-design", "label": "Architecture & Design" },
-    { "id": "brand-production", "label": "Brand Production" },
-    { "id": "behind-the-work", "label": "Behind the Work" }
+    {
+      "id": "real-estate-media",
+      "label": "Real Estate Media"
+    },
+    {
+      "id": "agent-marketing",
+      "label": "Agent Marketing"
+    },
+    {
+      "id": "architecture-design",
+      "label": "Architecture & Design"
+    },
+    {
+      "id": "brand-production",
+      "label": "Brand Production"
+    },
+    {
+      "id": "behind-the-work",
+      "label": "Behind the Work"
+    }
   ],
   "articles": [
     {
@@ -14,11 +29,16 @@
       "summary": "What each format is for, where it plays, and when a listing is worth both.",
       "topic": "real-estate-media",
       "status": "review",
-      "author": { "name": "Photografik Studios", "confirm": "James to confirm byline" },
+      "author": {
+        "name": "Photografik Studios",
+        "confirm": "James to confirm byline"
+      },
       "datePublished": null,
       "dateModified": null,
       "approvedBy": null,
-      "hero": { "media": "re-hamptons-beachfront" },
+      "hero": {
+        "media": "re-hamptons-beachfront"
+      },
       "answer": "Choose horizontal film when the video will live on the listing page, YouTube, email and your listing presentations. Choose a vertical reel when the launch runs mainly on Instagram, TikTok and Reels. When a property will be marketed on both, plan both formats from the same shoot rather than cropping one into the other.",
       "sections": [
         {
@@ -62,13 +82,24 @@
           ]
         }
       ],
-      "related": { "service": "/real-estate#compare", "pricing": "/real-estate/pricing" },
-      "cta": { "label": "Compare what each package includes", "href": "/real-estate#compare" },
-      "sources": [ "Photografik Real Estate page copy (approved)", "HD Photo Hub package inclusions (read 2026-09-23)" ],
-      "seo": { "title": "Horizontal film or vertical reel for a listing? | Photografik", "description": "When a listing needs horizontal film, a vertical reel or both, where each plays, and which Photografik packages include them." },
+      "related": {
+        "service": "/real-estate#compare",
+        "pricing": "/real-estate/pricing"
+      },
+      "cta": {
+        "label": "Compare what each package includes",
+        "href": "/real-estate#compare"
+      },
+      "sources": [
+        "Photografik Real Estate page copy (approved)",
+        "HD Photo Hub package inclusions (read 2026-09-23)"
+      ],
+      "seo": {
+        "title": "Horizontal film or vertical reel for a listing? | Photografik",
+        "description": "When a listing needs horizontal film, a vertical reel or both, where each plays, and which Photografik packages include them."
+      },
       "legacyUrls": [
-        "/articles/2026/2/12/your-listing-isnt-just-a-home-its-an-experience-are-you-showing-it",
-        "/articles/why-you-should-get-a-real-estate-video-done"
+        "/articles/2026/2/12/your-listing-isnt-just-a-home-its-an-experience-are-you-showing-it"
       ]
     },
     {
@@ -77,11 +108,16 @@
       "summary": "What each one shows buyers that standard daytime photos cannot, and when to skip it.",
       "topic": "real-estate-media",
       "status": "review",
-      "author": { "name": "Photografik Studios", "confirm": "James to confirm byline" },
+      "author": {
+        "name": "Photografik Studios",
+        "confirm": "James to confirm byline"
+      },
       "datePublished": null,
       "dateModified": null,
       "approvedBy": null,
-      "hero": { "media": "ph-dune-twilight-pool" },
+      "hero": {
+        "media": "ph-dune-twilight-pool"
+      },
       "answer": "Add drone when the land, water, neighborhood or the way the home sits on its lot is part of the value. Add twilight when the home has lighting, architecture or outdoor spaces that come alive at dusk. Add a floor plan for almost any listing where buyers need to understand the layout before they visit.",
       "sections": [
         {
@@ -116,10 +152,22 @@
           ]
         }
       ],
-      "related": { "service": "/real-estate", "pricing": "/real-estate/pricing" },
-      "cta": { "label": "See prices for your property", "href": "/real-estate/pricing" },
-      "sources": [ "Photografik Real Estate page copy (approved)", "HD Photo Hub package inclusions (read 2026-09-23)" ],
-      "seo": { "title": "When are twilight, drone and floor plans worth it? | Photografik", "description": "What twilight photos, drone and a floor plan show buyers, when each adds value to a listing, and which packages include them." },
+      "related": {
+        "service": "/real-estate",
+        "pricing": "/real-estate/pricing"
+      },
+      "cta": {
+        "label": "See prices for your property",
+        "href": "/real-estate/pricing"
+      },
+      "sources": [
+        "Photografik Real Estate page copy (approved)",
+        "HD Photo Hub package inclusions (read 2026-09-23)"
+      ],
+      "seo": {
+        "title": "When are twilight, drone and floor plans worth it? | Photografik",
+        "description": "What twilight photos, drone and a floor plan show buyers, when each adds value to a listing, and which packages include them."
+      },
       "legacyUrls": [
         "/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography",
         "/articles/2023/10/5/elevating-suffolk-county-real-estate-photography-with-drone-video",
@@ -129,16 +177,119 @@
     {
       "slug": "how-to-prepare-a-home-for-listing-photos",
       "title": "How to prepare a home for listing photos and video",
-      "summary": "A room-by-room checklist, and what our crew handles on the day.",
+      "summary": "A room-by-room checklist for sellers and agents, from the driveway to the pool.",
       "topic": "real-estate-media",
-      "status": "source-needed",
-      "author": { "name": "James", "confirm": "Refresh of James's original article; needs his original text (Squarespace export) before drafting" },
+      "status": "review",
+      "author": {
+        "name": "Photografik Studios",
+        "confirm": "James to confirm the byline and approve the lighting advice before publication"
+      },
       "datePublished": null,
       "dateModified": null,
       "approvedBy": null,
-      "answer": "",
-      "sections": [],
-      "legacyUrls": [ "/articles/how-to-prep-a-home-for-photos" ]
+      "answer": "Clean and declutter every room, clear counters and personal items, and move cars, bins and hoses out of sight. Open the blinds so rooms are lit by daylight. For daytime interior photos, leave the artificial lights off; if a twilight shoot is booked, make sure every interior, exterior and pool light works.",
+      "sections": [
+        {
+          "h": "The whole house",
+          "list": [
+            "Clean and organize every room that will be photographed.",
+            "Clear countertops and other flat surfaces.",
+            "Put garbage and recycling bins out of sight.",
+            "If a twilight shoot is scheduled, check that every interior and exterior light works."
+          ]
+        },
+        {
+          "h": "Outside the house",
+          "list": [
+            "Move cars out of the driveway and away from the front of the house.",
+            "Clear debris from the driveway and yard, and sweep the paths.",
+            "Clear visible clutter from the roof and gutters.",
+            "Put away bins, hoses and tools.",
+            "Clean the barbecue, or store it.",
+            "Wash windows and glass doors.",
+            "Clean and straighten outdoor furniture; set out cushions and open umbrellas.",
+            "Remove seasonal decorations."
+          ]
+        },
+        {
+          "h": "Light, windows and blinds",
+          "p": [
+            "Interior photos are made with natural window light. For daytime interiors, keep artificial lights off, because mixing lamp light with daylight creates color casts.",
+            "Open horizontal and vertical blinds and shutters so the rooms fill with light.",
+            "Twilight is different: the lights are part of the picture, so every interior, exterior and landscape light needs to be working and switched on."
+          ],
+          "note": "Review before publishing: confirm this matches current shoot practice and the separate legacy lights-off article."
+        },
+        {
+          "h": "Every interior room",
+          "list": [
+            "Put away personal items and family photos.",
+            "Turn off ceiling fans.",
+            "Clean mirrors and floors.",
+            "Hide wastebaskets and pet gear.",
+            "Switch off TVs and screens; hide cables and remotes.",
+            "Put away children's toys.",
+            "Remove extra furniture and decor, and small rugs that hide the floor."
+          ]
+        },
+        {
+          "h": "Kitchen",
+          "list": [
+            "Clear dishes, food, small appliances, soap and drying racks from the counters.",
+            "Clean the appliances and the floor.",
+            "Tidy open shelving.",
+            "Remove magnets and photos from the refrigerator."
+          ]
+        },
+        {
+          "h": "Living spaces and bedrooms",
+          "list": [
+            "Organize bookshelves and reduce personal items.",
+            "Remove furniture the room does not need.",
+            "Make beds smoothly and arrange the pillows.",
+            "Put away clothing and laundry.",
+            "Clear bedside tables and anything stored under the beds."
+          ]
+        },
+        {
+          "h": "Bathrooms",
+          "list": [
+            "Close toilet lids.",
+            "Remove toiletries, bath products, wastebaskets and cleaning tools.",
+            "Remove extra towels and everything from the counters."
+          ]
+        },
+        {
+          "h": "Pool and spa",
+          "list": [
+            "Clean the water and the pool floor.",
+            "Remove covers and pool equipment.",
+            "Straighten chairs and umbrellas.",
+            "For twilight, switch on pool lights and water features that will be photographed."
+          ]
+        }
+      ],
+      "legacyUrls": [
+        "/articles/how-to-prep-a-home-for-photos"
+      ],
+      "hero": {
+        "media": "ph-hamptons-kitchen"
+      },
+      "related": {
+        "service": "/real-estate",
+        "pricing": "/real-estate/pricing"
+      },
+      "cta": {
+        "label": "See prices for your property",
+        "href": "/real-estate/pricing"
+      },
+      "sources": [
+        "Photografik's original article, How to prep a home for photos (photografikstudios.com/articles/how-to-prep-a-home-for-photos), from Codex's source notes, HOME_PREP_SOURCE_NOTES.md, Sep 24 2026"
+      ],
+      "seo": {
+        "title": "How to prepare a home for listing photos and video | Photografik",
+        "description": "A room-by-room checklist for listing photos: exterior, lighting and blinds, kitchen, bedrooms, bathrooms and pool, plus what changes for a twilight shoot."
+      }
     }
   ]
 }

@@ -84,6 +84,7 @@ let failed = 0;
 const t0 = Date.now();
 
 for (const it of items) {
+  if (it.montage) continue; // assembled below from already-encoded films
   if (it.image) {
     // Stills: full-size WebP (max 2000px wide) for the lightbox and a 900px card version.
     const big = join(cache, `${it.id}-img1.webp`);
@@ -108,7 +109,7 @@ for (const it of items) {
   const key = `${it.id}-${VERSION}`;
   const full = join(cache, `${key}.mp4`);
   const poster = join(cache, `${key}.webp`);
-  const loop = join(cache, `${key}-loop.mp4`);
+  const loop = join(cache, `${key}${it.loopHeight === 720 ? '-h720' : ''}-loop.mp4`);
   const meta = join(cache, `${key}.json`);
   const need = !(await has(full)) || !(await has(poster)) || !(await has(meta)) || (it.loop && !(await has(loop)));
   try {
@@ -126,7 +127,7 @@ for (const it of items) {
         const [start, len] = it.loop;
         const lscale = vertical ? 'scale=540:-2' : `scale=-2:${it.loopHeight || 540}`;
         run(ff, ['-ss', String(start), '-t', String(len), '-i', src, '-an', '-vf', `${lscale}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264',
-          '-preset', 'veryfast', '-crf', '28', '-maxrate', it.loopHeight > 540 ? '3500k' : '1500k', '-bufsize', '6000k', '-movflags', '+faststart', loop]);
+          '-preset', 'veryfast', '-crf', '28', '-maxrate', it.loopHeight >= 1080 ? '3500k' : it.loopHeight > 540 ? '2500k' : '1500k', '-bufsize', '6000k', '-movflags', '+faststart', loop]);
       }
       await writeFile(meta, JSON.stringify({ orientation: vertical ? 'vertical' : 'horizontal', duration: Math.round(d), width: w, height: h }));
       await rm(src, { force: true });
@@ -142,6 +143,32 @@ for (const it of items) {
     failed++;
     console.error(`media: FAILED ${it.id}: ${e.message}`);
   }
+}
+// ---------- Montages: silent 16:9 loops cut from films encoded above (e.g. the Work page reel) ----------
+for (const it of items.filter((i) => i.montage)) {
+  const key = `${it.id}-${VERSION}-${it.montage.map((s) => s.join('_')).join('.')}`.replace(/[^\w.-]/g, '');
+  const loop = join(cache, `${key}-loop.mp4`);
+  const poster = join(cache, `${key}.webp`);
+  try {
+    if (!(await has(loop)) || !(await has(poster))) {
+      const args = [];
+      const parts = [];
+      it.montage.forEach(([src, start, len], i) => {
+        const f = join(cache, `${src}-${VERSION}.mp4`);
+        args.push('-ss', String(start), '-t', String(len), '-i', f);
+        parts.push(`[${i}:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,setsar=1,fps=30,format=yuv420p[v${i}]`);
+      });
+      for (const [src] of it.montage) if (!(await has(join(cache, `${src}-${VERSION}.mp4`)))) throw new Error(`montage source ${src} not encoded`);
+      const filter = `${parts.join(';')};${it.montage.map((_, i) => `[v${i}]`).join('')}concat=n=${it.montage.length}:v=1:a=0[out]`;
+      run(ff, [...args, '-filter_complex', filter, '-map', '[out]', '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '27',
+        '-maxrate', '3000k', '-bufsize', '6000k', '-movflags', '+faststart', loop]);
+      run(ff, ['-ss', '1', '-i', loop, '-frames:v', '1', '-c:v', 'libwebp', '-quality', '78', poster]);
+      console.log(`media: montage ${it.id} from ${it.montage.length} films`);
+    }
+    await copyFile(loop, join(out, `${it.id}-loop.mp4`));
+    await copyFile(poster, join(out, `${it.id}.webp`));
+    manifest[it.id] = { orientation: 'horizontal', duration: it.montage.reduce((a, s) => a + s[2], 0), width: 1280, height: 720, montage: true };
+  } catch (e) { failed++; console.error(`media: FAILED montage ${it.id}: ${e.message}`); }
 }
 await writeFile(join(out, 'manifest.json'), JSON.stringify(manifest));
 

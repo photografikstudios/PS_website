@@ -239,12 +239,12 @@
     },
     {
       "source": "/articles/why-you-should-get-a-real-estate-video-done",
-      "destination": "/field-notes/listing-video-horizontal-or-vertical",
+      "destination": "/real-estate#video",
       "permanent": false
     },
     {
       "source": "/articles/how-to-prep-a-home-for-photos",
-      "destination": "/real-estate#faq",
+      "destination": "/field-notes/how-to-prepare-a-home-for-listing-photos",
       "permanent": false
     }
   ]

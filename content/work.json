@@ -1,5 +1,5 @@
 {
-  "_readme": "Portfolio records and gallery taxonomy. ONE media collection drives Home Selected Work, the Real Estate gallery and Work; never copy a record into a second list. Add a project to 'projects' and its media to 'media'. Media paths are relative to site.json media.base unless they start with http or /v/ (encoded by scripts/media.mjs from content/media-sources.json, keyed by the same id). rights: 'approved' | 'pending'. published: false keeps a record out of production (review builds show it with a Needs approval tag). packageIds: verified HD Photo Hub package ids (luxury-media, signature, social-media, listing-starter) ONLY after checking the service delivered or James's approval; leave [] when unknown. capturedYear: actual shoot year, or null when not confirmed (never guessed from Drive folders). sortPriority: higher shows first; ties keep file order. Use scripts/ingest.mjs to add and tag records.",
+  "_readme": "Portfolio records and gallery taxonomy. ONE media collection drives Home Selected Work, the Real Estate gallery and Work; never copy a record into a second list. Add a project to 'projects' and its media to 'media'. Media paths are relative to site.json media.base unless they start with http or /v/ (encoded by scripts/media.mjs from content/media-sources.json, keyed by the same id). rights: 'approved' | 'pending'. published: false keeps a record out of production (review builds show it with a Needs approval tag). packageIds: verified HD Photo Hub package ids (luxury-media, signature, social-media, listing-starter) ONLY after checking the service delivered or James's approval; leave [] when unknown. capturedYear: actual shoot year, or null when not confirmed (never guessed from Drive folders). sortPriority: higher shows first; ties keep file order. Use scripts/ingest.mjs to add and tag records. clientId: verified client/project identity (Codex/James catalog, Sep 24); Commercial groups media by clientId, never by category alone.",
   "taxonomy": {
     "service": [
       {
@@ -216,7 +216,9 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "revivaluxe",
+      "client": "RevivaLuxe"
     },
     {
       "id": "lauryn-lead",
@@ -313,7 +315,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "torella-pools"
     },
     {
       "id": "yankee-lead",
@@ -415,7 +418,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "rachel-lynch-pools"
     },
     {
       "id": "agent-expertise",
@@ -513,7 +517,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "revivaluxe"
     },
     {
       "id": "re-penniman-ln",
@@ -596,7 +601,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "eestairs"
     },
     {
       "id": "agent-on-camera",
@@ -703,7 +709,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "bpe-ironworks"
     },
     {
       "id": "re-hamptons-cinematic",
@@ -853,7 +860,9 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "revivaluxe",
+      "client": "RevivaLuxe"
     },
     {
       "id": "creator-still",
@@ -1280,7 +1289,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "rachel-lynch-pools"
     },
     {
       "id": "ph-torella-aerial",
@@ -1304,12 +1314,13 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "torella-pools"
     },
     {
       "id": "ph-revivaluxe-treatment",
       "type": "image",
-      "project": null,
+      "project": "revivaluxe",
       "title": "RevivaLuxe treatment room",
       "service": [
         "photography"
@@ -1327,12 +1338,13 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "revivaluxe"
     },
     {
       "id": "ph-revivaluxe-portrait",
       "type": "image",
-      "project": null,
+      "project": "revivaluxe",
       "title": "RevivaLuxe team portrait",
       "service": [
         "photography"
@@ -1350,7 +1362,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "revivaluxe"
     },
     {
       "id": "ph-bpe-steel",
@@ -1373,7 +1386,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "bpe-ironworks"
     },
     {
       "id": "ph-clos-lighting",
@@ -1396,7 +1410,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "clientId": "clos-lighting"
     },
     {
       "id": "ph-noah-knows",
@@ -1414,13 +1429,14 @@
       "featured": false,
       "rights": "approved",
       "alt": "Noah Knows podcast, episode 10",
-      "location": "Bohemia",
+      "location": null,
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_locationNote": "Same Episode 10 kitchen-island shoot as the Home brand tile; not verified as the Bohemia studio (Codex/James, Sep 24)."
     },
     {
       "id": "ph-network-effect",
@@ -1469,6 +1485,214 @@
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0
+    },
+    {
+      "id": "cs-ph-cc-onsite",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "Champagne Confidential, episode 19, recorded on site",
+      "orientation": "horizontal",
+      "src": "/v/cs-ph-cc-onsite.webp",
+      "thumb": "/v/cs-ph-cc-onsite-sm.webp",
+      "alt": "Wide behind-the-scenes view of an outdoor podcast set at a vineyard, with cameras, lights and the hosts at a table",
+      "location": "On location",
+      "client": "Champagne Confidential",
+      "_sourceFile": "Podcast Action Photos/CC - EP 19 - On Site - BTS-11.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+    },
+    {
+      "id": "cs-ph-cc-ep20",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "Champagne Confidential, episode 20",
+      "orientation": "horizontal",
+      "src": "/v/cs-ph-cc-ep20.webp",
+      "thumb": "/v/cs-ph-cc-ep20-sm.webp",
+      "alt": "Two hosts in conversation on a white sofa beneath the Champagne Confidential sign",
+      "location": null,
+      "client": "Champagne Confidential",
+      "_sourceFile": "Podcast Action Photos/CC - Episode 20-8.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+    },
+    {
+      "id": "cs-ph-hedgestone-switch",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "Hedgestone podcast recording",
+      "orientation": "horizontal",
+      "src": "/v/cs-ph-hedgestone-switch.webp",
+      "thumb": "/v/cs-ph-hedgestone-switch-sm.webp",
+      "alt": "Host and guest at microphones while their camera angles show on the switching monitors in the foreground",
+      "location": null,
+      "client": "Hedgestone",
+      "_sourceFile": "Podcast Action Photos/Hedgestone - 8.25 BTS-10.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+    },
+    {
+      "id": "cs-ph-island-federal",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "Island Federal podcast recording",
+      "orientation": "horizontal",
+      "src": "/v/cs-ph-island-federal.webp",
+      "thumb": "/v/cs-ph-island-federal-sm.webp",
+      "alt": "Two-person podcast set with the Island Federal logo on screen and the switching desk in the foreground",
+      "location": null,
+      "client": "Island Federal",
+      "_sourceFile": "Podcast Action Photos/Island Federal BTS-6.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+    },
+    {
+      "id": "cs-ph-determined-society",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "The Determined Society, after the episode",
+      "orientation": "horizontal",
+      "src": "/v/cs-ph-determined-society.webp",
+      "thumb": "/v/cs-ph-determined-society-sm.webp",
+      "alt": "Host and guest standing together on The Determined Society podcast set",
+      "location": null,
+      "client": "The Determined Society",
+      "_sourceFile": "Podcast Action Photos/Shawn French - Trevor Bauer BTS-36.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+    },
+    {
+      "id": "cs-ph-solo-couch",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "Solo on-camera session",
+      "orientation": "vertical",
+      "src": "/v/cs-ph-solo-couch.webp",
+      "thumb": "/v/cs-ph-solo-couch-sm.webp",
+      "alt": "Speaker talking to camera from a white sofa, with a microphone on a boom arm",
+      "location": null,
+      "client": null,
+      "_sourceFile": "Podcast Action Photos/Amanda - White Couch Solo-4.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+    },
+    {
+      "id": "cs-ph-solo-bts",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "Solo recording, behind the scenes",
+      "orientation": "horizontal",
+      "src": "/v/cs-ph-solo-bts.webp",
+      "thumb": "/v/cs-ph-solo-bts-sm.webp",
+      "alt": "Wide view of a solo recording surrounded by lights, cameras and a monitor desk",
+      "location": null,
+      "client": null,
+      "_sourceFile": "Podcast Action Photos/Kenny Miller - BTS photos-7.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+    },
+    {
+      "id": "cs-ph-dan-dan-conversation",
+      "type": "image",
+      "project": null,
+      "service": [
+        "photography",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "featured": false,
+      "rights": "pending",
+      "source": "drive",
+      "published": false,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "title": "Dan Dan podcast conversation",
+      "orientation": "horizontal",
+      "src": "/v/cs-ph-dan-dan-conversation.webp",
+      "thumb": "/v/cs-ph-dan-dan-conversation-sm.webp",
+      "alt": "Host and guest mid-conversation in armchairs beside the Dan Dan podcast sign",
+      "location": null,
+      "client": "Dan Dan",
+      "_sourceFile": "Podcast Action Photos/Dan Dan July Podcast Action Shots-75.jpg",
+      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
     }
   ]
 }

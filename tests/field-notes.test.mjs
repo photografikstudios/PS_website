@@ -45,5 +45,15 @@ test('production launch stays blocked until every legacy URL has an approved des
   };
   const decided = { items: legacy.items.map((r) => (r.status === 'decision' ? { ...r, approvedBy: 'James' } : r)) };
   const left = legacyLaunchBlockers(approved, decided);
-  assert.ok(left.every((l) => l.includes('planned')), left.join('\n'));
+  assert.ok(left.every((l) => l.includes('planned') || l.includes('title-only')), left.join('\n'));
+});
+
+test('a mapped redirect matched only by title keeps production blocked until its content is compared', () => {
+  const titleOnly = legacy.items.filter((r) => r.status === 'mapped' && r.audit !== 'content-verified');
+  assert.ok(titleOnly.length > 0, 'update this test once every mapped row is content-verified');
+  const approved = { articles: fn.articles.map((a) => ({ ...a, status: 'published', approvedBy: 'James', datePublished: '2026-10-01' })) };
+  const left = legacyLaunchBlockers(approved, legacy);
+  for (const r of titleOnly) assert.ok(left.some((l) => l.startsWith(r.from)), r.from);
+  const verified = legacy.items.filter((r) => r.status === 'mapped' && r.audit === 'content-verified');
+  for (const r of verified) assert.ok(!left.some((l) => l.startsWith(r.from)), r.from);
 });

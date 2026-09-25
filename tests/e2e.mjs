@@ -258,7 +258,7 @@ await check('booking CTAs point to HD Photo Hub', async () => {
 });
 
 await check('redirects from old Squarespace and Replit routes', async () => {
-  const cases = { '/articles/how-to-prep-a-home-for-photos': '/real-estate#faq', '/blog-1': '/field-notes', '/articles': '/field-notes', '/articles/why-you-should-get-a-real-estate-video-done': '/field-notes/listing-video-horizontal-or-vertical', '/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography': '/field-notes/twilight-drone-floor-plans', '/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide': '/agent-content', '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
+  const cases = { '/articles/how-to-prep-a-home-for-photos': '/field-notes/how-to-prepare-a-home-for-listing-photos', '/blog-1': '/field-notes', '/articles': '/field-notes', '/articles/why-you-should-get-a-real-estate-video-done': '/real-estate#video', '/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography': '/field-notes/twilight-drone-floor-plans', '/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide': '/agent-content', '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
   for (const [from, to] of Object.entries(cases)) {
     const r = await fetch(base + from, { redirect: 'manual' });
     assert([307, 308].includes(r.status) && r.headers.get('location') === to, `${from} -> ${r.status} ${r.headers.get('location')}`);
@@ -366,6 +366,7 @@ await check('home showcase: Videos/Photos × category, lightbox, View more', asy
   assert(v.length > 0 && v.every(([k, c]) => k === 'image' && c === 'architecture-design'), JSON.stringify(v));
   assert((await p.getAttribute('#sw-more', 'href')) === '/work?service=photography&category=architecture-design', 'photo view more');
   await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
+  await p.locator('#lightbox[open] img').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
   assert(await p.locator('#lightbox[open] img').isVisible(), 'photo lightbox');
   const t1 = await p.textContent('#lb-caption');
   await p.keyboard.press('ArrowRight');
@@ -577,8 +578,8 @@ await check('Field Notes: nav, index, article answer-first with truthful schema'
   await p.goto(base + '/field-notes');
   assert((await p.textContent('h1')).length > 5, 'index h1');
   const cards = await p.locator('.fn-card').count();
-  assert(cards === 2, `cards ${cards}`);
-  assert(await p.locator('.fn-card .needs-approval').count() === 2, 'drafts tagged in review');
+  assert(cards === 3, `cards ${cards}`);
+  assert(await p.locator('.fn-card .needs-approval').count() === 3, 'drafts tagged in review');
   await p.click('.fn-card__title a >> nth=0');
   await p.waitForURL(/\/field-notes\/.+/);
   const h1 = (await p.textContent('h1')).trim();
@@ -610,7 +611,7 @@ await check('Field Notes: phone reading, keyboard TOC, inline video, sitemap exc
   const sm = await (await fetch(base + '/sitemap.xml')).text();
   assert(!sm.includes('/field-notes/'), 'drafts not in sitemap');
   await p.goto(base + '/real-estate');
-  assert(await p.locator('.fn-teaser .fn-card').count() === 2, 'teaser on Real Estate');
+  assert(await p.locator('.fn-teaser .fn-card').count() >= 2, 'teaser on Real Estate');
   await p.context().close();
 });
 
@@ -638,6 +639,129 @@ await check('call-to-action labels match their destinations', async () => {
     assert(!bad.length, `${path}: ${bad}`);
   }
   await p.context().close();
+});
+
+// ---------- Owner direction, Sep 24: nav, hero films, Home stills, Commercial groups, Creator Studios ----------
+await check('nav: Creator Studios replaces Agencies; agency partnerships stay reachable', async () => {
+  const p = await newPage();
+  await p.goto(base + '/');
+  const labels = (await p.locator('#site-nav > ul > li > a, #site-nav .nav__item > a').allTextContents()).map((t) => t.trim());
+  assert(!labels.some((l) => /^Agencies$/i.test(l)), 'Agencies still in nav: ' + labels.join('|'));
+  assert(await p.locator('#site-nav a[href="/creator-studios"]').count() === 1, 'exactly one Creator Studios link in the primary nav');
+  assert(await p.locator('#site-nav a[href="/agency-partnerships"]').count() === 0, 'agency page not in primary nav');
+  assert(await p.locator('.site-footer a[href="/agency-partnerships"]').count() === 1, 'footer keeps agency partnerships');
+  await p.goto(base + '/commercial');
+  assert(await p.locator('main a[href="/agency-partnerships"]').count() >= 1, 'Commercial links to agency partnerships');
+  const r = await fetch(base + '/agency-partnerships');
+  assert(r.status === 200, 'agency page still served');
+  await p.setViewportSize({ width: 390, height: 844 });
+  await p.goto(base + '/');
+  await p.click('.nav-toggle, [aria-controls="site-nav"]');
+  assert(await p.locator('#site-nav a[href="/creator-studios"]').isVisible(), 'mobile menu shows Creator Studios');
+  await p.context().close();
+});
+
+const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-99-hedges-amagansett', '/commercial': 'biz-rachel-lynch-pools', '/work': 'work-reel' };
+await check('primary-nav pages open with a silent 16:9 hero film, poster, pause control, in-page full film', async () => {
+  for (const [path, id] of Object.entries(heroPages)) {
+    const p = await newPage();
+    await p.goto(base + path);
+    const first = p.locator('main > section').first();
+    assert(await first.getAttribute('data-hero-source') === id, `${path} hero source`);
+    const v = first.locator('video[data-ambient]');
+    assert(await v.count() === 1, `${path} ambient`);
+    assert(await v.getAttribute('poster') === `/v/${id}.webp`, `${path} poster`);
+    assert(await v.evaluate((el) => el.muted && el.hasAttribute('muted')), `${path} muted`);
+    assert(await first.locator('[data-motion-toggle]').count() === 1, `${path} pause control`);
+    const open = first.locator('[data-hero-film-open]');
+    if (id !== 'work-reel') {
+      await open.click();
+      await p.waitForTimeout(400);
+      assert(await first.locator('[data-hero-film]').isVisible(), `${path} film stage`);
+      assert(await p.locator('dialog[open]').count() === 0, `${path} no dialog`);
+      const vid = first.locator('[data-hero-film] video');
+      assert(await vid.evaluate((el) => el.hasAttribute('controls') || el.controls), `${path} native controls (pause/mute)`);
+      assert(await v.evaluate((el) => el.paused), `${path} loop paused while film plays`);
+      await first.locator('[data-hero-film-close]').click();
+      assert(await first.locator('[data-hero-film]').isHidden(), `${path} closes`);
+      assert(await vid.evaluate((el) => el.paused), `${path} film stops on close`);
+      assert(await p.evaluate(() => document.activeElement?.hasAttribute('data-hero-film-open')), `${path} focus returns`);
+    } else assert(await open.count() === 0, 'Work reel has no full film');
+    assert((await first.locator('.hero-credit').textContent()).length > 10, `${path} says what is on screen`);
+    await p.context().close();
+  }
+  const rm = await newPage({ width: 1280, height: 900 }, { reducedMotion: 'reduce' });
+  await rm.goto(base + '/commercial');
+  await rm.waitForTimeout(300);
+  assert(await rm.locator('main > section').first().locator('video[data-ambient]').evaluate((el) => el.paused), 'reduced motion: poster only');
+  await rm.context().close();
+  const ph = await newPage({ width: 390, height: 844 });
+  for (const path of Object.keys(heroPages)) {
+    await ph.goto(base + path);
+    const ow = await ph.evaluate(() => document.documentElement.scrollWidth);
+    assert(ow <= 390, `${path} phone overflow ${ow}`);
+    const box = await ph.locator('main h1').boundingBox();
+    assert(box && box.y + box.height <= 844 * 1.2, `${path} headline near the fold on phone`);
+  }
+  await ph.context().close();
+});
+
+await check('home quick tiles use the two owner-selected stills (not video posters), responsive and cropped', async () => {
+  const p = await newPage();
+  await p.goto(base + '/');
+  const srcs = await p.locator('.quick__media img').evaluateAll((els) => els.map((e) => e.getAttribute('src')));
+  assert(srcs.length === 2 && srcs[0] === '/v/home-listings-twilight.webp' && srcs[1] === '/v/home-brand-conversation.webp', srcs.join());
+  assert(await p.locator('.quick__media video').count() === 0, 'tiles are stills');
+  assert(await p.locator('.paths video[data-ambient]').count() === 4, 'four video starting-point tiles remain');
+  const tiles = await p.locator('.quick__tile').evaluateAll((els) => els.map((e) => [e.querySelector('.eyebrow').textContent.trim(), [...e.querySelectorAll('.actions a')].map((a) => a.getAttribute('href'))]));
+  assert(tiles[0][0] === 'For your listings' && tiles[0][1][0].startsWith('https://photografikstudios.hd.pics'), JSON.stringify(tiles));
+  assert(tiles[1][0] === 'For your brand' && tiles[1][1].includes('/contact'), JSON.stringify(tiles));
+  const sets = await p.locator('.quick__media img').evaluateAll((els) => els.map((e) => e.getAttribute('srcset')));
+  assert(sets.every((x) => /-sm\.webp 900w/.test(x) && /\.webp 2000w/.test(x)), 'responsive sources: ' + sets.join());
+  await p.context().close();
+});
+
+await check('commercial: projects grouped by verified client, no client mixed into another', async () => {
+  const p = await newPage();
+  await p.goto(base + '/commercial');
+  const groups = await p.locator('.proj-group').evaluateAll((els) => els.map((g) => ({ name: g.querySelector('h3').textContent.trim(), titles: [...g.querySelectorAll('.card__title')].map((t) => t.textContent.trim()), link: g.querySelector('.proj-group__head a')?.getAttribute('href') || null })));
+  const by = Object.fromEntries(groups.map((g) => [g.name, g]));
+  assert(by.RevivaLuxe && by.RevivaLuxe.titles.length === 5 && by.RevivaLuxe.titles.every((t) => /RevivaLuxe/.test(t)) && by.RevivaLuxe.link === '/work/revivaluxe', JSON.stringify(by.RevivaLuxe));
+  assert(by['Rachel Lynch Pools'] && by['Rachel Lynch Pools'].titles.length === 2 && by['Rachel Lynch Pools'].titles.every((t) => /Rachel Lynch/.test(t)), JSON.stringify(by['Rachel Lynch Pools']));
+  assert(by['Torella Pools'] && by['Torella Pools'].titles.length === 2 && by['Torella Pools'].titles.every((t) => /Torella/.test(t)), JSON.stringify(by['Torella Pools']));
+  for (const n of ['EEStairs', 'BPE Ironworks', 'CLOS Lighting']) assert(by[n] && by[n].titles.every((t) => t.includes(n.split(' ')[0])), n);
+  assert(groups[0].name === 'RevivaLuxe' && groups[1].name === 'Rachel Lynch Pools' && groups[2].name === 'Torella Pools', groups.map((g) => g.name).join());
+  assert(!(await p.textContent('main')).includes('Project story'), 'old mixed Project story block removed');
+  await p.setViewportSize({ width: 390, height: 844 });
+  assert(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'phone overflow');
+  await p.context().close();
+});
+
+await check('creator studios: story, formats with scope, conversations, process, proof, labeled inquiry', async () => {
+  const p = await newPage();
+  await p.goto(base + '/creator-studios');
+  const text = await p.textContent('main');
+  for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Clarify the story']) assert(text.includes(s), s);
+  assert(await p.locator('.scope-tag--out').count() >= 2, 'separately scoped formats labelled');
+  assert(await p.locator('.plan .needs-approval').count() === 2, 'session prices still pending');
+  const photos = p.locator('#cs-proof-h').locator('xpath=ancestor::section').locator('.card--image');
+  assert(await photos.count() >= 6 && await photos.count() <= 12, 'curated set, not the whole folder');
+  const newPhotos = p.locator('.card--image:has(img[src*="/v/cs-ph-"])');
+  assert(await newPhotos.count() === 8, 'eight curated new photos in review');
+  const subs = await newPhotos.locator('.card__sub').allTextContents();
+  assert(!subs.some((t) => /Bohemia|in studio/i.test(t)), 'no unverified studio location on new photos: ' + subs.join('|'));
+  const noah = await p.locator('.card--image:has(img[src*="ph-noah-knows"]) .card__sub').allTextContents();
+  assert(!noah.some((t) => /Bohemia/.test(t)), 'Noah Knows kitchen shoot not labelled Bohemia');
+  const cta = p.locator('main a:has-text("Request a Studio Session")').first();
+  await cta.focus();
+  await p.keyboard.press('Enter');
+  await p.waitForURL(/\/contact\?type=creator-studios/);
+  assert(await p.locator('#i-type').inputValue() === 'creator-studios', 'preselected type');
+  await p.context().close();
+  const ph = await newPage({ width: 390, height: 844 });
+  await ph.goto(base + '/creator-studios');
+  assert(await ph.evaluate(() => document.documentElement.scrollWidth) <= 390, 'phone overflow');
+  await ph.context().close();
 });
 
 // Screenshots for the handoff

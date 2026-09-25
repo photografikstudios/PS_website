@@ -3,6 +3,7 @@
 import { readFile, writeFile, mkdir, rm, cp, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { existsSync } from 'node:fs';
 import { createContext } from './lib/html.js';
 import { validatePricing } from './lib/pricing-core.js';
 import { validateMedia } from './lib/gallery-core.js';
@@ -82,6 +83,9 @@ for (const [route, page] of Object.entries(pages)) {
   await writeFile(join(out, file), html);
   if (route !== '/404') routes.push(route);
 }
+
+// Committed media (owner-supplied stills, and legacy assets once committed) are served at the same path.
+if (existsSync(join(root, 'static'))) await cp(join(root, 'static'), out, { recursive: true });
 
 // Assets
 await cp(join(root, 'src/assets'), join(out, 'assets'), { recursive: true });

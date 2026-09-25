@@ -2,6 +2,18 @@
   "_readme": "Source videos from James's '2026 Website Refresh' Google Drive folder (shared by link). scripts/media.mjs downloads each, transcodes to web H.264 + poster, and writes /media/<id>.mp4. 'loop' also makes a short muted background clip for hero and tiles.",
   "items": [
     {
+      "id": "home-listings-twilight",
+      "drive": "1snhH4YwhUYSC4npZrLfJfrwX1OFMlm6F",
+      "image": true,
+      "_note": "Owner-selected (James, Sep 24) for the Home quick tile For your listings: Westhampton luxury home virtual twilight. Build encodes 2000/900 px WebP from the original; static/v/ holds Codex 1600 px fallback."
+    },
+    {
+      "id": "home-brand-conversation",
+      "drive": "1vAmoQT-In2UKA_MD6KJPuAJAs8VtoX0-",
+      "image": true,
+      "_note": "Owner-selected (James, Sep 24) for the Home quick tile For your brand: Noah Knows Podcast Episode 10 action shot 19 (29 MB original). Location not verified; never label it as the studio. static/v/ holds Codex 1600 px fallback."
+    },
+    {
       "id": "re-hampton-luxury-home",
       "drive": "1lLiXcO-L60Jx7NlHQPGEZHlmSXs7ntsa",
       "file": "hampton-luxury-home-cinematic-real-estate-video-photografik-studios.mp4",
@@ -38,7 +50,8 @@
         10,
         10
       ],
-      "posterAt": 12
+      "posterAt": 12,
+      "loopHeight": 720
     },
     {
       "id": "re-hamptons-standout",
@@ -72,7 +85,8 @@
         12,
         10
       ],
-      "posterAt": 14
+      "posterAt": 14,
+      "loopHeight": 720
     },
     {
       "id": "biz-bpe-ironworks",
@@ -90,7 +104,12 @@
       "id": "biz-rachel-lynch-pools",
       "drive": "1n7WHj-OulBFm6tMRfqQEawS-HEJ82OLD",
       "file": "rachel-lynch-pools-luxury-hamptons-showcase-video-photografik-studios.mp4",
-      "posterAt": 8
+      "posterAt": 8,
+      "loop": [
+        8,
+        10
+      ],
+      "loopHeight": 720
     },
     {
       "id": "biz-revivaluxe-tour",
@@ -100,7 +119,8 @@
         6,
         10
       ],
-      "posterAt": 8
+      "posterAt": 8,
+      "loopHeight": 720
     },
     {
       "id": "biz-torella-pools",
@@ -249,6 +269,95 @@
       "id": "ph-dan-dan",
       "drive": "1Bdkb67EleO-Jr6jUaFJ9H9CCz2EVFOSa",
       "image": true
+    },
+    {
+      "id": "cs-ph-cc-onsite",
+      "drive": "13lnqnt_b-IVDqoqbv5-1ZVatddbndxnF",
+      "image": true,
+      "_file": "CC - EP 19 - On Site - BTS-11.jpg"
+    },
+    {
+      "id": "cs-ph-cc-ep20",
+      "drive": "1xsdIjT3eCWLPp0KNihehBfS9rMcTL1BY",
+      "image": true,
+      "_file": "CC - Episode 20-8.jpg"
+    },
+    {
+      "id": "cs-ph-hedgestone-switch",
+      "drive": "1Rue6rwAxSyQ4lAVmYt4EDNfpzmg-vj2B",
+      "image": true,
+      "_file": "Hedgestone - 8.25 BTS-10.jpg"
+    },
+    {
+      "id": "cs-ph-island-federal",
+      "drive": "1Le1tUKmZuyDX8OQ4T2eSxr7P1ykOQRI9",
+      "image": true,
+      "_file": "Island Federal BTS-6.jpg"
+    },
+    {
+      "id": "cs-ph-determined-society",
+      "drive": "1N7faNqPLlZe9giIr945aUIqkKqRLxyF0",
+      "image": true,
+      "_file": "Shawn French - Trevor Bauer BTS-36.jpg"
+    },
+    {
+      "id": "cs-ph-solo-couch",
+      "drive": "1JJmDstagwRYLWS84mXIYP33iaBd7ZMuE",
+      "image": true,
+      "_file": "Amanda - White Couch Solo-4.jpg"
+    },
+    {
+      "id": "cs-ph-solo-bts",
+      "drive": "12pNNsMd6DZTEXVf9_FPdDYMzTwuUgHnU",
+      "image": true,
+      "_file": "Kenny Miller - BTS photos-7.jpg"
+    },
+    {
+      "id": "cs-ph-dan-dan-conversation",
+      "drive": "1LcQj29Ox-e86P6UhxfTMrVMhS4-wbRsd",
+      "image": true,
+      "_file": "Dan Dan July Podcast Action Shots-75.jpg"
+    },
+    {
+      "id": "work-reel",
+      "montage": [
+        [
+          "re-hamptons-beachfront",
+          6,
+          3
+        ],
+        [
+          "arch-99-hedges-amagansett",
+          24,
+          3
+        ],
+        [
+          "biz-torella-pools",
+          12,
+          3
+        ],
+        [
+          "re-hamptons-cinematic",
+          18,
+          3
+        ],
+        [
+          "biz-bpe-ironworks",
+          22,
+          3
+        ],
+        [
+          "biz-revivaluxe-tour",
+          14,
+          3
+        ],
+        [
+          "re-hamptons-aesthetic",
+          30,
+          3
+        ]
+      ],
+      "_note": "Purpose-built silent Work montage, assembled at build time from published horizontal films (3 s each). For James to review."
     }
   ],
   "docs": [

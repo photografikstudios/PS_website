@@ -168,3 +168,34 @@ if (ambients.length) {
   toggleBtn?.addEventListener('click', () => setMotion(!motionOff, true));
   setMotion(motionOff, false);
 }
+
+// ---------- Hero film: "Watch the film" plays the full film with sound inside the hero (never a dialog) ----------
+// Opening pauses the silent background loop; closing stops the film and restores the visitor's motion choice.
+const heroStage = document.querySelector('[data-hero-film]');
+const heroOpen = document.querySelector('[data-hero-film-open]');
+if (heroStage && heroOpen) {
+  const hero = heroStage.closest('section');
+  const player = heroStage.querySelector('[data-video]');
+  const video = player.querySelector('video');
+  let motionBefore = motionOff;
+  const close = () => {
+    video.pause();
+    heroStage.hidden = true;
+    hero.classList.remove('is-film-open');
+    heroOpen.setAttribute('aria-expanded', 'false');
+    if (ambients.length) setMotion(motionBefore, false);
+    heroOpen.focus();
+  };
+  heroOpen.addEventListener('click', () => {
+    motionBefore = motionOff;
+    if (ambients.length) setMotion(true, false);
+    heroStage.hidden = false;
+    hero.classList.add('is-film-open');
+    heroOpen.setAttribute('aria-expanded', 'true');
+    player.querySelector('.vplayer__start')?.click();
+    track('hero_film_open', { video: player.dataset.id });
+  });
+  heroStage.querySelector('[data-hero-film-close]').addEventListener('click', close);
+  heroStage.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  video.addEventListener('ended', close);
+}
