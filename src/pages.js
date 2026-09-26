@@ -51,10 +51,11 @@ export function buildPages(ctx) {
     const href = project && visible(project) ? projectPath(project) : null;
     const frame = m.type === 'video'
       ? videoPlayer(m, { sizes })
-      : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { alt: m.alt || '', sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
+      : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
     const meta = showMeta ? `<div class="card__meta">
         <p class="card__title">${href ? `<a href="${href}">${esc(m.title)}</a>` : esc(m.title)}</p>
-        <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}</p>
+        <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}${m.type === 'video' && m.dialogue !== false && !m.captions ? ` ${needsApproval({ approval: 'pending' }, m.dialogue ? 'Captions and transcript needed before launch' : 'Check whether this film has speech; captions needed if it does')}` : ''}</p>
+        ${m.transcript ? `<p class="card__sub"><a href="${esc(m.transcript)}">Read the transcript</a></p>` : ''}
       </div>` : '';
     return `<article class="card card--${m.orientation} card--${m.type} reveal" style="--ar:${m.orientation === 'vertical' ? '0.5625' : m.type === 'video' ? '1.7778' : '1.5'}"
       data-service="${esc(m.service.join(' '))}" data-category="${esc(m.category)}" data-kind="${m.type}">
@@ -459,6 +460,11 @@ ${join(topicsUsed, (t) => `
   const reFacts = reItems.map(facts);
   const pkgOptions = pricing.packages.filter(visible);
   const pkgCounts = optionCounts(reFacts, { type: '' }, 'pkg', ['', ...pkgOptions.map((p) => p.id)]);
+  // Only offer a package filter for packages with at least one verified example (James, Sep 25: labels stay blank until checked).
+  const pkgTagged = pkgOptions.filter((p) => pkgCounts[p.id] > 0);
+  const pkgNote = pkgTagged.length
+    ? 'We label a piece with a package only after confirming what was delivered. Unlabelled pieces appear under All packages.'
+    : 'Package labels are added only after we confirm what each shoot delivered, so none are shown yet. Every piece is here; filter by media type.';
   const typeCounts = optionCounts(reFacts, { pkg: '' }, 'type', TYPE_FILTERS.map((t) => t.id));
   const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}"${i >= reBatch ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}">
@@ -472,14 +478,14 @@ ${join(topicsUsed, (t) => `
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Real estate portfolio</p><h2 class="h2 reveal" id="rg-h">Listings, filmed and photographed.</h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter real estate work" onsubmit="return false">
-      <div class="filters__field"><label for="rg-package">Package</label>
-        <select id="rg-package" name="package"><option value="">All packages</option>${join(pkgOptions, (p) => `<option value="${p.id}">${esc(p.name)} (${pkgCounts[p.id]})</option>`)}</select></div>
+      ${pkgTagged.length ? `<div class="filters__field"><label for="rg-package">Package</label>
+        <select id="rg-package" name="package"><option value="">All packages</option>${join(pkgTagged, (p) => `<option value="${p.id}">${esc(p.name)} (${pkgCounts[p.id]})</option>`)}</select></div>` : ''}
       <div class="filters__field"><label for="rg-type">Media</label>
         <select id="rg-type" name="type">${join(TYPE_FILTERS.filter((t) => !t.id || typeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}${t.id ? ` (${typeCounts[t.id]})` : ''}</option>`)}</select></div>
       <button type="reset" class="filters__clear" hidden>Reset filters</button>
     </form>
     <p class="filters__count" id="rg-count" aria-live="polite">${reItems.length} pieces</p>
-    <p class="regallery__note">We tag work with a package only after confirming what was delivered, so some pieces appear under All packages only.</p>
+    <p class="regallery__note">${pkgNote}</p>
     <div class="regallery__grid" id="rg-grid">${join(reItems, reCard)}</div>
     <div class="empty" id="rg-empty" hidden>
       <p class="h3" id="rg-empty-title">No confirmed examples for this package yet.</p>

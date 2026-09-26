@@ -63,6 +63,12 @@ if (!reviewMode) {
     console.error('Production build blocked: legacy article URLs without an approved destination:\n - ' + blockers.join('\n - ') + '\nPublish the target Field Note or record James\'s decision (approvedBy) in content/legacy-articles.json.');
     process.exit(1);
   }
+  // WCAG 1.2.2: published clips with speech need captions (a VTT track or burned-in) before launch.
+  const uncaptioned = work.media.filter((m) => m.type === 'video' && m.published !== false && m.dialogue !== false && !m.captions).map((m) => m.id);
+  if (uncaptioned.length) {
+    console.error(`Production build blocked: video without captions whose dialogue is true or unconfirmed: ${uncaptioned.join(', ')}.\nAdd a captions .vtt (or "burned-in"), or set "dialogue": false after checking the audio.`);
+    process.exit(1);
+  }
   if (pending.length) {
     console.error(`Production build blocked: these residential packages are not approved yet: ${pending.join(', ')}.\nSet "approval": "approved" in content/pricing.json after sign-off. Other pending items are hidden automatically.`);
     process.exit(1);

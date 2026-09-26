@@ -510,6 +510,8 @@ async function reWithTags(p, path = '/real-estate') {
       const items = JSON.parse(json).map((it) => ({ ...it, packages: FIXTURE_TAGS[it.id] || [] }));
       return a + JSON.stringify(items) + c;
     });
+    // The server renders the package control only for packages with verified examples; mirror that for the fixture.
+    html = html.replace(/(<form[^>]*data-rg-filters[^>]*>)/, '$1<div class="filters__field"><label for="rg-package">Package</label><select id="rg-package" name="package"><option value="">All packages</option><option value="luxury-media">Luxury Media (2)</option><option value="signature">Signature (1)</option></select></div>');
     await route.fulfill({ response: res, body: html, headers: { ...res.headers(), 'content-type': 'text/html' } });
   });
   await p.goto(base + path);
@@ -540,14 +542,30 @@ await check('RE gallery: package matches, package × type intersection, zero res
   await p.context().close();
 });
 
-await check('RE gallery: real (untagged) data shows honest empty package state and working type filter', async () => {
+await check('RE gallery: untagged catalog hides the package control (no (0) options), honest note, type filter, reset, keyboard, 375 px', async () => {
   const p = await newPage();
   await p.goto(base + '/real-estate?package=signature');
-  assert(await p.isVisible('#rg-empty') && (await p.textContent('#rg-empty-title')).includes('No confirmed Signature'), 'honest empty');
-  await p.goto(base + '/real-estate?type=video');
+  const total = await p.locator('#rg-grid .gcard').count();
+  assert(await p.locator('#rg-package').count() === 0, 'no package control while nothing is tagged');
+  assert(!(await p.locator('#portfolio').textContent()).match(/\(0\)/), 'no zero-result options');
+  assert(!(await p.isVisible('#rg-empty')) && (await p.textContent('#rg-count')) === `${total} pieces`, 'stale ?package= link falls back to all work');
+  const note = await p.textContent('.regallery__note');
+  assert(/none are shown yet/.test(note) && !/some pieces/.test(note), 'note: ' + note);
+  await p.focus('#rg-type');
+  await p.keyboard.press('ArrowDown');
+  await p.selectOption('#rg-type', 'video');
   const kinds = await p.locator('#rg-grid .gcard:not([hidden])').evaluateAll((e) => e.map((x) => x.dataset.kind));
   assert(kinds.length && kinds.every((k) => k === 'video'), kinds.join());
+  assert(await p.isVisible('.filters__clear'), 'reset appears');
+  await p.click('.filters__clear');
+  assert(await p.inputValue('#rg-type') === '' && (await p.textContent('#rg-count')) === `${total} pieces`, 'reset to all');
+  assert(await p.evaluate(() => document.activeElement.id) === 'rg-type', 'focus returns to the media filter');
   await p.context().close();
+  const ph = await newPage({ width: 375, height: 812 });
+  await ph.goto(base + '/real-estate?type=photo');
+  assert(await ph.locator('#rg-package').count() === 0, 'phone: no package control');
+  assert(await ph.evaluate(() => document.documentElement.scrollWidth) <= 375, 'phone overflow');
+  await ph.context().close();
 });
 
 await check('RE gallery: Load More reveals the next batch, keeps filters, never plays hidden video', async () => {
@@ -819,6 +837,11 @@ await check('creator studios: story, formats with scope, conversations, process,
   const html = await p.content();
   for (const id of ids) assert(html.includes(`/v/${id}`), id + ' rendered');
   assert(!html.includes('rights, consent and publication approval pending'), 'stale pending note');
+  // Phone data: build-encoded stills ship a 900px card image first, with the 2000px original only in srcset.
+  const card = await p.locator('img[src*="cs-ph-cc-onsite"]').first().evaluate((i) => [i.getAttribute('src'), i.getAttribute('srcset')]);
+  assert(card[0].endsWith('-sm.webp') && /-sm\.webp 900w/.test(card[1]) && /cs-ph-cc-onsite\.webp 2000w/.test(card[1]), 'card srcset ' + card.join(' '));
+  // Clips with speech and no captions are flagged in review (production build refuses them).
+  assert(await p.locator('.card:has([data-id="cs-jm2-architecture"]) .needs-approval').count() === 1, 'uncaptioned dialogue clip flagged');
   const noah = await p.locator('.card--image:has(img[src*="ph-noah-knows"]) .card__sub').allTextContents();
   assert(!noah.some((t) => /Bohemia/.test(t)), 'Noah Knows kitchen shoot not labelled Bohemia');
   const cta = p.locator('main a:has-text("Ask us first")').first();

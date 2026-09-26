@@ -23,9 +23,11 @@ export function createContext({ site, reviewMode, onVercel }) {
   };
   const srcset = (p, widths = WIDTHS) => (onVercel && !isLocal(p) ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
 
-  function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height } = {}) {
+  function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height, thumb } = {}) {
+    // Build-encoded stills (/v/<id>.webp, 2000px) ship a 900px <id>-sm.webp; let phones pick the small one.
+    const local = isLocal(p) && thumb;
     return `<img ${attrs({
-      src: optimized(p, 1080), srcset: srcset(p, widths), sizes: onVercel && !isLocal(p) ? sizes : null, alt,
+      src: local ? thumb : optimized(p, 1080), srcset: local ? `${thumb} 900w, ${p} 2000w` : srcset(p, widths), sizes: local || (onVercel && !isLocal(p)) ? sizes : null, alt,
       class: cls || null, loading: eager ? 'eager' : 'lazy', decoding: 'async',
       fetchpriority: eager ? 'high' : null, width, height,
     })}>`;

@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 import { start } from './serve.mjs';
 const server = await start(0); const base = `http://localhost:${server.address().port}`;
 const b = await chromium.launch();
-const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/creator-studios', '/commercial/revivaluxe', '/field-notes', '/field-notes/how-to-prepare-a-home-for-listing-photos', '/about', '/contact', '/agency-partnerships'];
+const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/creator-studios', '/commercial/revivaluxe', '/field-notes', '/field-notes/how-to-prepare-a-home-for-listing-photos', '/about', '/contact', '/agency-partnerships', '/creator-studios/sessions', '/real-estate/lauryn-koke-daniel-gale-sothebys'];
 const out = {};
 for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
   const ctx = await b.newContext({ viewport: vp, reducedMotion: 'reduce' });
@@ -23,7 +23,9 @@ for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
       for (const el of document.querySelectorAll('main *, header *, footer *')) {
         if (!el.childNodes.length || ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
         const s = getComputedStyle(el); if (s.visibility === 'hidden' || s.display === 'none' || !el.getClientRects().length) continue;
-        if (overMedia(el)) continue; // text over photo/video is checked visually (scrims)
+        if (overMedia(el)) continue;
+        // Transparent header drawn over a photo/video hero (overlay pages): its real backdrop is the hero media + scrim.
+        if (el.closest('.site-header') && document.body.matches('.has-overlay, [data-overlay]') && !document.querySelector('.site-header.is-solid, .site-header.scrolled')) continue; // text over photo/video is checked visually (scrims)
         const fg = parse(s.color); const bg = bgOf(el); if (!fg || !bg) continue;
         const L1 = lum(fg), L2 = lum(bg); const ratio = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
         const size = parseFloat(s.fontSize); const bold = parseInt(s.fontWeight) >= 700; const large = size >= 24 || (bold && size >= 18.66);
@@ -31,6 +33,7 @@ for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
       }
       for (const el of document.querySelectorAll('a[href], button, input, select, textarea, summary')) {
         const s = getComputedStyle(el); if (s.display === 'none' || s.visibility === 'hidden' || !el.getClientRects().length) continue;
+        if ((el.getAttribute('aria-hidden') === 'true' || el.closest('[aria-hidden="true"]')) && el.getAttribute('tabindex') === '-1') continue; // duplicate, hidden from AT and keyboard
         const rect = el.getBoundingClientRect();
         const inline = s.display === 'inline' && el.closest('p, li, dd');
         if (!inline && (rect.width < 24 || rect.height < 24) && !el.closest('.sr-only')) issues.push(`target ${Math.round(rect.width)}x${Math.round(rect.height)} ${el.tagName} "${(el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 30)}"`);
@@ -45,7 +48,7 @@ for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
       return issues;
     });
     // keyboard: every focusable shows a visible focus indicator
-    const noFocus = await p.evaluate(() => { const bad = []; for (const el of [...document.querySelectorAll('a[href], button, select, input, summary')].slice(0, 60)) { if (!el.getClientRects().length) continue; el.focus(); const s = getComputedStyle(el); if (document.activeElement === el && s.outlineStyle === 'none' && s.boxShadow === 'none') bad.push(el.tagName + ' ' + (el.textContent || '').trim().slice(0, 20)); } return bad.slice(0, 3); });
+    const noFocus = await p.evaluate(() => { const bad = []; for (const el of [...document.querySelectorAll('a[href], button, select, input, summary')].slice(0, 60)) { if (!el.getClientRects().length) continue; el.focus(); const s = getComputedStyle(el); const ring = (x) => { const t = getComputedStyle(x); return t.outlineStyle !== 'none' || t.boxShadow !== 'none'; }; if (document.activeElement === el && !ring(el) && !(el.parentElement && el.parentElement.matches(':focus-within') && ring(el.parentElement))) bad.push(el.tagName + ' ' + (el.textContent || '').trim().slice(0, 20)); } return bad.slice(0, 3); });
     if (noFocus.length) r.push('focus not visible: ' + noFocus.join(' | '));
     if (r.length) out[`${vp.width} ${path}`] = r;
   }

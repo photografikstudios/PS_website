@@ -10,7 +10,9 @@ const root = document.querySelector('[data-regallery]');
 if (root) {
   const items = JSON.parse(root.querySelector('[data-gallery-items]').textContent);
   const cards = [...root.querySelectorAll('.gcard')];
-  const pkgSel = root.querySelector('#rg-package');
+  // The package filter is only rendered once at least one package has a verified example; otherwise use an inert stand-in.
+  const pkgLive = root.querySelector('#rg-package');
+  const pkgSel = pkgLive || Object.assign(document.createElement('select'), { innerHTML: '<option value="">All packages</option>' });
   const typeSel = root.querySelector('#rg-type');
   const resetBtn = root.querySelector('.filters__clear');
   const count = root.querySelector('#rg-count');
@@ -114,11 +116,11 @@ if (root) {
     if (source) track('gallery_filter', { where: 'real_estate', filter: source, package: f.pkg || 'all', type: f.type || 'all', results: n });
   }
 
-  pkgSel.addEventListener('change', () => { shown = BATCH; render({ source: 'package' }); });
+  pkgLive?.addEventListener('change', () => { shown = BATCH; render({ source: 'package' }); });
   typeSel.addEventListener('change', () => { shown = BATCH; render({ source: 'type' }); });
   const reset = (focusEl) => { pkgSel.value = ''; typeSel.value = ''; shown = BATCH; render({ source: 'reset' }); focusEl.focus(); };
-  root.querySelector('[data-rg-filters]').addEventListener('reset', (e) => { e.preventDefault(); reset(pkgSel); });
-  root.querySelector('[data-rg-show-all]').addEventListener('click', () => { pkgSel.value = ''; shown = BATCH; render({ source: 'show_all' }); pkgSel.focus(); });
+  root.querySelector('[data-rg-filters]').addEventListener('reset', (e) => { e.preventDefault(); reset(pkgLive || typeSel); });
+  root.querySelector('[data-rg-show-all]').addEventListener('click', () => { pkgSel.value = ''; shown = BATCH; render({ source: 'show_all' }); (pkgLive || typeSel).focus(); });
   more.addEventListener('click', () => {
     const first = current[shown];
     shown += BATCH;
