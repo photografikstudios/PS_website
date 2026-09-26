@@ -39,7 +39,7 @@
     }
   },
   "media": {
-    "_readme": "Media paths are served from this deployment. /v/ = Drive originals encoded by scripts/media.mjs; /images/photografik-2027 and /media/photografik-2027 = legacy stills/clips copied into the build by the same script (see content/media-sources.json legacyOrigin). No runtime third-party media host.",
+    "_readme": "Media paths are served from this deployment. /v/ = Drive originals encoded by scripts/media.mjs; /images/photografik-2027 and /media/photografik-2027 = legacy stills/clips committed under static/ and pinned by size and SHA-256 in content/legacy-assets.json (npm run check:legacy). /captions/ = WebVTT captions and plain-text transcripts. No runtime third-party media host; Replit is not used.",
     "base": "",
     "logo": "/images/photografik-2027/brand/photografik-logo.webp",
     "creatorLogo": "/images/photografik-2027/brand/creator-logo.webp",

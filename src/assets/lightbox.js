@@ -25,6 +25,7 @@ export function createLightbox(dlg, items, { where = 'gallery' } = {}) {
       Object.assign(v, { src: d.src, controls: true, playsInline: true, preload: 'auto' });
       if (d.poster) v.poster = d.poster;
       v.setAttribute('aria-label', d.title);
+      if (d.captions) { const t = document.createElement('track'); Object.assign(t, { kind: 'captions', srclang: 'en', label: 'English', src: d.captions, default: true }); v.append(t); }
       stage.append(v);
       v.play().catch(() => {});
       track('video_play', { video: d.id || d.title, where: `${where}_lightbox` });

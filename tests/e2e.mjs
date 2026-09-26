@@ -924,6 +924,30 @@ await check('Listing Engine is listing sale-cycle content with the HDPH agent-on
   await p.context().close();
 });
 
+await check('speech clips carry caption tracks that load and parse, a transcript link, and a machine-draft review tag; RevivaLuxe stays flagged', async () => {
+  const p = await newPage();
+  for (const [path, id] of [['/creator-studios', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
+    await p.goto(base + path);
+    const card = p.locator(`.card:has([data-id="${id}"])`).first();
+    const src = await card.locator('video track[kind="captions"]').getAttribute('src');
+    assert(src === `/captions/${id}.vtt`, `${id} track ${src}`);
+    const r = await p.request.get(base + src);
+    const body = await r.text();
+    assert(r.ok() && body.startsWith('WEBVTT') && (body.match(/-->/g) || []).length >= 2, `${id} vtt`);
+    const cues = await card.locator('video').evaluate(async (v) => {
+      const t = v.textTracks[0]; t.mode = 'hidden';
+      for (let i = 0; i < 40 && !(t.cues && t.cues.length); i++) await new Promise((res) => setTimeout(res, 100));
+      return t.cues ? t.cues.length : 0;
+    });
+    assert(cues >= 2, `${id} parsed cues ${cues}`);
+    assert(await card.locator('a[href="/captions/' + id + '.txt"]').count() === 1, `${id} transcript link`);
+    assert(/machine-transcribed draft/.test(await card.locator('.needs-approval').last().getAttribute('title') || ''), `${id} draft tag`);
+  }
+  await p.goto(base + '/commercial');
+  assert(await p.locator('.needs-approval[title*="Captions and transcript needed"]').count() >= 1 || !(await p.content()).includes('revivaluxe-film'), 'RevivaLuxe still flagged');
+  await p.context().close();
+});
+
 // Screenshots for the handoff
 for (const [name, path, vp] of [['desktop-pricing', '/real-estate/pricing?sqft=3200', { width: 1440, height: 1100 }], ['mobile-pricing', '/real-estate/pricing?sqft=5501', { width: 390, height: 1400 }], ['desktop-work', '/real-estate#portfolio', { width: 1440, height: 1100 }], ['mobile-work', '/commercial#portfolio', { width: 390, height: 1400 }]]) {
   const p = await newPage(vp);

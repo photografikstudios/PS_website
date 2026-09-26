@@ -322,7 +322,8 @@
       "capturedYear": null,
       "sortPriority": 0,
       "clientId": "revivaluxe",
-      "client": "RevivaLuxe"
+      "client": "RevivaLuxe",
+      "captionsNote": "Sep 26 machine transcription found only one short vocal phrase (about 0:02 to 0:07) under the music, which could not be transcribed reliably and may be sung lyrics. James or the editor to confirm whether it is speech or song before captions are written."
     },
     {
       "id": "lauryn-lead",
@@ -385,7 +386,7 @@
       "duration": 15,
       "dialogue": true,
       "captions": "burned-in",
-      "transcript": null,
+      "transcript": "/captions/agent-market-insight.txt",
       "featured": true,
       "rights": "approved",
       "posterTime": 1.5,
@@ -484,8 +485,8 @@
       "poster": "/v/cs-jm2-architecture.webp",
       "duration": 87,
       "dialogue": true,
-      "captions": null,
-      "transcript": null,
+      "captions": "/captions/cs-jm2-architecture.vtt",
+      "transcript": "/captions/cs-jm2-architecture.txt",
       "featured": false,
       "rights": "approved",
       "alt": null,
@@ -495,7 +496,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "captionsStatus": "machine-draft"
     },
     {
       "id": "biz-rachel-lynch-pools",
@@ -540,7 +542,7 @@
       "duration": 32,
       "dialogue": true,
       "captions": "burned-in",
-      "transcript": null,
+      "transcript": "/captions/agent-expertise.txt",
       "featured": false,
       "rights": "approved",
       "posterTime": 3,
@@ -722,15 +724,16 @@
       "poster": null,
       "duration": 15,
       "dialogue": true,
-      "captions": null,
-      "transcript": null,
+      "captions": "/captions/agent-on-camera.vtt",
+      "transcript": "/captions/agent-on-camera.txt",
       "featured": false,
       "rights": "approved",
       "posterTime": 3,
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "captionsStatus": "machine-draft"
     },
     {
       "id": "re-hamptons-upbeat",
@@ -775,8 +778,8 @@
       "poster": "/v/cs-noah-knows-short.webp",
       "duration": 86,
       "dialogue": true,
-      "captions": null,
-      "transcript": null,
+      "captions": "/captions/cs-noah-knows-short.vtt",
+      "transcript": "/captions/cs-noah-knows-short.txt",
       "featured": false,
       "rights": "approved",
       "alt": null,
@@ -787,7 +790,8 @@
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
-      "_locationNote": "Frames show the same kitchen-island set as the Episode 10 stills; the Drive notes say LI Creator Studios, but the location is not verified. Label withheld until James confirms."
+      "_locationNote": "Frames show the same kitchen-island set as the Episode 10 stills; the Drive notes say LI Creator Studios, but the location is not verified. Label withheld until James confirms.",
+      "captionsStatus": "machine-draft"
     },
     {
       "id": "biz-bpe-ironworks",
@@ -860,8 +864,8 @@
       "poster": "/v/cs-tick.webp",
       "duration": 47,
       "dialogue": true,
-      "captions": null,
-      "transcript": null,
+      "captions": "/captions/cs-tick.vtt",
+      "transcript": "/captions/cs-tick.txt",
       "featured": false,
       "rights": "approved",
       "alt": null,
@@ -871,7 +875,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "captionsStatus": "machine-draft"
     },
     {
       "id": "cs-demo-reel",

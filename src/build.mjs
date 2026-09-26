@@ -64,9 +64,9 @@ if (!reviewMode) {
     process.exit(1);
   }
   // WCAG 1.2.2: published clips with speech need captions (a VTT track or burned-in) before launch.
-  const uncaptioned = work.media.filter((m) => m.type === 'video' && m.published !== false && m.dialogue !== false && !m.captions).map((m) => m.id);
+  const uncaptioned = work.media.filter((m) => m.type === 'video' && m.published !== false && m.dialogue !== false && (!m.captions || (m.captions !== 'burned-in' && m.captionsStatus !== 'approved'))).map((m) => m.id);
   if (uncaptioned.length) {
-    console.error(`Production build blocked: video without captions whose dialogue is true or unconfirmed: ${uncaptioned.join(', ')}.\nAdd a captions .vtt (or "burned-in"), or set "dialogue": false after checking the audio.`);
+    console.error(`Production build blocked: video with speech (or unconfirmed speech) lacking approved captions: ${uncaptioned.join(', ')}.\nAdd a captions .vtt and set "captionsStatus": "approved" once proofread (or "burned-in"), or set "dialogue": false after checking the audio.`);
     process.exit(1);
   }
   if (pending.length) {

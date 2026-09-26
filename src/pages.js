@@ -54,7 +54,7 @@ export function buildPages(ctx) {
       : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
     const meta = showMeta ? `<div class="card__meta">
         <p class="card__title">${href ? `<a href="${href}">${esc(m.title)}</a>` : esc(m.title)}</p>
-        <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}${m.type === 'video' && m.dialogue !== false && !m.captions ? ` ${needsApproval({ approval: 'pending' }, m.dialogue ? 'Captions and transcript needed before launch' : 'Check whether this film has speech; captions needed if it does')}` : ''}</p>
+        <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}${m.type === 'video' && m.dialogue !== false && !m.captions ? ` ${needsApproval({ approval: 'pending' }, m.dialogue ? 'Captions and transcript needed before launch' : 'Check whether this film has speech; captions needed if it does')}` : ''}${m.type === 'video' && m.captions && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? ` ${needsApproval({ approval: 'pending' }, 'Captions are a machine-transcribed draft; James to proofread names and wording before launch')}` : ''}</p>
         ${m.transcript ? `<p class="card__sub"><a href="${esc(m.transcript)}">Read the transcript</a></p>` : ''}
       </div>` : '';
     return `<article class="card card--${m.orientation} card--${m.type} reveal" style="--ar:${m.orientation === 'vertical' ? '0.5625' : m.type === 'video' ? '1.7778' : '1.5'}"
@@ -69,6 +69,7 @@ export function buildPages(ctx) {
   const galleryItem = (m) => ({
     id: m.id, title: m.title, sub: [m.client, m.location].filter(Boolean).join(' · '), src: galFull(m),
     poster: m.type === 'video' ? galThumb(m) : null, alt: m.alt || m.title, category: m.category, orientation: m.orientation, ...facts(m),
+    captions: m.type === 'video' && m.captions && m.captions !== 'burned-in' ? m.captions : undefined,
   });
   const itemsJson = (list) => `<script type="application/json" data-gallery-items>${JSON.stringify(list.map(galleryItem)).replace(/</g, '\\u003c')}</script>`;
   const playIcon = '<span class="sw-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>';

@@ -1,39 +1,33 @@
-// One-time helper to make the cold build Replit-free: downloads every legacy /images|/media/photografik-2027/
-// file the built site references from a deployment that already serves them (e.g. the review alias), and
-// saves each one under static/ at the same path. Commit static/ afterwards; `npm run check:legacy` must exit 0.
+// One-time helper that makes the build self-contained: downloads each file pinned in content/legacy-assets.json
+// from this project's review alias, refuses any copy whose size or SHA-256 differs, and saves it under
+// static/<same path>. Commit static/ afterwards; `npm run check:legacy` must then exit 0. Replit is not used.
 //
-//   SKIP_MEDIA=1 node src/build.mjs && node scripts/fetch-legacy.mjs https://ps-website-rust.vercel.app
-import { readFile, readdir, mkdir, writeFile, stat } from 'node:fs/promises';
+//   node scripts/fetch-legacy.mjs                 (uses recordedFrom in content/legacy-assets.json)
+//   node scripts/fetch-legacy.mjs https://<another deployment of this project that serves the same files>
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const origin = (process.argv[2] || '').replace(/\/$/, '');
-if (!/^https:\/\//.test(origin)) { console.error('usage: node scripts/fetch-legacy.mjs https://<deployment that serves the files>'); process.exit(2); }
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-async function walk(dir) {
-  const out = [];
-  for (const e of await readdir(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) out.push(...(await walk(p))); else if (/\.(html|xml)$/.test(e.name)) out.push(p);
-  }
-  return out;
-}
-const refs = new Set();
-for (const f of await walk(join(root, 'dist'))) {
-  const txt = decodeURIComponent((await readFile(f, 'utf8')).replace(/%(?![0-9A-Fa-f]{2})/g, '%25'));
-  for (const m of txt.matchAll(/\/(?:images|media)\/photografik-2027\/[\w\-./]+?\.(?:webp|jpe?g|png|mp4)/g)) refs.add(m[0]);
-}
-let ok = 0; let skipped = 0; const failed = [];
-for (const ref of [...refs].sort()) {
+const pins = JSON.parse(await readFile(join(root, 'content/legacy-assets.json'), 'utf8'));
+const origin = (process.argv[2] || pins.recordedFrom).replace(/\/$/, '');
+if (!/^https:\/\//.test(origin) || /replit/i.test(origin)) { console.error('usage: node scripts/fetch-legacy.mjs [https://<deployment of this project>]  (Replit is not accepted)'); process.exit(2); }
+const sha = (b) => createHash('sha256').update(b).digest('hex');
+let saved = 0; let present = 0; const failed = [];
+for (const [ref, pin] of Object.entries(pins.files)) {
   const dest = join(root, 'static', ref);
-  try { if ((await stat(dest)).size > 0) { skipped++; continue; } } catch { /* not yet saved */ }
-  const r = await fetch(origin + ref);
-  const type = r.headers.get('content-type') || '';
-  if (!r.ok || !/image|video/.test(type)) { failed.push(`${ref} (${r.status} ${type})`); continue; }
-  await mkdir(dirname(dest), { recursive: true });
-  await writeFile(dest, Buffer.from(await r.arrayBuffer()));
-  ok++; console.log('saved static' + ref);
+  try { if (sha(await readFile(dest)) === pin.sha256) { present++; continue; } } catch { /* not saved yet */ }
+  try {
+    const r = await fetch(origin + ref);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const buf = Buffer.from(await r.arrayBuffer());
+    if (buf.length !== pin.bytes || sha(buf) !== pin.sha256) throw new Error(`hash mismatch (${buf.length} bytes)`);
+    await mkdir(dirname(dest), { recursive: true });
+    await writeFile(dest, buf);
+    saved++; console.log('saved static' + ref);
+  } catch (e) { failed.push(`${ref}: ${e.message}`); }
 }
-console.log(`\nlegacy assets: ${ok} saved, ${skipped} already present, ${failed.length} failed`);
+console.log(`\nlegacy assets: ${saved} saved, ${present} already present, ${failed.length} failed (of ${Object.keys(pins.files).length})`);
 for (const f of failed) console.log('  FAILED ' + f);
 process.exit(failed.length ? 1 : 0);

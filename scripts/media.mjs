@@ -185,11 +185,16 @@ for (const it of items.filter((i) => i.montage)) {
 }
 await writeFile(join(out, 'manifest.json'), JSON.stringify(manifest));
 
-// ---------- Legacy stills and clips (formerly loaded from the Replit reference build) ----------
-// Every /images/photografik-2027/... or /media/photografik-2027/... path referenced by the built pages is
-// copied into dist/ at the same path, so the site makes no runtime request to Replit. The origin is read
-// once per file and kept in the build cache; replace a file by committing it under static/ (static wins).
-const { legacyOrigin } = JSON.parse(await readFile(join(root, 'content/media-sources.json'), 'utf8'));
+// ---------- Legacy stills and clips (pinned in content/legacy-assets.json) ----------
+// Every /images/photografik-2027/... or /media/photografik-2027/... path referenced by the built pages must be
+// committed under static/<same path> with the size and SHA-256 pinned in content/legacy-assets.json. Replit is
+// never contacted. Until the files are committed, a REVIEW build (never production) may use the pinned bridge:
+// it downloads the same bytes from this project's own review alias and refuses any file whose hash differs.
+// A production build fails if any pinned file is not committed.  Check with: npm run check:legacy
+const { createHash } = await import('node:crypto');
+const pinned = JSON.parse(await readFile(join(root, 'content/legacy-assets.json'), 'utf8'));
+const isProduction = process.env.SITE_MODE === 'production';
+const sha = async (p) => createHash('sha256').update(await readFile(p)).digest('hex');
 const { readdir } = await import('node:fs/promises');
 async function walk(dir) {
   const acc = [];
@@ -205,24 +210,32 @@ for (const f of await walk(join(root, distDir))) {
   const txt = decodeURIComponent((await readFile(f, 'utf8')).replace(/%(?![0-9A-Fa-f]{2})/g, '%25'));
   for (const m of txt.matchAll(/\/(?:images|media)\/photografik-2027\/[\w\-./]+?\.(?:webp|jpe?g|png|mp4)/g)) refs.add(m[0]);
 }
-let legacyOk = 0; let legacyFailed = 0;
-for (const ref of refs) {
+let legacyCommitted = 0; let legacyBridged = 0; let legacyFailed = 0;
+for (const ref of [...refs].sort()) {
   const dest = join(root, distDir, ref);
   const cached = join(cache, 'legacy', ref);
   const committed = join(root, 'static', ref);
+  const pin = pinned.files[ref];
   try {
+    if (!pin) throw new Error('not pinned in content/legacy-assets.json');
     await mkdir(dirname(dest), { recursive: true });
-    if (await has(committed)) { await copyFile(committed, dest); legacyOk++; continue; }
-    if (!(await has(cached))) {
-      if (!legacyOrigin) throw new Error('no legacyOrigin and not committed under static/');
-      const r = await fetch(legacyOrigin + ref);
-      if (!r.ok) throw new Error(`origin ${r.status}`);
+    if (await has(committed)) {
+      if ((await sha(committed)) !== pin.sha256) throw new Error('committed file does not match its pinned SHA-256');
+      await copyFile(committed, dest); legacyCommitted++; continue;
+    }
+    if (isProduction) throw new Error('not committed under static/ (production builds never use the bridge)');
+    if (!(await has(cached)) || (await sha(cached)) !== pin.sha256) {
+      const r = await fetch(pinned.recordedFrom + ref);
+      if (!r.ok) throw new Error(`bridge ${r.status}`);
+      const buf = Buffer.from(await r.arrayBuffer());
+      if (createHash('sha256').update(buf).digest('hex') !== pin.sha256) throw new Error('bridge copy does not match its pinned SHA-256');
       await mkdir(dirname(cached), { recursive: true });
-      await pipeline(Readable.fromWeb(r.body), createWriteStream(cached));
+      await writeFile(cached, buf);
     }
     await copyFile(cached, dest);
-    legacyOk++;
+    legacyBridged++;
   } catch (e) { legacyFailed++; failed++; console.error(`media: FAILED legacy ${ref}: ${e.message}`); }
 }
-console.log(`media: legacy assets ${legacyOk} ok, ${legacyFailed} failed`);
+console.log(`media: legacy assets ${legacyCommitted} committed, ${legacyBridged} via pinned review bridge, ${legacyFailed} failed`);
+if (isProduction && legacyFailed) process.exit(1);
 console.log(`media: done in ${Math.round((Date.now() - t0) / 1000)}s, ${Object.keys(manifest).length} ok, ${failed} failed`);

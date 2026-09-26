@@ -359,7 +359,5 @@
     "biz-evolution-gc (lawn aeration, off-positioning)",
     "cs-noah-knows-clip",
     "cs-sean"
-  ],
-  "legacyOrigin": "https://photografikstudios.replit.app",
-  "_legacy": "Stills and clips from the Replit reference build are copied into the Vercel build (same paths) by scripts/media.mjs, so pages never request Replit at runtime. legacyOrigin is read only at build time when a file is not already cached or committed under static/. To retire it: commit the files under static/<same path> (or replace with Drive originals) and delete legacyOrigin."
+  ]
 }
