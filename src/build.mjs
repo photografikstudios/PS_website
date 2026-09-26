@@ -12,7 +12,14 @@ import { layout } from './layout.js';
 import { buildPages } from './pages.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const out = join(root, 'dist');
+// Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
+// separate dist-candidates/ folder, so the deployable dist/ cannot contain them even by mistake.
+const candidateBuild = process.env.INCLUDE_RIGHTS_PENDING === '1';
+if (candidateBuild && (process.env.VERCEL || process.env.CI || process.env.VERCEL_ENV)) {
+  console.error('Refusing to build: INCLUDE_RIGHTS_PENDING=1 is set in a Vercel/CI environment. Rights-pending media never enter a deployable build.');
+  process.exit(1);
+}
+const out = join(root, candidateBuild ? 'dist-candidates' : 'dist');
 const readJSON = async (f) => JSON.parse(await readFile(join(root, 'content', f), 'utf8'));
 
 // Review mode shows items awaiting approval with a visible marker and sets noindex.
@@ -35,10 +42,10 @@ if (errors.length) { console.error('Pricing table errors:\n - ' + errors.join('\
 const mediaErrors = validateMedia(work, pricing.packages.map((p) => p.id));
 // Rights gate: media whose rights/consent James has not confirmed never enters a deployed build, in any mode.
 // REVIEW mode (and the public review alias) is not private, so noindex/published:false do not protect people's images.
-// Local-only candidate review: INCLUDE_RIGHTS_PENDING=1 node src/build.mjs (never set this on Vercel).
+// Local-only candidate review: INCLUDE_RIGHTS_PENDING=1 node src/build.mjs writes dist-candidates/ and refuses to run on Vercel/CI.
 const rightsPending = work.media.filter((m) => m.rights !== 'approved');
-if (process.env.INCLUDE_RIGHTS_PENDING !== '1') work.media = work.media.filter((m) => m.rights === 'approved');
-if (rightsPending.length) console.log(`Rights gate: ${rightsPending.length} media record(s) awaiting James's rights/consent ${process.env.INCLUDE_RIGHTS_PENDING === '1' ? 'INCLUDED (local candidate review only)' : 'excluded'}.`);
+if (!candidateBuild) work.media = work.media.filter((m) => m.rights === 'approved');
+if (rightsPending.length) console.log(`Rights gate: ${rightsPending.length} media record(s) awaiting James's rights/consent ${candidateBuild ? 'INCLUDED in dist-candidates/ (local owner review only)' : 'excluded'}.`);
 if (mediaErrors.length) { console.error('Media metadata errors:\n - ' + mediaErrors.join('\n - ')); process.exit(1); }
 
 const isApproved = (r) => (r.approval ?? r.rights ?? 'approved') === 'approved';
@@ -111,7 +118,8 @@ await writeFile(join(out, 'robots.txt'), reviewMode
   ? 'User-agent: *\nDisallow: /\n'
   : `User-agent: *\nAllow: /\n\nSitemap: ${site.canonicalOrigin}/sitemap.xml\n`);
 const publishedNote = (r) => fieldNotes.articles.some((a) => `/field-notes/${a.slug}` === r && a.status === 'published' && a.approvedBy);
-const sitemapRoutes = routes.filter((r) => (!r.startsWith('/work/') || work.projects.find((p) => `/work/${p.slug}` === r && isApproved(p)))
+const projectRoutes = new Map(work.projects.map((p) => [p.path, p]));
+const sitemapRoutes = routes.filter((r) => (!projectRoutes.has(r) || isApproved(projectRoutes.get(r)))
   && (!r.startsWith('/field-notes/') || publishedNote(r))
   && (r !== '/field-notes' || fieldNotes.articles.some((a) => a.status === 'published' && a.approvedBy)));
 await writeFile(join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapRoutes.map((r) => `  <url><loc>${site.canonicalOrigin}${r === '/' ? '/' : r}</loc></url>`).join('\n')}\n</urlset>\n`);

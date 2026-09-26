@@ -123,38 +123,78 @@ await check('pricing: ?sqft= deep link', async () => {
   await p.context().close();
 });
 
-// ---------- Gallery ----------
-await check('gallery: filters intersect, clear works, empty state is honest', async () => {
+// ---------- Compare table: James's Sep 25 corrections ----------
+await check('compare: Book Now CTA to the booking portal; common inclusions shown as rows; Day-to-night video label', async () => {
+  for (const vp of [{ width: 1440, height: 1000 }, { width: 375, height: 812 }]) {
+    const p = await newPage(vp);
+    await p.goto(base + '/real-estate#compare');
+    const cta = p.locator('.cmp__cta a').first();
+    assert((await cta.textContent()).trim().replace(/\s+/g, ' ').startsWith('Book Now'), `label ${await cta.textContent()}`);
+    assert((await cta.getAttribute('href')) === 'https://photografikstudios.hd.pics/order', await cta.getAttribute('href'));
+    assert((await p.textContent('.cmp__cta .small')).includes('Travel fees and sales tax are added at checkout'), 'checkout note kept');
+    assert(await p.getByText('Book on HD Photo Hub').count() === 0, 'old label gone');
+    const panel = p.locator('#cmp-panel-packages');
+    const rows = await panel.locator('tbody tr').evaluateAll((trs) => trs.map((tr) => ({ h: tr.querySelector('th').textContent.trim(), cells: [...tr.querySelectorAll('td')].filter((td) => getComputedStyle(td).display !== 'none').map((td) => td.textContent.trim()) })));
+    for (const label of ['Standard interior and exterior photos', 'Drone photography']) {
+      const r = rows.find((x) => x.h === label);
+      assert(r && r.cells.length >= 2 && r.cells.every((c) => c === 'Included'), `${label}: ${JSON.stringify(r)}`);
+      assert(await panel.locator('tr', { hasText: label }).isVisible(), `${label} visible`);
+    }
+    assert(rows.some((x) => x.h === 'Day-to-night video') && !rows.some((x) => x.h === 'Day-to-night'), 'day-to-night label');
+    assert(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `no overflow at ${vp.width}`);
+    await p.context().close();
+  }
+});
+
+// ---------- Service portfolios (no Work page, James Sep 25) ----------
+await check('portfolios: every approved item appears on its own service page, once, and nowhere links to /work', async () => {
+  const work = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/work.json', import.meta.url), 'utf8'));
+  const approved = work.media.filter((m) => m.rights === 'approved');
+  const route = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
   const p = await newPage();
-  await p.goto(base + '/work');
-  const total = await p.locator('#work-grid .card').count();
-  await p.selectOption('#f-service', 'video');
-  const vids = await p.locator('#work-grid .card:not([hidden])').count();
-  assert(vids > 0 && vids < total, `video ${vids}/${total}`);
-  await p.selectOption('#f-category', 'agent-content');
-  const both = await p.locator('#work-grid .card:not([hidden])').evaluateAll((els) => els.map((e) => [e.dataset.service, e.dataset.category]));
-  assert(both.length > 0 && both.every(([s, c]) => s.includes('video') && c === 'agent-content'), JSON.stringify(both));
-  assert(p.url().includes('service=video') && p.url().includes('category=agent-content'), 'url sync');
-  await p.selectOption('#f-service', 'studio');
-  await p.selectOption('#f-category', 'real-estate');
-  assert(await p.isVisible('#work-empty'), 'empty state visible');
-  await p.click('[data-clear-filters]');
-  assert((await p.locator('#work-grid .card:not([hidden])').count()) === total, 'cleared');
+  for (const [cat, path] of Object.entries(route)) {
+    await p.goto(base + path);
+    const html = await p.locator('#portfolio').evaluate((el) => el.outerHTML);
+    const mine = approved.filter((m) => m.category === cat);
+    const missing = mine.filter((m) => !html.includes(m.id) && !(m.src && html.includes(m.src)) && !(m.poster && html.includes(m.poster)));
+    assert(missing.length === 0, `${path} missing ${missing.map((m) => m.id)}`);
+  }
+  for (const path of ['/', '/real-estate', '/agent-content', '/architecture-design', '/commercial', '/creator-studios', '/about', '/field-notes', '/404', '/commercial/revivaluxe']) {
+    const r = await fetch(base + path); const h = await r.text();
+    assert(!/href="\/work/.test(h), `${path} links to /work`);
+  }
   await p.context().close();
 });
 
-await check('gallery: filter state restored from URL', async () => {
+await check('portfolios: /work and old project URLs redirect to their service destination, keeping intent', async () => {
+  const cases = {
+    '/work': '/#selected-work',
+    '/work?category=architecture-design': '/architecture-design?category=architecture-design#portfolio',
+    '/work?service=video&category=real-estate': '/real-estate?service=video&category=real-estate#portfolio',
+    '/work/revivaluxe': '/commercial/revivaluxe',
+    '/work/lauryn-koke-daniel-gale-sothebys': '/real-estate/lauryn-koke-daniel-gale-sothebys',
+    '/work/property-tour-agent-media': '/agent-content/property-tour-agent-media',
+    '/work/yankee-home-builders': '/architecture-design/yankee-home-builders',
+    '/work/peterson-ramlowtan': '/architecture-design/peterson-ramlowtan',
+    '/work/creator-studios': '/creator-studios/sessions',
+    '/portfolio': '/#selected-work',
+  };
+  for (const [from, to] of Object.entries(cases)) {
+    const r = await fetch(base + from, { redirect: 'manual' });
+    assert([307, 308].includes(r.status) && r.headers.get('location') === to, `${from} -> ${r.status} ${r.headers.get('location')}`);
+    const final = await fetch(base + to.split('#')[0]);
+    assert(final.status === 200, `${to} ${final.status}`);
+  }
   const p = await newPage();
-  await p.goto(base + '/work?category=architecture-design');
-  const cats = await p.locator('#work-grid .card:not([hidden])').evaluateAll((els) => els.map((e) => e.dataset.category));
-  assert(cats.length && cats.every((c) => c === 'architecture-design'), cats.join());
+  await p.goto(base + '/work?service=video&category=real-estate');
+  assert((await p.inputValue('#rg-type')) === 'video', 'old service=video intent kept in the Real Estate gallery');
   await p.context().close();
 });
 
 // ---------- Video ----------
 await check('video: plays inline in its frame, no dialog/route change, one at a time', async () => {
   const p = await newPage();
-  await p.goto(base + '/work');
+  await p.goto(base + '/commercial');
   const url = p.url();
   const players = p.locator('[data-video]');
   assert((await players.count()) >= 2, 'need two players');
@@ -173,7 +213,7 @@ await check('video: plays inline in its frame, no dialog/route change, one at a 
 
 await check('video: start button is keyboard operable and labelled', async () => {
   const p = await newPage();
-  await p.goto(base + '/work');
+  await p.goto(base + '/commercial');
   const btn = p.locator('[data-video] .vplayer__start').first();
   const label = await btn.getAttribute('aria-label');
   assert(label && label.startsWith('Play '), label);
@@ -185,7 +225,7 @@ await check('video: start button is keyboard operable and labelled', async () =>
 
 await check('video: pauses when scrolled offscreen', async () => {
   const p = await newPage({ width: 390, height: 780 });
-  await p.goto(base + '/work');
+  await p.goto(base + '/commercial');
   await p.locator('[data-video] .vplayer__start').first().click();
   await p.waitForFunction(() => !document.querySelector('[data-video] video').paused, null, { timeout: 8000 });
   await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -195,7 +235,7 @@ await check('video: pauses when scrolled offscreen', async () => {
 
 await check('video: every player has a real source (no "Unable to play media")', async () => {
   const p = await newPage();
-  for (const path of ['/', '/work', '/agent-content', '/real-estate/pricing', '/commercial']) {
+  for (const path of ['/', '/agent-content', '/architecture-design', '/creator-studios', '/real-estate/pricing', '/commercial']) {
     await p.goto(base + path);
     const missing = await p.locator('video').evaluateAll((vs) => vs.filter((v) => !v.getAttribute('src') && !v.querySelector('source[src]')).length);
     assert(missing === 0, `${path}: ${missing} videos without src`);
@@ -205,7 +245,7 @@ await check('video: every player has a real source (no "Unable to play media")',
 
 await check('video: vertical frames are 9:16', async () => {
   const p = await newPage();
-  await p.goto(base + '/work');
+  await p.goto(base + '/agent-content');
   const ratios = await p.locator('.vplayer--vertical').evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return +(r.width / r.height).toFixed(3); }));
   assert(ratios.length && ratios.every((r) => Math.abs(r - 0.5625) < 0.01), ratios.join());
   await p.context().close();
@@ -258,7 +298,7 @@ await check('booking CTAs point to HD Photo Hub', async () => {
 });
 
 await check('redirects from old Squarespace and Replit routes', async () => {
-  const cases = { '/articles/how-to-prep-a-home-for-photos': '/field-notes/how-to-prepare-a-home-for-listing-photos', '/blog-1': '/field-notes', '/articles': '/field-notes', '/articles/why-you-should-get-a-real-estate-video-done': '/real-estate#video', '/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography': '/field-notes/twilight-drone-floor-plans', '/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide': '/agent-content', '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
+  const cases = { '/articles/how-to-prep-a-home-for-photos': '/field-notes/how-to-prepare-a-home-for-listing-photos', '/blog-1': '/field-notes', '/articles': '/field-notes', '/articles/why-you-should-get-a-real-estate-video-done': '/real-estate#video', '/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography': '/field-notes/twilight-drone-floor-plans', '/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide': '/agent-content', '/pricing': '/real-estate/pricing', '/hamptons-real-estate-photography': '/real-estate', '/real-estate-media': '/real-estate', '/portfolio': '/#selected-work', '/about-photografik-studios': '/about', '/podcast': '/creator-studios' };
   for (const [from, to] of Object.entries(cases)) {
     const r = await fetch(base + from, { redirect: 'manual' });
     assert([307, 308].includes(r.status) && r.headers.get('location') === to, `${from} -> ${r.status} ${r.headers.get('location')}`);
@@ -267,7 +307,7 @@ await check('redirects from old Squarespace and Replit routes', async () => {
 
 await check('all internal links resolve (no 404s)', async () => {
   const p = await newPage();
-  const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/agency-partnerships', '/creator-studios', '/work', '/about', '/contact', '/field-notes', '/field-notes/listing-video-horizontal-or-vertical', '/field-notes/twilight-drone-floor-plans'];
+  const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/agency-partnerships', '/creator-studios', '/about', '/contact', '/field-notes', '/field-notes/listing-video-horizontal-or-vertical', '/field-notes/twilight-drone-floor-plans'];
   const hrefs = new Set();
   for (const path of pages) {
     await p.goto(base + path);
@@ -281,7 +321,7 @@ await check('all internal links resolve (no 404s)', async () => {
 
 await check('a11y basics: one h1, labelled controls, alt on images, no JS errors', async () => {
   const p = await newPage();
-  const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/agency-partnerships', '/creator-studios', '/work', '/work/revivaluxe', '/about', '/contact'];
+  const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/agency-partnerships', '/creator-studios', '/commercial/revivaluxe', '/about', '/contact'];
   const issues = [];
   for (const path of pages) {
     await p.goto(base + path);
@@ -306,7 +346,7 @@ await check('a11y basics: one h1, labelled controls, alt on images, no JS errors
 await check('mobile: no horizontal overflow at 360px', async () => {
   const p = await newPage({ width: 360, height: 780 }, { isMobile: true, hasTouch: true });
   const over = [];
-  for (const path of ['/', '/real-estate', '/real-estate/pricing', '/work', '/contact', '/agent-content', '/commercial', '/work/lauryn-koke-daniel-gale-sothebys']) {
+  for (const path of ['/', '/real-estate', '/real-estate/pricing', '/contact', '/agent-content', '/commercial', '/real-estate/lauryn-koke-daniel-gale-sothebys']) {
     await p.goto(base + path);
     const w = await p.evaluate(() => document.documentElement.scrollWidth);
     if (w > 361) over.push(`${path} ${w}px`);
@@ -317,7 +357,7 @@ await check('mobile: no horizontal overflow at 360px', async () => {
 
 await check('mobile: menu opens and closes with Escape', async () => {
   const p = await newPage({ width: 390, height: 800 }, { isMobile: true, hasTouch: true });
-  for (const path of ['/', '/real-estate/pricing', '/work', '/contact']) {
+  for (const path of ['/', '/real-estate/pricing', '/commercial', '/contact']) {
     await p.goto(base + path);
     await p.click('.menu-toggle');
     assert(await p.isVisible('#site-nav'), `open on ${path}`);
@@ -359,12 +399,12 @@ await check('home showcase: Videos/Photos × category, lightbox, View more', asy
   const shown = () => p.locator('#sw-grid .sw-card:not([hidden])').evaluateAll((els) => els.map((e) => [e.dataset.kind, e.dataset.category]));
   let v = await shown();
   assert(v.length > 0 && v.length <= 9 && v.every(([k, c]) => k === 'video' && c === 'real-estate'), JSON.stringify(v));
-  assert((await p.getAttribute('#sw-more', 'href')) === '/work?service=video&category=real-estate', 'view more href');
+  assert((await p.getAttribute('#sw-more', 'href')) === '/real-estate?type=video#portfolio', 'view more href');
   await p.selectOption('#sw-kind', 'image');
   await p.selectOption('#sw-cat', 'architecture-design');
   v = await shown();
   assert(v.length > 0 && v.every(([k, c]) => k === 'image' && c === 'architecture-design'), JSON.stringify(v));
-  assert((await p.getAttribute('#sw-more', 'href')) === '/work?service=photography&category=architecture-design', 'photo view more');
+  assert((await p.getAttribute('#sw-more', 'href')) === '/architecture-design#portfolio', 'photo view more');
   await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
   await p.locator('#lightbox[open] img').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
   assert(await p.locator('#lightbox[open] img').isVisible(), 'photo lightbox');
@@ -557,15 +597,16 @@ await check('RE gallery: lightbox mode (review override) with Escape and focus r
   await p.context().close();
 });
 
-await check('one media collection: the same record drives Home, Real Estate and Work', async () => {
+await check('one media collection: the same record drives Home, the Real Estate gallery and Commercial', async () => {
   const p = await newPage();
   const ids = async (path, sel) => { await p.goto(base + path); return p.evaluate((s) => JSON.parse(document.querySelector(s).textContent).map((x) => x.id), sel); };
   const home = await ids('/', '[data-showcase] [data-gallery-items]');
   const re = await ids('/real-estate', '[data-regallery] [data-gallery-items]');
-  await p.goto(base + '/work');
-  const work = await p.locator('#work-grid [data-video]').evaluateAll((e) => e.map((x) => x.dataset.id));
-  for (const id of ['re-hamptons-beachfront', 're-hamptons-calm']) assert(home.includes(id) && re.includes(id) && work.includes(id), id);
-  assert(new Set(re).size === re.length && new Set(home).size === home.length, 'no duplicates');
+  for (const id of ['re-hamptons-beachfront', 're-hamptons-calm']) assert(home.includes(id) && re.includes(id), id);
+  await p.goto(base + '/commercial');
+  const com = await p.locator('#portfolio [data-video]').evaluateAll((e) => e.map((x) => x.dataset.id));
+  assert(com.includes('biz-rachel-lynch-pools') && home.includes('biz-rachel-lynch-pools'), 'commercial film shared with Home');
+  assert(new Set(re).size === re.length && new Set(home).size === home.length && new Set(com).size === com.length, 'no duplicates');
   await p.context().close();
 });
 
@@ -619,7 +660,7 @@ await check('no Replit requests; legacy media served from the site', async () =>
   const p = await newPage();
   const hits = [];
   p.on('request', (r) => { if (/replit/.test(r.url())) hits.push(r.url()); });
-  for (const path of ['/', '/real-estate', '/work', '/agent-content', '/commercial', '/creator-studios', '/about', '/field-notes', '/work/lauryn-koke-daniel-gale-sothebys']) {
+  for (const path of ['/', '/real-estate', '/agent-content', '/commercial', '/creator-studios', '/about', '/field-notes', '/real-estate/lauryn-koke-daniel-gale-sothebys']) {
     await p.goto(base + path);
     await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   }
@@ -661,7 +702,7 @@ await check('nav: Creator Studios replaces Agencies; agency partnerships stay re
   await p.context().close();
 });
 
-const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-99-hedges-amagansett', '/commercial': 'biz-rachel-lynch-pools', '/work': 'work-reel' };
+const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-99-hedges-amagansett', '/commercial': 'biz-rachel-lynch-pools' };
 await check('primary-nav pages open with a silent autoplaying 16:9 hero video, poster, pause/play control, no Watch the film prompt', async () => {
   for (const [path, id] of Object.entries(heroPages)) {
     const p = await newPage();
@@ -743,7 +784,7 @@ await check('commercial: projects grouped by verified client, no client mixed in
   await p.goto(base + '/commercial');
   const groups = await p.locator('.proj-group').evaluateAll((els) => els.map((g) => ({ name: g.querySelector('h3').textContent.trim(), titles: [...g.querySelectorAll('.card__title')].map((t) => t.textContent.trim()), link: g.querySelector('.proj-group__head a')?.getAttribute('href') || null })));
   const by = Object.fromEntries(groups.map((g) => [g.name, g]));
-  assert(by.RevivaLuxe && by.RevivaLuxe.titles.length === 5 && by.RevivaLuxe.titles.every((t) => /RevivaLuxe/.test(t)) && by.RevivaLuxe.link === '/work/revivaluxe', JSON.stringify(by.RevivaLuxe));
+  assert(by.RevivaLuxe && by.RevivaLuxe.titles.length === 5 && by.RevivaLuxe.titles.every((t) => /RevivaLuxe/.test(t)) && by.RevivaLuxe.link === '/commercial/revivaluxe', JSON.stringify(by.RevivaLuxe));
   assert(by['Rachel Lynch Pools'] && by['Rachel Lynch Pools'].titles.length === 2 && by['Rachel Lynch Pools'].titles.every((t) => /Rachel Lynch/.test(t)), JSON.stringify(by['Rachel Lynch Pools']));
   assert(by['Torella Pools'] && by['Torella Pools'].titles.length === 2 && by['Torella Pools'].titles.every((t) => /Torella/.test(t)), JSON.stringify(by['Torella Pools']));
   for (const n of ['EEStairs', 'BPE Ironworks', 'CLOS Lighting']) assert(by[n] && by[n].titles.every((t) => t.includes(n.split(' ')[0])), n);
@@ -781,7 +822,7 @@ await check('creator studios: story, formats with scope, conversations, process,
 });
 
 // Screenshots for the handoff
-for (const [name, path, vp] of [['desktop-pricing', '/real-estate/pricing?sqft=3200', { width: 1440, height: 1100 }], ['mobile-pricing', '/real-estate/pricing?sqft=5501', { width: 390, height: 1400 }], ['desktop-work', '/work?service=video', { width: 1440, height: 1100 }], ['mobile-work', '/work', { width: 390, height: 1400 }]]) {
+for (const [name, path, vp] of [['desktop-pricing', '/real-estate/pricing?sqft=3200', { width: 1440, height: 1100 }], ['mobile-pricing', '/real-estate/pricing?sqft=5501', { width: 390, height: 1400 }], ['desktop-work', '/real-estate#portfolio', { width: 1440, height: 1100 }], ['mobile-work', '/commercial#portfolio', { width: 390, height: 1400 }]]) {
   const p = await newPage(vp);
   await p.goto(base + path);
   await p.screenshot({ path: shots + name + '.png' });

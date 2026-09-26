@@ -1,5 +1,5 @@
-// Home "Selected work": Videos/Photos × category filter, 9 cards, lightbox viewer, View more → /work.
-// Items come from the shared work.media collection (same records as Work and the Real Estate gallery).
+// Home "Selected work": Videos/Photos × category filter, 9 cards, lightbox viewer, View more → that category's service page portfolio (no Work page).
+// Items come from the shared work.media collection (the same records as the service-page galleries).
 import { createLightbox } from './lightbox.js';
 // Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
 const track = (name, props) => window.pgkTrack?.(name, props);
@@ -13,6 +13,7 @@ if (root) {
   const empty = root.querySelector('#sw-empty');
   const more = root.querySelector('#sw-more');
   const LIMIT = Number(root.dataset.limit) || 9;
+  let routes = {}; try { routes = JSON.parse(root.dataset.routes || '{}'); } catch { /* keep default */ }
   const lb = createLightbox(root.querySelector('dialog'), data, { where: 'home' });
   let visible = [];
 
@@ -30,7 +31,8 @@ if (root) {
     visible = matches.slice(0, LIMIT).map((c) => +c.dataset.i);
     cards.forEach((c) => { c.hidden = !visible.includes(+c.dataset.i); });
     empty.hidden = matches.length > 0;
-    more.href = `/work?service=${kind === 'video' ? 'video' : 'photography'}&category=${encodeURIComponent(cat)}`;
+    const route = routes[cat] || '/real-estate';
+    more.href = `${route}${route === '/real-estate' ? `?type=${kind === 'video' ? 'video' : 'photo'}` : ''}#portfolio`;
     more.textContent = matches.length > LIMIT ? `View more (${matches.length})` : 'View more';
   }
 

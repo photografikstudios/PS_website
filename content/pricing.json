@@ -1071,7 +1071,8 @@
         ],
         "rows": [
           {
-            "label": "Interior and exterior photos",
+            "label": "Standard interior and exterior photos",
+            "alwaysShow": true,
             "keys": [
               "interior",
               "exterior"
@@ -1079,6 +1080,7 @@
           },
           {
             "label": "Drone photography",
+            "alwaysShow": true,
             "keys": [
               "drone"
             ]
@@ -1108,7 +1110,7 @@
             ]
           },
           {
-            "label": "Day-to-night",
+            "label": "Day-to-night video",
             "keys": [
               "dayToNight"
             ]

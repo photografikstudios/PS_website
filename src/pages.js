@@ -18,6 +18,13 @@ export function buildPages(ctx) {
 
   // ---------- shared pieces ----------
   const allMediaById = Object.fromEntries(work.media.map((m) => [m.id, m]));
+  // No standalone Work page (James, Sep 25): each category's full collection lives on its service page, at #portfolio.
+  const serviceRoute = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
+  const isApproved = (r) => (r.approval ?? 'approved') === 'approved';
+  // Offer prices that James has not approved never reach HTML (the review alias is public): show the offer, not the figure.
+  const approvedPrice = (rec, html) => (isApproved(rec) ? html : '<span class="price-pending">Price confirmed when we scope it</span>');
+  const projectPath = (p) => p.path || `${serviceRoute[p.category]}/${p.slug}`;
+  const countSummary = (items) => { const films = items.filter((m) => m.type === 'video').length; const stills = items.length - films; return [films ? `${films} film${films > 1 ? 's' : ''}` : '', stills ? `${stills} photo${stills > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · '); };
   const mmss = (d) => `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
   // Hero video: the page's relevant 16:9 footage autoplays silently in its frame (muted, playsinline, poster first).
   // No separate film stage or play prompt; the visitor can pause it, and reduced motion or blocked autoplay keeps the poster.
@@ -41,7 +48,7 @@ export function buildPages(ctx) {
 
   const mediaCard = (m, { showMeta = true, sizes } = {}) => {
     const project = m.project ? projectBySlug[m.project] : null;
-    const href = project ? `/work/${project.slug}` : null;
+    const href = project && visible(project) ? projectPath(project) : null;
     const frame = m.type === 'video'
       ? videoPlayer(m, { sizes })
       : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { alt: m.alt || '', sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
@@ -176,7 +183,7 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-<section class="section section--ink on-dark showcase" aria-labelledby="work-h" data-showcase data-limit="${homeLimit}">
+<section class="section section--ink on-dark showcase" id="selected-work" aria-labelledby="work-h" data-showcase data-limit="${homeLimit}" data-routes="${esc(JSON.stringify(serviceRoute))}">
   <div class="wrap">
     <div class="showcase__head">
       <div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="work-h">Different briefs. <em>One standard.</em></h2></div>
@@ -195,7 +202,7 @@ export function buildPages(ctx) {
       </button>`)}
     </div>
     <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">start a project</a>.</p>
-    <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/work?service=video&amp;category=real-estate" data-track="gallery_view_more">View more</a></div>
+    <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/real-estate?type=video#portfolio" data-track="gallery_view_more">View more</a></div>
   </div>
   ${lightboxDialog()}
   ${itemsJson(showcase)}
@@ -396,7 +403,7 @@ ${join(topicsUsed, (t) => `
     const defaults = v.defaults || v.records;
     // Keep the table to real differences: rows every option includes become one summary line.
     const common = v.rows.filter((row) => v.recs.every((r) => inclusion(r, row.keys).state === 'yes'));
-    const rows = v.rows.filter((row) => !common.includes(row));
+    const rows = v.rows.filter((row) => row.alwaysShow || !common.includes(row));
     const sameMax = v.recs.every((r) => r.max === v.recs[0].max);
     const noun = v.id === 'packages' ? 'Every package' : 'Every option here';
     return `<div class="cmp__panel" role="tabpanel" id="cmp-panel-${v.id}" aria-labelledby="cmp-tab-${v.id}" ${vi ? 'hidden' : ''} data-view="${v.id}">
@@ -433,7 +440,7 @@ ${join(topicsUsed, (t) => `
     ${join(cmpViews, cmpView)}
     <p class="sr-only" id="cmp-live" aria-live="polite"></p>
     <div class="cmp__cta">
-      ${bookBtn('re_compare', 'Book on HD Photo Hub', 'btn btn--solid')}
+      ${bookBtn('re_compare', 'Book Now', 'btn btn--solid')}
       <a class="link-arrow" id="cmp-pricing" href="/real-estate/pricing">Full price list by size ${arrow}</a>
       <p class="small">You will choose the package and confirm the property size in our booking portal. Travel fees and sales tax are added at checkout where they apply.</p>
     </div>
@@ -459,7 +466,7 @@ ${join(topicsUsed, (t) => `
   const reGallery = () => `
 <section class="section section--ink on-dark regallery" id="portfolio" aria-labelledby="rg-h" data-regallery data-player="${esc(reCfg.player || 'inline')}" data-batch="${reBatch}"${reviewMode ? ' data-allow-player-override' : ''}>
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Real estate portfolio</p><h2 class="h2 reveal" id="rg-h">Listings, filmed and photographed.</h2></div><a class="link-arrow" href="/work?category=real-estate">All work ${arrow}</a></div>
+    <div class="section-head"><div><p class="eyebrow">Real estate portfolio</p><h2 class="h2 reveal" id="rg-h">Listings, filmed and photographed.</h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter real estate work" onsubmit="return false">
       <div class="filters__field"><label for="rg-package">Package</label>
         <select id="rg-package" name="package"><option value="">All packages</option>${join(pkgOptions, (p) => `<option value="${p.id}">${esc(p.name)} (${pkgCounts[p.id]})</option>`)}</select></div>
@@ -645,7 +652,8 @@ ${fnTeaser('real-estate-media')}
   // ---------- AGENT CONTENT ----------
   const agentMonthly = offers.agentMonthly.filter(visible);
   const engines = pricing.fixed.filter((f) => f.group === 'engines').filter(visible);
-  const agentVids = media.filter((m) => m.category === 'agent-content' && m.type === 'video').slice(0, 3);
+  const agentVids = media.filter((m) => m.category === 'agent-content' && m.type === 'video');
+  const agentProject = work.projects.find((p) => p.category === 'agent-content' && visible(p));
   pages['/agent-content'] = {
     overlay: true,
     body: `${pageHero({
@@ -654,8 +662,9 @@ ${fnTeaser('real-estate-media')}
       lede: 'On-camera video that helps future sellers understand who you are and how you work before the first conversation. We handle the ideas, direction and editing. You bring what you know.',
       cta: `<a class="btn btn--solid" href="/contact?type=agent-content" data-track="retainer_click" data-track-location="agent_hero">Plan My Content</a>`,
     })}
-<section class="section">
+<section class="section" id="portfolio" aria-labelledby="ac-work-h">
   <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Agent content portfolio</p><h2 class="h2 reveal" id="ac-work-h">On camera, in the agent's own words.</h2></div>${agentProject ? `<a class="link-arrow" href="${projectPath(agentProject)}">${esc(agentProject.title)}: the project ${arrow}</a>` : ''}</div>
     <div class="vrow">${join(agentVids, (m) => mediaCard(m, { sizes: '(min-width: 900px) 25vw, 70vw' }))}</div>
   </div>
 </section>
@@ -686,9 +695,9 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <p class="eyebrow">Monthly content plans</p>
     <h2 class="h2 reveal">Stay visible between listings.</h2>
     <div class="plans">${join(agentMonthly, (o) => `<div class="plan reveal"><h3 class="h3">${esc(o.name)} ${needsApproval(o)}</h3><p class="plan__tag">${esc(o.tagline)}</p>
-      <p class="plan__price"><strong>${formatUSD(o.monthly)}</strong>/month</p><p class="plan__alt">${formatUSD(o.contract)}/month on a 12-month contract, billed monthly</p>
+      <p class="plan__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/month`)}</p>${isApproved(o) ? `<p class="plan__alt">${formatUSD(o.contract)}/month on a 12-month contract, billed monthly</p>` : ''}
       <ul class="checks">${join(o.scope, (s) => `<li>${esc(s)}</li>`)}</ul></div>`)}</div>
-    ${visible(offers.socialManagementFrom) ? `<p class="aside-line">Social media management is available from ${formatUSD(offers.socialManagementFrom.amount)}/month. ${needsApproval(offers.socialManagementFrom)}</p>` : ''}
+    ${visible(offers.socialManagementFrom) ? `<p class="aside-line">Social media management is available${isApproved(offers.socialManagementFrom) ? ` from ${formatUSD(offers.socialManagementFrom.amount)}/month` : ' as a monthly add-on'}. ${needsApproval(offers.socialManagementFrom)}</p>` : ''}
   </div>
 </section>` : ''}
 <section class="section section--brand on-dark">
@@ -702,6 +711,17 @@ ${agentMonthly.length ? `<section class="section section--tint">
 
   // ---------- ARCHITECTURE & DESIGN ----------
   const archMedia = media.filter((m) => m.category === 'architecture-design');
+  // Grouped by verified project only; media without a project go to a general group (never assigned by guess).
+  const archGroups = (() => {
+    const groups = new Map();
+    for (const m of archMedia) {
+      const project = m.project ? projectBySlug[m.project] : null;
+      const key = project ? project.slug : 'general';
+      if (!groups.has(key)) groups.set(key, { key, name: project ? project.title : 'More architecture and design work', href: project && visible(project) ? projectPath(project) : null, items: [], general: !project });
+      groups.get(key).items.push(m);
+    }
+    return [...groups.values()].sort((a, b) => a.general - b.general);
+  })();
   pages['/architecture-design'] = {
     overlay: true,
     body: `${pageHero({
@@ -711,10 +731,18 @@ ${agentMonthly.length ? `<section class="section section--tint">
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Start a Project</a>`,
       video: { loop: 'arch-99-hedges-amagansett', film: 'arch-99-hedges-amagansett' },
     })}
-<section class="section section--ink on-dark">
+<section class="section section--ink on-dark" id="portfolio" aria-labelledby="arch-work-h">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Project work</p><h2 class="h2 reveal">Recent projects.</h2></div><a class="link-arrow" href="/work?category=architecture-design">All architecture & design work ${arrow}</a></div>
-    <div class="justified">${join(archMedia, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
+    <div class="section-head"><div><p class="eyebrow">Project work</p><h2 class="h2 reveal" id="arch-work-h">Recent projects, <em>project by project.</em></h2></div></div>
+    ${join(archGroups, (g) => `
+    <section class="proj-group" aria-labelledby="ag-${esc(g.key)}">
+      <div class="proj-group__head">
+        <h3 class="h3" id="ag-${esc(g.key)}">${esc(g.name)}</h3>
+        <p class="proj-group__meta">${esc(countSummary(g.items))}</p>
+        ${g.href ? `<a class="link-arrow" href="${g.href}">View the project ${arrow}</a>` : ''}
+      </div>
+      <div class="justified">${join(g.items, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
+    </section>`)}
   </div>
 </section>
 <section class="section">
@@ -751,7 +779,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       if (!groups.has(key)) groups.set(key, { key, name, items: [], href: null, general: !m.clientId });
       const g = groups.get(key);
       g.items.push(m);
-      if (project && project.category === 'commercial' && visible(project)) g.href = `/work/${project.slug}`;
+      if (project && project.category === 'commercial' && visible(project)) g.href = projectPath(project);
     }
     const order = ['revivaluxe', 'rachel-lynch-pools', 'torella-pools'];
     return [...groups.values()].map((g) => {
@@ -771,9 +799,9 @@ ${agentMonthly.length ? `<section class="section section--tint">
       cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Start a Project</a>`,
       video: { loop: 'biz-rachel-lynch-pools', film: 'biz-rachel-lynch-pools' },
     })}
-<section class="section section--ink on-dark" aria-labelledby="com-work-h">
+<section class="section section--ink on-dark" id="portfolio" aria-labelledby="com-work-h">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">Recent brand projects, <em>client by client.</em></h2></div><a class="link-arrow" href="/work?category=commercial">All commercial work ${arrow}</a></div>
+    <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">Recent brand projects, <em>client by client.</em></h2></div></div>
     ${join(comGroups, (g) => `
     <section class="proj-group" aria-labelledby="pg-${esc(g.key)}">
       <div class="proj-group__head">
@@ -802,8 +830,8 @@ ${cp.length || b2b.length ? `<section class="section">
     <p class="eyebrow">Starting points</p>
     <h2 class="h2 reveal">Where standard scopes begin.</h2>
     <div class="two-col two-col--top">
-      ${cp.length ? `<div><h3 class="h3">Commercial property photography</h3><ul class="prows prows--compact">${join(cp, (c) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(c.name)} ${needsApproval(c)}</p></div><div class="prow__price"><strong>${formatUSD(c.amount)}${c.plus ? '+' : ''}</strong></div></li>`)}</ul><p class="small muted">Level is set by production scope, buildings, complexity and time, not square footage alone. Portfolio pricing is available for five or more properties a year.</p></div>` : ''}
-      ${b2b.length ? `<div><h3 class="h3">Monthly business content</h3><ul class="prows prows--compact">${join(b2b, (o) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(o.name)} ${needsApproval(o)}</p><p class="prow__detail">${esc(o.scope.join(' · '))}</p></div><div class="prow__price"><strong>${formatUSD(o.monthly)}</strong>/mo<br><span class="small muted">${formatUSD(o.contract)}/mo on 12 months</span></div></li>`)}</ul><p class="small muted">12-month rates are billed monthly. Larger annual programs are planned with you.</p></div>` : ''}
+      ${cp.length ? `<div><h3 class="h3">Commercial property photography</h3><ul class="prows prows--compact">${join(cp, (c) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(c.name)} ${needsApproval(c)}</p></div><div class="prow__price">${approvedPrice(c, `<strong>${formatUSD(c.amount)}${c.plus ? '+' : ''}</strong>`)}</div></li>`)}</ul><p class="small muted">Level is set by production scope, buildings, complexity and time, not square footage alone. Portfolio pricing is available for five or more properties a year.</p></div>` : ''}
+      ${b2b.length ? `<div><h3 class="h3">Monthly business content</h3><ul class="prows prows--compact">${join(b2b, (o) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(o.name)} ${needsApproval(o)}</p><p class="prow__detail">${esc(o.scope.join(' · '))}</p></div><div class="prow__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/mo<br><span class="small muted">${formatUSD(o.contract)}/mo on 12 months</span>`)}</div></li>`)}</ul><p class="small muted">12-month rates are billed monthly. Larger annual programs are planned with you.</p></div>` : ''}
     </div>
   </div>
 </section>` : ''}
@@ -870,6 +898,7 @@ ${cp.length || b2b.length ? `<section class="section">
 
   // ---------- CREATOR STUDIOS ----------
   const sessions = offers.creatorSessions.filter(visible);
+  const csProject = work.projects.find((p) => p.category === 'creator-studios' && visible(p));
   const creatorHref = site.destinations.creatorBooking.href;
   const csPhotos = editorialOrder(media.filter((m) => m.category === 'creator-studios' && m.type === 'image'));
   const csClips = media.filter((m) => m.category === 'creator-studios' && m.type === 'video');
@@ -951,14 +980,14 @@ ${cp.length || b2b.length ? `<section class="section">
   <div class="wrap">
     <p class="eyebrow">Sessions</p>
     <h2 class="h2 reveal" id="cs-sessions-h">Two ways to start.</h2>
-    <div class="plans plans--2">${join(sessions, (s) => `<div class="plan reveal"><h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">Starting at <strong>${formatUSD(s.amount)}</strong></p><p>${esc(s.detail)}</p></div>`)}</div>
+    <div class="plans plans--2">${join(sessions, (s) => `<div class="plan reveal"><h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">${approvedPrice(s, `Starting at <strong>${formatUSD(s.amount)}</strong>`)}</p><p>${esc(s.detail)}</p></div>`)}</div>
     <div class="actions">${csStart('creator_sessions')}</div>
   </div>
 </section>
 
-${csPhotos.length || csClips.length ? `<section class="section section--ink on-dark" aria-labelledby="cs-proof-h">
+${csPhotos.length || csClips.length ? `<section class="section section--ink on-dark" id="portfolio" aria-labelledby="cs-proof-h">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Recent sessions</p><h2 class="h2 reveal" id="cs-proof-h">Recorded with real businesses.</h2></div><a class="link-arrow" href="/work?category=creator-studios">More studio work ${arrow}</a></div>
+    <div class="section-head"><div><p class="eyebrow">Recent sessions</p><h2 class="h2 reveal" id="cs-proof-h">Recorded with real businesses.</h2></div>${csProject ? `<a class="link-arrow" href="${projectPath(csProject)}">${esc(csProject.title)} ${arrow}</a>` : ''}</div>
     ${csClips.length ? `<h3 class="h3 proof-sub">Clips</h3><div class="justified">${join(csClips, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>` : ''}
     ${csPhotos.length ? `<h3 class="h3 proof-sub">On set</h3><div class="justified">${join(csPhotos, (m) => `${mediaCard(m)}`)}<span class="justified__spacer" aria-hidden="true"></span></div>
     <p class="small proof-note">Captions name the show or client. We label a session in studio or on location only where that is confirmed.${csPhotos.some((m) => m.published === false) ? ` ${needsApproval({ approval: 'pending' }, 'New photos from the Podcast Action Photos folder: rights, consent and publication approval pending with James')}` : ''}</p>` : ''}
@@ -971,7 +1000,7 @@ ${csPhotos.length || csClips.length ? `<section class="section section--ink on-d
       <p class="eyebrow">Production support</p>
       <h2 class="h2 reveal">We do more than press record.</h2>
       <p>We help shape the idea and the script, coach pacing and delivery, suggest a retake when a moment could be stronger and use the sets to their best effect. You leave with content that has a better chance of landing.</p>
-      <p><a class="link-arrow" href="/work/creator-studios">See a studio project ${arrow}</a></p>
+      ${csProject ? `<p><a class="link-arrow" href="${projectPath(csProject)}">See a studio project ${arrow}</a></p>` : ''}
     </div>
     <div class="two-col__media">${img('/images/photografik-2027/curated/creator-project-hero.webp', { alt: 'Podcast guest recording on set at Creator Studios', sizes: '(min-width: 900px) 40vw, 100vw' })}</div>
   </div>
@@ -985,60 +1014,20 @@ ${csPhotos.length || csClips.length ? `<section class="section section--ink on-d
 </section>`,
   };
 
-  // ---------- WORK ----------
-  const usedSvc = work.taxonomy.service.filter((t) => media.some((m) => m.service.includes(t.id)));
-  const usedCat = work.taxonomy.category.filter((t) => media.some((m) => m.category === t.id));
-  pages['/work'] = {
-    scripts: ['gallery.js'],
-    dark: true,
-    overlay: true,
-    body: `${pageHero({
-      eyebrow: 'Selected work',
-      title: 'Find the work <em>that fits.</em>',
-      lede: 'Listings, architecture, brands and studio sessions. Filter by service and industry below, and play any film right on the page.',
-      cta: '<a class="btn btn--solid" href="#work-filters">Browse the work</a>',
-      video: { loop: 'work-reel', creditText: 'On screen: a silent reel of published listing, architecture and brand films.', pending: 'Work reel cut awaiting James\'s review' },
-    })}
-<section class="section work-head on-dark" id="work-filters">
-  <div class="wrap">
-    <h2 class="sr-only">Filter the work</h2>
-    <form class="filters" data-filters aria-label="Filter work" onsubmit="return false">
-      <div class="filters__field"><label for="f-service">Service type</label>
-        <select id="f-service" name="service"><option value="">All</option>${join(usedSvc, (t) => `<option value="${t.id}">${esc(t.label)}</option>`)}</select></div>
-      <div class="filters__field"><label for="f-category">Industry</label>
-        <select id="f-category" name="category"><option value="">All</option>${join(usedCat, (t) => `<option value="${t.id}">${esc(t.label)}</option>`)}</select></div>
-      <button type="reset" class="filters__clear" hidden>Clear filters</button>
-    </form>
-    <p class="filters__count" id="work-count" aria-live="polite">${media.length} pieces</p>
-  </div>
-</section>
-<section class="section section--ink on-dark work-grid-section">
-  <div class="wrap">
-    <div class="justified" id="work-grid">${join(media, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
-    <div class="empty" id="work-empty" hidden>
-      <p class="h3">Nothing matches both filters yet.</p>
-      <p>We only show real projects. Try another combination, or tell us what you are planning.</p>
-      <p><button type="button" class="btn btn--gold" data-clear-filters>Clear filters</button> <a class="link-arrow" href="/contact">Start a Project ${arrow}</a></p>
-    </div>
-  </div>
-</section>
-${splitCta('Have a project like these?')}`,
-  };
-
-  // ---------- WORK DETAIL ----------
+  // ---------- PROJECT DETAIL (under its service URL) ----------
   for (const p of work.projects.filter(visible)) {
     const pm = media.filter((m) => m.project === p.slug);
     const related = media.filter((m) => m.project !== p.slug && m.category === p.category).slice(0, 3);
     const isRE = p.category === 'real-estate';
     const cta = isRE ? bookBtn('project_detail') : `<a class="btn btn--solid" href="/contact?type=${esc(p.category)}" data-track="project_click" data-track-location="project_detail">Start a Project</a>`;
-    pages[`/work/${p.slug}`] = {
+    pages[projectPath(p)] = {
       seo: { title: `${p.title} | ${catLabel[p.category]} | Photografik`, description: p.summary, image: p.hero },
       body: `
 <article class="project">
   <header class="section project__head">
     <div class="wrap project__grid project__grid--${p.heroOrientation}">
       <div class="project__intro">
-        <p class="eyebrow"><a href="/work?category=${esc(p.category)}">${esc(catLabel[p.category])}</a> · ${esc(p.location)}</p>
+        <p class="eyebrow"><a href="${serviceRoute[p.category]}">${esc(catLabel[p.category])}</a> · ${esc(p.location)}</p>
         <h1 class="display">${esc(p.title)}</h1>
         <p class="lede">${esc(p.story)}</p>
         <dl class="project__facts"><div><dt>Services</dt><dd>${esc(p.services.join(', '))}</dd></div><div><dt>Location</dt><dd>${esc(p.location)}</dd></div>${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}</dl>
@@ -1048,7 +1037,7 @@ ${splitCta('Have a project like these?')}`,
     </div>
   </header>
   ${pm.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(pm, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
-  ${related.length ? `<section class="section"><div class="wrap"><div class="section-head"><h2 class="h2 reveal">Related work</h2><a class="link-arrow" href="/work?category=${esc(p.category)}">More ${esc(catLabel[p.category])} ${arrow}</a></div><div class="justified">${join(related, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
+  ${related.length ? `<section class="section"><div class="wrap"><div class="section-head"><h2 class="h2 reveal">Related work</h2><a class="link-arrow" href="${serviceRoute[p.category]}#portfolio">More ${esc(catLabel[p.category])} ${arrow}</a></div><div class="justified">${join(related, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
 </article>`,
     };
   }
@@ -1162,7 +1151,7 @@ ${splitCta('Let us help with the next one.')}`,
   // ---------- 404 ----------
   pages['/404'] = {
     overlay: true,
-    body: `<section class="page-hero page-hero--compact on-dark"><div class="wrap page-hero__inner"><p class="eyebrow">404</p><h1 class="display">That page has moved.</h1><p class="lede">Try one of these instead.</p><div class="actions"><a class="btn btn--gold" href="/">Home</a><a class="link-arrow" href="/work">Work ${arrow}</a><a class="link-arrow" href="/real-estate/pricing">Pricing ${arrow}</a></div></div></section>`,
+    body: `<section class="page-hero page-hero--compact on-dark"><div class="wrap page-hero__inner"><p class="eyebrow">404</p><h1 class="display">That page has moved.</h1><p class="lede">Try one of these instead.</p><div class="actions"><a class="btn btn--gold" href="/">Home</a><a class="link-arrow" href="/real-estate#portfolio">Real estate portfolio ${arrow}</a><a class="link-arrow" href="/real-estate/pricing">Pricing ${arrow}</a></div></div></section>`,
   };
 
   return pages;

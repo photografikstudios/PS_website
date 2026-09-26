@@ -9,12 +9,28 @@ const dist = join(root, 'dist');
 const config = JSON.parse(await readFile(join(root, 'vercel.json'), 'utf8'));
 const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.webm': 'video/webm', '.mp4': 'video/mp4' };
 
-function matchRedirect(path) {
+function matchRedirect(path, query) {
+  // Mirrors the parts of Vercel's redirect matching this site uses: exact paths, /:path* prefixes,
+  // and `has` query conditions whose named captures fill :name in the destination. The query string passes through.
   for (const r of config.redirects) {
-    if (r.source.endsWith('/:path*')) {
-      const base = r.source.replace('/:path*', '');
-      if (path === base || path.startsWith(base + '/')) return r;
-    } else if (r.source === path) return r;
+    let caps = {};
+    if (r.has) {
+      const ok = r.has.every((h) => {
+        if (h.type !== 'query') return false;
+        const v = query.get(h.key); if (v === null) return false;
+        if (!h.value) return true;
+        const m = new RegExp(`^(?:${h.value})$`).exec(v); if (!m) return false;
+        caps = { ...caps, ...(m.groups || {}) }; return true;
+      });
+      if (!ok) continue;
+    }
+    let hit = false;
+    if (r.source.endsWith('/:path*')) { const base = r.source.replace('/:path*', ''); hit = path === base || path.startsWith(base + '/'); } else hit = r.source === path;
+    if (!hit) continue;
+    let dest = r.destination.replace(/:(\w+)/g, (all, k) => (k in caps ? caps[k] : all));
+    const qs = query.toString();
+    if (qs) { const [a, frag] = dest.split('#'); dest = `${a}${a.includes('?') ? '&' : '?'}${qs}${frag !== undefined ? `#${frag}` : ''}`; }
+    return { ...r, destination: dest };
   }
   return null;
 }
@@ -31,7 +47,7 @@ export function start(port = 0) {
       const r = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.statusCode = c; return this; }, json(o) { res.writeHead(this.statusCode, { 'Content-Type': 'application/json', ...this.headers }); res.end(JSON.stringify(o)); } };
       return handler({ method: req.method, body: raw }, r);
     }
-    const redirect = matchRedirect(path.replace(/\/$/, '') || '/');
+    const redirect = matchRedirect(path.replace(/\/$/, '') || '/', url.searchParams);
     if (redirect) { res.writeHead(redirect.permanent ? 308 : 307, { Location: redirect.destination }); return res.end(); }
     const file = (path.endsWith('.html') ? null : await tryFile(join(dist, path)))
       || (path === '/' && await tryFile(join(dist, 'index.html')))

@@ -139,7 +139,7 @@
     },
     {
       "source": "/portfolio",
-      "destination": "/work",
+      "destination": "/#selected-work",
       "permanent": true
     },
     {
@@ -245,6 +245,58 @@
     {
       "source": "/articles/how-to-prep-a-home-for-photos",
       "destination": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+      "permanent": false
+    },
+    {
+      "source": "/work",
+      "has": [
+        {
+          "type": "query",
+          "key": "category",
+          "value": "(?<cat>real-estate|agent-content|architecture-design|commercial|creator-studios)"
+        }
+      ],
+      "destination": "/:cat#portfolio",
+      "permanent": false
+    },
+    {
+      "source": "/work",
+      "destination": "/#selected-work",
+      "permanent": false
+    },
+    {
+      "source": "/work/lauryn-koke-daniel-gale-sothebys",
+      "destination": "/real-estate/lauryn-koke-daniel-gale-sothebys",
+      "permanent": false
+    },
+    {
+      "source": "/work/property-tour-agent-media",
+      "destination": "/agent-content/property-tour-agent-media",
+      "permanent": false
+    },
+    {
+      "source": "/work/yankee-home-builders",
+      "destination": "/architecture-design/yankee-home-builders",
+      "permanent": false
+    },
+    {
+      "source": "/work/peterson-ramlowtan",
+      "destination": "/architecture-design/peterson-ramlowtan",
+      "permanent": false
+    },
+    {
+      "source": "/work/revivaluxe",
+      "destination": "/commercial/revivaluxe",
+      "permanent": false
+    },
+    {
+      "source": "/work/creator-studios",
+      "destination": "/creator-studios/sessions",
+      "permanent": false
+    },
+    {
+      "source": "/work/:path*",
+      "destination": "/#selected-work",
       "permanent": false
     }
   ]

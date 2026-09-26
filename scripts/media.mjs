@@ -18,7 +18,15 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const out = join(root, 'dist', 'v');
+// Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
+// separate dist-candidates/ folder, so the deployable dist/ cannot contain them even by mistake.
+const candidateBuild = process.env.INCLUDE_RIGHTS_PENDING === '1';
+if (candidateBuild && (process.env.VERCEL || process.env.CI || process.env.VERCEL_ENV)) {
+  console.error('Refusing to build: INCLUDE_RIGHTS_PENDING=1 is set in a Vercel/CI environment. Rights-pending media never enter a deployable build.');
+  process.exit(1);
+}
+const distDir = candidateBuild ? 'dist-candidates' : 'dist';
+const out = join(root, distDir, 'v');
 const cache = join(root, 'node_modules', '.cache', 'pgk-media');
 const tmp = '/tmp/pgk-media-src';
 const VERSION = 'v3'; // bump to force re-encoding
@@ -29,7 +37,7 @@ const { items: allItems } = JSON.parse(await readFile(join(root, 'content/media-
 // Rights gate (mirrors src/build.mjs): never encode or publish files for media whose rights James has not confirmed.
 const workRecords = JSON.parse(await readFile(join(root, 'content/work.json'), 'utf8')).media;
 const pendingIds = new Set(workRecords.filter((m) => m.rights !== 'approved').map((m) => m.id));
-const items = process.env.INCLUDE_RIGHTS_PENDING === '1' ? allItems : allItems.filter((it) => !pendingIds.has(it.id));
+const items = candidateBuild ? allItems : allItems.filter((it) => !pendingIds.has(it.id));
 if (allItems.length !== items.length) console.log(`media: rights gate skipped ${allItems.length - items.length} pending item(s)`);
 await mkdir(out, { recursive: true });
 await mkdir(cache, { recursive: true });
@@ -193,13 +201,13 @@ async function walk(dir) {
   return acc;
 }
 const refs = new Set();
-for (const f of await walk(join(root, 'dist'))) {
+for (const f of await walk(join(root, distDir))) {
   const txt = decodeURIComponent((await readFile(f, 'utf8')).replace(/%(?![0-9A-Fa-f]{2})/g, '%25'));
   for (const m of txt.matchAll(/\/(?:images|media)\/photografik-2027\/[\w\-./]+?\.(?:webp|jpe?g|png|mp4)/g)) refs.add(m[0]);
 }
 let legacyOk = 0; let legacyFailed = 0;
 for (const ref of refs) {
-  const dest = join(root, 'dist', ref);
+  const dest = join(root, distDir, ref);
   const cached = join(cache, 'legacy', ref);
   const committed = join(root, 'static', ref);
   try {

@@ -1,5 +1,5 @@
 {
-  "_readme": "Portfolio records and gallery taxonomy. ONE media collection drives Home Selected Work, the Real Estate gallery and Work; never copy a record into a second list. Add a project to 'projects' and its media to 'media'. Media paths are relative to site.json media.base unless they start with http or /v/ (encoded by scripts/media.mjs from content/media-sources.json, keyed by the same id). rights: 'approved' | 'pending'. published: false keeps a record out of production (review builds show it with a Needs approval tag). packageIds: verified HD Photo Hub package ids (luxury-media, signature, social-media, listing-starter) ONLY after checking the service delivered or James's approval; leave [] when unknown. capturedYear: actual shoot year, or null when not confirmed (never guessed from Drive folders). sortPriority: higher shows first; ties keep file order. Use scripts/ingest.mjs to add and tag records. clientId: verified client/project identity (Codex/James catalog, Sep 24); Commercial groups media by clientId, never by category alone.",
+  "_readme": "Portfolio records and gallery taxonomy. ONE media collection drives Home Selected Work and every service gallery (Real Estate, Agent Content, Architecture & Design, Commercial, Creator Studios); there is no standalone Work page (James, Sep 25); never copy a record into a second list. Add a project to 'projects' and its media to 'media'. Media paths are relative to site.json media.base unless they start with http or /v/ (encoded by scripts/media.mjs from content/media-sources.json, keyed by the same id). rights: 'approved' | 'pending'. published: false keeps a record out of production (review builds show it with a Needs approval tag). packageIds: verified HD Photo Hub package ids (luxury-media, signature, social-media, listing-starter) ONLY after checking the service delivered or James's approval; leave [] when unknown. capturedYear: actual shoot year, or null when not confirmed (never guessed from Drive folders). sortPriority: higher shows first; ties keep file order. Use scripts/ingest.mjs to add and tag records. clientId: verified client/project identity (Codex/James catalog, Sep 24); Commercial groups media by clientId, never by category alone. Project path: the service URL of its case study (old /work/<slug> redirects there).",
   "taxonomy": {
     "service": [
       {
@@ -62,7 +62,8 @@
       "heroAlt": "Arched front entry of the Lloyd Harbor listing, lit at dusk",
       "rights": "approved",
       "rightsNote": "Client names and media approved for display by James, Sept 23 2026. Outcome claims still need client approval.",
-      "heroOrientation": "vertical"
+      "heroOrientation": "vertical",
+      "path": "/real-estate/lauryn-koke-daniel-gale-sothebys"
     },
     {
       "slug": "property-tour-agent-media",
@@ -83,7 +84,8 @@
       "heroAlt": "Modern farmhouse exterior at dusk, Lloyd Harbor",
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026.",
-      "heroOrientation": "horizontal"
+      "heroOrientation": "horizontal",
+      "path": "/agent-content/property-tour-agent-media"
     },
     {
       "slug": "yankee-home-builders",
@@ -102,7 +104,8 @@
       "heroAlt": "Vaulted great room with exposed timber trusses, Amagansett",
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026. Film needs an MP4 export before it can be shown.",
-      "heroOrientation": "vertical"
+      "heroOrientation": "vertical",
+      "path": "/architecture-design/yankee-home-builders"
     },
     {
       "slug": "peterson-ramlowtan",
@@ -122,7 +125,8 @@
       "heroAlt": "Walnut kitchen in an East Hampton residence by Peterson & Ramlowtan",
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026.",
-      "heroOrientation": "horizontal"
+      "heroOrientation": "horizontal",
+      "path": "/architecture-design/peterson-ramlowtan"
     },
     {
       "slug": "revivaluxe",
@@ -142,7 +146,8 @@
       "heroAlt": "RevivaLuxe founder in the practice reception area",
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026.",
-      "heroOrientation": "vertical"
+      "heroOrientation": "vertical",
+      "path": "/commercial/revivaluxe"
     },
     {
       "slug": "creator-studios",
@@ -162,7 +167,8 @@
       "heroAlt": "Podcast guest recording on set at Creator Studios, Bohemia",
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026.",
-      "heroOrientation": "vertical"
+      "heroOrientation": "vertical",
+      "path": "/creator-studios/sessions"
     }
   ],
   "media": [

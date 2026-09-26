@@ -81,6 +81,8 @@ if (root) {
   const valid = (sel, v) => [...sel.options].some((o) => o.value === v);
   if (valid(pkgSel, params.get('package'))) pkgSel.value = params.get('package');
   if (valid(typeSel, params.get('type'))) typeSel.value = params.get('type');
+  // Old /work?service=… links redirect here with their query; keep that intent when no type is given.
+  else { const svc = { video: 'video', photography: 'photo', drone: 'drone' }[params.get('service')]; if (svc && valid(typeSel, svc)) typeSel.value = svc; }
 
   function render({ push = true, source } = {}) {
     const f = { pkg: pkgSel.value, type: typeSel.value };
