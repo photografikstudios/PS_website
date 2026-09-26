@@ -931,6 +931,8 @@ await check('speech clips carry caption tracks that load and parse, a transcript
     const card = p.locator(`.card:has([data-id="${id}"])`).first();
     const src = await card.locator('video track[kind="captions"]').getAttribute('src');
     assert(src === `/captions/${id}.vtt`, `${id} track ${src}`);
+    const isDefault = await card.locator('video track[kind="captions"]').evaluate((t) => t.hasAttribute('default'));
+    assert(isDefault === (id === 'agent-on-camera'), `${id} track default=${isDefault} (open-captioned clips keep CC off by default)`);
     const r = await p.request.get(base + src);
     const body = await r.text();
     assert(r.ok() && body.startsWith('WEBVTT') && (body.match(/-->/g) || []).length >= 2, `${id} vtt`);

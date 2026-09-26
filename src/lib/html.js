@@ -47,7 +47,7 @@ export function createContext({ site, reviewMode, onVercel }) {
     const src = mediaUrl(m.src) + (m.poster ? '' : `#t=${m.posterTime ?? 0.5}`);
     return `<div class="vplayer vplayer--${esc(m.orientation)}" data-video data-id="${esc(m.id)}" data-title="${esc(m.title)}">
   <video ${attrs({ src, poster: posterSrc, playsinline: true, preload: 'none', 'aria-label': m.title, 'webkit-playsinline': true })}>
-    ${m.captions && m.captions !== 'burned-in' ? `<track kind="captions" srclang="en" label="English" src="${esc(mediaUrl(m.captions))}" default>` : ''}
+    ${m.captions && m.captions !== 'burned-in' ? `<track kind="captions" srclang="en" label="English" src="${esc(mediaUrl(m.captions))}"${m.openCaptions ? '' : ' default'}>` : ''}
   </video>
   ${!m.poster ? `<div class="vplayer__frame" aria-hidden="true"></div>` : ''}
   <button type="button" class="vplayer__start" aria-label="${esc(label)}">

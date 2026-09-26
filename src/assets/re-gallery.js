@@ -45,7 +45,7 @@ if (root) {
     Object.assign(v, { src: d.src, controls: true, playsInline: true, preload: 'auto' });
     if (d.poster) v.poster = d.poster;
     v.setAttribute('aria-label', d.title);
-    if (d.captions) { const t = document.createElement('track'); Object.assign(t, { kind: 'captions', srclang: 'en', label: 'English', src: d.captions, default: true }); v.append(t); }
+    if (d.captions) { const t = document.createElement('track'); Object.assign(t, { kind: 'captions', srclang: 'en', label: 'English', src: d.captions, default: !d.openCaptions }); v.append(t); }
     v.className = 'gcard__video';
     v.addEventListener('play', () => pauseAll(v));
     btn.replaceWith(v);
