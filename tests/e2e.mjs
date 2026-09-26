@@ -874,6 +874,17 @@ await check('Field Notes opens with a rights-approved house photograph and the P
   await ph.context().close();
 });
 
+await check('Listing Engine is listing sale-cycle content with the HDPH agent-on-camera video; demo reel is music-only', async () => {
+  const p = await newPage();
+  await p.goto(base + '/agent-content');
+  const col = await p.locator('.compare__col:has(h3:text-is("Listing Engine"))').textContent();
+  for (const s of ['Just Listed', 'Under Contract', 'Just Sold', 'agent-on-camera', 'three to four']) assert(col.includes(s), 'listing engine: ' + s);
+  assert(!/Coming Soon/.test(col), 'no unverified Coming Soon');
+  await p.goto(base + '/creator-studios');
+  assert(await p.locator('.card:has([data-id="cs-demo-reel"]) .needs-approval').count() === 0, 'music-only reel not flagged for captions');
+  await p.context().close();
+});
+
 // Screenshots for the handoff
 for (const [name, path, vp] of [['desktop-pricing', '/real-estate/pricing?sqft=3200', { width: 1440, height: 1100 }], ['mobile-pricing', '/real-estate/pricing?sqft=5501', { width: 390, height: 1400 }], ['desktop-work', '/real-estate#portfolio', { width: 1440, height: 1100 }], ['mobile-work', '/commercial#portfolio', { width: 390, height: 1400 }]]) {
   const p = await newPage(vp);

@@ -27,11 +27,15 @@ The website mirrors these, with the tier boundaries entered as they appear in HD
 - Listing and Agent Engine: $1,000 as an add-on, $1,200 on their own.
 - Full Engine: $1,900 as an add-on, $2,200 on its own.
 
-**Remaining discrepancies (factual, not already decided):**
+**Listing Engine wording: resolved (James, Sep 26).**
+- James: the Listing Engine is content about the listing and its sale cycle (Just Listed, Under Contract, Just Sold).
+- The website copy now says that. It keeps HDPH's verified inclusion: a cinematic agent-on-camera social video presenting the property, plus three to four short videos on the home, location and lifestyle.
+- The unverified "Coming Soon" example was removed.
+
+**Remaining discrepancy (information only):**
 
 | # | What | HD Photo Hub | Website | Impact |
 |---|---|---|---|---|
-| R1 | Listing Engine description | "a cinematic, agent-on-camera social video plus 3–4 additional short-form videos focused on the home, location, and lifestyle" | "Three to four short videos about the property and its launch cycle (Coming Soon, Just Listed, Under Contract, Just Sold) or a nearby lifestyle feature" | The website omits the agent-on-camera video and gives launch-cycle examples that HDPH does not mention. **Factual/editorial review.** Copy is unchanged |
 | R2 | A second HDPH catalog group, category 78376 | Duplicate Photography, Floor Plan and Cinematic rows. Some prices differ: Cinematic Reel from $550; Cinematic Video at 5,501–6,500 sq ft is $695 | Not used; the site mirrors the standard product list | For information only. It is not in the list customers see by default. Someone who knows the HDPH setup should confirm it is not a public price list |
 
 **Note, not a discrepancy:** HDPH shows a regular price next to package prices, for example "Starter $720 (reg. $800)". The website shows the price actually charged at checkout, which matches.
@@ -46,23 +50,20 @@ The website mirrors these, with the tier boundaries entered as they appear in HD
 
 The site follows all of these.
 
-**Square options view compared with the approved prices:**
+**Sets (James, Sep 26):** "Hamptons" and "Brooklyn" are names of Creator Studios sets, not separate locations or price tiers. Every set costs the same, and one 1.5-hour podcast session is $250 without editing on any set.
 
-| Session | Square option | Matches approved price? |
+| Session | Square option | Status |
 |---|---|---|
-| 2-hour studio content | "General Studio Content Session" → **2 Hours: $500.00** | Yes |
-| 1.5-hour podcast, Brooklyn listing | "Podcast Recording, Brooklyn" → **One Podcast Recording: $250.00, 1 hr 30 min** | Yes |
-| 1.5-hour podcast, Hamptons listing | "Podcast Recording, Hamptons" → **One Podcast Recording: "Price Varies", 1 hr 30 min**. Two recordings are $500, three $750, four $950 | **No: discrepancy S1.** A customer booking one Hamptons-listing podcast does not see $250 at this step |
+| 2-hour studio content | "General Studio Content Session" → 2 Hours: $500.00 | Matches |
+| 1.5-hour podcast, Brooklyn set | "Podcast Recording, Brooklyn" → One Podcast Recording: $250.00, 1 hr 30 min | Matches |
+| 1.5-hour podcast, Hamptons set | "Podcast Recording, Hamptons" → One Podcast Recording: "Price Varies", 1 hr 30 min | **S1: a Square display/configuration discrepancy.** The approved website price stays $250. Square has not been edited, and won't be without separate instruction |
 
-**S1** is a Square catalog setting, not a website issue. I have **not changed Square**. If James wants the Hamptons single session to show $250, it is edited in Square.
-
-**Wording note, factual:** the two podcast listings are named "Hamptons" and "Brooklyn". The website names neither and says only "Bohemia", which matches the Square page title. If "Brooklyn" is a place rather than a set name, the website's location wording is unaffected. The note is here only so no future copy names it without confirmation.
+The website names neither set and says "Bohemia".
 
 ## Release gate
 
 `releaseApproved` stays `false`, because production launch is a separate approval.
 
-On pricing, the remaining open items are:
-- R1, the Listing Engine wording;
-- S1, the Square Hamptons option;
-- R2, which is only for information.
+On pricing, nothing on the website remains open. The two items left are:
+- S1, the Square Hamptons display, which is a Square-side note;
+- R2, for information only.

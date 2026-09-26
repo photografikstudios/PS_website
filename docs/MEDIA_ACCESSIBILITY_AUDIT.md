@@ -12,7 +12,7 @@ There are 23 approved, published video records. Their `dialogue` flag comes from
 | `cs-tick` | Creator Studios | 47 s | Yes | None | Captions and a transcript |
 | `agent-on-camera` | Agent Content | 15 s | Yes | None | Captions |
 | `agent-market-insight`, `agent-expertise` | Agent Content | 15 s, 32 s | Yes | Burned in | Check the burned-in text is complete; a transcript is optional |
-| `cs-demo-reel` | Creator Studios hero (muted loop) and clips | 36 s | **Unconfirmed.** A full-level audio track runs throughout (1-second RMS 124 to 202, steady like mixed music). Whether it contains speech could not be determined here | None | James: confirm. If there is speech, it needs captions for the playable clip; the muted hero loop needs none |
+| `cs-demo-reel` | Creator Studios hero (muted loop) and clips | 36 s | **No: music only** (James, Sep 26) | n/a | None. `dialogue:false`; the muted hero loop keeps its poster, pause control and reduced-motion still |
 | 16 Real Estate, Architecture and Commercial films | various | | No (music only, `dialogue:false`) | n/a | None (1.2.2 does not apply to music-only video; the titles describe the content) |
 
 **Why the captions were not written in this pass.** Accurate captions need the audio transcribed. The files sit in Drive and on the Vercel deployment, and neither this workspace nor the Mac shell can reach them (egress policy). Speech-to-text models cannot be downloaded here either. I did not invent text. What I did:
@@ -21,7 +21,7 @@ There are 23 approved, published video records. Their `dialogue` flag comes from
 - **Production is gated.** The build now refuses to run if any published video with `dialogue` true or unconfirmed lacks captions. This is enforced in `src/build.mjs` and sits alongside the pricing gate.
 
 **Next step:**
-1. James, or an editor with the source projects, exports SRT/VTT for the five clips, or confirms the reel has no speech.
+1. James, or an editor with the source projects, exports SRT/VTT for the five clips with speech. The demo reel is music only, per James on Sep 26, so it needs none.
 2. Save each file as `static/captions/<id>.vtt` and set `captions` on the record.
 
 ## Ambient hero video (WCAG 2.2.2, 2.3.3)

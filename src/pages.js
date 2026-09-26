@@ -518,7 +518,7 @@ ${join(topicsUsed, (t) => `
       <div class="feature reveal" id="drone"><h3 class="h3">Drone</h3><p>Aerials show what a ground photo cannot: the water, the land, the neighborhood and how the home sits in it.</p></div>
       <div class="feature reveal" id="floor-plan"><h3 class="h3">Floor plans</h3><p>A schematic floor plan lets buyers understand the layout before they visit, so the people who book showings arrive better prepared.</p></div>
       <div class="feature reveal" id="twilight"><h3 class="h3">Twilight and day-to-night</h3><p>For launches that deserve it, twilight stills and day-to-night film carry the presentation into the evening.</p></div>
-      <div class="feature reveal" id="agent"><h3 class="h3">You, on camera</h3><p>Optional. Listing Engine and Agent Engine turn the same shoot day into content about you, with coaching if the camera is not your favorite place.</p></div>
+      <div class="feature reveal" id="agent"><h3 class="h3">You, on camera</h3><p>Optional. Listing Engine puts you on camera presenting the listing through its sale; Agent Engine turns the same shoot day into content about you. We coach you if the camera is not your favorite place.</p></div>
     </div>
   </div>
 </section>
@@ -683,7 +683,7 @@ ${fnTeaser('real-estate-media')}
     <p class="eyebrow">Listing Engine & Agent Engine</p>
     <h2 class="h2 reveal">Turn one shoot day into weeks of content.</h2>
     <div class="compare">
-      <div class="compare__col"><h3 class="h3">Listing Engine</h3><p>Three to four short videos about the property and its launch cycle, such as Coming Soon, Just Listed, Under Contract and Just Sold, or a nearby lifestyle feature. Captured alongside the listing media, using the property footage.</p>${(() => { const e = engines.find((x) => x.id === 'listing-engine'); return e ? `<p class="price-line"><strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}</div>
+      <div class="compare__col"><h3 class="h3">Listing Engine</h3><p>Videos about the listing itself and where it is in the sale, such as Just Listed, Under Contract and Just Sold. A cinematic agent-on-camera social video in which you present the property, plus three to four short videos on the home, its location and the lifestyle around it. Captured alongside the listing media.</p>${(() => { const e = engines.find((x) => x.id === 'listing-engine'); return e ? `<p class="price-line"><strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}</div>
       <div class="compare__col"><h3 class="h3">Agent Engine</h3><p>Three to four videos about you, with the listing as a premium backdrop: the market, your town, your background, your process and what you do differently.</p>${(() => { const e = engines.find((x) => x.id === 'agent-engine'); return e ? `<p class="price-line"><strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}</div>
     </div>
     ${(() => { const e = engines.find((x) => x.id === 'full-engine'); return e ? `<p class="aside-line">Both together as the Full Engine: <strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}

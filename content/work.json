@@ -789,7 +789,7 @@
       "src": "/v/cs-demo-reel.mp4",
       "poster": "/v/cs-demo-reel.webp",
       "duration": null,
-      "dialogue": null,
+      "dialogue": false,
       "captions": null,
       "transcript": null,
       "featured": false,
@@ -803,7 +803,7 @@
       "capturedYear": null,
       "sortPriority": 10,
       "_approval": "James supplied this reel as the Creator Studios opener, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md).",
-      "_open": "Confirm whether the reel contains dialogue; if it does, captions are needed before launch."
+      "_note": "James, Sep 26 2026: music only, no speech; no dialogue captions needed. Temporary selection; Creator reels will be replaced later."
     },
     {
       "id": "re-hamptons-home-aesthetic",
