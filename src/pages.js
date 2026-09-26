@@ -778,26 +778,24 @@ ${agentMonthly.length ? `<section class="section section--tint">
   };
 
   // ---------- COMMERCIAL ----------
+  // James, Sep 26 2026: value proposition after the hero, one short case study, then a compact grid with ONE
+  // representative image or inline video per project; each card opens that project's own page. One client per project.
   const comMedia = media.filter((m) => m.category === 'commercial');
-  // Group by verified project or client only (never by category alone). Unassigned media go to a general group.
-  const comGroups = (() => {
-    const groups = new Map();
-    for (const m of comMedia) {
-      const project = m.project ? projectBySlug[m.project] : null;
-      const key = m.clientId || 'general';
-      const name = m.clientId ? (m.client || project?.title) : 'More commercial work';
-      if (!groups.has(key)) groups.set(key, { key, name, items: [], href: null, general: !m.clientId });
-      const g = groups.get(key);
-      g.items.push(m);
-      if (project && project.category === 'commercial' && visible(project)) g.href = projectPath(project);
-    }
-    const order = ['revivaluxe', 'rachel-lynch-pools', 'torella-pools'];
-    return [...groups.values()].map((g) => {
-      const films = g.items.filter((m) => m.type === 'video').length;
-      const stills = g.items.length - films;
-      return { ...g, summary: [films ? `${films} film${films > 1 ? 's' : ''}` : '', stills ? `${stills} photo${stills > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ') };
-    }).sort((a, b) => (a.general - b.general) || ((order.indexOf(a.key) + 1 || 99) - (order.indexOf(b.key) + 1 || 99)));
-  })();
+  const deliveredOf = (items) => {
+    const n = (t) => items.filter(t).length;
+    const films = n((m) => m.type === 'video'); const photos = n((m) => m.type === 'image' && !m.service.includes('drone')); const drone = n((m) => m.service.includes('drone'));
+    return [films ? `Film${films > 1 ? ` (${films})` : ''}` : '', photos ? `Photography${photos > 1 ? ` (${photos})` : ''}` : '', drone ? 'Drone photography' : ''].filter(Boolean);
+  };
+  const repOf = (items) => [...items].sort((x, y) => ((y.type === 'video' && y.orientation === 'horizontal') - (x.type === 'video' && x.orientation === 'horizontal')) || ((y.sortPriority || 0) - (x.sortPriority || 0)))[0];
+  const comOrder = ['revivaluxe', 'rachel-lynch-pools', 'torella-pools'];
+  const comProjects = work.projects.filter((p) => p.category === 'commercial' && visible(p))
+    .map((p) => { const items = comMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: deliveredOf(items) }; })
+    .filter((x) => x.items.length)
+    .sort((x, y) => ((comOrder.indexOf(x.p.slug) + 1 || 99) - (comOrder.indexOf(y.p.slug) + 1 || 99)));
+  // Client blurbs are written with James before launch: review builds show a marked placeholder, production omits it.
+  const blurb = (text, what) => (text ? `${esc(text)}${reviewMode ? ` ${needsApproval({ approval: 'pending' }, 'Draft: final client wording to be approved with James')}` : ''}` : (reviewMode ? `<span class="review-placeholder">${esc(what)} to be written with James before launch.</span> ${needsApproval({ approval: 'pending' }, 'Placeholder, not a claim')}` : ''));
+  const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
+  const caseStudy = comProjects.find((x) => x.p.slug === 'revivaluxe') || comProjects[0];
   const cp = offers.commercialProperty.filter(visible);
   const b2b = offers.businessMonthly.filter(visible);
   pages['/commercial'] = {
@@ -809,30 +807,47 @@ ${agentMonthly.length ? `<section class="section section--tint">
       cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Start a Project</a>`,
       video: { loop: 'biz-rachel-lynch-pools', film: 'biz-rachel-lynch-pools' },
     })}
-<section class="section section--ink on-dark" id="portfolio" aria-labelledby="com-work-h">
+<section class="section" aria-labelledby="com-value-h">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">Recent brand projects, <em>client by client.</em></h2></div></div>
-    ${join(comGroups, (g) => `
-    <section class="proj-group" aria-labelledby="pg-${esc(g.key)}">
-      <div class="proj-group__head">
-        <h3 class="h3" id="pg-${esc(g.key)}">${esc(g.name)}</h3>
-        <p class="proj-group__meta">${esc(g.summary)}</p>
-        ${g.href ? `<a class="link-arrow" href="${g.href}">View the project ${arrow}</a>` : ''}
+    <div class="split">
+      <div class="split__label"><p class="eyebrow">What we do</p></div>
+      <div>
+        <h2 class="h2 reveal" id="com-value-h">Photography and film that show <em>what your business actually does.</em></h2>
+        <p class="lede reveal">We plan, shoot, edit and deliver brand media for businesses and their agencies: your people, your spaces and your work, made to be used across your website, social channels and sales. One team from the first call to the final files, so you get consistent content without building an in-house department.</p>
       </div>
-      <div class="justified">${join(g.items, (m) => mediaCard(m, { sizes: '(min-width: 1100px) 30vw, (min-width: 700px) 45vw, 100vw' }))}<span class="justified__spacer" aria-hidden="true"></span></div>
-    </section>`)}
+    </div>
+    <div class="features features--4">
+      <div class="feature reveal"><h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
+      <div class="feature reveal"><h3 class="h3">Film and short-form</h3><p>Brand films, project showcases and short cuts for every channel you use.</p></div>
+      <div class="feature reveal"><h3 class="h3">Podcasts and studio days</h3><p>Recorded at <a href="/creator-studios">Creator Studios</a> or on location.</p></div>
+      <div class="feature reveal"><h3 class="h3">Recurring production</h3><p>A monthly cadence so content keeps coming without hiring several separate roles.</p></div>
+    </div>
   </div>
 </section>
-<section class="section section--tint">
+${caseStudy ? `<section class="section section--ink on-dark" id="case-study" aria-labelledby="com-case-h">
   <div class="wrap">
-    <p class="eyebrow">What we take on</p>
-    <h2 class="h2 reveal">An outsourced content function.</h2>
-    <div class="features">
-      <div class="feature reveal"><h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
-      <div class="feature reveal"><h3 class="h3">Film and short-form</h3><p>Brand films, testimonials, educational and executive content, cut for every channel you use.</p></div>
-      <div class="feature reveal"><h3 class="h3">Podcasts and studio days</h3><p>Recorded at <a href="/creator-studios">Creator Studios</a> or on location, with direction and editing.</p></div>
-      <div class="feature reveal"><h3 class="h3">Recurring production</h3><p>A monthly cadence so content keeps coming without you hiring four or five separate roles.</p></div>
+    <p class="eyebrow">Case study</p>
+    <h2 class="h2 reveal" id="com-case-h">${esc(caseStudy.p.client || caseStudy.p.title)}</h2>
+    <div class="case">
+      <div class="case__media">${repFrame(caseStudy.rep, '(min-width: 1000px) 58vw, 100vw')}</div>
+      <dl class="case__facts">
+        <div><dt>Goal</dt><dd>${blurb(caseStudy.p.goal, 'The client goal')}</dd></div>
+        <div><dt>Our approach</dt><dd>${blurb(caseStudy.p.story, 'Our approach')}</dd></div>
+        <div><dt>Delivered</dt><dd>${esc(caseStudy.delivered.join(' · '))}</dd></div>
+      </dl>
     </div>
+    <p class="case__more"><a class="link-arrow" href="${projectPath(caseStudy.p)}" data-track="project_click" data-track-location="com_case">See the ${esc(caseStudy.p.client || caseStudy.p.title)} project ${arrow}</a></p>
+  </div>
+</section>` : ''}
+<section class="section" id="portfolio" aria-labelledby="com-work-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">One project, <em>one client.</em></h2></div></div>
+    <ul class="pgrid" role="list">${join(comProjects, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
+      <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw') : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw')}</a>`}</div>
+      <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="com_grid">${esc(x.p.client || x.p.title)}</a></h3>
+      <p class="pgrid__meta">${esc(x.delivered.join(' · '))}${x.p.location ? ` · ${esc(x.p.location)}` : ''}</p>
+      <a class="link-arrow pgrid__go" href="${projectPath(x.p)}" aria-label="View the ${esc(x.p.client || x.p.title)} project">View project ${arrow}</a>
+    </li>`)}</ul>
   </div>
 </section>
 ${cp.length || b2b.length ? `<section class="section">
@@ -1030,29 +1045,39 @@ ${csPhotos.length || csClips.length ? `<section class="section section--ink on-d
   };
 
   // ---------- PROJECT DETAIL (under its service URL) ----------
+  // Commercial projects (James, Sep 26 2026): only that project's media, the client, what was delivered and the goal.
+  // Unapproved client wording shows as a marked placeholder in review builds and is omitted in production.
   for (const p of work.projects.filter(visible)) {
     const pm = media.filter((m) => m.project === p.slug);
-    const related = media.filter((m) => m.project !== p.slug && m.category === p.category).slice(0, 3);
+    const isCom = p.category === 'commercial';
+    const related = isCom ? [] : media.filter((m) => m.project !== p.slug && m.category === p.category).slice(0, 3);
     const isRE = p.category === 'real-estate';
     const cta = isRE ? bookBtn('project_detail') : `<a class="btn btn--solid" href="/contact?type=${esc(p.category)}" data-track="project_click" data-track-location="project_detail">Start a Project</a>`;
+    const rep = p.hero ? null : repOf(pm);
+    const heroHtml = p.hero ? img(p.hero, { alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
+    const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
+    const services = isCom ? deliveredOf(pm).join(' · ') : (p.services || []).join(', ');
+    const goal = isCom ? blurb(p.goal, 'Project goal') : '';
+    const desc = p.summary || `${p.client || p.title}: ${catLabel[p.category].toLowerCase()} by Photografik Studios.`;
     pages[projectPath(p)] = {
-      seo: { title: `${p.title} | ${catLabel[p.category]} | Photografik`, description: p.summary, image: p.hero },
+      seo: { title: `${p.title} | ${catLabel[p.category]} | Photografik`, description: desc, image: p.hero || rep?.poster || rep?.src },
       body: `
-<article class="project">
+<article class="project${isCom ? ' project--commercial' : ''}">
   <header class="section project__head">
     <div class="wrap project__grid project__grid--${p.heroOrientation}">
       <div class="project__intro">
-        <p class="eyebrow"><a href="${serviceRoute[p.category]}">${esc(catLabel[p.category])}</a> · ${esc(p.location)}</p>
+        <p class="eyebrow"><a href="${serviceRoute[p.category]}${isCom ? '#portfolio' : ''}">${esc(catLabel[p.category])}</a>${p.location ? ` · ${esc(p.location)}` : ''}</p>
         <h1 class="display">${esc(p.title)}</h1>
-        <p class="lede">${esc(p.story)}</p>
-        <dl class="project__facts"><div><dt>Services</dt><dd>${esc(p.services.join(', '))}</dd></div><div><dt>Location</dt><dd>${esc(p.location)}</dd></div>${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}</dl>
+        ${lede ? `<p class="lede">${lede}</p>` : ''}
+        <dl class="project__facts">${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}<div><dt>${isCom ? 'Delivered' : 'Services'}</dt><dd>${esc(services)}</dd></div>${goal ? `<div><dt>Goal</dt><dd>${goal}</dd></div>` : ''}${p.location ? `<div><dt>Location</dt><dd>${esc(p.location)}</dd></div>` : ''}</dl>
         <div class="actions">${cta}</div>
       </div>
-      <div class="project__hero">${img(p.hero, { alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' })}</div>
+      <div class="project__hero">${heroHtml}</div>
     </div>
   </header>
-  ${pm.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(pm, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
+  ${(rest => rest.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(rest, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : '')(rep ? pm.filter((m) => m !== rep) : pm)}
   ${related.length ? `<section class="section"><div class="wrap"><div class="section-head"><h2 class="h2 reveal">Related work</h2><a class="link-arrow" href="${serviceRoute[p.category]}#portfolio">More ${esc(catLabel[p.category])} ${arrow}</a></div><div class="justified">${join(related, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
+  ${isCom ? `<section class="section"><div class="wrap cta-band cta-band--light"><h2 class="h2">Planning something similar?</h2><p>Tell us about the business, the audience and where the media will be used.</p><div class="actions">${cta}<a class="link-arrow" href="/commercial#portfolio">More client projects ${arrow}</a></div></div></section>` : ''}
 </article>`,
     };
   }

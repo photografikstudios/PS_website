@@ -156,7 +156,10 @@ await check('portfolios: every approved item appears on its own service page, on
     await p.goto(base + path);
     const html = await p.locator('#portfolio').evaluate((el) => el.outerHTML);
     const mine = approved.filter((m) => m.category === cat);
-    const missing = mine.filter((m) => !html.includes(m.id) && !(m.src && html.includes(m.src)) && !(m.poster && html.includes(m.poster)));
+    let pageHtml = html;
+    // Commercial (James, Sep 26): the index shows one card per project; every item lives on its project page.
+    if (cat === 'commercial') for (const slug of new Set(mine.map((m) => m.project))) pageHtml += await (await fetch(`${base}/commercial/${slug}`)).text();
+    const missing = mine.filter((m) => !pageHtml.includes(m.id) && !(m.src && pageHtml.includes(m.src)) && !(m.poster && pageHtml.includes(m.poster)));
     assert(missing.length === 0, `${path} missing ${missing.map((m) => m.id)}`);
   }
   for (const path of ['/', '/real-estate', '/agent-content', '/architecture-design', '/commercial', '/creator-studios', '/about', '/field-notes', '/404', '/commercial/revivaluxe']) {
@@ -797,20 +800,48 @@ await check('home quick tiles use the two owner-selected stills (not video poste
   await p.context().close();
 });
 
-await check('commercial: projects grouped by verified client, no client mixed into another', async () => {
+await check('commercial (James Sep 26): value prop after hero, one case study, compact grid of one card per project, dedicated single-client project pages', async () => {
+  const work = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/work.json', import.meta.url), 'utf8'));
+  const com = work.media.filter((m) => m.category === 'commercial' && m.rights === 'approved');
+  const clients = [...new Set(com.map((m) => m.clientId))];
   const p = await newPage();
   await p.goto(base + '/commercial');
-  const groups = await p.locator('.proj-group').evaluateAll((els) => els.map((g) => ({ name: g.querySelector('h3').textContent.trim(), titles: [...g.querySelectorAll('.card__title')].map((t) => t.textContent.trim()), link: g.querySelector('.proj-group__head a')?.getAttribute('href') || null })));
-  const by = Object.fromEntries(groups.map((g) => [g.name, g]));
-  assert(by.RevivaLuxe && by.RevivaLuxe.titles.length === 5 && by.RevivaLuxe.titles.every((t) => /RevivaLuxe/.test(t)) && by.RevivaLuxe.link === '/commercial/revivaluxe', JSON.stringify(by.RevivaLuxe));
-  assert(by['Rachel Lynch Pools'] && by['Rachel Lynch Pools'].titles.length === 2 && by['Rachel Lynch Pools'].titles.every((t) => /Rachel Lynch/.test(t)), JSON.stringify(by['Rachel Lynch Pools']));
-  assert(by['Torella Pools'] && by['Torella Pools'].titles.length === 2 && by['Torella Pools'].titles.every((t) => /Torella/.test(t)), JSON.stringify(by['Torella Pools']));
-  for (const n of ['EEStairs', 'BPE Ironworks', 'CLOS Lighting']) assert(by[n] && by[n].titles.every((t) => t.includes(n.split(' ')[0])), n);
-  assert(groups[0].name === 'RevivaLuxe' && groups[1].name === 'Rachel Lynch Pools' && groups[2].name === 'Torella Pools', groups.map((g) => g.name).join());
-  assert(!(await p.textContent('main')).includes('Project story'), 'old mixed Project story block removed');
-  await p.setViewportSize({ width: 390, height: 844 });
-  assert(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'phone overflow');
+  // Order: hero, value proposition, case study, then the project grid.
+  const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((s) => s.id || s.getAttribute('aria-labelledby') || s.className));
+  assert(order[1] === 'com-value-h' && order[2] === 'case-study' && order[3] === 'portfolio', order.join());
+  // Case study: goal, approach, delivered; unverified wording is a marked review placeholder, not a claim.
+  const facts = await p.locator('#case-study .case__facts').textContent();
+  for (const k of ['Goal', 'Our approach', 'Delivered']) assert(facts.includes(k), k);
+  assert(await p.locator('#case-study .needs-approval').count() >= 1, 'case study wording marked for review');
+  // Grid: exactly one representative card per client, 4 columns at 1440, each linking to its own project page.
+  const cards = await p.locator('.pgrid__item').evaluateAll((els) => els.map((e) => ({ slug: e.dataset.project, media: e.querySelectorAll('.vplayer, .still').length, href: e.querySelector('.pgrid__title a').getAttribute('href') })));
+  assert(cards.length === clients.length && new Set(cards.map((c) => c.slug)).size === clients.length, JSON.stringify(cards));
+  assert(cards.every((c) => c.media === 1 && c.href === `/commercial/${c.slug}`), 'one media item + own page per card');
+  const cols = await p.evaluate(() => getComputedStyle(document.querySelector('.pgrid')).gridTemplateColumns.split(' ').length);
+  assert(cols === 4, 'desktop columns ' + cols);
+  assert(!(await p.textContent('#portfolio')).includes('Project story'), 'no mixed blocks');
+  // Contact path stays clear.
+  assert(await p.locator('main a[href="/contact?type=commercial"]').count() >= 2, 'contact path');
+  // Project pages: only that client's media, client, delivered, goal.
+  for (const c of cards) {
+    await p.goto(base + c.href);
+    const ids = await p.locator('main [data-id], main img').evaluateAll((els) => els.map((e) => e.dataset?.id || e.getAttribute('src')));
+    const mine = com.filter((m) => m.clientId === c.slug);
+    const others = com.filter((m) => m.clientId !== c.slug);
+    for (const m of mine) assert(ids.some((x) => x && (x === m.id || x.includes(m.id) || (m.src && x.includes(m.src)))), `${c.slug} missing ${m.id}`);
+    for (const m of others) assert(!ids.some((x) => x && (x === m.id || (m.src && x.includes(m.src)))), `${c.slug} shows other client ${m.id}`);
+    const f = await p.locator('.project__facts').textContent();
+    for (const k of ['Client', 'Delivered', 'Goal']) assert(f.includes(k), `${c.slug} ${k}`);
+    assert(await p.locator('.project a[href="/contact?type=commercial"]').count() >= 1, `${c.slug} contact`);
+  }
   await p.context().close();
+  const ph = await newPage({ width: 375, height: 812 });
+  await ph.goto(base + '/commercial');
+  assert(await ph.evaluate(() => getComputedStyle(document.querySelector('.pgrid')).gridTemplateColumns.split(' ').length) === 2, 'phone 2 columns');
+  assert(await ph.evaluate(() => document.documentElement.scrollWidth) <= 375, 'phone overflow');
+  await ph.goto(base + '/commercial/revivaluxe');
+  assert(await ph.evaluate(() => document.documentElement.scrollWidth) <= 375, 'project phone overflow');
+  await ph.context().close();
 });
 
 await check('creator studios: story, formats with scope, conversations, process, proof, labeled inquiry', async () => {

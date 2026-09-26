@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 import { start } from './serve.mjs';
 const server = await start(0); const base = `http://localhost:${server.address().port}`;
 const b = await chromium.launch();
-const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/creator-studios', '/commercial/revivaluxe', '/field-notes', '/field-notes/how-to-prepare-a-home-for-listing-photos', '/about', '/contact', '/agency-partnerships', '/creator-studios/sessions', '/real-estate/lauryn-koke-daniel-gale-sothebys'];
+const pages = ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/creator-studios', '/commercial/revivaluxe', '/commercial/torella-pools', '/commercial/clos-lighting', '/field-notes', '/field-notes/how-to-prepare-a-home-for-listing-photos', '/about', '/contact', '/agency-partnerships', '/creator-studios/sessions', '/real-estate/lauryn-koke-daniel-gale-sothebys'];
 const out = {};
 for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
   const ctx = await b.newContext({ viewport: vp, reducedMotion: 'reduce' });

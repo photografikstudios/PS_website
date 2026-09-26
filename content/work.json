@@ -147,7 +147,105 @@
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026.",
       "heroOrientation": "vertical",
-      "path": "/commercial/revivaluxe"
+      "path": "/commercial/revivaluxe",
+      "goal": null,
+      "blurbApproved": false,
+      "_blurb": "Story/summary are drafts until James approves final client wording (Sep 26 2026 Commercial direction)."
+    },
+    {
+      "slug": "rachel-lynch-pools",
+      "title": "Rachel Lynch Pools",
+      "shortTitle": "Rachel Lynch Pools",
+      "client": "Rachel Lynch Pools",
+      "category": "commercial",
+      "location": "The Hamptons",
+      "services": null,
+      "summary": null,
+      "story": null,
+      "goal": null,
+      "blurbApproved": false,
+      "hero": null,
+      "heroAlt": null,
+      "rights": "approved",
+      "heroOrientation": "horizontal",
+      "path": "/commercial/rachel-lynch-pools",
+      "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James."
+    },
+    {
+      "slug": "torella-pools",
+      "title": "Torella Pools",
+      "shortTitle": "Torella Pools",
+      "client": "Torella Pools",
+      "category": "commercial",
+      "location": "Long Island",
+      "services": null,
+      "summary": null,
+      "story": null,
+      "goal": null,
+      "blurbApproved": false,
+      "hero": null,
+      "heroAlt": null,
+      "rights": "approved",
+      "heroOrientation": "horizontal",
+      "path": "/commercial/torella-pools",
+      "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James."
+    },
+    {
+      "slug": "eestairs",
+      "title": "EEStairs",
+      "shortTitle": "EEStairs",
+      "client": "EEStairs",
+      "category": "commercial",
+      "location": "New York City",
+      "services": null,
+      "summary": null,
+      "story": null,
+      "goal": null,
+      "blurbApproved": false,
+      "hero": null,
+      "heroAlt": null,
+      "rights": "approved",
+      "heroOrientation": "horizontal",
+      "path": "/commercial/eestairs",
+      "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James."
+    },
+    {
+      "slug": "bpe-ironworks",
+      "title": "BPE Ironworks",
+      "shortTitle": "BPE Ironworks",
+      "client": "BPE Ironworks",
+      "category": "commercial",
+      "location": "Southampton",
+      "services": null,
+      "summary": null,
+      "story": null,
+      "goal": null,
+      "blurbApproved": false,
+      "hero": null,
+      "heroAlt": null,
+      "rights": "approved",
+      "heroOrientation": "horizontal",
+      "path": "/commercial/bpe-ironworks",
+      "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James."
+    },
+    {
+      "slug": "clos-lighting",
+      "title": "CLOS Lighting",
+      "shortTitle": "CLOS Lighting",
+      "client": "CLOS Lighting",
+      "category": "commercial",
+      "location": "Long Island",
+      "services": null,
+      "summary": null,
+      "story": null,
+      "goal": null,
+      "blurbApproved": false,
+      "hero": null,
+      "heroAlt": null,
+      "rights": "approved",
+      "heroOrientation": "horizontal",
+      "path": "/commercial/clos-lighting",
+      "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James."
     },
     {
       "slug": "creator-studios",
@@ -299,7 +397,7 @@
     {
       "id": "biz-torella-pools",
       "type": "video",
-      "project": null,
+      "project": "torella-pools",
       "title": "Torella Pools showcase",
       "service": [
         "video"
@@ -402,7 +500,7 @@
     {
       "id": "biz-rachel-lynch-pools",
       "type": "video",
-      "project": null,
+      "project": "rachel-lynch-pools",
       "title": "Rachel Lynch Pools showcase",
       "service": [
         "video"
@@ -585,7 +683,7 @@
     {
       "id": "biz-eestairs-gramercy",
       "type": "video",
-      "project": null,
+      "project": "eestairs",
       "title": "EEStairs: Gramercy staircase",
       "service": [
         "video"
@@ -694,7 +792,7 @@
     {
       "id": "biz-bpe-ironworks",
       "type": "video",
-      "project": null,
+      "project": "bpe-ironworks",
       "title": "BPE Ironworks: structural steel, start to finish",
       "service": [
         "video"
@@ -1308,7 +1406,7 @@
     {
       "id": "ph-rachel-lynch-infinity",
       "type": "image",
-      "project": null,
+      "project": "rachel-lynch-pools",
       "title": "Rachel Lynch Pools: modern infinity pool",
       "service": [
         "photography"
@@ -1332,7 +1430,7 @@
     {
       "id": "ph-torella-aerial",
       "type": "image",
-      "project": null,
+      "project": "torella-pools",
       "title": "Torella Pools: waterfront backyard",
       "service": [
         "photography",
@@ -1405,7 +1503,7 @@
     {
       "id": "ph-bpe-steel",
       "type": "image",
-      "project": null,
+      "project": "bpe-ironworks",
       "title": "BPE Ironworks: steel installation",
       "service": [
         "photography"
@@ -1429,7 +1527,7 @@
     {
       "id": "ph-clos-lighting",
       "type": "image",
-      "project": null,
+      "project": "clos-lighting",
       "title": "CLOS Lighting: landscape lighting",
       "service": [
         "photography"
