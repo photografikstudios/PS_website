@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "node src/build.mjs && node scripts/media.mjs",
+  "buildCommand": "node scripts/media-check.mjs && node src/build.mjs && node scripts/media.mjs",
   "installCommand": "",
   "outputDirectory": "dist",
   "cleanUrls": true,

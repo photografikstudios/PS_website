@@ -119,6 +119,14 @@ for (const it of items) {
 }
 console.log(`media: ${committedItems.size}/${items.length} items use committed, pinned web-ready files (no Drive download, no encode)`);
 const needEncode = items.some((it) => !committedItems.has(it.id));
+// Fail fast: deployable builds use only committed, pinned media. Encoding from Drive is a deliberate local step
+// for adding new approved media (MEDIA_ALLOW_ENCODE=1 node scripts/media.mjs, then node scripts/pin-media.mjs --from-dist).
+if (needEncode && process.env.MEDIA_ALLOW_ENCODE !== '1') {
+  const missing = items.filter((it) => !committedItems.has(it.id)).map((it) => it.id);
+  console.error(`media: ${missing.length} item(s) lack committed, pinned web-ready files: ${missing.join(', ')}`);
+  console.error('media: refusing to download from Drive or encode in this build. Commit static/v + content/media-assets.json (npm run pin:media), or run locally with MEDIA_ALLOW_ENCODE=1.');
+  process.exit(1);
+}
 const ff = needEncode ? await ensureFfmpeg() : null;
 const manifest = {};
 let failed = 0;

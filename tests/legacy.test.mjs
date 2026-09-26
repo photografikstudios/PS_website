@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { readFile, mkdir, writeFile, rm, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -56,4 +57,20 @@ test('web-ready media list covers the published catalog, and check:media rejects
     const bad = spawnSync('node', ['scripts/media-check.mjs', '--static', tmp], { cwd: root, encoding: 'utf8' });
     assert.equal(bad.status, 1);
   } finally { await rm(tmp, { recursive: true, force: true }); }
+});
+
+test('deployable builds fail fast when committed media are incomplete (no Drive download, no ffmpeg)', () => {
+  const vercel = JSON.parse(readFileSync(join(root, 'vercel.json'), 'utf8'));
+  assert.match(vercel.buildCommand, /^node scripts\/media-check\.mjs && /, 'Vercel preflight runs check:media first');
+  const env = { ...process.env }; delete env.MEDIA_ALLOW_ENCODE; delete env.SKIP_MEDIA;
+  const pins = existsSync(join(root, 'content/media-assets.json')) ? JSON.parse(readFileSync(join(root, 'content/media-assets.json'), 'utf8')) : {};
+  if (Object.keys(pins.files || {}).length && spawnSync('node', ['scripts/media-check.mjs'], { cwd: root }).status === 0) return; // complete set committed: nothing to refuse
+  const t0 = Date.now();
+  const r = spawnSync('node', ['scripts/media.mjs'], { cwd: root, env, encoding: 'utf8', timeout: 20000 });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /refusing to download from Drive or encode/);
+  assert.doesNotMatch(r.stdout, /fetching static ffmpeg/);
+  assert.ok(Date.now() - t0 < 15000, 'fails in seconds');
+  const pre = spawnSync('node', ['scripts/media-check.mjs'], { cwd: root, encoding: 'utf8' });
+  assert.equal(pre.status, 1, 'Vercel preflight (buildCommand starts with media-check) also fails');
 });

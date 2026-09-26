@@ -3,7 +3,8 @@
 // file's size and SHA-256. With --expect <sha256>, it refuses to write anything unless the whole set matches the
 // aggregate fingerprint recorded independently (so a changed or truncated download cannot be committed).
 //   node scripts/pin-media.mjs --expect <aggregate-sha256> [https://<deployment of this project>]
-import { mkdir, writeFile } from 'node:fs/promises';
+//   node scripts/pin-media.mjs --from-dist      (pin the files a local MEDIA_ALLOW_ENCODE=1 run just wrote to dist/v)
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,9 +19,13 @@ const paths = await publishedOutputs(root);
 const files = {}; const bufs = {}; const failed = [];
 for (const p of paths) {
   try {
-    const r = await fetch(origin + p);
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const buf = Buffer.from(await r.arrayBuffer());
+    let buf;
+    if (args.includes('--from-dist')) buf = await readFile(join(root, 'dist', p));
+    else {
+      const r = await fetch(origin + p);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      buf = Buffer.from(await r.arrayBuffer());
+    }
     files[p] = { bytes: buf.length, sha256: createHash('sha256').update(buf).digest('hex') };
     bufs[p] = buf;
   } catch (e) { failed.push(`${p}: ${e.message}`); }
@@ -33,6 +38,6 @@ if (expect && expect !== aggregate) { console.error(`Aggregate mismatch: expecte
 for (const [p, buf] of Object.entries(bufs)) { const dest = join(root, 'static', p); await mkdir(dirname(dest), { recursive: true }); await writeFile(dest, buf); }
 await writeFile(join(root, 'content/media-assets.json'), JSON.stringify({
   _readme: 'Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.',
-  recordedFrom: origin, recordedAt: new Date().toISOString().slice(0, 10), count: paths.length, totalBytes, aggregate, files,
+  recordedFrom: args.includes('--from-dist') ? 'local dist/v (MEDIA_ALLOW_ENCODE build)' : origin, recordedAt: new Date().toISOString().slice(0, 10), count: paths.length, totalBytes, aggregate, files,
 }, null, 2) + '\n');
 console.log('media pins: saved under static/v/ and content/media-assets.json');
