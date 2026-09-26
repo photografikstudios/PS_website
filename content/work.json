@@ -312,8 +312,8 @@
       "poster": "/images/photografik-2027/curated/revivaluxe-card.webp",
       "duration": 33,
       "dialogue": true,
-      "captions": null,
-      "transcript": null,
+      "captions": "/captions/revivaluxe-film.vtt",
+      "transcript": "/captions/revivaluxe-film.txt",
       "featured": true,
       "rights": "approved",
       "alt": null,
@@ -323,7 +323,8 @@
       "sortPriority": 0,
       "clientId": "revivaluxe",
       "client": "RevivaLuxe",
-      "captionsNote": "Sep 26 machine transcription found only one short vocal phrase (about 0:02 to 0:07) under the music, which could not be transcribed reliably and may be sung lyrics. James or the editor to confirm whether it is speech or song before captions are written."
+      "captionsNote": "Sep 26 (large-v3 pass, no VAD): the soundtrack is a hip-hop song with vocals running the full 33 s, not dialogue or narration. The lyrics include explicit language. Captions describe the music rather than reproducing lyrics. James to confirm (1) the description is enough, (2) the track is licensed for commercial web use, (3) explicit lyrics are acceptable on a client showcase.",
+      "captionsStatus": "machine-draft"
     },
     {
       "id": "lauryn-lead",

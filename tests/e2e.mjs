@@ -924,29 +924,29 @@ await check('Listing Engine is listing sale-cycle content with the HDPH agent-on
   await p.context().close();
 });
 
-await check('speech clips carry caption tracks that load and parse, a transcript link, and a machine-draft review tag; RevivaLuxe stays flagged', async () => {
+await check('speech clips carry caption tracks that load and parse, a transcript link, and a machine-draft review tag; RevivaLuxe music description marked for review', async () => {
   const p = await newPage();
-  for (const [path, id] of [['/creator-studios', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
+  for (const [path, id] of [['/creator-studios', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera'], ['/commercial/revivaluxe', 'revivaluxe-film']]) {
     await p.goto(base + path);
     const card = p.locator(`.card:has([data-id="${id}"])`).first();
     const src = await card.locator('video track[kind="captions"]').getAttribute('src');
     assert(src === `/captions/${id}.vtt`, `${id} track ${src}`);
     const isDefault = await card.locator('video track[kind="captions"]').evaluate((t) => t.hasAttribute('default'));
-    assert(isDefault === (id === 'agent-on-camera'), `${id} track default=${isDefault} (open-captioned clips keep CC off by default)`);
+    assert(isDefault === ['agent-on-camera', 'revivaluxe-film'].includes(id), `${id} track default=${isDefault} (open-captioned clips keep CC off by default)`);
     const r = await p.request.get(base + src);
     const body = await r.text();
-    assert(r.ok() && body.startsWith('WEBVTT') && (body.match(/-->/g) || []).length >= 2, `${id} vtt`);
+    assert(r.ok() && body.startsWith('WEBVTT') && (body.match(/-->/g) || []).length >= (id === 'revivaluxe-film' ? 1 : 2), `${id} vtt`);
     const cues = await card.locator('video').evaluate(async (v) => {
       const t = v.textTracks[0]; t.mode = 'hidden';
       for (let i = 0; i < 40 && !(t.cues && t.cues.length); i++) await new Promise((res) => setTimeout(res, 100));
       return t.cues ? t.cues.length : 0;
     });
-    assert(cues >= 2, `${id} parsed cues ${cues}`);
+    assert(cues >= (id === 'revivaluxe-film' ? 1 : 2), `${id} parsed cues ${cues}`);
     assert(await card.locator('a[href="/captions/' + id + '.txt"]').count() === 1, `${id} transcript link`);
     assert(/machine-transcribed draft/.test(await card.locator('.needs-approval').last().getAttribute('title') || ''), `${id} draft tag`);
   }
-  await p.goto(base + '/commercial');
-  assert(await p.locator('.needs-approval[title*="Captions and transcript needed"]').count() >= 1 || !(await p.content()).includes('revivaluxe-film'), 'RevivaLuxe still flagged');
+  await p.goto(base + '/commercial/revivaluxe');
+  assert(await p.locator('.card:has([data-id="revivaluxe-film"]) .needs-approval[title*="machine-transcribed draft"]').count() === 1, 'RevivaLuxe music description still marked for review');
   await p.context().close();
 });
 
