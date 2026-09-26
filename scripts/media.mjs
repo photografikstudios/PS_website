@@ -91,12 +91,41 @@ const probe = (ff, file) => {
 
 const run = (ff, args) => execFileSync(ff, ['-v', 'error', '-y', ...args], { stdio: ['ignore', 'inherit', 'inherit'] });
 
-const ff = await ensureFfmpeg();
+// ---------- Committed web-ready media (content/media-assets.json) ----------
+// When an item's encoded outputs are committed under static/v/ with the size and SHA-256 pinned in
+// content/media-assets.json, the build reuses them (build.mjs has already copied static/ into dist/) and does not
+// download from Drive or run ffmpeg for that item. Items without committed outputs (e.g. newly added media) still
+// go through the Drive pipeline below.
+const { createHash: mediaHash } = await import('node:crypto');
+const { outputsFor } = await import('./media-outputs.mjs');
+let mediaPins = { files: {} };
+try { mediaPins = JSON.parse(await readFile(join(root, 'content/media-assets.json'), 'utf8')); } catch { /* none yet */ }
+let committedManifest = {};
+try { committedManifest = JSON.parse(await readFile(join(root, 'static/v/manifest.json'), 'utf8')); } catch { /* none yet */ }
+const pinOk = async (name) => {
+  const pin = mediaPins.files[`/v/${name}`];
+  if (!pin) return false;
+  try {
+    const buf = await readFile(join(root, 'static/v', name));
+    return buf.length === pin.bytes && mediaHash('sha256').update(buf).digest('hex') === pin.sha256;
+  } catch { return false; }
+};
+const committedItems = new Set();
+for (const it of items) {
+  if (!committedManifest[it.id]) continue;
+  let ok = true;
+  for (const name of outputsFor(it)) if (!(await pinOk(name))) { ok = false; break; }
+  if (ok) committedItems.add(it.id);
+}
+console.log(`media: ${committedItems.size}/${items.length} items use committed, pinned web-ready files (no Drive download, no encode)`);
+const needEncode = items.some((it) => !committedItems.has(it.id));
+const ff = needEncode ? await ensureFfmpeg() : null;
 const manifest = {};
 let failed = 0;
 const t0 = Date.now();
 
 for (const it of items) {
+  if (committedItems.has(it.id)) { manifest[it.id] = committedManifest[it.id]; continue; }
   if (it.montage) continue; // assembled below from already-encoded films
   if (it.image) {
     // Stills: full-size WebP (max 2000px wide) for the lightbox and a 900px card version.
@@ -158,7 +187,7 @@ for (const it of items) {
   }
 }
 // ---------- Montages: silent 16:9 loops cut from films encoded above (e.g. the Work page reel) ----------
-for (const it of items.filter((i) => i.montage)) {
+for (const it of items.filter((i) => i.montage && !committedItems.has(i.id))) {
   const key = `${it.id}-${VERSION}-${it.montage.map((s) => s.join('_')).join('.')}`.replace(/[^\w.-]/g, '');
   const loop = join(cache, `${key}-loop.mp4`);
   const poster = join(cache, `${key}.webp`);
@@ -187,10 +216,8 @@ await writeFile(join(out, 'manifest.json'), JSON.stringify(manifest));
 
 // ---------- Legacy stills and clips (pinned in content/legacy-assets.json) ----------
 // Every /images/photografik-2027/... or /media/photografik-2027/... path referenced by the built pages must be
-// committed under static/<same path> with the size and SHA-256 pinned in content/legacy-assets.json. Replit is
-// never contacted. Until the files are committed, a REVIEW build (never production) may use the pinned bridge:
-// it downloads the same bytes from this project's own review alias and refuses any file whose hash differs.
-// A production build fails if any pinned file is not committed.  Check with: npm run check:legacy
+// committed under static/<same path> with the size and SHA-256 pinned in content/legacy-assets.json. Nothing is
+// downloaded: a missing or altered file fails the build. Check with: npm run check:legacy
 const { createHash } = await import('node:crypto');
 const pinned = JSON.parse(await readFile(join(root, 'content/legacy-assets.json'), 'utf8'));
 const isProduction = process.env.SITE_MODE === 'production';
@@ -210,10 +237,9 @@ for (const f of await walk(join(root, distDir))) {
   const txt = decodeURIComponent((await readFile(f, 'utf8')).replace(/%(?![0-9A-Fa-f]{2})/g, '%25'));
   for (const m of txt.matchAll(/\/(?:images|media)\/photografik-2027\/[\w\-./]+?\.(?:webp|jpe?g|png|mp4)/g)) refs.add(m[0]);
 }
-let legacyCommitted = 0; let legacyBridged = 0; let legacyFailed = 0;
+let legacyCommitted = 0; let legacyFailed = 0;
 for (const ref of [...refs].sort()) {
   const dest = join(root, distDir, ref);
-  const cached = join(cache, 'legacy', ref);
   const committed = join(root, 'static', ref);
   const pin = pinned.files[ref];
   try {
@@ -223,19 +249,9 @@ for (const ref of [...refs].sort()) {
       if ((await sha(committed)) !== pin.sha256) throw new Error('committed file does not match its pinned SHA-256');
       await copyFile(committed, dest); legacyCommitted++; continue;
     }
-    if (isProduction) throw new Error('not committed under static/ (production builds never use the bridge)');
-    if (!(await has(cached)) || (await sha(cached)) !== pin.sha256) {
-      const r = await fetch(pinned.recordedFrom + ref);
-      if (!r.ok) throw new Error(`bridge ${r.status}`);
-      const buf = Buffer.from(await r.arrayBuffer());
-      if (createHash('sha256').update(buf).digest('hex') !== pin.sha256) throw new Error('bridge copy does not match its pinned SHA-256');
-      await mkdir(dirname(cached), { recursive: true });
-      await writeFile(cached, buf);
-    }
-    await copyFile(cached, dest);
-    legacyBridged++;
+    throw new Error('not committed under static/ (run npm run fetch:legacy, then commit static/)');
   } catch (e) { legacyFailed++; failed++; console.error(`media: FAILED legacy ${ref}: ${e.message}`); }
 }
-console.log(`media: legacy assets ${legacyCommitted} committed, ${legacyBridged} via pinned review bridge, ${legacyFailed} failed`);
-if (isProduction && legacyFailed) process.exit(1);
+console.log(`media: legacy assets ${legacyCommitted} committed and verified, ${legacyFailed} failed`);
+if (legacyFailed) process.exit(1);
 console.log(`media: done in ${Math.round((Date.now() - t0) / 1000)}s, ${Object.keys(manifest).length} ok, ${failed} failed`);

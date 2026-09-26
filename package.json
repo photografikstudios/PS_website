@@ -14,6 +14,8 @@
     "test": "node --test tests/pricing.test.mjs tests/gallery.test.mjs tests/field-notes.test.mjs tests/legacy.test.mjs",
     "test:e2e": "node tests/e2e.mjs",
     "check:legacy": "node scripts/legacy-check.mjs",
-    "fetch:legacy": "node scripts/fetch-legacy.mjs"
+    "fetch:legacy": "node scripts/fetch-legacy.mjs",
+    "check:media": "node scripts/media-check.mjs",
+    "pin:media": "node scripts/pin-media.mjs"
   }
 }

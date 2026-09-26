@@ -41,3 +41,19 @@ test('every legacy path the site references is pinned, and a wrong file is rejec
     assert.match(bad.stdout, new RegExp(`mismatch\\s+static${ref.replace(/[.]/g, '\\.')}`));
   } finally { await rm(tmp, { recursive: true, force: true }); }
 });
+
+test('web-ready media list covers the published catalog, and check:media rejects a wrong file', async () => {
+  const { publishedOutputs } = await import('../scripts/media-outputs.mjs');
+  const need = await publishedOutputs(root);
+  assert.ok(need.includes('/v/manifest.json'));
+  assert.ok(need.length > 100);
+  const media = await readFile(join(root, 'scripts/media.mjs'), 'utf8');
+  assert.doesNotMatch(media, /bridge|recordedFrom/, 'no download fallback for legacy files');
+  const tmp = await mkdtemp(join(tmpdir(), 'media-'));
+  try {
+    await mkdir(join(tmp, 'v'), { recursive: true });
+    await writeFile(join(tmp, need[0]), 'not the pinned bytes');
+    const bad = spawnSync('node', ['scripts/media-check.mjs', '--static', tmp], { cwd: root, encoding: 'utf8' });
+    assert.equal(bad.status, 1);
+  } finally { await rm(tmp, { recursive: true, force: true }); }
+});
