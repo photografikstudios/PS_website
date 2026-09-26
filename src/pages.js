@@ -928,11 +928,15 @@ ${cp.length || b2b.length ? `<section class="section">
   const creatorInquiry = site.destinations.creatorInquiry?.href || '/contact?type=creator-studios';
   const creatorExternal = /^https?:/.test(creatorHref) ? ' target="_blank" rel="noopener"' : '';
   const csFrom = sessions.filter(isApproved).reduce((lo, x) => (lo && lo < x.amount ? lo : x.amount), 0);
-  const csPhotos = editorialOrder(media.filter((m) => m.category === 'creator-studios' && m.type === 'image'));
-  const csClips = media.filter((m) => m.category === 'creator-studios' && m.type === 'video');
   const csStart = (loc, label = 'Book a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}"${creatorExternal} data-track="creator_click" data-track-location="${loc}">${label}${creatorExternal ? '<span class="sr-only"> (opens Long Island Creator Studios booking in a new tab)</span>' : ''}</a>`;
   const csBookingNote = `<p class="small booking-note">Studio sessions are booked through Long Island Creator Studios in Bohemia on Square. Choose your session and time there. Not sure which session fits? <a href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_inquiry">Ask us first</a>.</p>`;
   const scope = (included) => `<span class="scope-tag scope-tag--${included ? 'in' : 'out'}">${included ? 'Part of a session' : 'Scoped separately'}</span>`;
+  // James, Sep 26 2026 (page density): Recent Sessions shows a couple of strong examples; the other approved
+  // photos and clips sit beside the section they explain. Reels are a temporary selection and will be replaced.
+  const csById = Object.fromEntries(media.filter((m) => m.category === 'creator-studios').map((m) => [m.id, m]));
+  const csCard = (id) => (csById[id] ? mediaCard(csById[id], { sizes: '(min-width: 900px) 30vw, 80vw' }) : '');
+  const csFig = (id) => { const m = csById[id]; return m ? `<figure class="cs-fig cs-fig--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 40vw, 100vw' })}<figcaption>${esc(m.title)}</figcaption></figure>` : ''; };
+  const csRecent = ['cs-noah-knows-short', 'cs-tick'].map((id) => csById[id]).filter(Boolean);
   pages['/creator-studios'] = {
     overlay: true,
     seo: { title: 'Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
@@ -944,19 +948,37 @@ ${cp.length || b2b.length ? `<section class="section">
       video: { loop: 'cs-demo-reel', film: 'cs-demo-reel' },
     })}
 <section class="section" aria-labelledby="cs-story-h">
+  <div class="wrap cs-pair">
+    <div class="cs-pair__text">
+      <p class="eyebrow">The person behind the business</p>
+      <h2 class="h2 reveal" id="cs-story-h">People choose who they work with <em>before they ever call.</em></h2>
+      <p>Your website lists what you do. A recorded conversation lets customers hear why you do it, what you believe and how you think, in your own words.</p>
+      <ul class="cs-points"><li><strong>The person.</strong> Where you came from and why you do this work.</li><li><strong>The purpose.</strong> The standard you hold your work to.</li><li><strong>The expertise.</strong> The questions you answer every week, explained properly.</li></ul>
+    </div>
+    <div class="cs-pair__media cs-pair__media--narrow">${csCard('cs-jm2-architecture')}</div>
+  </div>
+</section>
+
+<section class="section section--tint" id="sessions" aria-labelledby="cs-sessions-h">
   <div class="wrap">
-    <div class="split">
-      <div class="split__label"><p class="eyebrow">Your story</p></div>
-      <div>
-        <h2 class="h2 reveal" id="cs-story-h">People choose who they work with <em>before they ever call.</em></h2>
-        <p class="lede reveal">Your website lists what you do. It rarely shows why you started, what you believe or how you think through a problem. A recorded conversation lets customers hear that in your own words, so the first meeting starts further along.</p>
-      </div>
+    <p class="eyebrow">Sessions</p>
+    <h2 class="h2 reveal" id="cs-sessions-h">Two ways to start.</h2>
+    <div class="cs-sessions">${join(sessions, (s) => `<div class="plan plan--media reveal">
+      ${csFig(s.id === 'podcast-session' ? 'cs-ph-island-federal' : 'cs-ph-solo-couch')}
+      <h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">${approvedPrice(s, `Starting at <strong>${formatUSD(s.amount)}</strong>`)}</p><p>${esc(s.detail)}</p></div>`)}</div>
+    <div class="actions">${csStart('creator_sessions')}</div>
+    ${csBookingNote}
+  </div>
+</section>
+
+<section class="section" aria-labelledby="cs-space-h">
+  <div class="wrap cs-pair cs-pair--flip">
+    <div class="cs-pair__text">
+      <p class="eyebrow">The space</p>
+      <h2 class="h2 reveal" id="cs-space-h">Multi-camera, <em>switched as you record.</em></h2>
+      <p>Sets, lights, cameras and sound are ready when you arrive. We switch angles live, coach pacing and delivery, and suggest a retake when a moment could land better.</p>
     </div>
-    <div class="features">
-      <div class="feature reveal"><h3 class="h3">The person</h3><p>Where you came from, why you do this work and what keeps you at it. The part of the business customers connect with first.</p></div>
-      <div class="feature reveal"><h3 class="h3">The purpose</h3><p>What you believe about your field, what you will and will not do, and the standard you hold your work to.</p></div>
-      <div class="feature reveal"><h3 class="h3">The expertise</h3><p>The questions you answer every week, explained properly. Knowledge customers would otherwise only hear after they hire you.</p></div>
-    </div>
+    <div class="cs-pair__media cs-duo">${csFig('cs-ph-solo-bts')}${csFig('cs-ph-hedgestone-switch')}</div>
   </div>
 </section>
 
@@ -964,29 +986,27 @@ ${cp.length || b2b.length ? `<section class="section">
   <div class="wrap">
     <p class="eyebrow">Formats</p>
     <h2 class="h2 reveal" id="cs-formats-h">What you can make here.</h2>
-    <div class="formats">
-      <div class="format reveal"><h3 class="h3">Solo on-camera pieces</h3><p>You to camera: explainers, updates, answers to common questions. Recorded in a studio content session.</p>${scope(true)}</div>
-      <div class="format reveal"><h3 class="h3">Podcasts and guest conversations</h3><p>A host and one or more guests, recorded as a conversation rather than a script.</p>${scope(true)}</div>
-      <div class="format reveal"><h3 class="h3">Multi-camera interviews</h3><p>Several angles switched as you record, so the conversation looks considered and stays watchable.</p>${scope(true)}</div>
-      <div class="format reveal"><h3 class="h3">Long-form episodes</h3><p>The full recorded episode, delivered after a podcast session, ready for YouTube, your website or your podcast feed.</p>${scope(true)}</div>
-      <div class="format reveal"><h3 class="h3">Short-form clips and reels</h3><p>The strongest moments cut into vertical clips for Instagram, TikTok, Reels and LinkedIn. Not part of the standard sessions; we scope clip editing with you.</p>${scope(false)}</div>
-      <div class="format reveal"><h3 class="h3">Planned for your channels</h3><p>Topic planning, a publishing plan and distribution for the channels you actually use. Available as part of a larger or recurring program.</p>${scope(false)}</div>
-    </div>
-    <p class="aside-line">Sessions cover studio time, production support and the recorded episode or session, delivered without editing. Editing, clip packages, strategy and distribution are quoted separately; ask us about them when you inquire.</p>
+    <ul class="cs-formats">
+      <li><h3>Podcasts and guest conversations</h3><p>A host and one or more guests.</p>${scope(true)}</li>
+      <li><h3>Multi-camera interviews</h3><p>Several angles, switched live.</p>${scope(true)}</li>
+      <li><h3>Long-form episodes</h3><p>The full episode, ready for YouTube, your site or your feed.</p>${scope(true)}</li>
+      <li><h3>Solo on-camera pieces</h3><p>Explainers, updates and answers to common questions.</p>${scope(true)}</li>
+      <li><h3>Short-form clips and reels</h3><p>Vertical clips for social, scoped with you.</p>${scope(false)}</li>
+      <li><h3>Planned for your channels</h3><p>Topics, a publishing plan and distribution.</p>${scope(false)}</li>
+    </ul>
+    <p class="aside-line">Sessions are delivered without editing. Editing, clips, strategy and distribution are quoted separately.</p>
   </div>
 </section>
 
 <section class="section" aria-labelledby="cs-conv-h">
-  <div class="wrap two-col two-col--top">
-    <div>
+  <div class="wrap cs-pair">
+    <div class="cs-pair__text">
       <p class="eyebrow">Conversations and relationships</p>
       <h2 class="h2 reveal" id="cs-conv-h">A good conversation is <em>also a good reason to connect.</em></h2>
+      <p>Invite a client, a referral partner or an expert your customers should hear from. The recording is shared work you both can use, and a relationship that continues after the cameras stop.</p>
+      <p class="small muted">We cannot promise leads, revenue or a particular reach. We can help you have a clear, well-produced conversation.</p>
     </div>
-    <div>
-      <p>Invite a client, a referral partner, a peer you respect or an expert your customers should hear from. Real discussion explains an idea better than a script, and it lets your audience hear more than one point of view.</p>
-      <p>The recording is also time well spent with the guest: a shared piece of work you both can use, and a professional relationship that continues after the cameras stop.</p>
-      <p class="small muted">We cannot promise leads, revenue or a particular reach. What we can do is help you have a clear, well-produced conversation that shows people who you are.</p>
-    </div>
+    <div class="cs-pair__media cs-trio">${csFig('cs-ph-dan-dan-conversation')}${csFig('cs-ph-determined-society')}${csFig('ph-network-effect')}</div>
   </div>
 </section>
 
@@ -997,48 +1017,26 @@ ${cp.length || b2b.length ? `<section class="section">
       <div><h2 class="h2 reveal" id="cs-process-h">From an idea to content you can use.</h2></div>
     </div>
     <ol class="steps steps--4">
-      <li class="reveal"><span class="steps__n">01 / Story</span><h3>Clarify the story and the audience.</h3><p>Who you want to reach, what they should understand about you, and what a useful episode or piece looks like for them.</p></li>
-      <li class="reveal"><span class="steps__n">02 / Plan</span><h3>Plan the topic or the guests.</h3><p>A focused topic for a solo piece, or the guests and the questions for a conversation.</p></li>
-      <li class="reveal"><span class="steps__n">03 / Record</span><h3>Record with direction.</h3><p>We handle cameras, sound and switching, coach pacing and delivery, and suggest a retake when a moment could land better.</p></li>
-      <li class="reveal"><span class="steps__n">04 / Use</span><h3>Choose what to make from it.</h3><p>The full episode, and if you want them, short clips for social. Then decide where each piece goes next.</p></li>
+      <li class="reveal"><span class="steps__n">01 / Story</span><h3>Clarify the story and the audience.</h3></li>
+      <li class="reveal"><span class="steps__n">02 / Plan</span><h3>Plan the topic or the guests.</h3></li>
+      <li class="reveal"><span class="steps__n">03 / Record</span><h3>Record with direction.</h3></li>
+      <li class="reveal"><span class="steps__n">04 / Use</span><h3>Choose what to make from it.</h3></li>
     </ol>
   </div>
 </section>
 
-<section class="section" id="sessions" aria-labelledby="cs-sessions-h">
+${csRecent.length ? `<section class="section section--ink on-dark" id="portfolio" aria-labelledby="cs-proof-h">
   <div class="wrap">
-    <p class="eyebrow">Sessions</p>
-    <h2 class="h2 reveal" id="cs-sessions-h">Two ways to start.</h2>
-    <div class="plans plans--2">${join(sessions, (s) => `<div class="plan reveal"><h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">${approvedPrice(s, `Starting at <strong>${formatUSD(s.amount)}</strong>`)}</p><p>${esc(s.detail)}</p></div>`)}</div>
-    <div class="actions">${csStart('creator_sessions')}</div>
-    ${csBookingNote}
-  </div>
-</section>
-
-${csPhotos.length || csClips.length ? `<section class="section section--ink on-dark" id="portfolio" aria-labelledby="cs-proof-h">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Recent sessions</p><h2 class="h2 reveal" id="cs-proof-h">Recorded with real businesses.</h2></div>${csProject ? `<a class="link-arrow" href="${projectPath(csProject)}">${esc(csProject.title)} ${arrow}</a>` : ''}</div>
-    ${csClips.length ? `<h3 class="h3 proof-sub">Clips</h3><div class="justified">${join(csClips, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>` : ''}
-    ${csPhotos.length ? `<h3 class="h3 proof-sub">On set</h3><div class="justified">${join(csPhotos, (m) => `${mediaCard(m)}`)}<span class="justified__spacer" aria-hidden="true"></span></div>
-    <p class="small proof-note">Captions name the show or client. We label a session in studio or on location only where that is confirmed.${csPhotos.some((m) => m.published === false) ? ` ${needsApproval({ approval: 'pending' }, 'New photos from the Podcast Action Photos folder: rights, consent and publication approval pending with James')}` : ''}</p>` : ''}
+    <div class="section-head"><div><p class="eyebrow">Recent sessions</p><h2 class="h2 reveal" id="cs-proof-h">Recorded with real businesses.</h2></div>${csProject ? `<a class="link-arrow" href="${projectPath(csProject)}">All sessions ${arrow}</a>` : ''}</div>
+    <div class="cs-recent">${join(csRecent, (m) => mediaCard(m))}</div>
+    <p class="small proof-note">Captions name the show or client. We label a session in studio or on location only where that is confirmed.</p>
   </div>
 </section>` : ''}
 
-<section class="section section--tint">
-  <div class="wrap two-col">
-    <div>
-      <p class="eyebrow">Production support</p>
-      <h2 class="h2 reveal">We do more than press record.</h2>
-      <p>We help shape the idea and the script, coach pacing and delivery, suggest a retake when a moment could be stronger and use the sets to their best effect. You leave with content that has a better chance of landing.</p>
-      ${csProject ? `<p><a class="link-arrow" href="${projectPath(csProject)}">See a studio project ${arrow}</a></p>` : ''}
-    </div>
-    <div class="two-col__media">${img('/images/photografik-2027/curated/creator-project-hero.webp', { alt: 'Podcast guest recording on set at Creator Studios', sizes: '(min-width: 900px) 40vw, 100vw' })}</div>
-  </div>
-</section>
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
     <h2 class="h2 reveal">Plan your first session.</h2>
-    <p>Tell us who you want to reach and what you want to talk about. We will suggest a format and a starting point.</p>
+    <p>${sessions.length === 2 && sessions.every(isApproved) ? `Podcast sessions start at ${formatUSD(sessions[0].amount)} and content sessions at ${formatUSD(sessions[1].amount)}, without editing.` : 'Tell us who you want to reach and what you want to talk about.'}</p>
     <div class="actions">${csStart('creator_final', 'Book a Studio Session', 'btn btn--gold')}<a class="link-arrow" href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_final_plan">Plan Your Content ${arrow}</a></div>
   </div>
 </section>`,

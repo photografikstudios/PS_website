@@ -760,3 +760,35 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .pgrid__title a:hover, .pgrid__title a:focus-visible { text-decoration: underline; }
 .pgrid__meta { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
 .pgrid__go { margin-top: auto; font-size: 14px; min-height: 24px; }
+
+/* ---------- Creator Studios: media beside the copy it explains (James, Sep 26) ---------- */
+.cs-pair { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(36px, 6vw, 104px); align-items: center; }
+.cs-pair--flip .cs-pair__text { order: 2; }
+.cs-pair__text > p:not(.eyebrow) { max-width: 46ch; }
+.cs-pair__media--narrow { max-width: 340px; justify-self: center; width: 100%; }
+.cs-points { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
+.cs-points li { padding-left: 18px; border-left: 2px solid var(--rust); }
+.cs-fig { margin: 0; }
+.cs-fig img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--ivory-3); }
+.cs-fig--vertical img { aspect-ratio: 4 / 5; }
+.cs-fig figcaption { margin-top: 8px; font: 400 11px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.cs-duo { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 1.6vw, 20px); }
+.cs-trio { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 1.6vw, 20px); }
+.cs-trio .cs-fig:first-child { grid-column: 1 / -1; }
+.cs-sessions { display: grid; grid-template-columns: repeat(2, minmax(0, 520px)); gap: clamp(28px, 4vw, 56px); margin: clamp(24px, 3vw, 40px) 0; }
+.plan--media { border-top: 0; padding-top: 0; }
+.plan--media .cs-fig { margin-bottom: 20px; }
+.plan--media .cs-fig figcaption { display: none; }
+.plan--media .cs-fig img { aspect-ratio: 3 / 2; object-position: 50% 30%; }
+.cs-formats { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.cs-formats li { background: #ece9df; padding: clamp(20px, 2vw, 28px); display: flex; flex-direction: column; align-items: flex-start; }
+.cs-formats h3 { font: 400 22px/1.2 var(--serif); margin: 0 0 6px; }
+.cs-formats p { margin: 0 0 12px; font-size: 15px; color: var(--muted); }
+.cs-recent { display: grid; grid-template-columns: repeat(2, minmax(0, 300px)); gap: clamp(16px, 3vw, 40px); }
+@media (max-width: 900px) {
+  .cs-pair { grid-template-columns: 1fr; gap: 28px; }
+  .cs-pair--flip .cs-pair__text { order: 0; }
+  .cs-sessions { grid-template-columns: 1fr; }
+  .cs-formats { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) { .cs-formats { grid-template-columns: 1fr; } .cs-recent { grid-template-columns: 1fr 1fr; gap: 12px; } }

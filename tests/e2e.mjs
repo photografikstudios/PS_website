@@ -159,6 +159,8 @@ await check('portfolios: every approved item appears on its own service page, on
     let pageHtml = html;
     // Commercial (James, Sep 26): the index shows one card per project; every item lives on its project page.
     if (cat === 'commercial') for (const slug of new Set(mine.map((m) => m.project))) pageHtml += await (await fetch(`${base}/commercial/${slug}`)).text();
+    // Creator Studios (James, Sep 26): media sit beside their sections across the page; the full set is on All sessions.
+    if (cat === 'creator-studios') pageHtml += (await p.locator('main').evaluate((el) => el.outerHTML)) + await (await fetch(`${base}/creator-studios/sessions`)).text();
     const missing = mine.filter((m) => !pageHtml.includes(m.id) && !(m.src && pageHtml.includes(m.src)) && !(m.poster && pageHtml.includes(m.poster)));
     assert(missing.length === 0, `${path} missing ${missing.map((m) => m.id)}`);
   }
@@ -865,12 +867,18 @@ await check('creator studios: story, formats with scope, conversations, process,
   assert(!/Square (shows|lists|displays)[^.]*\$|selection (carries|transfers)/i.test(text), 'no Square price or transfer claim');
   // The eight photos James approved on Sep 25 now render; all eight ids, nothing else from that folder.
   const ids = ['cs-ph-cc-onsite', 'cs-ph-cc-ep20', 'cs-ph-hedgestone-switch', 'cs-ph-island-federal', 'cs-ph-determined-society', 'cs-ph-solo-couch', 'cs-ph-solo-bts', 'cs-ph-dan-dan-conversation'];
-  const html = await p.content();
+  // James, Sep 26 (density): photos sit beside their sections; the rest live on the All sessions page.
+  const html = (await p.content()) + await (await fetch(base + '/creator-studios/sessions')).text();
   for (const id of ids) assert(html.includes(`/v/${id}`), id + ' rendered');
+  assert(await p.locator('#portfolio .card').count() <= 3, 'Recent sessions is a short preview');
+  assert(await p.locator('#portfolio .section-head a[href="/creator-studios/sessions"]').count() === 1, 'All sessions link');
+  for (const sec of ['#cs-story-h', '#cs-sessions-h', '#cs-space-h', '#cs-conv-h']) assert(await p.locator(`section:has(${sec}) img, section:has(${sec}) video`).count() >= 1, sec + ' has adjacent media');
+  const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.id || x.getAttribute('aria-labelledby')));
+  assert(order.indexOf('sessions') > 0 && order.indexOf('sessions') <= 2, 'sessions near the top: ' + order.join());
   assert(!html.includes('rights, consent and publication approval pending'), 'stale pending note');
   // Phone data: build-encoded stills ship a 900px card image first, with the 2000px original only in srcset.
-  const card = await p.locator('img[src*="cs-ph-cc-onsite"]').first().evaluate((i) => [i.getAttribute('src'), i.getAttribute('srcset')]);
-  assert(card[0].endsWith('-sm.webp') && /-sm\.webp 900w/.test(card[1]) && /cs-ph-cc-onsite\.webp 2000w/.test(card[1]), 'card srcset ' + card.join(' '));
+  const card = await p.locator('img[src*="cs-ph-hedgestone-switch"]').first().evaluate((i) => [i.getAttribute('src'), i.getAttribute('srcset')]);
+  assert(card[0].endsWith('-sm.webp') && /-sm\.webp 900w/.test(card[1]) && /cs-ph-hedgestone-switch\.webp 2000w/.test(card[1]), 'card srcset ' + card.join(' '));
   // Clips with speech and no captions are flagged in review (production build refuses them).
   assert(await p.locator('.card:has([data-id="cs-jm2-architecture"]) .needs-approval').count() === 1, 'uncaptioned dialogue clip flagged');
   const noah = await p.locator('.card--image:has(img[src*="ph-noah-knows"]) .card__sub').allTextContents();

@@ -472,7 +472,7 @@
     {
       "id": "cs-jm2-architecture",
       "type": "video",
-      "project": null,
+      "project": "creator-studios",
       "title": "JM2 Architecture on the podcast",
       "service": [
         "video",
@@ -763,7 +763,7 @@
     {
       "id": "cs-noah-knows-short",
       "type": "video",
-      "project": null,
+      "project": "creator-studios",
       "title": "Noah Knows podcast",
       "service": [
         "video",
@@ -848,7 +848,7 @@
     {
       "id": "cs-tick",
       "type": "video",
-      "project": null,
+      "project": "creator-studios",
       "title": "The Tick podcast",
       "service": [
         "video",
@@ -876,7 +876,7 @@
     {
       "id": "cs-demo-reel",
       "type": "video",
-      "project": null,
+      "project": "creator-studios",
       "title": "Creator Studios demo reel",
       "service": [
         "video",
@@ -1551,7 +1551,7 @@
     {
       "id": "ph-noah-knows",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "title": "Noah Knows podcast, episode 10",
       "service": [
         "photography",
@@ -1576,7 +1576,7 @@
     {
       "id": "ph-network-effect",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "title": "The Network Effect podcast",
       "service": [
         "photography",
@@ -1600,7 +1600,7 @@
     {
       "id": "ph-dan-dan",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "title": "Dan Dan podcast session",
       "service": [
         "photography",
@@ -1624,7 +1624,7 @@
     {
       "id": "cs-ph-cc-onsite",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
@@ -1650,7 +1650,7 @@
     {
       "id": "cs-ph-cc-ep20",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
@@ -1676,7 +1676,7 @@
     {
       "id": "cs-ph-hedgestone-switch",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
@@ -1702,7 +1702,7 @@
     {
       "id": "cs-ph-island-federal",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
@@ -1728,7 +1728,7 @@
     {
       "id": "cs-ph-determined-society",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
@@ -1754,7 +1754,7 @@
     {
       "id": "cs-ph-solo-couch",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
@@ -1780,7 +1780,7 @@
     {
       "id": "cs-ph-solo-bts",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
@@ -1806,7 +1806,7 @@
     {
       "id": "cs-ph-dan-dan-conversation",
       "type": "image",
-      "project": null,
+      "project": "creator-studios",
       "service": [
         "photography",
         "studio"
