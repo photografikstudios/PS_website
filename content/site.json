@@ -28,9 +28,14 @@
       "note": "No approved CRM or inbox integration yet. Without the env var the form falls back to a prepared email."
     },
     "creatorBooking": {
+      "href": "https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services",
+      "label": "Long Island Creator Studios booking on Square",
+      "verified": true,
+      "note": "James, Sep 25 2026: Square services page is the studio booking/pricing destination. Some Square listings say 'Price varies'; never claim Square shows $250/$500 or that booking carries over a Photografik selection."
+    },
+    "creatorInquiry": {
       "href": "/contact?type=creator-studios",
-      "verified": false,
-      "note": "Creator Studios booking destination not confirmed."
+      "verified": true
     }
   },
   "media": {

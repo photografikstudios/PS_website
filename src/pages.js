@@ -264,7 +264,7 @@ ${splitCta('Ready when you are.')}`,
   const fnVisible = fn.articles.filter((a) => (a.status === 'published' && a.approvedBy) || (reviewMode && ['draft', 'review'].includes(a.status)));
   const mediaById = Object.fromEntries(work.media.map((m) => [m.id, m]));
   const fnDate = (d) => (d ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '');
-  const draftTag = (a) => (a.status === 'published' ? '' : `<span class="needs-approval" title="${esc(a.author?.confirm || 'Awaiting James\'s review')}">Draft for review</span>`);
+  const draftTag = (a) => (a.status === 'published' ? '' : `<span class="needs-approval" title="Awaiting editorial review before publishing">Draft for review</span>`);
   const fnHeroImg = (a, opts = {}) => {
     const m = a.hero?.media ? mediaById[a.hero.media] : null;
     if (!m) return '';
@@ -292,14 +292,18 @@ ${splitCta('Ready when you are.')}`,
     const topicsUsed = fn.topics.filter((t) => fnVisible.some((a) => a.topic === t.id));
     pages['/field-notes'] = {
       seo: { title: 'Field Notes | Answers for agents, builders and brands | Photografik', description: 'Practical answers about listing photography, video, drone and brand production from the Photografik Studios team.' },
-      body: `
-<section class="section fn-head">
-  <div class="wrap">
-    <p class="eyebrow">Field Notes</p>
-    <h1 class="display">Straight answers from the shoot.</h1>
-    <p class="lede">Questions agents, builders and brands ask us before they book, answered from how we actually plan and produce the work.</p>
-  </div>
-</section>
+      overlay: true,
+      body: `${(() => {
+        // James, Sep 25 2026: Field Notes may open with a rights-approved house photograph (exception to the video-opener rule).
+        const heroPhoto = allMediaById[fn.heroMedia || 'ph-dune-twilight-pool'];
+        return pageHero({
+          eyebrow: 'Field Notes',
+          title: 'Straight answers <em>from the shoot.</em>',
+          lede: 'Questions agents, builders and brands ask us before they book, answered from how we actually plan and produce the work.',
+          image: heroPhoto && heroPhoto.rights === 'approved' ? heroPhoto.src : undefined,
+          imageAlt: heroPhoto?.alt || '',
+        });
+      })()}
 ${join(topicsUsed, (t) => `
 <section class="section fn-topic" aria-labelledby="fn-t-${t.id}">
   <div class="wrap">
@@ -640,7 +644,7 @@ ${fnTeaser('real-estate-media')}
     </div>
 
     <div class="pricing-notes">
-      <p><strong>About these prices.</strong> These are calculated from the size tiers in our booking portal, HD Photo Hub, and are confirmed there at checkout. ${needsApproval({ approval: pricing.releaseApproved ? 'approved' : 'pending' }, 'A few HD Photo Hub size bands are being reconciled with James before launch')} They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
+      <p><strong>About these prices.</strong> These are calculated from the size tiers in our booking portal, HD Photo Hub, and are confirmed there at checkout. ${needsApproval({ approval: pricing.releaseApproved ? 'approved' : 'pending' }, 'Size bands mirror HD Photo Hub as confirmed by James on Sep 25; a full price and inclusion comparison is still required before launch')} They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
       <p>Homes over ${pricing.maxSqft.toLocaleString('en-US')} square feet: <a href="/contact?type=real-estate-large">request a custom quote</a>.</p>
       <p>You will confirm property size, package and date in our booking portal, HD Photo Hub. ${bookBtn('pricing_notes', 'Go to booking', 'link-arrow')}</p>
     </div>
@@ -900,9 +904,13 @@ ${cp.length || b2b.length ? `<section class="section">
   const sessions = offers.creatorSessions.filter(visible);
   const csProject = work.projects.find((p) => p.category === 'creator-studios' && visible(p));
   const creatorHref = site.destinations.creatorBooking.href;
+  const creatorInquiry = site.destinations.creatorInquiry?.href || '/contact?type=creator-studios';
+  const creatorExternal = /^https?:/.test(creatorHref) ? ' target="_blank" rel="noopener"' : '';
+  const csFrom = sessions.filter(isApproved).reduce((lo, x) => (lo && lo < x.amount ? lo : x.amount), 0);
   const csPhotos = editorialOrder(media.filter((m) => m.category === 'creator-studios' && m.type === 'image'));
   const csClips = media.filter((m) => m.category === 'creator-studios' && m.type === 'video');
-  const csStart = (loc, label = 'Request a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}" data-track="creator_click" data-track-location="${loc}">${label}</a>`;
+  const csStart = (loc, label = 'Book a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}"${creatorExternal} data-track="creator_click" data-track-location="${loc}">${label}${creatorExternal ? '<span class="sr-only"> (opens Long Island Creator Studios booking in a new tab)</span>' : ''}</a>`;
+  const csBookingNote = `<p class="small booking-note">Studio sessions are booked through Long Island Creator Studios in Bohemia on Square. Choose your session and time there. Not sure which session fits? <a href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_inquiry">Ask us first</a>.</p>`;
   const scope = (included) => `<span class="scope-tag scope-tag--${included ? 'in' : 'out'}">${included ? 'Part of a session' : 'Scoped separately'}</span>`;
   pages['/creator-studios'] = {
     overlay: true,
@@ -911,8 +919,8 @@ ${cp.length || b2b.length ? `<section class="section">
       eyebrow: 'Creator Studios · Bohemia, NY',
       title: 'Show people <em>who is behind the business.</em>',
       lede: 'Podcasts, interviews and on-camera content for business owners, agents, founders and experts, recorded with a team that helps you sound like yourself.',
-      cta: `${csStart('creator_hero')}<a class="link-arrow" href="#formats">What you can make ${arrow}</a> ${needsApproval({ approval: site.destinations.creatorBooking.verified ? 'approved' : 'pending' }, 'Direct studio booking not confirmed; this opens a Creator Studios inquiry')}`,
-      image: '/images/photografik-2027/curated/creator-project-card.webp', imageAlt: 'Guest speaking into a microphone during a Creator Studios podcast recording',
+      cta: `${csStart('creator_hero')}<a class="link-arrow" href="#sessions">${csFrom ? `Sessions from ${formatUSD(csFrom)}` : 'Studio sessions'} ${arrow}</a>`,
+      video: { loop: 'cs-demo-reel', film: 'cs-demo-reel' },
     })}
 <section class="section" aria-labelledby="cs-story-h">
   <div class="wrap">
@@ -943,7 +951,7 @@ ${cp.length || b2b.length ? `<section class="section">
       <div class="format reveal"><h3 class="h3">Short-form clips and reels</h3><p>The strongest moments cut into vertical clips for Instagram, TikTok, Reels and LinkedIn. Not part of the standard sessions; we scope clip editing with you.</p>${scope(false)}</div>
       <div class="format reveal"><h3 class="h3">Planned for your channels</h3><p>Topic planning, a publishing plan and distribution for the channels you actually use. Available as part of a larger or recurring program.</p>${scope(false)}</div>
     </div>
-    <p class="aside-line">Sessions cover studio time, production support and the recorded episode or session. Editing, clip packages, strategy and distribution are quoted separately. Editing and clip packages are being updated; ask us about them when you inquire.</p>
+    <p class="aside-line">Sessions cover studio time, production support and the recorded episode or session, delivered without editing. Editing, clip packages, strategy and distribution are quoted separately; ask us about them when you inquire.</p>
   </div>
 </section>
 
@@ -976,12 +984,13 @@ ${cp.length || b2b.length ? `<section class="section">
   </div>
 </section>
 
-<section class="section" aria-labelledby="cs-sessions-h">
+<section class="section" id="sessions" aria-labelledby="cs-sessions-h">
   <div class="wrap">
     <p class="eyebrow">Sessions</p>
     <h2 class="h2 reveal" id="cs-sessions-h">Two ways to start.</h2>
     <div class="plans plans--2">${join(sessions, (s) => `<div class="plan reveal"><h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">${approvedPrice(s, `Starting at <strong>${formatUSD(s.amount)}</strong>`)}</p><p>${esc(s.detail)}</p></div>`)}</div>
     <div class="actions">${csStart('creator_sessions')}</div>
+    ${csBookingNote}
   </div>
 </section>
 
@@ -1009,7 +1018,7 @@ ${csPhotos.length || csClips.length ? `<section class="section section--ink on-d
   <div class="wrap cta-band">
     <h2 class="h2 reveal">Plan your first session.</h2>
     <p>Tell us who you want to reach and what you want to talk about. We will suggest a format and a starting point.</p>
-    <div class="actions">${csStart('creator_final', 'Request a Studio Session', 'btn btn--gold')}<a class="link-arrow" href="${creatorHref}" data-track="creator_click" data-track-location="creator_final_plan">Plan Your Content ${arrow}</a></div>
+    <div class="actions">${csStart('creator_final', 'Book a Studio Session', 'btn btn--gold')}<a class="link-arrow" href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_final_plan">Plan Your Content ${arrow}</a></div>
   </div>
 </section>`,
   };

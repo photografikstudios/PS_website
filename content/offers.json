@@ -18,7 +18,7 @@
     { "id": "cp-large", "name": "Large or multi-building", "amount": 1250, "plus": true, "approval": "pending" }
   ],
   "creatorSessions": [
-    { "id": "podcast-session", "name": "Podcast session", "amount": 250, "detail": "1.5 hours, standard multi-camera switching, full episode delivered.", "approval": "pending", "note": "Current sheet says $249; normalize before launch." },
-    { "id": "content-session", "name": "Studio content session", "amount": 500, "detail": "2 hours in studio, complete session delivered without short-form editing.", "approval": "pending", "note": "Current sheet says $499; normalize before launch." }
+    { "id": "podcast-session", "name": "Podcast session", "amount": 250, "detail": "1.5 hours in studio with standard multi-camera switching. The full episode is delivered without editing.", "approval": "approved", "note": "James, Sep 25 2026: $250 for a 1.5-hour podcast session, without editing." },
+    { "id": "content-session", "name": "Studio content session", "amount": 500, "detail": "2 hours in studio. The complete session is delivered without editing.", "approval": "approved", "note": "James, Sep 25 2026: $500 for a 2-hour studio content session, without editing." }
   ]
 }

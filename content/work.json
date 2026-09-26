@@ -776,6 +776,36 @@
       "sortPriority": 0
     },
     {
+      "id": "cs-demo-reel",
+      "type": "video",
+      "project": null,
+      "title": "Creator Studios demo reel",
+      "service": [
+        "video",
+        "studio"
+      ],
+      "category": "creator-studios",
+      "orientation": "horizontal",
+      "src": "/v/cs-demo-reel.mp4",
+      "poster": "/v/cs-demo-reel.webp",
+      "duration": null,
+      "dialogue": null,
+      "captions": null,
+      "transcript": null,
+      "featured": false,
+      "rights": "approved",
+      "alt": "Creator Studios demo reel: podcast and on-camera sessions recorded in the studio",
+      "location": "Bohemia",
+      "client": null,
+      "source": "drive",
+      "published": true,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 10,
+      "_approval": "James supplied this reel as the Creator Studios opener, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md).",
+      "_open": "Confirm whether the reel contains dialogue; if it does, captions are needed before launch."
+    },
+    {
       "id": "re-hamptons-home-aesthetic",
       "type": "video",
       "project": null,
@@ -1503,9 +1533,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1517,7 +1547,7 @@
       "location": "On location",
       "client": "Champagne Confidential",
       "_sourceFile": "Podcast Action Photos/CC - EP 19 - On Site - BTS-11.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     },
     {
       "id": "cs-ph-cc-ep20",
@@ -1529,9 +1559,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1543,7 +1573,7 @@
       "location": null,
       "client": "Champagne Confidential",
       "_sourceFile": "Podcast Action Photos/CC - Episode 20-8.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     },
     {
       "id": "cs-ph-hedgestone-switch",
@@ -1555,9 +1585,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1569,7 +1599,7 @@
       "location": null,
       "client": "Hedgestone",
       "_sourceFile": "Podcast Action Photos/Hedgestone - 8.25 BTS-10.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     },
     {
       "id": "cs-ph-island-federal",
@@ -1581,9 +1611,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1595,7 +1625,7 @@
       "location": null,
       "client": "Island Federal",
       "_sourceFile": "Podcast Action Photos/Island Federal BTS-6.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     },
     {
       "id": "cs-ph-determined-society",
@@ -1607,9 +1637,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1621,7 +1651,7 @@
       "location": null,
       "client": "The Determined Society",
       "_sourceFile": "Podcast Action Photos/Shawn French - Trevor Bauer BTS-36.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     },
     {
       "id": "cs-ph-solo-couch",
@@ -1633,9 +1663,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1647,7 +1677,7 @@
       "location": null,
       "client": null,
       "_sourceFile": "Podcast Action Photos/Amanda - White Couch Solo-4.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     },
     {
       "id": "cs-ph-solo-bts",
@@ -1659,9 +1689,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1673,7 +1703,7 @@
       "location": null,
       "client": null,
       "_sourceFile": "Podcast Action Photos/Kenny Miller - BTS photos-7.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     },
     {
       "id": "cs-ph-dan-dan-conversation",
@@ -1685,9 +1715,9 @@
       ],
       "category": "creator-studios",
       "featured": false,
-      "rights": "pending",
+      "rights": "approved",
       "source": "drive",
-      "published": false,
+      "published": true,
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
@@ -1699,7 +1729,7 @@
       "location": null,
       "client": "Dan Dan",
       "_sourceFile": "Podcast Action Photos/Dan Dan July Podcast Action Shots-75.jpg",
-      "_open": "Rights/consent for the people shown, publication approval, and in-studio vs on-location not yet confirmed by James."
+      "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
     }
   ]
 }

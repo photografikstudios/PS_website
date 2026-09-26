@@ -1,5 +1,7 @@
 {
   "_readme": "Field Notes: one structured article collection. status: 'source-needed' (planned, waiting for James's original text; never rendered), 'draft' / 'review' (rendered only in review builds, with a Draft tag, excluded from sitemap), 'published' (production, index, sitemap; requires approvedBy and datePublished). Sections: { h, p: [paragraphs], list: [items], media: work.json media id, note }. Only facts from approved site copy, HD Photo Hub, or James. legacyUrls = old Squarespace paths this article replaces one-to-one (vercel.json must redirect each of them here). See LEGACY_ARTICLES inventory in content/legacy-articles.json.",
+  "heroMedia": "ph-dune-twilight-pool",
+  "_editorial": "James, Sep 25 2026: byline is Photografik Studios. Reuse original blog substance and URL mappings. One AEO rewrite per week is a drafting workflow only (docs/FIELD_NOTES_AEO_WORKFLOW.md); nothing publishes without editorial review and approvedBy.",
   "topics": [
     {
       "id": "real-estate-media",
@@ -31,7 +33,7 @@
       "status": "review",
       "author": {
         "name": "Photografik Studios",
-        "confirm": "James to confirm byline"
+        "confirmed": "James, Sep 25 2026"
       },
       "datePublished": null,
       "dateModified": null,
@@ -110,7 +112,7 @@
       "status": "review",
       "author": {
         "name": "Photografik Studios",
-        "confirm": "James to confirm byline"
+        "confirmed": "James, Sep 25 2026"
       },
       "datePublished": null,
       "dateModified": null,
@@ -182,7 +184,7 @@
       "status": "review",
       "author": {
         "name": "Photografik Studios",
-        "confirm": "James to confirm the byline and approve the lighting advice before publication"
+        "confirmed": "James, Sep 25 2026"
       },
       "datePublished": null,
       "dateModified": null,

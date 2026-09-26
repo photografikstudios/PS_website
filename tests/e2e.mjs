@@ -702,7 +702,7 @@ await check('nav: Creator Studios replaces Agencies; agency partnerships stay re
   await p.context().close();
 });
 
-const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-99-hedges-amagansett', '/commercial': 'biz-rachel-lynch-pools' };
+const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-99-hedges-amagansett', '/commercial': 'biz-rachel-lynch-pools', '/creator-studios': 'cs-demo-reel' };
 await check('primary-nav pages open with a silent autoplaying 16:9 hero video, poster, pause/play control, no Watch the film prompt', async () => {
   for (const [path, id] of Object.entries(heroPages)) {
     const p = await newPage();
@@ -801,15 +801,27 @@ await check('creator studios: story, formats with scope, conversations, process,
   const text = await p.textContent('main');
   for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Clarify the story']) assert(text.includes(s), s);
   assert(await p.locator('.scope-tag--out').count() >= 2, 'separately scoped formats labelled');
-  assert(await p.locator('.plan .needs-approval').count() === 2, 'session prices still pending');
-  // Rights gate: the eight rights-pending candidates must not reach any deployed page or file.
-  assert(await p.locator('img[src*="cs-ph-"], img[srcset*="cs-ph-"]').count() === 0, 'rights-pending photos rendered');
-  assert(!(await p.content()).includes('cs-ph-'), 'rights-pending ids in HTML');
-  const direct = await fetch(base + '/v/cs-ph-cc-onsite.webp');
-  assert(direct.status === 404, 'rights-pending file served: ' + direct.status);
+  // James, Sep 25 2026: $250 / 1.5-hour podcast and $500 / 2-hour content sessions, without editing, are approved.
+  assert(await p.locator('.plan .needs-approval').count() === 0, 'session prices approved');
+  const prices = await p.locator('.plan__price').allTextContents();
+  assert(prices.some((t) => t.includes('$250')) && prices.some((t) => t.includes('$500')), 'session prices shown: ' + prices.join('|'));
+  const plans = (await p.locator('.plan').allTextContents()).join(' ');
+  assert(/1\.5 hours/.test(plans) && /2 hours/.test(plans) && /without editing/.test(plans), 'session scope');
+  // Square is the booking destination; the page must not claim Square shows these prices or carries a selection over.
+  const square = 'https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services';
+  const book = p.locator('main a:has-text("Book a Studio Session")');
+  assert(await book.count() >= 3, 'booking CTAs');
+  for (const h of await book.evaluateAll((els) => els.map((e) => [e.getAttribute('href'), e.getAttribute('target'), e.getAttribute('rel')]))) assert(h[0] === square && h[1] === '_blank' && /noopener/.test(h[2]), 'square link ' + h.join());
+  assert(text.includes('Long Island Creator Studios'), 'visible connection to the studio');
+  assert(!/Square (shows|lists|displays)[^.]*\$|selection (carries|transfers)/i.test(text), 'no Square price or transfer claim');
+  // The eight photos James approved on Sep 25 now render; all eight ids, nothing else from that folder.
+  const ids = ['cs-ph-cc-onsite', 'cs-ph-cc-ep20', 'cs-ph-hedgestone-switch', 'cs-ph-island-federal', 'cs-ph-determined-society', 'cs-ph-solo-couch', 'cs-ph-solo-bts', 'cs-ph-dan-dan-conversation'];
+  const html = await p.content();
+  for (const id of ids) assert(html.includes(`/v/${id}`), id + ' rendered');
+  assert(!html.includes('rights, consent and publication approval pending'), 'stale pending note');
   const noah = await p.locator('.card--image:has(img[src*="ph-noah-knows"]) .card__sub').allTextContents();
   assert(!noah.some((t) => /Bohemia/.test(t)), 'Noah Knows kitchen shoot not labelled Bohemia');
-  const cta = p.locator('main a:has-text("Request a Studio Session")').first();
+  const cta = p.locator('main a:has-text("Ask us first")').first();
   await cta.focus();
   await p.keyboard.press('Enter');
   await p.waitForURL(/\/contact\?type=creator-studios/);
@@ -818,6 +830,24 @@ await check('creator studios: story, formats with scope, conversations, process,
   const ph = await newPage({ width: 390, height: 844 });
   await ph.goto(base + '/creator-studios');
   assert(await ph.evaluate(() => document.documentElement.scrollWidth) <= 390, 'phone overflow');
+  await ph.context().close();
+});
+
+await check('Field Notes opens with a rights-approved house photograph and the Photografik Studios byline', async () => {
+  const p = await newPage();
+  await p.goto(base + '/field-notes');
+  const first = p.locator('main > section').first();
+  assert(await first.locator('video').count() === 0, 'photo opener, not a reel');
+  const src = await first.locator('.page-hero__media img').getAttribute('src');
+  assert(/ph-dune-twilight-pool/.test(src), 'house photo: ' + src);
+  assert((await first.locator('.page-hero__media img').getAttribute('alt')).length > 5, 'alt text');
+  const href = await p.locator('.fn-card__title a').first().getAttribute('href');
+  await p.goto(base + href);
+  assert((await p.locator('.fn-byline').textContent()).includes('By Photografik Studios'), 'byline');
+  await p.context().close();
+  const ph = await newPage({ width: 375, height: 812 });
+  await ph.goto(base + '/field-notes');
+  assert(await ph.evaluate(() => document.documentElement.scrollWidth) <= 375, 'phone overflow');
   await ph.context().close();
 });
 

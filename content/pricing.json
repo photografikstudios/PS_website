@@ -1044,7 +1044,7 @@
     }
   ],
   "releaseApproved": false,
-  "_release": "Prices mirror HD Photo Hub (James: HDPH is the authority). Keep releaseApproved false until James and Codex sign off the reconciliation; production builds fail while false.",
+  "_release": "Prices mirror HD Photo Hub (James: HDPH is the authority). Sep 25 2026: James confirmed the 17,501 to 20,501 package bands, the Luxury 12,501 tier and the final 25,000/25,500 configuration are correct as configured in HDPH; they are mirrored exactly and must not be adjusted by assumption. Keep releaseApproved false until every website price and inclusion has been compared to HDPH and signed off; production builds fail while false.",
   "features": {
     "_readme": "Inclusion vocabulary. Package cards and the Compare tool both render from each record's 'features', so the two cannot drift. Values: true = included; a string = included with that note. Only list what HD Photo Hub confirms.",
     "interior": "Interior photography",

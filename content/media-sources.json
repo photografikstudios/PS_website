@@ -317,6 +317,18 @@
       "drive": "1LcQj29Ox-e86P6UhxfTMrVMhS4-wbRsd",
       "image": true,
       "_file": "Dan Dan July Podcast Action Shots-75.jpg"
+    },
+    {
+      "id": "cs-demo-reel",
+      "drive": "1UW5pjat8WPqe0LyihxsdFMGIKQMS6eDg",
+      "file": "4K Horizontal V2.mp4",
+      "loop": [
+        4,
+        12
+      ],
+      "loopHeight": 1080,
+      "posterAt": 6,
+      "_note": "James, Sep 25 2026: Creator Studios horizontal opener. ~327 MB 4K original stays in Drive; the build makes a 720p film, a 1080p muted hero loop and a WebP poster."
     }
   ],
   "docs": [
