@@ -2,7 +2,8 @@
 // names Replit, and check:legacy rejects a committed file whose bytes differ from its pin.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdir, writeFile, rm } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, rm, mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,16 +32,12 @@ test('every legacy path the site references is pinned, and a wrong file is rejec
   const out = spawnSync('node', ['scripts/legacy-check.mjs'], { cwd: root, encoding: 'utf8' });
   assert.doesNotMatch(out.stdout, /unpinned/);
   const ref = Object.keys(pins.files)[0];
-  const dest = join(root, 'static', ref);
-  let existing = null;
-  try { existing = await readFile(dest); } catch { /* not committed in this checkout */ }
-  if (!existing) {
-    await mkdir(dirname(dest), { recursive: true });
-    await writeFile(dest, 'not the pinned bytes');
-    try {
-      const bad = spawnSync('node', ['scripts/legacy-check.mjs'], { cwd: root, encoding: 'utf8' });
-      assert.equal(bad.status, 1);
-      assert.match(bad.stdout, new RegExp(`mismatch\\s+static${ref.replace(/[.]/g, '\\.')}`));
-    } finally { await rm(dest); }
-  }
+  const tmp = await mkdtemp(join(tmpdir(), 'legacy-'));
+  try {
+    await mkdir(dirname(join(tmp, ref)), { recursive: true });
+    await writeFile(join(tmp, ref), 'not the pinned bytes');
+    const bad = spawnSync('node', ['scripts/legacy-check.mjs', '--static', tmp], { cwd: root, encoding: 'utf8' });
+    assert.equal(bad.status, 1);
+    assert.match(bad.stdout, new RegExp(`mismatch\\s+static${ref.replace(/[.]/g, '\\.')}`));
+  } finally { await rm(tmp, { recursive: true, force: true }); }
 });

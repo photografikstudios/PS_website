@@ -7,6 +7,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const staticDir = process.argv.includes('--static') ? process.argv[process.argv.indexOf('--static') + 1] : join(root, 'static');
 const pinned = JSON.parse(await readFile(join(root, 'content/legacy-assets.json'), 'utf8')).files;
 async function walk(dir) {
   const out = [];
@@ -28,7 +29,7 @@ for (const r of [...refs].sort()) {
   const pin = pinned[r];
   if (!pin) { problems.push(`unpinned   static${r}`); continue; }
   let buf;
-  try { buf = await readFile(join(root, 'static', r)); } catch { problems.push(`missing    static${r}`); continue; }
+  try { buf = await readFile(join(staticDir, r)); } catch { problems.push(`missing    static${r}`); continue; }
   const h = createHash('sha256').update(buf).digest('hex');
   if (buf.length !== pin.bytes || h !== pin.sha256) { problems.push(`mismatch   static${r} (${buf.length} bytes, ${h.slice(0, 12)})`); continue; }
   good++;
