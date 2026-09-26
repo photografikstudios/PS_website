@@ -1,68 +1,68 @@
 # Price and inclusion reconciliation, September 26, 2026
 
-**Sources (read-only, nothing ordered or booked):**
-- HD Photo Hub order page, `photografikstudios.hd.pics/order`. I read its product catalog (297 product rows, each with its sq ft minimum and maximum and its price) in the browser pane.
-- The Long Island Creator Studios Square services page, including each service's options view.
+**Owner decision record:** `OWNER_DECISIONS_2026-09-25_LATE.md` in the brief folder. Where this report and that record differ, the record wins. Items James has already decided are listed as **Decided** and are not raised again.
 
-**Website side:** `content/pricing.json` at this revision, `content/offers.json` for Creator Studios.
+**Sources (read only; nothing ordered or booked):**
+- The HD Photo Hub order page, `photografikstudios.hd.pics/order`: the full product catalog of 297 rows, each with its sq ft range and price, read in the browser pane.
+- The Long Island Creator Studios Square services page, including each service's options view.
 
 ## 1. Residential prices (HD Photo Hub)
 
-**Method.** 24 website records were compared automatically against HDPH:
-- 4 packages, 7 size-based services (Cinematic Video and Cinematic Reel are compared separately), and 12 fixed items.
-- Each size tier was checked at its lowest, middle and highest sq ft, giving **648 comparisons**.
+**Comparison.** 24 website records against the HDPH catalog, each tier checked at its lowest, middle and highest sq ft: **648 comparisons, 0 price differences.**
 
-**Result: every price the website shows matches the HDPH checkout price. There are no numeric differences.**
+**Decided, mirrored as HDPH is configured (James, Sep 25):**
+- The 17,501–20,501 package bands, including the shared boundary sizes.
+- The Luxury Media 12,501 tier.
+- The final 25,000/25,500 configuration.
 
-The only findings come from how HDPH defines its size bands. James confirmed these on Sep 25 as intended, so the website does not "correct" them. They are listed here so the release sign-off is explicit.
+The website mirrors these, with the tier boundaries entered as they appear in HDPH's rows. They are not open questions and must not be "corrected" by assumption. The release gate still needs the full comparison signed off; this report is that comparison.
 
-| Where | HD Photo Hub row | Effect at checkout | Website |
-|---|---|---|---|
-| All 4 packages at exactly 17,501, 18,501, 19,501 and 20,501 sq ft | Adjacent rows share the boundary (for example 16,501–17,501 and 17,501–18,501) | At those four exact sizes, two package prices are eligible | Uses the higher band from each boundary. **James: confirm which price HDPH charges at exactly those sizes** |
-| Luxury Media 12,501 row | Maximum is 1,250,138 sq ft (other rows end at x,500) | Above 13,500 sq ft, the $3,865 Luxury row stays eligible alongside the correct band | Stops the $3,865 band at 13,500. **James: confirm HDPH shows only one Luxury price above 13,500** |
-| Final band | Packages 20,501–25,500 and 25,501–30,000; services 20,501–25,000 and 25,001–30,000 | Matches | Mirrored exactly; above 30,000 sq ft is a custom quote |
-| "(reg. $…)" amounts | HDPH shows a regular price next to each package price (for example Starter $720, reg. $800) | Customers see a discount | The website shows only the checkout price and does not advertise a discount. James can decide whether to show "reg." prices |
-| A second catalog group, category 78376 | Duplicate Photography, Floor Plan and Cinematic rows. Some prices differ, for example Cinematic Reel from $550, and Cinematic Video at 5,501–6,500 is $695 | Not in the standard product list; probably a special-tier or member group | Not used. **James: confirm what this group is and whether any public customer sees it** |
+**Inclusions: match.**
+- Listing Starter: Photography, Drone Photography, Floor Plans.
+- Social Media: Photography, Drone Photography, Cinematic Reel.
+- Luxury Media: adds Floor Plans and Cinematic Video to Social Media's list.
+- Signature: adds Day to Night, Agent On Camera and Twilight/Dusk.
 
-## 2. Inclusions (HD Photo Hub)
+**Engines: match.**
+- Listing and Agent Engine: $1,000 as an add-on, $1,200 on their own.
+- Full Engine: $1,900 as an add-on, $2,200 on its own.
 
-| Package | HDPH items | Website features | Match |
-|---|---|---|---|
-| Listing Starter | Photography, Drone Photography, Floor Plans | interior, exterior, drone, floor plan | Yes |
-| Social Media | Photography, Drone Photography, Cinematic Reel | interior, exterior, drone, reel | Yes |
-| Luxury Media | Photography, Drone Photography, Floor Plans, Cinematic Reel, Cinematic Video | plus floor plan, film, reel | Yes |
-| Signature | adds Day to Night, Agent On Camera, Twilight/Dusk | plus day-to-night, agent, twilight | Yes |
+**Remaining discrepancies (factual, not already decided):**
 
-**Engines:** HDPH lists Listing and Agent Engine at $1,000 as an add-on and $1,200 on their own, and the Full Engine at $1,900 add-on and $2,200 on its own. The website matches all of these.
+| # | What | HD Photo Hub | Website | Impact |
+|---|---|---|---|---|
+| R1 | Listing Engine description | "a cinematic, agent-on-camera social video plus 3–4 additional short-form videos focused on the home, location, and lifestyle" | "Three to four short videos about the property and its launch cycle (Coming Soon, Just Listed, Under Contract, Just Sold) or a nearby lifestyle feature" | The website omits the agent-on-camera video and gives launch-cycle examples that HDPH does not mention. **Factual/editorial review.** Copy is unchanged |
+| R2 | A second HDPH catalog group, category 78376 | Duplicate Photography, Floor Plan and Cinematic rows. Some prices differ: Cinematic Reel from $550; Cinematic Video at 5,501–6,500 sq ft is $695 | Not used; the site mirrors the standard product list | For information only. It is not in the list customers see by default. Someone who knows the HDPH setup should confirm it is not a public price list |
 
-**Copy difference to review:**
-- HDPH describes the **Listing Engine** as "a cinematic, agent-on-camera social video plus 3–4 additional short-form videos focused on the home, location, and lifestyle".
-- The website says "three to four short videos about the property and its launch cycle (Coming Soon, Just Listed, Under Contract, Just Sold) or a nearby lifestyle feature".
-- The website does not mention the agent-on-camera video, and the launch-cycle examples are not in HDPH.
-- **James: choose which wording is the commitment.** I have not changed it.
+**Note, not a discrepancy:** HDPH shows a regular price next to package prices, for example "Starter $720 (reg. $800)". The website shows the price actually charged at checkout, which matches.
 
-## 3. Creator Studios (Square)
+## 2. Creator Studios (Square)
 
-| Website says | Square options view | Status |
+**Decided (James, Sep 25):**
+- $250 for a 1.5-hour podcast session and $500 for a 2-hour content session, without editing.
+- Book through the Square services link.
+- Do not list every service or add-on.
+- Do not claim Square shows these amounts, or that booking carries a Photografik selection across.
+
+The site follows all of these.
+
+**Square options view compared with the approved prices:**
+
+| Session | Square option | Matches approved price? |
 |---|---|---|
-| Podcast session, 1.5 hours, $250, full episode without editing | **"Podcast Recording, Brooklyn" → One Podcast Recording: $250, 1 hr 30 min** (live cut, raw audio, up to 3 guests) | Matches |
-| (same) | **"Podcast Recording, Hamptons" → One Podcast Recording: "Price varies", 1 hr 30 min.** Two recordings $500, three $750, four $950 | **Gap:** the single Hamptons-set session has no fixed price on Square |
-| Studio content session, 2 hours, $500, without editing | "General Studio Content Session" → 2 Hours: $500 (raw files included, engineer, 2-hour minimum). Extra hour $250 | Matches |
-| Category list | Both main services show "Price varies" at the category level | As expected; the website does not claim Square shows the price there |
+| 2-hour studio content | "General Studio Content Session" → **2 Hours: $500.00** | Yes |
+| 1.5-hour podcast, Brooklyn listing | "Podcast Recording, Brooklyn" → **One Podcast Recording: $250.00, 1 hr 30 min** | Yes |
+| 1.5-hour podcast, Hamptons listing | "Podcast Recording, Hamptons" → **One Podcast Recording: "Price Varies", 1 hr 30 min**. Two recordings are $500, three $750, four $950 | **No: discrepancy S1.** A customer booking one Hamptons-listing podcast does not see $250 at this step |
 
-**Wording the website does not use and should not add:**
-- Square also calls the sets "Hamptons" and "Brooklyn".
-- The website says "Bohemia" (the Square page title is "Bohemia, NY") and does not name the sets.
-- **James: confirm whether "Brooklyn" is a set name or a separate location**, so the page never implies the wrong place.
+**S1** is a Square catalog setting, not a website issue. I have **not changed Square**. If James wants the Hamptons single session to show $250, it is edited in Square.
 
-Editing, ISO files and clip packages are Square add-ons. The website says they are quoted separately and does not list them, per James.
+**Wording note, factual:** the two podcast listings are named "Hamptons" and "Brooklyn". The website names neither and says only "Bohemia", which matches the Square page title. If "Brooklyn" is a place rather than a set name, the website's location wording is unaffected. The note is here only so no future copy names it without confirmation.
 
 ## Release gate
 
-`releaseApproved` stays `false`. Before it can flip, James needs to answer the four questions above:
-1. the boundary sizes;
-2. the Luxury 12,501 row;
-3. category 78376;
-4. the Listing Engine wording.
+`releaseApproved` stays `false`, because production launch is a separate approval.
 
-He also needs to decide whether the Hamptons single-session price on Square should be fixed at $250.
+On pricing, the remaining open items are:
+- R1, the Listing Engine wording;
+- S1, the Square Hamptons option;
+- R2, which is only for information.
