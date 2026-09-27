@@ -22,7 +22,7 @@ export function buildPages(ctx) {
   const serviceRoute = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
   const isApproved = (r) => (r.approval ?? 'approved') === 'approved';
   // Offer prices that James has not approved never reach HTML (the review alias is public): show the offer, not the figure.
-  const approvedPrice = (rec, html) => (isApproved(rec) ? html : '<span class="price-pending">Price confirmed when we scope it</span>');
+  const approvedPrice = (rec, html, pending = 'Price confirmed when we scope it') => (isApproved(rec) ? html : `<span class="price-pending">${pending}</span>`);
   const projectPath = (p) => p.path || `${serviceRoute[p.category]}/${p.slug}`;
   const countSummary = (items) => { const films = items.filter((m) => m.type === 'video').length; const stills = items.length - films; return [films ? `${films} film${films > 1 ? 's' : ''}` : '', stills ? `${stills} photo${stills > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · '); };
   const mmss = (d) => `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
@@ -943,18 +943,22 @@ ${cp.length || b2b.length ? `<section class="section">
   // James, Sep 26 2026: How it works and FAQ follow licreatorstudios.com/how-it-works.
   const csFaq = [
     ['Can I come solo, or with fewer than four guests?', 'Yes. We adjust the setup to suit any number of guests.'],
-    ['How quickly do I receive my files?', 'An initial video with the live cuts is available the next day. If you ask for further editing or social media clips, those are typically delivered within 72 hours.'],
+    ['How quickly do I receive my files?', 'Your recorded files are sent within 24 hours. If you ask for further editing or social media clips, those are typically delivered within 72 hours.', 'Proposed single delivery promise (24 hours for recorded files, about 72 hours for edits); James to confirm'],
     ['Why would I need further editing?', 'The live cut satisfies most people. Additional editing is there when you want the episode as polished as possible.'],
     ['Will I receive every audio and video file separately?', 'Typically, no. We can record every camera and microphone separately for more in-depth editing; to receive the isolated files, bring a Samsung T5 or T7 SSD for us to record to. Contact us for details.'],
     ['Can I livestream from the studio?', 'Yes. We have fast internet and can stream to any platform.'],
     ['Can you help with uploading and promoting the podcast?', 'Yes. Editing, social media optimization and distribution help are available. Contact us for details.'],
     ['Can I book by the hour, or for less time?', 'No. Podcast sessions are booked in 90-minute blocks. Studio content is booked by the hour with a 2-hour minimum. For longer sessions, please contact us.'],
-    ['What is the cancellation policy?', 'Cancel with at least 48 hours’ notice for a full refund, or with 24 hours’ notice for a 50% refund. Cancellations with less than 24 hours’ notice are not refunded.'],
+    ['What is the cancellation policy?', 'Cancel with at least 48 hours’ notice for a full refund, or with 24 hours’ notice for a 50% refund. Cancellations with less than 24 hours’ notice are not refunded.', 'Cancellation and refund terms from licreatorstudios.com/how-it-works; James to confirm they match Square before this label is lifted'],
   ];
   const csBy = Object.fromEntries(sessions.filter(isApproved).map((x) => [x.id, x]));
-  const csCtaLine = csBy['podcast-session'] && csBy['content-session']
-    ? `Single studio sessions are ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes. Studio content is ${formatUSD(csBy['content-session'].amount)} an hour with a 2-hour minimum.${csBy['recording-editing'] ? ` Recording + Editing is ${formatUSD(csBy['recording-editing'].amount)} a month.` : ''}`
-    : 'Tell us who you want to reach and what you want to talk about.';
+  // Only approved figures are quoted. The single-session price is held (Sep 27 2026) until James chooses $249 or $250.
+  const csCtaParts = [
+    csBy['podcast-session'] && `Single studio sessions are ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes.`,
+    csBy['content-session'] && `Studio content is ${formatUSD(csBy['content-session'].amount)} an hour with a 2-hour minimum.`,
+    csBy['recording-editing'] && `Recording + Editing is ${formatUSD(csBy['recording-editing'].amount)} a month.`,
+  ].filter(Boolean);
+  const csCtaLine = csCtaParts.length ? csCtaParts.join(' ') : 'Tell us who you want to reach and what you want to talk about.';
   pages['/creator-studios'] = {
     overlay: true,
     seo: { title: 'Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
@@ -983,8 +987,8 @@ ${cp.length || b2b.length ? `<section class="section">
     <h2 class="h2 reveal" id="cs-sessions-h">Choose how you want to work.</h2>
     <div class="cs-sessions cs-sessions--${sessions.length}">${join(sessions, (s) => `<div class="plan plan--media reveal" data-session="${esc(s.id)}">
       ${csFig(csSessionPhoto[s.id] || 'cs-ph-solo-couch')}
-      <h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3>
-      <p class="plan__price">${approvedPrice(s, `<strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`)}</p>
+      <h3 class="h3">${esc(s.name)} ${needsApproval(s, s.reviewNote)}</h3>
+      <p class="plan__price">${approvedPrice(s, `<strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`, 'Price being confirmed')}</p>
       <p>${esc(s.detail)}</p>
       ${s.includes?.length ? `<ul class="plan__list">${join(s.includes, (x) => `<li>${esc(x)}</li>`)}</ul>` : ''}
       ${s.extra ? `<p class="small muted">${esc(s.extra)}</p>` : ''}
@@ -1041,7 +1045,7 @@ ${cp.length || b2b.length ? `<section class="section">
     <ol class="steps steps--4">
       <li class="reveal"><span class="steps__n">01 / Book</span><h3>Choose your studio and a time.</h3><p>Pick your set, then a date and time that work for you. For longer sessions, contact us.</p></li>
       <li class="reveal"><span class="steps__n">02 / Record</span><h3>Sit back and record.</h3><p>We handle the equipment while you focus on the conversation.</p></li>
-      <li class="reveal"><span class="steps__n">03 / Receive</span><h3>Files within 24 hours.</h3><p>Your files are sent within 24 hours. Additional editing is available.</p></li>
+      <li class="reveal"><span class="steps__n">03 / Receive</span><h3>Files within 24 hours.</h3><p>Your recorded files are sent within 24 hours. Further editing and clips typically take up to 72 hours. ${needsApproval({ approval: 'pending' }, 'Proposed single delivery promise; James to confirm')}</p></li>
       <li class="reveal"><span class="steps__n">04 / Partner</span><h3>Keep going with us.</h3><p>Add services, improved rates and more end-to-end support when you record regularly.</p></li>
     </ol>
   </div>
@@ -1051,7 +1055,7 @@ ${cp.length || b2b.length ? `<section class="section">
   <div class="wrap cs-faq">
     <div><p class="eyebrow">Questions</p>
     <h2 class="h2 reveal" id="cs-faq-h">Before you book.</h2></div>
-    <div class="faq">${join(csFaq, ([q, a]) => `<details class="faq__item"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`)}</div>
+    <div class="faq">${join(csFaq, ([q, a, note]) => `<details class="faq__item"><summary>${esc(q)}</summary><p>${esc(a)}${note ? ` ${needsApproval({ approval: 'pending' }, note)}` : ''}</p></details>`)}</div>
   </div>
 </section>
 
@@ -1113,28 +1117,27 @@ ${csRecent.length ? `<section class="section section--ink on-dark" id="portfolio
   // ---------- ABOUT ----------
   // Reviews: verbatim quotes from content/testimonials.json (Google Business Profile and the live site's testimonial block).
   const tm = testimonials || { reviews: [] };
-  const tmReviews = tm.reviews.filter((r) => r.approval === 'approved' || reviewMode);
+  // A short, curated selection (featured order) keeps the page scannable; the rest of the reviews stay in reserve.
+  const tmReviews = tm.reviews.filter((r) => r.approval === 'approved' && Number.isInteger(r.featured)).sort((x, y) => x.featured - y.featured);
+  // The video testimonial appears only once its file is identified and rights-approved; no empty slot is shown.
   const tmVideo = tm.video?.id ? work.media.find((m) => m.id === tm.video.id && m.rights === 'approved') : null;
-  const tmVideoBlock = tmVideo
-    ? `<div class="reviews__video reveal">${videoPlayer(tmVideo, { sizes: '(min-width: 900px) 40vw, 90vw' })}</div>`
-    : (reviewMode ? `<div class="reviews__video reviews__video--slot"><p class="review-placeholder">Client video testimonial goes here once the file is confirmed with James.</p> ${needsApproval({ approval: 'pending' }, 'Video testimonial file not yet supplied')}</div>` : '');
   const g = tm.google;
-  const aboutReviews = tmReviews.length ? `
+  const cite = (r) => `<figcaption><span class="review__name">${esc(r.name)}</span>${r.org ? `<span class="review__org">${esc(r.org)}</span>` : ''}</figcaption>`;
+  const [lead, ...rest] = tmReviews;
+  const aboutReviews = lead ? `
 <section class="section reviews" id="reviews" aria-labelledby="reviews-h">
   <div class="wrap">
-    <div class="reviews__head">
-      <div>
+    <div class="reviews__top">
+      <div class="reviews__intro">
         <p class="eyebrow">Client reviews</p>
         <h2 class="h2 reveal" id="reviews-h">In our clients’ words.</h2>
+        ${g ? `<a class="reviews__rating" href="${esc(g.href)}" target="_blank" rel="noopener" data-track="reviews_click" data-track-location="about_reviews_rating"><span class="reviews__score">${esc(g.rating.toFixed(1))}</span><span class="reviews__stars" aria-hidden="true">★★★★★</span><span class="reviews__count">${esc(String(g.count))} Google reviews <span class="sr-only">(opens Google)</span></span></a>` : ''}
       </div>
-      ${g ? `<a class="reviews__rating" href="${esc(g.href)}" target="_blank" rel="noopener" data-track="reviews_click" data-track-location="about_reviews_rating"><span class="reviews__score">${esc(g.rating.toFixed(1))}</span><span class="reviews__stars" aria-hidden="true">★★★★★</span><span class="reviews__count">${esc(String(g.count))} Google reviews <span class="sr-only">(opens Google)</span></span></a>` : ''}
+      ${tmVideo ? `<div class="reviews__video reveal">${videoPlayer(tmVideo, { sizes: '(min-width: 900px) 50vw, 90vw' })}</div>` : `<figure class="review review--lead reveal"><blockquote><p>${esc(lead.quote)}</p></blockquote>${cite(lead)}</figure>`}
     </div>
-    <div class="reviews__body${tmVideoBlock ? ' reviews__body--video' : ''}">
-      ${tmVideoBlock}
-      <ul class="reviews__list" role="list">
-        ${tmReviews.map((r) => `<li class="review reveal"><figure><blockquote><p>${esc(r.quote)}</p></blockquote><figcaption><span class="review__name">${esc(r.name)}</span>${r.org ? `<span class="review__org">${esc(r.org)}</span>` : ''}<span class="review__src">${r.source === 'google' ? 'Google review' : 'Client testimonial'}</span></figcaption></figure></li>`).join('')}
-      </ul>
-    </div>
+    <ul class="reviews__list" role="list">
+      ${(tmVideo ? tmReviews : rest).map((r) => `<li class="review reveal"><figure><blockquote><p>${esc(r.quote)}</p></blockquote>${cite(r)}</figure></li>`).join('')}
+    </ul>
     ${g ? `<p class="reviews__more"><a class="link-arrow" href="${esc(g.href)}" target="_blank" rel="noopener" data-track="reviews_click" data-track-location="about_reviews_more">Read all our Google reviews ${arrow}</a></p>` : ''}
   </div>
 </section>` : '';

@@ -806,28 +806,25 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .cs-faq { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
 @media (max-width: 860px) { .cs-faq { grid-template-columns: 1fr; } }
 
-/* About: client reviews */
-.reviews__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px 48px; flex-wrap: wrap; margin-bottom: clamp(32px, 4vw, 56px); }
-.reviews__head .h2 { margin: 0; }
-.reviews__rating { display: inline-grid; grid-template-columns: auto auto; column-gap: 12px; align-items: center; text-decoration: none; color: inherit; padding: 12px 0; min-height: 44px; }
+/* About: client reviews (curated: one lead quote, three supporting) */
+.reviews__top { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 32px clamp(40px, 6vw, 96px); align-items: start; margin-bottom: clamp(48px, 6vw, 80px); }
+.reviews__intro .h2 { margin: 0 0 28px; }
+.reviews__rating { display: inline-grid; grid-template-columns: auto auto; column-gap: 12px; align-items: center; text-decoration: none; color: inherit; min-height: 44px; }
 .reviews__score { grid-row: span 2; font: 400 clamp(44px, 5vw, 60px)/1 var(--serif); }
 .reviews__stars { color: var(--rust); letter-spacing: 2px; font-size: 18px; line-height: 1; }
 .reviews__count { font-size: 15px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
 .reviews__rating:hover .reviews__count, .reviews__rating:focus-visible .reviews__count { color: var(--charcoal); }
-.reviews__body--video { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 4vw, 64px); align-items: start; }
-.reviews__body--video > .reviews__video { position: sticky; top: 112px; }
-.reviews__video--slot { border: 1px dashed var(--line); padding: 32px; min-height: 220px; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
-.reviews__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px clamp(32px, 4vw, 56px); }
-.reviews__body:not(.reviews__body--video) .reviews__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.review figure { margin: 0; border-top: 1px solid var(--line); padding-top: 22px; height: 100%; display: flex; flex-direction: column; }
-.review blockquote { margin: 0 0 18px; }
-.review blockquote p { margin: 0; font: 400 clamp(19px, 1.5vw, 22px)/1.4 var(--serif); }
+.review { margin: 0; }
+.review blockquote { margin: 0 0 20px; }
+.review blockquote p { margin: 0; font: 400 clamp(19px, 1.45vw, 21px)/1.45 var(--serif); }
 .review blockquote p::before { content: "“"; } .review blockquote p::after { content: "”"; }
-.review figcaption { margin-top: auto; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
+.review--lead blockquote p { font-size: clamp(26px, 2.6vw, 38px); line-height: 1.25; letter-spacing: -.005em; }
+.review--lead { border-left: 2px solid var(--rust); padding-left: clamp(20px, 3vw, 40px); }
+.review figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
 .review__name { font-weight: 600; }
-.review__org, .review__src { color: var(--muted); }
-.review__src { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; margin-top: 4px; }
-.reviews__more { margin: clamp(32px, 4vw, 48px) 0 0; }
-@media (max-width: 1100px) { .reviews__body:not(.reviews__body--video) .reviews__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 900px) { .reviews__body--video { grid-template-columns: 1fr; } .reviews__body--video > .reviews__video { position: static; } }
-@media (max-width: 640px) { .reviews__list, .reviews__body:not(.reviews__body--video) .reviews__list { grid-template-columns: 1fr; gap: 32px; } }
+.review__org { color: var(--muted); }
+.reviews__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px clamp(32px, 4vw, 56px); }
+.reviews__list .review figure { margin: 0; border-top: 1px solid var(--line); padding-top: 24px; height: 100%; display: flex; flex-direction: column; }
+.reviews__list .review figcaption { margin-top: auto; }
+.reviews__more { margin: clamp(36px, 4vw, 52px) 0 0; }
+@media (max-width: 900px) { .reviews__top { grid-template-columns: 1fr; } .reviews__list { grid-template-columns: 1fr; gap: 32px; } }

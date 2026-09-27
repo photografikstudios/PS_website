@@ -134,8 +134,9 @@
         "All set options available"
       ],
       "booking": "square",
-      "approval": "approved",
-      "note": "James, Sep 26 2026: use licreatorstudios.com pricing. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing."
+      "approval": "pending",
+      "note": "HELD (Codex S15-16 review, Sep 27 2026): licreatorstudios.com/pricing says $249; James earlier approved $250 for the 90-minute session; the public Square booking UI shows 'Price Varies'. James to choose. Until then no figure is published and no claim is made that Square checkout matches either amount. James, Sep 26 2026: use licreatorstudios.com pricing. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing.",
+      "reviewNote": "Single-session price is being confirmed with James"
     },
     {
       "id": "content-session",

@@ -136,12 +136,10 @@
       "category": "commercial",
       "location": "Long Island",
       "services": [
-        "Brand photography",
-        "Brand film",
-        "Social content"
+        "Brand photography"
       ],
-      "summary": "Brand photography and a brand film for a medical-aesthetics business.",
-      "story": "Brand stills and a vertical brand film for a medical-aesthetics practice, made to introduce the space and the people clients will meet.",
+      "summary": "Brand photography for a medical-aesthetics business.",
+      "story": "Brand stills for a medical-aesthetics practice, made to introduce the space and the people clients will meet.",
       "hero": "/images/photografik-2027/curated/revivaluxe-hero.webp",
       "heroAlt": "RevivaLuxe founder in the practice reception area",
       "rights": "approved",
@@ -150,7 +148,8 @@
       "path": "/commercial/revivaluxe",
       "goal": null,
       "blurbApproved": false,
-      "_blurb": "Story/summary are drafts until James approves final client wording (Sep 26 2026 Commercial direction)."
+      "_blurb": "Story/summary are drafts until James approves final client wording (Sep 26 2026 Commercial direction).",
+      "_films": "Sep 27 2026: both RevivaLuxe films are withheld (unlicensed soundtrack). Copy describes only the stills shown. Restore film wording only with a silent or licensed version."
     },
     {
       "slug": "rachel-lynch-pools",

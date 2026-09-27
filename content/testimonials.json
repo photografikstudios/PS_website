@@ -1,5 +1,5 @@
 {
-  "_readme": "Client reviews for the About page. Quotes are verbatim from the source (Google Business Profile or the testimonial block already published on photografikstudios.com), captured Sep 26 2026 at James's request. Never edit a quote's wording; shorten only with an ellipsis. Company names come from the live photografikstudios.com testimonial block. Do not add AggregateRating/Review schema for these (Google treats self-serving LocalBusiness review markup as ineligible).",
+  "_readme": "Client reviews for the About page. Quotes are verbatim from the source (Google Business Profile or the testimonial block already published on photografikstudios.com), captured Sep 26 2026 at James's request. Never edit a quote's wording; shorten only with an ellipsis. Company names come from the live photografikstudios.com testimonial block. Do not add AggregateRating/Review schema for these (Google treats self-serving LocalBusiness review markup as ineligible). Only records with a numeric 'featured' order are shown (Codex S15-16: a short, scannable selection); the rest are kept as a reserve for James to swap in.",
   "google": {
     "rating": 5.0,
     "count": 42,
@@ -11,7 +11,7 @@
   "video": {
     "approval": "pending",
     "id": null,
-    "_note": "James, Sep 26 2026: the About page should show the video testimonial. File not yet identified (not in content/work.json, not on the live site's home or about pages). Once James supplies it, add it to media-sources/work.json with rights approved and captions, then set id here."
+    "_note": "James, Sep 26 2026: the About page should show the video testimonial. File not yet identified (not in content/work.json, not on the live site's home or about pages). Once James supplies it, add it to media-sources/work.json with rights approved and captions, then set id here. Not rendered as a placeholder on the page (Codex S15-16); the request stays in the editorial brief."
   },
   "reviews": [
     {
@@ -20,7 +20,9 @@
       "org": "Aliano Real Estate, Miller Place",
       "source": "google",
       "quote": "James and his constant evolving skills as a photographer and videographer are a large contribution to my success in residential real estate. He’s punctual and always gets me and my media materials ahead of schedule.",
-      "approval": "approved"
+      "approval": "approved",
+      "featured": 1,
+      "_orgSource": "Company and town are in the reviewer's own Google review text."
     },
     {
       "id": "kimberly-cammarata",
@@ -28,7 +30,9 @@
       "org": "Douglas Elliman",
       "source": "google",
       "quote": "James has proven to be attentive, prompt and pays close attention to detail and understands what we like. We have used him for video shoots, reels as well as photography. His response and turn-around time is fantastic. We highly recommend!",
-      "approval": "approved"
+      "approval": "approved",
+      "featured": 2,
+      "_orgSource": "Name and quote from Google; company from the testimonial block James published on photografikstudios.com."
     },
     {
       "id": "dave-hancock",
@@ -37,7 +41,8 @@
       "source": "google",
       "quote": "Their creativity, dedication, and expertise in utilizing various platforms have boosted our online presence and engagement. We have received positive feedback from our clients and builders.",
       "approval": "approved",
-      "_note": "Excerpt of two consecutive sentences from a longer Google review about his smart home business."
+      "_note": "Excerpt of two consecutive sentences from a longer Google review about his smart home business.",
+      "featured": 4
     },
     {
       "id": "bob-mcinnis",
@@ -45,16 +50,18 @@
       "org": null,
       "source": "google",
       "quote": "He's fantastic at photographing spaces--he shoots some of the finest Hamptons and North Fork real estate and businesses and captures incredible drone shots, too. Lots of my clients use him, too.",
-      "approval": "approved"
+      "approval": "approved",
+      "featured": 3
     },
     {
-      "id": "aubri-peele",
-      "name": "Aubri Peele",
-      "org": "Brown Harris Stevens",
+      "id": "hampton-innovation",
+      "name": "Hampton Innovation",
+      "org": null,
       "source": "google",
       "quote": "Outstanding work performance. Always on time. Willing to go above & beyond. The quality of picture is exactly what I'm looking for. Angles are always down to perfection!",
       "approval": "approved",
-      "_note": "Posted on Google as 'Hampton Innovation'; attributed to Aubri Peele, Brown Harris Stevens on the live photografikstudios.com testimonial block."
+      "_note": "Public Google author is 'Hampton Innovation'. The old photografikstudios.com block credits this quote to Aubri Peele, Brown Harris Stevens; use that attribution only with James's confirmation. Not featured.",
+      "featured": null
     },
     {
       "id": "kevin-byrne",
@@ -63,7 +70,8 @@
       "source": "site",
       "quote": "We had James do some drone photos and videos of several of our properties for use on our marketing material. His eye for lighting and framing of the pictures is amazing.",
       "approval": "approved",
-      "_note": "From the live photografikstudios.com testimonial block. Not a Google review."
+      "_note": "From the live photografikstudios.com testimonial block. Not a Google review.",
+      "featured": null
     },
     {
       "id": "toni-campo",
@@ -71,7 +79,8 @@
       "org": null,
       "source": "google",
       "quote": "James, Alec and the team are absolute professionals and we are always so pleased with their photography! No hesitation in referring them for anyone who is looking for professional real estate photography!",
-      "approval": "approved"
+      "approval": "approved",
+      "featured": null
     },
     {
       "id": "ken-miller",
@@ -79,7 +88,8 @@
       "org": null,
       "source": "google",
       "quote": "Can’t say enough good things about James. He’s done multiple still photo and short video pieces for our business and we couldn’t be happier.",
-      "approval": "approved"
+      "approval": "approved",
+      "featured": null
     }
   ]
 }
