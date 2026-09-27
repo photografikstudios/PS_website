@@ -159,6 +159,8 @@ await check('portfolios: every approved item appears on its own service page, on
     let pageHtml = html;
     // Commercial (James, Sep 26): the index shows one card per project; every item lives on its project page.
     if (cat === 'commercial') for (const slug of new Set(mine.map((m) => m.project))) pageHtml += await (await fetch(`${base}/commercial/${slug}`)).text();
+    // Architecture & design (owner correction, Sep 27): one card per project; the full set lives on each project page.
+    if (cat === 'architecture-design') for (const slug of new Set(mine.map((m) => m.project).filter(Boolean))) pageHtml += await (await fetch(`${base}/architecture-design/${slug}`)).text();
     // Creator Studios (James, Sep 26): media sit beside their sections across the page; the full set is on All sessions.
     if (cat === 'creator-studios') pageHtml += (await p.locator('main').evaluate((el) => el.outerHTML)) + await (await fetch(`${base}/creator-studios/sessions`)).text();
     const missing = mine.filter((m) => !pageHtml.includes(m.id) && !(m.src && pageHtml.includes(m.src)) && !(m.poster && pageHtml.includes(m.poster)));
@@ -996,6 +998,40 @@ await check('RevivaLuxe copy matches the licensed stills only', async () => {
   assert(!/brand film/i.test(text), 'brand film promised on RevivaLuxe');
   assert(await p.locator('main video').count() === 0, 'RevivaLuxe film rendered');
   await p.context().close();
+});
+
+// Owner correction, Sep 27 2026: Architecture & design sells the story before the gallery.
+await check('Architecture & design: audience, story guide, differentiators and service path before compact project cards', async () => {
+  for (const vp of [{ width: 1280, height: 720 }, { width: 375, height: 812 }]) {
+    const p = await newPage(vp);
+    await p.goto(base + '/architecture-design');
+    const top = (sel) => p.locator(sel).evaluate((el) => el.getBoundingClientRect().top + scrollY);
+    const hero = await p.locator('.page-hero').evaluate((el) => el.getBoundingClientRect().bottom + scrollY);
+    const order = [await top('#approach'), await top('#which-story'), await top('#why'), await top('#how-it-works'), await top('#portfolio')];
+    assert(order.every((v, i) => i === 0 || v > order[i - 1]), 'section order ' + order.join(','));
+    assert(Math.abs(order[0] - hero) < 2, 'audience section directly after the hero');
+    const text = await p.textContent('main');
+    for (const s of ['Architects', 'Custom builders', 'Interior designers', 'Specialty trades', 'Which story should we tell?', 'Project photography', 'Project film', 'Brand story and interviews', 'not automatic', 'Start with project proof', 'We are the guide', 'Timed for light', 'Deliverables and licensing in writing', 'quoted to its scope']) assert(text.includes(s), 'missing: ' + s);
+    assert(!/guarantee|increase(d)? (sales|leads)|featured in|award-winning/i.test(text), 'unsupported outcome claim');
+    const cta = p.locator('#how-it-works a.btn');
+    assert(await cta.getAttribute('href') === '/contact?type=architecture-design', 'service path CTA');
+    // Compact cards: one asset per project card; each card no taller than ~half a viewport on desktop.
+    const cards = p.locator('#portfolio .pgrid:not(.pgrid--more) > .pgrid__item');
+    const n = await cards.count();
+    assert(n >= 2, 'project cards ' + n);
+    for (let i = 0; i < n; i++) {
+      const c = cards.nth(i);
+      assert(await c.locator('.pgrid__media img, .pgrid__media video').count() === 1, 'one asset per card');
+      assert(/^\/architecture-design\//.test(await c.locator('.pgrid__title a').getAttribute('href')), 'card links to its project page');
+      if (vp.width > 1000) assert((await c.boundingBox()).height < 420, 'card too tall');
+    }
+    if (vp.width > 1000) {
+      const xs = await cards.evaluateAll((els) => new Set(els.map((e) => Math.round(e.getBoundingClientRect().top))).size);
+      assert(xs === 1, 'desktop project cards share one row');
+    }
+    assert(await p.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'overflow');
+    await p.context().close();
+  }
 });
 
 // Screenshots for the handoff

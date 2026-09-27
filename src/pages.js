@@ -722,18 +722,23 @@ ${agentMonthly.length ? `<section class="section section--tint">
   };
 
   // ---------- ARCHITECTURE & DESIGN ----------
+  // Shared by the Architecture & design and Commercial landing grids.
+  const deliveredOf = (items) => {
+    const n = (t) => items.filter(t).length;
+    const films = n((m) => m.type === 'video'); const photos = n((m) => m.type === 'image' && !m.service.includes('drone')); const drone = n((m) => m.service.includes('drone'));
+    return [films ? `Film${films > 1 ? ` (${films})` : ''}` : '', photos ? `Photography${photos > 1 ? ` (${photos})` : ''}` : '', drone ? 'Drone photography' : ''].filter(Boolean);
+  };
+  const repOf = (items) => [...items].sort((x, y) => ((y.type === 'video' && y.orientation === 'horizontal') - (x.type === 'video' && x.orientation === 'horizontal')) || ((y.sortPriority || 0) - (x.sortPriority || 0)))[0];
+  const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
   const archMedia = media.filter((m) => m.category === 'architecture-design');
-  // Grouped by verified project only; media without a project go to a general group (never assigned by guess).
-  const archGroups = (() => {
-    const groups = new Map();
-    for (const m of archMedia) {
-      const project = m.project ? projectBySlug[m.project] : null;
-      const key = project ? project.slug : 'general';
-      if (!groups.has(key)) groups.set(key, { key, name: project ? project.title : 'More architecture and design work', href: project && visible(project) ? projectPath(project) : null, items: [], general: !project });
-      groups.get(key).items.push(m);
-    }
-    return [...groups.values()].sort((a, b) => a.general - b.general);
-  })();
+  // Owner correction, Sep 27 2026: the landing page sells the story first; projects appear as compact cards with
+  // ONE representative asset each (full sets on the project pages). Media without a verified project stay together in
+  // a compact "more work" grid and are never attached to a client by guess.
+  const archCardSizes = '(min-width: 1200px) 24vw, (min-width: 700px) 32vw, 50vw';
+  const archProjects = work.projects.filter((p) => p.category === 'architecture-design' && visible(p))
+    .map((p) => { const items = archMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: deliveredOf(items) }; })
+    .filter((x) => x.items.length);
+  const archMore = archMedia.filter((m) => !m.project || !archProjects.some((x) => x.p.slug === m.project));
   pages['/architecture-design'] = {
     overlay: true,
     body: `${pageHero({
@@ -743,31 +748,84 @@ ${agentMonthly.length ? `<section class="section section--tint">
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Start a Project</a>`,
       video: { loop: 'arch-99-hedges-amagansett', film: 'arch-99-hedges-amagansett' },
     })}
-<section class="section section--ink on-dark" id="portfolio" aria-labelledby="arch-work-h">
+<section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
+  <div class="wrap split">
+    <div class="split__label"><p class="eyebrow">Who this is for</p></div>
+    <div>
+      <h2 class="h2 reveal" id="arch-intro-h">Your next client is judging more than <em>the finished room.</em></h2>
+      <p class="lede">Before they call, the people you want to work with are trying to understand your point of view, the quality of your craft, how you run a project and what it will feel like to work with you. You are the one they are deciding to trust. Our job is to help them see it.</p>
+      <p>That is why we start with questions, not a shot list: who you want to win next, where the media will be used, and what those people need to believe about you. Then we recommend the coverage that fits.</p>
+    </div>
+  </div>
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Project work</p><h2 class="h2 reveal" id="arch-work-h">Recent projects, <em>project by project.</em></h2></div></div>
-    ${join(archGroups, (g) => `
-    <section class="proj-group" aria-labelledby="ag-${esc(g.key)}">
-      <div class="proj-group__head">
-        <h3 class="h3" id="ag-${esc(g.key)}">${esc(g.name)}</h3>
-        <p class="proj-group__meta">${esc(countSummary(g.items))}</p>
-        ${g.href ? `<a class="link-arrow" href="${g.href}">View the project ${arrow}</a>` : ''}
-      </div>
-      <div class="justified">${join(g.items, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div>
-    </section>`)}
+    <ul class="audiences" role="list">
+      <li class="reveal"><h3 class="h4">Architects</h3><p>Your clients are choosing a way of thinking. Show the idea, the proportion and how the building meets its site and its light.</p></li>
+      <li class="reveal"><h3 class="h4">Custom builders</h3><p>Your clients are choosing who they trust with the build. Show the craftsmanship, the details that took care and a site that is run well.</p></li>
+      <li class="reveal"><h3 class="h4">Interior designers</h3><p>Your clients are choosing a sensibility. Show materials, texture and how each room is meant to be lived in.</p></li>
+      <li class="reveal"><h3 class="h4">Specialty trades</h3><p>Your clients, and the architects and builders who refer you, want proof of skill. Show the work up close and the finish it adds to the whole project.</p></li>
+    </ul>
   </div>
 </section>
-<section class="section">
+
+<section class="section section--tint" id="which-story" aria-labelledby="arch-story-h">
   <div class="wrap">
-    <p class="eyebrow">How a project runs</p>
-    <h2 class="h2 reveal">Planned before the camera comes out.</h2>
-    <ol class="process">
-      <li><h3>Brief</h3><p>The project, the design intent, and who will use the media: your portfolio, awards, partners, press or the client.</p></li>
-      <li><h3>Shot plan</h3><p>Timing for light, the spaces and details that matter, and any process or construction story worth telling.</p></li>
-      <li><h3>Usage and licensing</h3><p>Who can use what, where and for how long, agreed in writing before production.</p></li>
-      <li><h3>Production</h3><p>Photography and film on site, coordinated around the homeowner, the build team and the weather.</p></li>
-      <li><h3>Review and delivery</h3><p>An agreed review round, then delivery in the formats each stakeholder needs.</p></li>
+    <p class="eyebrow">Which story should we tell?</p>
+    <h2 class="h2 reveal" id="arch-story-h">Pick the story that wins <em>the next project.</em></h2>
+    <div class="story-guide">
+      <div class="story-guide__item reveal"><p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
+      <div class="story-guide__item reveal"><p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
+      <div class="story-guide__item reveal"><p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
+    </div>
+    <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
+  </div>
+</section>
+
+<section class="section" id="why" aria-labelledby="arch-why-h">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">How we help</p>
+      <h2 class="h2 reveal" id="arch-why-h">You are the hero of this story. <em>We are the guide.</em></h2>
+      <ul class="why-list" role="list">
+        <li><h3 class="h4">Marketing judgment before production</h3><p>We plan around the clients you want and where the media will be used, so the coverage does a job.</p></li>
+        <li><h3 class="h4">Timed for light</h3><p>Exteriors, interiors and twilight are scheduled for when each space looks its best.</p></li>
+        <li><h3 class="h4">Materials and details</h3><p>The joinery, finishes and hardware your clients paid for get the attention they deserve.</p></li>
+        <li><h3 class="h4">Coordinated with everyone on the project</h3><p>We work around homeowners, design teams, builders and the weather, so the shoot does not become your problem.</p></li>
+        <li><h3 class="h4">Deliverables and licensing in writing</h3><p>What you receive, and who can use it where and for how long, is agreed before production.</p></li>
+      </ul>
+      <p class="small muted">Every architecture and design project is quoted to its scope. Coverage, deliverables, usage and licensing are set out in a written estimate.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section--ink on-dark" id="how-it-works" aria-labelledby="arch-path-h">
+  <div class="wrap">
+    <div class="split">
+      <div class="split__label"><p class="eyebrow">How it works</p></div>
+      <div><h2 class="h2 reveal" id="arch-path-h">Three steps from finished project <em>to the work you want next.</em></h2></div>
+    </div>
+    <ol class="steps">
+      <li class="reveal"><span class="steps__n">01 / Tell us</span><h3>Share the project.</h3><p>The project, the location, your timing and the clients you want to reach.</p></li>
+      <li class="reveal"><span class="steps__n">02 / Plan</span><h3>Get a recommendation.</h3><p>We suggest the story and coverage, then send a plan and a written estimate with deliverables and licensing.</p></li>
+      <li class="reveal"><span class="steps__n">03 / Produce</span><h3>We shoot and deliver.</h3><p>Photography and film on site, one agreed review round, then files in the formats each use needs.</p></li>
     </ol>
+    <p class="arch-path__cta"><a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_path">Start a Project</a></p>
+  </div>
+</section>
+
+<section class="section" id="portfolio" aria-labelledby="arch-work-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Selected projects</p><h2 class="h2 reveal" id="arch-work-h">Recent work, <em>one project at a time.</em></h2></div></div>
+    <ul class="pgrid" role="list">${join(archProjects, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
+      <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, archCardSizes) : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, archCardSizes)}</a>`}</div>
+      <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="arch_grid">${esc(x.p.client || x.p.title)}</a></h3>
+      <p class="pgrid__meta">${esc(x.delivered.join(' · '))}${x.p.location ? ` · ${esc(x.p.location)}` : ''}</p>
+      <a class="link-arrow pgrid__go" href="${projectPath(x.p)}" aria-label="View the ${esc(x.p.client || x.p.title)} project">View project ${arrow}</a>
+    </li>`)}</ul>
+    ${archMore.length ? `<h3 class="h4 arch-more__h" id="arch-more-h">More architecture and design work</h3>
+    <ul class="pgrid pgrid--more" role="list" aria-labelledby="arch-more-h">${join(archMore, (m) => `<li class="pgrid__item" data-media="${esc(m.id)}">
+      <div class="pgrid__media">${repFrame(m, archCardSizes)}</div>
+      <p class="pgrid__caption">${esc(m.title)}${m.location && !m.title.includes(m.location) ? `<span>${esc(m.location)}</span>` : ''}</p>
+    </li>`)}</ul>` : ''}
   </div>
 </section>
 <section class="section section--brand on-dark">
@@ -783,12 +841,6 @@ ${agentMonthly.length ? `<section class="section section--tint">
   // James, Sep 26 2026: value proposition after the hero, one short case study, then a compact grid with ONE
   // representative image or inline video per project; each card opens that project's own page. One client per project.
   const comMedia = media.filter((m) => m.category === 'commercial');
-  const deliveredOf = (items) => {
-    const n = (t) => items.filter(t).length;
-    const films = n((m) => m.type === 'video'); const photos = n((m) => m.type === 'image' && !m.service.includes('drone')); const drone = n((m) => m.service.includes('drone'));
-    return [films ? `Film${films > 1 ? ` (${films})` : ''}` : '', photos ? `Photography${photos > 1 ? ` (${photos})` : ''}` : '', drone ? 'Drone photography' : ''].filter(Boolean);
-  };
-  const repOf = (items) => [...items].sort((x, y) => ((y.type === 'video' && y.orientation === 'horizontal') - (x.type === 'video' && x.orientation === 'horizontal')) || ((y.sortPriority || 0) - (x.sortPriority || 0)))[0];
   const comOrder = ['revivaluxe', 'rachel-lynch-pools', 'torella-pools'];
   const comProjects = work.projects.filter((p) => p.category === 'commercial' && visible(p))
     .map((p) => { const items = comMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: deliveredOf(items) }; })
@@ -796,7 +848,6 @@ ${agentMonthly.length ? `<section class="section section--tint">
     .sort((x, y) => ((comOrder.indexOf(x.p.slug) + 1 || 99) - (comOrder.indexOf(y.p.slug) + 1 || 99)));
   // Client blurbs are written with James before launch: review builds show a marked placeholder, production omits it.
   const blurb = (text, what) => (text ? `${esc(text)}${reviewMode ? ` ${needsApproval({ approval: 'pending' }, 'Draft: final client wording to be approved with James')}` : ''}` : (reviewMode ? `<span class="review-placeholder">${esc(what)} to be written with James before launch.</span> ${needsApproval({ approval: 'pending' }, 'Placeholder, not a claim')}` : ''));
-  const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
   const caseStudy = comProjects.find((x) => x.p.slug === 'revivaluxe') || comProjects[0];
   const cp = offers.commercialProperty.filter(visible);
   const b2b = offers.businessMonthly.filter(visible);
