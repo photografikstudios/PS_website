@@ -943,16 +943,16 @@ ${cp.length || b2b.length ? `<section class="section">
   // James, Sep 26 2026: How it works and FAQ follow licreatorstudios.com/how-it-works.
   const csFaq = [
     ['Can I come solo, or with fewer than four guests?', 'Yes. We adjust the setup to suit any number of guests.'],
-    ['How quickly do I receive my files?', 'Your recorded files are sent within 24 hours. If you ask for further editing or social media clips, those are typically delivered within 72 hours.', 'Proposed single delivery promise (24 hours for recorded files, about 72 hours for edits); James to confirm'],
+    ['How quickly do I receive my files?', 'Your recorded live session is sent within 24 hours. If we edit for you, including social media clips, allow about 5 to 7 days.'],
     ['Why would I need further editing?', 'The live cut satisfies most people. Additional editing is there when you want the episode as polished as possible.'],
     ['Will I receive every audio and video file separately?', 'Typically, no. We can record every camera and microphone separately for more in-depth editing; to receive the isolated files, bring a Samsung T5 or T7 SSD for us to record to. Contact us for details.'],
     ['Can I livestream from the studio?', 'Yes. We have fast internet and can stream to any platform.'],
     ['Can you help with uploading and promoting the podcast?', 'Yes. Editing, social media optimization and distribution help are available. Contact us for details.'],
     ['Can I book by the hour, or for less time?', 'No. Podcast sessions are booked in 90-minute blocks. Studio content is booked by the hour with a 2-hour minimum. For longer sessions, please contact us.'],
-    ['What is the cancellation policy?', 'Cancel with at least 48 hours’ notice for a full refund, or with 24 hours’ notice for a 50% refund. Cancellations with less than 24 hours’ notice are not refunded.', 'Cancellation and refund terms from licreatorstudios.com/how-it-works; James to confirm they match Square before this label is lifted'],
+    ['What is the cancellation policy?', 'Cancel with at least 48 hours’ notice for a full refund, or with 24 hours’ notice for a 50% refund. Cancellations with less than 24 hours’ notice are not refunded.',],
   ];
   const csBy = Object.fromEntries(sessions.filter(isApproved).map((x) => [x.id, x]));
-  // Only approved figures are quoted. The single-session price is held (Sep 27 2026) until James chooses $249 or $250.
+  // Only approved figures are quoted. James, Sep 27 2026: the single session is $249.
   const csCtaParts = [
     csBy['podcast-session'] && `Single studio sessions are ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes.`,
     csBy['content-session'] && `Studio content is ${formatUSD(csBy['content-session'].amount)} an hour with a 2-hour minimum.`,
@@ -1045,7 +1045,7 @@ ${cp.length || b2b.length ? `<section class="section">
     <ol class="steps steps--4">
       <li class="reveal"><span class="steps__n">01 / Book</span><h3>Choose your studio and a time.</h3><p>Pick your set, then a date and time that work for you. For longer sessions, contact us.</p></li>
       <li class="reveal"><span class="steps__n">02 / Record</span><h3>Sit back and record.</h3><p>We handle the equipment while you focus on the conversation.</p></li>
-      <li class="reveal"><span class="steps__n">03 / Receive</span><h3>Files within 24 hours.</h3><p>Your recorded files are sent within 24 hours. Further editing and clips typically take up to 72 hours. ${needsApproval({ approval: 'pending' }, 'Proposed single delivery promise; James to confirm')}</p></li>
+      <li class="reveal"><span class="steps__n">03 / Receive</span><h3>Files within 24 hours.</h3><p>Your recorded live session is sent within 24 hours. Edited episodes and clips take about 5 to 7 days.</p></li>
       <li class="reveal"><span class="steps__n">04 / Partner</span><h3>Keep going with us.</h3><p>Add services, improved rates and more end-to-end support when you record regularly.</p></li>
     </ol>
   </div>

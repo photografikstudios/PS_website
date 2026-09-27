@@ -852,16 +852,14 @@ await check('creator studios: story, formats with scope, conversations, process,
   const text = await p.textContent('main');
   for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Files within 24 hours', 'Before you book']) assert(text.includes(s), s);
   assert(await p.locator('.scope-tag--out').count() >= 2, 'separately scoped formats labelled');
-  // Pricing follows licreatorstudios.com/pricing, except the single-session figure: held (Codex S15-16, Sep 27) until
-  // James chooses $249 (current page) or $250 (his earlier approval). No figure for it may reach HTML meanwhile.
-  assert(await p.locator('[data-session="podcast-session"] .needs-approval').count() === 1, 'single session marked pending');
+  // Pricing follows licreatorstudios.com/pricing; James confirmed the $249 single session on Sep 27 2026 (it had been
+  // held after Codex S15-16 because he earlier said $250). The page never claims Square checkout shows these figures.
+  assert(await p.locator('.plan .needs-approval').count() === 0, 'session prices approved');
   const prices = (await p.locator('.plan__price').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim());
-  assert(prices.length === 3 && !/\$/.test(prices[0]) && /\$250 per hour.*2-hour minimum/i.test(prices[1]) && /\$999 per month/i.test(prices[2]), 'session prices shown: ' + prices.join('|'));
-  const html0 = await (await fetch(base + '/creator-studios')).text();
-  assert(!/\$249/.test(html0) && !/\$250 for up to 90|Single studio sessions are \$/.test(html0), 'held single-session price leaked');
-  // One delivery promise across How it works and the FAQ, and the cancellation terms stay under review.
-  assert(!/next day|immediately/i.test(text) && (text.match(/within 24 hours/g) || []).length >= 2, 'single delivery promise');
-  assert(await p.locator('#faq .needs-approval').count() === 2, 'delivery and cancellation answers flagged for James');
+  assert(prices.length === 3 && prices[0].includes('$249') && /\$250 per hour.*2-hour minimum/i.test(prices[1]) && /\$999 per month/i.test(prices[2]), 'session prices shown: ' + prices.join('|'));
+  // James, Sep 27: recorded live session within 24 hours; editing about 5 to 7 days. One promise in both places.
+  assert(!/next day|immediately|72 hours/i.test(text) && (text.match(/within 24 hours/g) || []).length >= 2 && (text.match(/5 to 7 days/g) || []).length >= 2, 'single delivery promise');
+  assert(await p.locator('#faq .needs-approval').count() === 0, 'delivery and cancellation confirmed by James');
   const plans = (await p.locator('.plan').allTextContents()).join(' ');
   for (const t of ['Up to 90 minutes', 'Engineer included', 'Camera operator', 'Two 90-minute sessions per month', 'Up to 10 social media clips', 'start-up package']) assert(plans.includes(t), 'plan detail: ' + t);
   assert(await p.locator('[data-session="recording-editing"] a[href^="/contact?type=creator-studios"]').count() === 1, 'Recording + Editing goes to an inquiry');
@@ -965,7 +963,7 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
 });
 
 // James, Sep 26 2026: About page shows client reviews. Codex S15-16: short curated selection, no empty video slot,
-// public author names only (Hampton Innovation is not re-attributed without James).
+// James confirmed Sep 27 that the Google 'Hampton Innovation' review is Aubri Peele, Brown Harris Stevens (in reserve).
 await check('About reviews: curated verbatim quotes, Google link, no empty video slot, no overflow at 375 px', async () => {
   const tm = JSON.parse(await readFile(new URL('../content/testimonials.json', import.meta.url), 'utf8'));
   const featured = tm.reviews.filter((r) => r.approval === 'approved' && Number.isInteger(r.featured)).sort((a, b) => a.featured - b.featured);
@@ -976,7 +974,6 @@ await check('About reviews: curated verbatim quotes, Google link, no empty video
     const quotes = await p.locator('#reviews .review blockquote p').allTextContents();
     assert(JSON.stringify(quotes) === JSON.stringify(featured.map((r) => r.quote)), 'quotes differ from the curated JSON order/wording');
     const names = await p.locator('#reviews .review__name').allTextContents();
-    assert(!names.includes('Aubri Peele'), 'unconfirmed attribution shown');
     assert(await p.locator('#reviews .reviews__video, #reviews .review-placeholder, #reviews .needs-approval').count() === 0, 'empty video slot or review tag in reviews');
     const rating = p.locator('#reviews .reviews__rating');
     assert(/5\.0/.test(await rating.textContent()) && /google\.com/.test(await rating.getAttribute('href')) && await rating.getAttribute('rel') === 'noopener', 'rating link');
