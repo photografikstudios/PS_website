@@ -759,6 +759,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const archTypes = TYPE_FILTERS.filter((t) => t.id !== 'drone');
   const archTypeCounts = optionCounts(archFacts, { seg: '' }, 'type', archTypes.map((t) => t.id));
   const archVideo = archGallery.find((m) => m.type === 'video');
+  const projCount = (pr) => archMedia.filter((x) => x.project === pr.slug).length;
   const archCard = (m, i) => {
     const pr = m.project && projectBySlug[m.project] && visible(projectBySlug[m.project]) ? projectBySlug[m.project] : null;
     const kind = m.type === 'video' ? 'video' : 'image';
@@ -767,7 +768,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
         <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
         ${kind === 'video' ? playIcon : ''}
       </button>
-      <div class="gcard__meta"><p class="gcard__title">${pr ? `<a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_gallery">${esc(pr.client || pr.title)}</a>` : esc(m.title)}</p><p class="gcard__sub">${esc([(pr?.location || m.location), kind === 'video' ? 'Film' : 'Photo', ...(pr ? segmentsOf(m, projectBySlug).map((id) => segOptions.find((x) => x.id === id)?.label.replace(/s$/, '')) : [])].filter(Boolean).join(' · '))}${pr ? ` · <a class="gcard__go" href="${projectPath(pr)}" aria-label="View the ${esc(pr.client || pr.title)} project">View project →</a>` : ''}</p></div>
+      <div class="gcard__meta"><p class="gcard__title">${pr ? `<a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_gallery">${esc(pr.client || pr.title)}</a>` : esc(m.title)}</p><p class="gcard__sub">${esc([(pr?.location || m.location), pr ? (projCount(pr) > 1 ? `Project · ${projCount(pr)} pieces` : 'Project') : `Single ${kind === 'video' ? 'film' : 'photo'}`, ...(pr ? segmentsOf(m, projectBySlug).map((id) => segOptions.find((x) => x.id === id)?.label.replace(/s$/, '')) : [])].filter(Boolean).join(' · '))}${pr ? ` · <a class="gcard__go" href="${projectPath(pr)}" aria-label="View the ${esc(pr.client || pr.title)} project">View project →</a>` : ''}</p></div>
     </article>`;
   };
   pages['/architecture-design'] = {
@@ -805,16 +806,16 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <h2 class="h2 reveal" id="arch-story-h">Pick the story that wins <em>the next project.</em></h2>
     <div class="story-guide">
       <div class="story-guide__item reveal">${archFig(archPairIds.photo, { sizes: '(min-width: 1000px) 30vw, 100vw', cls: 'story-guide__fig' })}<p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
-      <div class="story-guide__item reveal">${archVideo ? `<a class="story-guide__film" href="?type=video#portfolio" data-track="gallery_filter" data-track-location="arch_story_film"><span class="still still--horizontal"><img src="${esc(galThumb(archVideo))}" alt="" loading="lazy" decoding="async">${playIcon}</span><span class="story-guide__filmcap">Watch the ${esc(archVideo.title.split(':')[0])} film in the gallery</span></a>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
+      <div class="story-guide__item reveal">${archVideo ? `<a class="story-guide__film" href="?type=video#portfolio" data-track="gallery_filter" data-track-location="arch_story_film"><span class="still still--horizontal"><img src="${esc(galThumb(archVideo))}" alt="" loading="lazy" decoding="async">${playIcon}</span><span class="story-guide__filmcap">Watch the ${esc(archVideo.project && projectBySlug[archVideo.project] ? projectBySlug[archVideo.project].title : archVideo.title.split(':')[0])} film below</span></a>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
       <div class="story-guide__item reveal"><p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
     </div>
     <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
   </div>
 </section>
 
-<section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-batch="8" data-batch-phone="4">
+<section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-batch="8" data-batch-phone="6">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Recent work, <em>one project at a time.</em></h2></div></div>
+    <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Projects and <em>photographs.</em></h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter architecture and design work" onsubmit="return false">
       ${segLive.length ? `<div class="filters__field"><label for="ag-segment">Work for</label>
         <select id="ag-segment" name="segment"><option value="">All work</option>${join(segLive, (x) => `<option value="${x.id}">${esc(x.label)} (${segCounts[x.id]})</option>`)}</select></div>` : ''}
@@ -823,11 +824,11 @@ ${agentMonthly.length ? `<section class="section section--tint">
       <button type="reset" class="filters__clear" hidden>Reset filters</button>
     </form>
     <p class="filters__count" id="ag-count" aria-live="polite">${archGallery.length} pieces</p>
-    <p class="regallery__note">We label work by architect, builder or designer once the firm and its role are confirmed. Everything else is under All work. Each project card opens that project's own page with the full set.</p>
+    <p class="regallery__note">Explore project photography and film. Choose a discipline or media type.</p>
     <div class="regallery__grid" id="ag-grid">${join(archGallery, archCard)}</div>
     <div class="empty" id="ag-empty" hidden>
       <p class="h3" id="ag-empty-title">Nothing matches this filter yet.</p>
-      <p>We add work to a group once the firm and its role are confirmed. See everything in the meantime, or ask us for examples like yours.</p>
+      <p>Try another discipline or media type, or ask us for examples like your project.</p>
       <p><button type="button" class="btn btn--gold" data-rg-show-all>Show all work</button></p>
     </div>
     <div class="regallery__more"><button type="button" class="btn btn--light" id="ag-more" hidden>Load more</button></div>

@@ -1077,12 +1077,34 @@ await check('Architecture & design gallery: segment and media filters, counts, r
     const html = await r.text();
     for (const m of work.media.filter((x) => x.project === slug && x.rights === 'approved')) assert(html.includes(m.id) || html.includes(m.src), `${m.id} missing from its project page`);
   }
+  // Codex review of bdfe4d0: visitor-facing copy only; one card per project (99 Hedges grouped); honest link promises.
+  const gtext = await p.locator('#portfolio').textContent();
+  assert(gtext.includes('Explore project photography and film. Choose a discipline or media type.'), 'invitation copy');
+  assert(!/confirmed|we label|once the firm|its role/i.test(gtext), 'internal tagging process shown to visitors');
+  const hedges = await p.locator('#ag-grid .gcard').evaluateAll((es) => es.filter((e) => /99 Hedges/.test(e.textContent)).map((e) => e.dataset.project || 'none'));
+  assert(hedges.length === 1 && hedges[0] === '99-hedges-lane', '99 Hedges is one project card: ' + hedges.join(','));
+  for (const c of await p.locator('#ag-grid .gcard').evaluateAll((es) => es.map((e) => ({ proj: !!e.dataset.project, link: !!e.querySelector('a[href^="/architecture-design/"]'), sub: e.querySelector('.gcard__sub').textContent })))) {
+    assert(c.proj === c.link, 'only project cards promise a project page');
+    if (!c.proj) assert(/Single (photo|film)/.test(c.sub), 'single piece labelled: ' + c.sub);
+    else assert(/Project/.test(c.sub), 'project labelled: ' + c.sub);
+  }
   // Labels are accessible.
   for (const id of ['ag-segment', 'ag-type']) assert(await p.locator(`label[for="${id}"]`).count() === 1, id + ' label');
   await p.context().close();
   const ph = await newPage({ width: 375, height: 812 });
   await ph.goto(base + '/architecture-design?segment=builder');
   assert(await ph.inputValue('#ag-segment') === 'builder' && await ph.locator('#ag-grid .gcard:not([hidden])').count() === 1, 'phone deep link');
+  // A single filtered result uses the full mobile column; several results keep two columns.
+  const one = await ph.locator('#ag-grid .gcard:not([hidden])').boundingBox(); const gridW = (await ph.locator('#ag-grid').boundingBox()).width;
+  assert(one.width > gridW * 0.9, `single result width ${one.width} of ${gridW}`);
+  await ph.selectOption('#ag-segment', '');
+  const widths = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.getBoundingClientRect().width));
+  assert(widths.length > 1 && widths.every((w) => w < gridW * 0.6), 'two compact columns for several results');
+  // The review strip is in the page flow (never fixed over content) and the overlay header clears it.
+  assert(await ph.locator('.review-bar').evaluate((el) => getComputedStyle(el).position) !== 'fixed', 'review strip not fixed');
+  await ph.evaluate(() => scrollTo(0, 0));
+  const rb = await ph.locator('.review-bar').boundingBox(); const hd = await ph.locator('.site-header').boundingBox();
+  assert(hd.y >= rb.y + rb.height - 1, 'header covers the review strip');
   assert(await ph.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'phone overflow');
   await ph.context().close();
 });

@@ -150,6 +150,26 @@
       "segmentSource": "Pending James: the project story refers to 'the designers' and a public contractor listing (BuildZoom) names Peterson & Ramlowtan LLC, so architect/builder/designer is not confirmed from an owner-approved source. Shown under All only."
     },
     {
+      "slug": "99-hedges-lane",
+      "title": "99 Hedges Lane",
+      "shortTitle": "99 Hedges Lane",
+      "client": null,
+      "category": "architecture-design",
+      "location": "Amagansett",
+      "services": [
+        "Architecture film",
+        "Project photography"
+      ],
+      "summary": "A film and photographs of 99 Hedges Lane in Amagansett.",
+      "story": null,
+      "rights": "approved",
+      "rightsNote": "Grouped Sep 27 2026 (Codex review of bdfe4d0) from three already-approved media records that share the 99 Hedges Lane address. No client, firm role or outcome is stated.",
+      "heroOrientation": "horizontal",
+      "path": "/architecture-design/99-hedges-lane",
+      "segments": [],
+      "segmentSource": "Unmapped: the film names designer, architect and builder but not the firms; James to supply."
+    },
+    {
       "slug": "revivaluxe",
       "title": "RevivaLuxe",
       "shortTitle": "RevivaLuxe",
@@ -369,7 +389,7 @@
     {
       "id": "arch-99-hedges-amagansett",
       "type": "video",
-      "project": null,
+      "project": "99-hedges-lane",
       "title": "99 Hedges Lane: designer, architect and builder film",
       "service": [
         "video"
@@ -1303,7 +1323,7 @@
     {
       "id": "ph-99-hedges-4",
       "type": "image",
-      "project": null,
+      "project": "99-hedges-lane",
       "title": "99 Hedges Lane",
       "service": [
         "photography"
@@ -1326,7 +1346,7 @@
     {
       "id": "ph-99-hedges-17",
       "type": "image",
-      "project": null,
+      "project": "99-hedges-lane",
       "title": "99 Hedges Lane, interior",
       "service": [
         "photography"

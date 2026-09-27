@@ -178,3 +178,6 @@ if (ambients.length) {
   setMotion(motionOff, false);
 }
 
+
+// Review builds: keep the overlay header just below the in-flow review strip until the page scrolls.
+{ const rb = document.querySelector('.review-bar'); if (rb) { const set = () => document.body.style.setProperty('--rb-top', `${rb.offsetHeight}px`); set(); addEventListener('resize', set, { passive: true }); } }

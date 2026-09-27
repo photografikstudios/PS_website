@@ -101,6 +101,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
       card.hidden = !show;
     }
     const n = current.length;
+    grid.dataset.shown = String(on.size);
     count.textContent = n === 1 ? '1 piece' : `${n} pieces`;
     empty.hidden = n > 0;
     if (!n) {

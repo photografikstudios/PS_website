@@ -80,7 +80,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 32px; }
 
 /* ---------- Review markers ---------- */
-.review-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: var(--charcoal-3); color: var(--on-dark-muted); font: 400 11px/1.5 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 9px var(--gutter); text-align: center; }
+.review-bar { position: relative; z-index: 60; background: var(--charcoal-3); color: var(--on-dark-muted); font: 400 11px/1.5 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 9px var(--gutter); text-align: center; }
 .review-bar strong { color: var(--ivory); font-weight: 400; }
 .needs-approval { display: inline-block; vertical-align: middle; font: 400 9.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 4px 6px; background: #f3d9a4; color: #4a3600; border: 1px dashed #b98a00; white-space: nowrap; }
 
@@ -112,7 +112,9 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 /* Header over a full-bleed image: transparent until scrolled */
 .has-overlay .site-header { position: fixed; left: 0; right: 0; background: transparent; border-color: transparent; color: var(--ivory); backdrop-filter: none; -webkit-backdrop-filter: none; }
 .has-overlay .site-header.is-scrolled, .has-overlay.menu-open .site-header { background: rgba(244, 242, 235, 0.95); border-color: var(--line); color: var(--charcoal); backdrop-filter: saturate(1.3) blur(12px); -webkit-backdrop-filter: saturate(1.3) blur(12px); }
-.has-overlay .review-bar + .site-header { top: 0; }
+/* Review builds: the review strip sits in the page flow above the header, so it never covers content (Codex, Sep 27). */
+.has-overlay .review-bar + .site-header { top: var(--rb-top, 34px); transition: top .25s var(--ease), background-color .4s var(--ease), border-color .4s var(--ease), color .4s var(--ease); }
+.has-overlay .review-bar + .site-header.is-scrolled { top: 0; }
 
 @media (max-width: 1100px) {
   .menu-toggle { display: inline-flex; }
@@ -718,10 +720,11 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .hero-credit--home { position: absolute; left: 0; right: 0; bottom: clamp(16px, 3vw, 36px); margin: 0 auto; pointer-events: none; z-index: 2; }
 @media (max-width: 700px) { .hero-credit--home { display: none; } }
 /* Review builds: keep hero controls and credits clear of the fixed review bar. */
+.has-review-bar { --review-bar-h: 0px; }
 .has-review-bar .hero .motion-toggle, .has-review-bar .page-hero .motion-toggle { bottom: calc(clamp(16px, 3vw, 36px) + var(--review-bar-h, 56px)); }
 .has-review-bar .hero-credit--home { bottom: calc(clamp(16px, 3vw, 36px) + var(--review-bar-h, 56px)); }
 .has-review-bar .hero__inner, .has-review-bar .page-hero--video .page-hero__inner { padding-bottom: calc(clamp(56px, 8vh, 96px) + var(--review-bar-h, 56px)); }
-@media (max-width: 700px) { .has-review-bar { --review-bar-h: 36px; } }
+@media (max-width: 700px) { .has-review-bar { --review-bar-h: 0px; } }
 /* Hero films move and can be bright: a deeper left-side scrim keeps the headline and lede at AA contrast. */
 .page-hero--video .page-hero__media::after, .hero--video .hero__media::after { background: linear-gradient(90deg, rgba(21,24,22,.88) 0%, rgba(21,24,22,.66) 45%, rgba(21,24,22,.18) 82%), linear-gradient(180deg, rgba(21,24,22,.5) 0%, rgba(21,24,22,0) 24%, rgba(21,24,22,0) 55%, rgba(21,24,22,.78) 100%); }
 @media (max-width: 700px) { .page-hero--video .page-hero__media::after, .hero--video .hero__media::after { background: linear-gradient(180deg, rgba(21,24,22,.55) 0%, rgba(21,24,22,.4) 30%, rgba(21,24,22,.92) 72%); } }
@@ -888,3 +891,5 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 @media (max-width: 800px) { .pair { grid-template-columns: 1fr; } .pair__media--sticky { position: static; } #why .why-list { grid-template-columns: 1fr; } }
 @media (max-width: 620px) { .regallery--arch .regallery__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; } .regallery--arch .gcard__sub { font-size: 12.5px; } }
 .pair-fig figcaption a { display: inline-block; padding: 4px 0; min-height: 24px; }
+/* One filtered result on a phone uses a comfortable full column; several keep two compact columns. */
+@media (max-width: 620px) { .regallery--arch .regallery__grid[data-shown="1"] { grid-template-columns: minmax(0, 1fr); } .regallery--arch .regallery__grid[data-shown="1"] .gcard__title { font-size: 18px; } }
