@@ -1044,7 +1044,7 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   const p = await newPage();
   await p.goto(base + '/architecture-design');
   const shown = () => p.locator('#ag-grid .gcard:not([hidden])').count();
-  const total = await p.locator('#ag-grid .gcard').count();
+  const total = +(await p.textContent('#ag-count')).match(/\d+/)[0];
   assert(total >= 5 && total <= 12 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
   // Only segments with mapped, evidenced projects are offered; nothing is inferred from a house name.
   const segs = await p.locator('#ag-segment option').evaluateAll((os) => os.map((o) => o.value).filter(Boolean));
@@ -1081,8 +1081,21 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   const gtext = await p.locator('#portfolio').textContent();
   assert(gtext.includes('Explore project photography and film. Choose a discipline or media type.'), 'invitation copy');
   assert(!/confirmed|we label|once the firm|its role/i.test(gtext), 'internal tagging process shown to visitors');
-  const hedges = await p.locator('#ag-grid .gcard').evaluateAll((es) => es.filter((e) => /99 Hedges/.test(e.textContent)).map((e) => e.dataset.project || 'none'));
-  assert(hedges.length === 1 && hedges[0] === '99-hedges-lane', '99 Hedges is one project card: ' + hedges.join(','));
+  // A project with a film AND photos appears exactly once in every media view, always linking to the same page
+  // (Codex review of 8184566): All = film lead, Video = film, Photo = a still-led card.
+  const hedgesIn = async (type) => {
+    await p.selectOption('#ag-type', type);
+    return p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.filter((e) => /99 Hedges/.test(e.textContent)).map((e) => ({ kind: e.dataset.kind, proj: e.dataset.project, href: e.querySelector('a[href^="/architecture-design/"]')?.getAttribute('href') })));
+  };
+  for (const [type, kind] of [['', 'video'], ['video', 'video'], ['photo', 'image']]) {
+    const h = await hedgesIn(type);
+    assert(h.length === 1 && h[0].kind === kind && h[0].proj === '99-hedges-lane' && h[0].href === '/architecture-design/99-hedges-lane', `99 Hedges in "${type || 'all'}": ${JSON.stringify(h)}`);
+  }
+  await p.selectOption('#ag-type', 'photo');
+  const photoCount = +(await p.textContent('#ag-type option[value="photo"]')).match(/\((\d+)\)/)[1];
+  assert(photoCount === await p.locator('#ag-grid .gcard:not([hidden])').count() && (await p.textContent('#ag-count')) === `${photoCount} pieces`, 'photo count coherent');
+  await p.selectOption('#ag-type', '');
+  assert((await p.textContent('#ag-count')) === `${total} pieces` && await shown() === total, 'All shows each project once');
   for (const c of await p.locator('#ag-grid .gcard').evaluateAll((es) => es.map((e) => ({ proj: !!e.dataset.project, link: !!e.querySelector('a[href^="/architecture-design/"]'), sub: e.querySelector('.gcard__sub').textContent })))) {
     assert(c.proj === c.link, 'only project cards promise a project page');
     if (!c.proj) assert(/Single (photo|film)/.test(c.sub), 'single piece labelled: ' + c.sub);
@@ -1100,9 +1113,17 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   await ph.selectOption('#ag-segment', '');
   const widths = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.getBoundingClientRect().width));
   assert(widths.length > 1 && widths.every((w) => w < gridW * 0.6), 'two compact columns for several results');
+  await ph.selectOption('#ag-type', 'photo');
+  const pw = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => [e.dataset.project || e.dataset.media, Math.round(e.getBoundingClientRect().width)]));
+  assert(pw.filter(([id]) => id === '99-hedges-lane').length === 1 && pw.every(([, w]) => w < gridW * 0.6), 'phone photo view: ' + JSON.stringify(pw));
+  await ph.evaluate(() => { document.querySelectorAll('.reveal').forEach((e) => e.classList.add('is-in')); document.querySelectorAll('img').forEach((i) => { i.loading = 'eager'; }); });
+  await ph.waitForTimeout(800);
+  await ph.locator('#portfolio').screenshot({ path: shots + 'arch-gallery-photo-375.png' });
+  await ph.selectOption('#ag-type', '');
   // The review strip is in the page flow (never fixed over content) and the overlay header clears it.
   assert(await ph.locator('.review-bar').evaluate((el) => getComputedStyle(el).position) !== 'fixed', 'review strip not fixed');
   await ph.evaluate(() => scrollTo(0, 0));
+  await ph.waitForTimeout(600); // scroll handler + .25s header transition
   const rb = await ph.locator('.review-bar').boundingBox(); const hd = await ph.locator('.site-header').boundingBox();
   assert(hd.y >= rb.y + rb.height - 1, 'header covers the review strip');
   assert(await ph.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'phone overflow');

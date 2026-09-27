@@ -24,7 +24,7 @@ test('filters intersect package and media type', () => {
     { type: 'video', service: ['video', 'drone'], packageIds: ['luxury-media'] },
     { type: 'image', service: ['photography'], packageIds: ['luxury-media', 'signature'] },
     { type: 'image', service: ['photography', 'drone'], packageIds: [] },
-  ].map(facts);
+  ].map((m) => facts(m));
   const n = (f) => items.filter((it) => matches(it, f)).length;
   assert.equal(n({}), 3);
   assert.equal(n({ pkg: 'luxury-media' }), 2);
@@ -62,4 +62,20 @@ test('architecture segments: inherited from the project with evidence, filterabl
   assert.ok(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['builder'] }] }, [])[0].includes('segmentSource'));
   assert.ok(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['architect-guess'], segmentSource: 's' }] }, [])[0].includes('unknown segment'));
   assert.ok(validateMedia({ ...base, media: [{ id: 'm', packageIds: [], published: true, segments: ['builder'] }] }, [])[0].includes('belong on the project'));
+});
+
+test('a project with a film and photos appears once per media view (film lead + photo-only still card)', async () => {
+  const { facts, matches, optionCounts } = await import('../src/lib/gallery-core.js');
+  const lead = facts({ type: 'video' }, ['builder'], ['', 'video']);
+  const still = facts({ type: 'image' }, ['builder'], ['photo']);
+  const single = facts({ type: 'image' });
+  const items = [lead, still, single];
+  const shownFor = (type) => items.filter((f) => matches(f, { type }));
+  assert.deepEqual(shownFor(''), [lead, single]);
+  assert.deepEqual(shownFor('video'), [lead]);
+  assert.deepEqual(shownFor('photo'), [still, single]);
+  assert.deepEqual(optionCounts(items, { seg: '' }, 'type', ['', 'video', 'photo']), { '': 2, video: 1, photo: 2 });
+  assert.deepEqual(optionCounts(items, { type: 'photo' }, 'seg', ['', 'builder']), { '': 2, builder: 1 });
+  // facts() must not treat Array.prototype.map's index/array as segments/views.
+  assert.equal([{ type: 'image' }].map((m) => facts(m))[0].views, undefined);
 });

@@ -10,17 +10,21 @@ export const TYPE_FILTERS = [
 ];
 
 /** Compact per-item facts the browser needs to filter (derived from a media record). */
-export const facts = (m, segments = []) => ({
+export const facts = (m, segments = [], views) => ({
   kind: m.type === 'video' ? 'video' : 'image',
   drone: (m.service || []).includes('drone'),
   packages: m.packageIds || [],
   segments,
+  // Optional: the media-type views ('' = All, 'video', 'photo') a project card appears in. A project with both a film and
+  // photos has two cards: the lead (All + its own type) and a still-led card that appears only under Photo.
+  ...(views ? { views } : {}),
 });
 
 /** Does an item (facts) match the package + type filters? Empty filter = no constraint. */
 export function matches(f, { pkg = '', seg = '', type = '' } = {}) {
   if (pkg && !f.packages.includes(pkg)) return false;
   if (seg && !(f.segments || []).includes(seg)) return false;
+  if (f.views) return f.views.includes(type);
   if (type === 'video' && f.kind !== 'video') return false;
   if (type === 'photo' && f.kind !== 'image') return false;
   if (type === 'drone' && !f.drone) return false;

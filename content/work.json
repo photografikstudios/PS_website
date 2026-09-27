@@ -1324,7 +1324,7 @@
       "id": "ph-99-hedges-4",
       "type": "image",
       "project": "99-hedges-lane",
-      "title": "99 Hedges Lane",
+      "title": "99 Hedges Lane, great room",
       "service": [
         "photography"
       ],
@@ -1334,20 +1334,21 @@
       "thumb": "/v/ph-99-hedges-4-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "99 Hedges Lane",
+      "alt": "Great room with exposed timber trusses and a teal sectional at 99 Hedges Lane",
       "location": "Amagansett",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_labelFix": "Sep 27 2026: title/alt were swapped with ph-99-hedges-17 (this file is the interior)."
     },
     {
       "id": "ph-99-hedges-17",
       "type": "image",
       "project": "99-hedges-lane",
-      "title": "99 Hedges Lane, interior",
+      "title": "99 Hedges Lane, exterior",
       "service": [
         "photography"
       ],
@@ -1357,14 +1358,15 @@
       "thumb": "/v/ph-99-hedges-17-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "99 Hedges Lane, interior",
+      "alt": "Shingled house and red barn beside the driveway at 99 Hedges Lane",
       "location": "Amagansett",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_labelFix": "Sep 27 2026: title/alt were swapped with ph-99-hedges-4 (this file is the exterior)."
     },
     {
       "id": "ph-38-woodland",

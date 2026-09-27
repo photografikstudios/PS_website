@@ -459,7 +459,7 @@ ${join(topicsUsed, (t) => `
   const reItems = editorialOrder(media.filter((m) => m.category === 'real-estate' && (m.type !== 'video' || m.poster)));
   const reCfg = site.galleries?.realEstate || {};
   const reBatch = reCfg.batch || 9;
-  const reFacts = reItems.map(facts);
+  const reFacts = reItems.map((m) => facts(m));
   const pkgOptions = pricing.packages.filter(visible);
   const pkgCounts = optionCounts(reFacts, { type: '' }, 'pkg', ['', ...pkgOptions.map((p) => p.id)]);
   // Only offer a package filter for packages with at least one verified example (James, Sep 25: labels stay blank until checked).
@@ -748,11 +748,22 @@ ${agentMonthly.length ? `<section class="section section--tint">
   // on the project page) plus approved work without a verified project. Segments come from the project, never a house name.
   const archProjects = work.projects.filter((p) => p.category === 'architecture-design' && visible(p))
     .map((p) => ({ p, rep: repOf(archMedia.filter((m) => m.project === p.slug)) })).filter((x) => x.rep);
-  const archGallery = [
-    ...archProjects.map((x) => x.rep),
-    ...editorialOrder(archMedia.filter((m) => !m.project || !projectBySlug[m.project] || !visible(projectBySlug[m.project]))).sort((x, y) => (y.type === 'video') - (x.type === 'video')),
-  ].filter((m) => !archUsed.has(m.id) && (m.type !== 'video' || m.poster));
-  const archFacts = archGallery.map((m) => facts(m, segmentsOf(m, projectBySlug)));
+  // A project with both a film and photos gets a film-led card (All + Video) and a still-led card (Photo only), so each
+  // filtered view shows the project once, with the same project-page destination (Codex review of 8184566).
+  const archEntries = [];
+  for (const x of archProjects) {
+    const pm = archMedia.filter((m) => m.project === x.p.slug && !archUsed.has(m.id) && (m.type !== 'video' || m.poster));
+    const lead = pm.includes(x.rep) ? x.rep : repOf(pm);
+    if (!lead) continue;
+    const still = lead.type === 'video' ? [...pm.filter((m) => m.type === 'image')].sort((u, v) => (v.orientation === 'horizontal') - (u.orientation === 'horizontal') || (v.sortPriority || 0) - (u.sortPriority || 0))[0] : null;
+    archEntries.push({ m: lead, views: still ? ['', 'video'] : null });
+    if (still) archEntries.push({ m: still, views: ['photo'] });
+  }
+  for (const m of editorialOrder(archMedia.filter((m) => !m.project || !projectBySlug[m.project] || !visible(projectBySlug[m.project]))).sort((x, y) => (y.type === 'video') - (x.type === 'video'))) {
+    if (!archUsed.has(m.id) && (m.type !== 'video' || m.poster)) archEntries.push({ m, views: null });
+  }
+  const archGallery = archEntries.map((e) => e.m);
+  const archFacts = archEntries.map((e) => facts(e.m, segmentsOf(e.m, projectBySlug), e.views || undefined));
   const segOptions = (work.taxonomy.segment || []);
   const segCounts = optionCounts(archFacts, { type: '' }, 'seg', ['', ...segOptions.map((x) => x.id)]);
   const segLive = segOptions.filter((x) => segCounts[x.id] > 0);
@@ -760,10 +771,11 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const archTypeCounts = optionCounts(archFacts, { seg: '' }, 'type', archTypes.map((t) => t.id));
   const archVideo = archGallery.find((m) => m.type === 'video');
   const projCount = (pr) => archMedia.filter((x) => x.project === pr.slug).length;
-  const archCard = (m, i) => {
+  const archCard = (m, i, views) => {
     const pr = m.project && projectBySlug[m.project] && visible(projectBySlug[m.project]) ? projectBySlug[m.project] : null;
     const kind = m.type === 'video' ? 'video' : 'image';
-    return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}>
+    // Photo-only variants start hidden so no project appears twice before the script runs.
+    return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${views ? ` data-views="${esc(views.join(' '))}"` : ''}${views && !views.includes('') ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${kind === 'video' ? 'Play' : 'View'} ${esc(pr ? (pr.client || pr.title) : m.title)}">
         <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
         ${kind === 'video' ? playIcon : ''}
@@ -823,9 +835,9 @@ ${agentMonthly.length ? `<section class="section section--tint">
         <select id="ag-type" name="type">${join(archTypes.filter((t) => !t.id || archTypeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}${t.id ? ` (${archTypeCounts[t.id]})` : ''}</option>`)}</select></div>
       <button type="reset" class="filters__clear" hidden>Reset filters</button>
     </form>
-    <p class="filters__count" id="ag-count" aria-live="polite">${archGallery.length} pieces</p>
+    <p class="filters__count" id="ag-count" aria-live="polite">${archFacts.filter((f) => !f.views || f.views.includes('')).length} pieces</p>
     <p class="regallery__note">Explore project photography and film. Choose a discipline or media type.</p>
-    <div class="regallery__grid" id="ag-grid">${join(archGallery, archCard)}</div>
+    <div class="regallery__grid" id="ag-grid">${join(archEntries, (e, i) => archCard(e.m, i, e.views))}</div>
     <div class="empty" id="ag-empty" hidden>
       <p class="h3" id="ag-empty-title">Nothing matches this filter yet.</p>
       <p>Try another discipline or media type, or ask us for examples like your project.</p>
@@ -834,7 +846,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <div class="regallery__more"><button type="button" class="btn btn--light" id="ag-more" hidden>Load more</button></div>
   </div>
   ${lightboxDialog()}
-  ${itemsJson(archGallery)}
+  <script type="application/json" data-gallery-items>${JSON.stringify(archEntries.map((e, i) => ({ ...galleryItem(e.m), ...archFacts[i] }))).replace(/</g, '\\u003c')}</script>
 </section>
 
 <section class="section" id="why" aria-labelledby="arch-why-h">
