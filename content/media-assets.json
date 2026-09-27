@@ -1,10 +1,10 @@
 {
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
-  "recordedFrom": "https://ps-website-rust.vercel.app",
-  "recordedAt": "2026-09-26",
+  "recordedFrom": "local dist/v (MEDIA_ALLOW_ENCODE build)",
+  "recordedAt": "2026-09-27",
   "count": 111,
-  "totalBytes": 282010062,
-  "aggregate": "cf7d49f7964e6f2cbba6abe1239d49605f50b788f517cb0dbc6511f091d24c22",
+  "totalBytes": 282010030,
+  "aggregate": "af77b8ac15e0b281f86ca1d7e4c097ace09423f9b32034927e46877b34545277",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -94,23 +94,23 @@
       "bytes": 143856,
       "sha256": "64e8f664c336eacfc049a0e7499ad5a9084b6dd375c23ca067799b51fcb7cb62"
     },
-    "/v/re-penniman-ln.mp4": {
+    "/v/re-east-end-listing-reel.mp4": {
       "bytes": 14209620,
       "sha256": "80cee8d4670186388ed86fd91378f7b59d3e484f0cac542794ebebb774acf0f2"
     },
-    "/v/re-penniman-ln.webp": {
+    "/v/re-east-end-listing-reel.webp": {
       "bytes": 63300,
       "sha256": "39f3ce971631817cf292f07616434ef0ad5a551c920f297f5dd911c0858d2ebc"
     },
-    "/v/arch-99-hedges-amagansett.mp4": {
+    "/v/arch-yankee-barn-film.mp4": {
       "bytes": 19442069,
       "sha256": "90773a0d72163db71ebbd87fa86ce110669f744c68b0f62ac5d3e7beca4ea861"
     },
-    "/v/arch-99-hedges-amagansett.webp": {
+    "/v/arch-yankee-barn-film.webp": {
       "bytes": 159434,
       "sha256": "4147162a0916813044bbaa515741e96f65241a5ed3e79c7f3b8c615f72d771fc"
     },
-    "/v/arch-99-hedges-amagansett-loop.mp4": {
+    "/v/arch-yankee-barn-film-loop.mp4": {
       "bytes": 2459065,
       "sha256": "47502afd60eda64c769861ba08902c99ad51f30e1d277b46ee1e93b11a780200"
     },
@@ -178,19 +178,19 @@
       "bytes": 73686,
       "sha256": "12cdb3af23980dfadb4a72668e2a41e5fcd143fb55c38b4c8a9b5afe2e685f88"
     },
-    "/v/ph-dune-twilight-pool.webp": {
+    "/v/ph-oceanfront-twilight-pool.webp": {
       "bytes": 223890,
       "sha256": "f9951008f50433dcbcb781480be26c68c87c671489b6ad90744240656a21e077"
     },
-    "/v/ph-dune-twilight-pool-sm.webp": {
+    "/v/ph-oceanfront-twilight-pool-sm.webp": {
       "bytes": 47738,
       "sha256": "697540513dc2721c1372e33ba81187d767ce1b28a3d52de43bcd6d42b7a39305"
     },
-    "/v/ph-dartmouth-twilight.webp": {
+    "/v/ph-hamptons-residence-twilight.webp": {
       "bytes": 521010,
       "sha256": "7c583245dacb212630b484a08d5199aa3bd140ffd55cdecbb916c2c28b64079d"
     },
-    "/v/ph-dartmouth-twilight-sm.webp": {
+    "/v/ph-hamptons-residence-twilight-sm.webp": {
       "bytes": 90128,
       "sha256": "5b77d3db51a198bfe5b7347da03c079b68bc4be3279ddd9681e37be3f35b169c"
     },
@@ -250,51 +250,51 @@
       "bytes": 96922,
       "sha256": "7c3f2c1145f89325bbe2529157467cd35b1af62137b0b4c222765abc2ac5bc2d"
     },
-    "/v/ph-99-hedges-4.webp": {
+    "/v/ph-yankee-barn-great-room.webp": {
       "bytes": 680554,
       "sha256": "3df6f80f7246c8b5f841152bbdf2f6b79a8ae935e7f3cde7c7ee69f19d62e432"
     },
-    "/v/ph-99-hedges-4-sm.webp": {
+    "/v/ph-yankee-barn-great-room-sm.webp": {
       "bytes": 132018,
       "sha256": "0b3d8013cbd791f02def167bb92d4e63e13acd7a41f06dc4086415e129a54f88"
     },
-    "/v/ph-99-hedges-17.webp": {
+    "/v/ph-yankee-barn-exterior.webp": {
       "bytes": 989164,
       "sha256": "76a207ee22b5a4602f39c1feff9446b95d5ec0886bf738d25c2f07cf06a9fc43"
     },
-    "/v/ph-99-hedges-17-sm.webp": {
+    "/v/ph-yankee-barn-exterior-sm.webp": {
       "bytes": 173080,
       "sha256": "0afd3dc0705b2c6d4915e6559089463f5fc10ce547472f566756229c92216c60"
     },
-    "/v/ph-38-woodland.webp": {
+    "/v/ph-peterson-game-room.webp": {
       "bytes": 93988,
       "sha256": "e8402963eb3cbc2221974d28559d6e0ece97715387d8085f0770f65a3b207e54"
     },
-    "/v/ph-38-woodland-sm.webp": {
+    "/v/ph-peterson-game-room-sm.webp": {
       "bytes": 24882,
       "sha256": "bcbf2ed3c9a6120606824478c0fe5077f5ca9246078b27ba87493c669c582550"
     },
-    "/v/ph-142-two-holes.webp": {
+    "/v/ph-peterson-dining.webp": {
       "bytes": 187880,
       "sha256": "ef069a38a675562ce5c600cb536b529cad63dce3c6c023bc304ec8789fc9d7a2"
     },
-    "/v/ph-142-two-holes-sm.webp": {
+    "/v/ph-peterson-dining-sm.webp": {
       "bytes": 47048,
       "sha256": "aadbd2fa8f4849126621699f2de80e34b4a80bace228311008d95c852c33643c"
     },
-    "/v/ph-50-hawthorne.webp": {
+    "/v/ph-kerry-delrose-pool.webp": {
       "bytes": 242836,
       "sha256": "4cef1880ea5c3bddfb4956fd5cb18b7507e5bb5c75e1597ba97e7863a08ca774"
     },
-    "/v/ph-50-hawthorne-sm.webp": {
+    "/v/ph-kerry-delrose-pool-sm.webp": {
       "bytes": 49862,
       "sha256": "720acf4093b5de8b5182ee6ed050a6f8eafcb5e5dcdacf690511afd7823b7e26"
     },
-    "/v/ph-66-exchange.webp": {
+    "/v/ph-barba-waterfront.webp": {
       "bytes": 420340,
       "sha256": "9dd9a4aa013c60f2a2e6f27d0aecb922b62ac85461878ed9cd0ed12cbfd48f36"
     },
-    "/v/ph-66-exchange-sm.webp": {
+    "/v/ph-barba-waterfront-sm.webp": {
       "bytes": 77914,
       "sha256": "c6c26db0d90328e591a6b484f1c0ad804a1c53f706b2f06c12923d7e713aacf6"
     },
@@ -447,9 +447,8 @@
       "sha256": "946c9fd3bc52b7bcc2da3bb0d543ef37884d72c4ff26aaf7cffbb88d652d8624"
     },
     "/v/manifest.json": {
-      "bytes": 4382,
-      "sha256": "42e530a968e59e2bbea81f858db08872c39ab02ee656e66414e4a2418621b282"
+      "bytes": 4350,
+      "sha256": "8cc598a1ef01147460a7f38390ce0b1e2baee1e8c735e2fed28b13c07ed50ec8"
     }
-  },
-  "_withheld": "Sep 26: biz-revivaluxe-tour (3 files) removed, unlicensed soundtrack."
+  }
 }

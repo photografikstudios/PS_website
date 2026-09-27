@@ -276,7 +276,7 @@
     },
     {
       "source": "/work/yankee-home-builders",
-      "destination": "/architecture-design/yankee-home-builders",
+      "destination": "/architecture-design/yankee-barn-builders",
       "permanent": false
     },
     {
@@ -298,6 +298,16 @@
       "source": "/work/:path*",
       "destination": "/#selected-work",
       "permanent": false
+    },
+    {
+      "source": "/architecture-design/yankee-home-builders",
+      "destination": "/architecture-design/yankee-barn-builders",
+      "permanent": true
+    },
+    {
+      "source": "/architecture-design/99-hedges-lane",
+      "destination": "/architecture-design/yankee-barn-builders",
+      "permanent": true
     }
   ]
 }

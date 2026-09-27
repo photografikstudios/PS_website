@@ -174,7 +174,7 @@ export function buildPages(ctx) {
     <div class="paths paths--4">
       ${join([
         { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, horizontal and vertical film, drone, twilight and floor plans.', go: 'Real estate' },
-        { href: '/architecture-design', vid: 'arch-99-hedges-amagansett', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
+        { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
         { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
         { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'Creator Studios' },
       ], (c) => `
@@ -298,7 +298,7 @@ ${splitCta('Ready when you are.')}`,
       overlay: true,
       body: `${(() => {
         // James, Sep 25 2026: Field Notes may open with a rights-approved house photograph (exception to the video-opener rule).
-        const heroPhoto = allMediaById[fn.heroMedia || 'ph-dune-twilight-pool'];
+        const heroPhoto = allMediaById[fn.heroMedia || 'ph-oceanfront-twilight-pool'];
         return pageHero({
           eyebrow: 'Field Notes',
           title: 'Straight answers <em>from the shoot.</em>',
@@ -733,8 +733,8 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const archMedia = media.filter((m) => m.category === 'architecture-design');
   const archById = Object.fromEntries(archMedia.map((m) => [m.id, m]));
   // James, Sep 27 2026: explanation and evidence sit together. Each supporting image is used once on this page;
-  // captions name only what is verified (a house or place, or a client project with its page).
-  const archPairIds = { intro: 'ph-142-two-holes', photo: 'ph-38-woodland', detail: 'peterson-detail' };
+  // captions name the client project (James, Sep 27 2026: no street addresses anywhere), never an address.
+  const archPairIds = { intro: 'ph-peterson-dining', photo: 'ph-yankee-barn-great-room', detail: 'peterson-detail' };
   const archUsed = new Set(Object.values(archPairIds));
   const archFig = (id, { sizes = '(min-width: 900px) 40vw, 100vw', cls = '' } = {}) => {
     const m = archById[id]; if (!m) return '';
@@ -791,7 +791,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       title: 'Your work, presented with <em>the care it was built with.</em>',
       lede: 'Project photography and film for builders, architects, interior designers and specialty trades. We plan coverage around how the work will be used, then define deliverables and licensing before the shoot.',
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Start a Project</a>`,
-      video: { loop: 'arch-99-hedges-amagansett', film: 'arch-99-hedges-amagansett' },
+      video: { loop: 'arch-yankee-barn-film', film: 'arch-yankee-barn-film' },
     })}
 <section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
   <div class="wrap pair">
@@ -827,7 +827,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
 
 <section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-batch="8" data-batch-phone="6">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Projects and <em>photographs.</em></h2></div></div>
+    <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Recent projects, <em>by discipline.</em></h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter architecture and design work" onsubmit="return false">
       ${segLive.length ? `<div class="filters__field"><label for="ag-segment">Work for</label>
         <select id="ag-segment" name="segment"><option value="">All work</option>${join(segLive, (x) => `<option value="${x.id}">${esc(x.label)} (${segCounts[x.id]})</option>`)}</select></div>` : ''}

@@ -181,7 +181,7 @@ await check('portfolios: /work and old project URLs redirect to their service de
     '/work/revivaluxe': '/commercial/revivaluxe',
     '/work/lauryn-koke-daniel-gale-sothebys': '/real-estate/lauryn-koke-daniel-gale-sothebys',
     '/work/property-tour-agent-media': '/agent-content/property-tour-agent-media',
-    '/work/yankee-home-builders': '/architecture-design/yankee-home-builders',
+    '/work/yankee-home-builders': '/architecture-design/yankee-barn-builders', '/architecture-design/yankee-home-builders': '/architecture-design/yankee-barn-builders', '/architecture-design/99-hedges-lane': '/architecture-design/yankee-barn-builders',
     '/work/peterson-ramlowtan': '/architecture-design/peterson-ramlowtan',
     '/work/creator-studios': '/creator-studios/sessions',
     '/portfolio': '/#selected-work',
@@ -508,7 +508,7 @@ await check('compare: keyboard tabs, column choice limit, phone shows two column
 
 // ---------- Real Estate gallery ----------
 // Fixture tags (test only, not real claims): two Luxury Media pieces (one film, one photo) and one Signature film.
-const FIXTURE_TAGS = { 're-hamptons-beachfront': ['luxury-media'], 'ph-dune-twilight-pool': ['luxury-media'], 're-hamptons-calm': ['signature'] };
+const FIXTURE_TAGS = { 're-hamptons-beachfront': ['luxury-media'], 'ph-oceanfront-twilight-pool': ['luxury-media'], 're-hamptons-calm': ['signature'] };
 async function reWithTags(p, path = '/real-estate') {
   await p.route(/\/real-estate(\?.*)?$/, async (route) => {
     const res = await route.fetch();
@@ -727,7 +727,7 @@ await check('nav: Creator Studios replaces Agencies; agency partnerships stay re
   await p.context().close();
 });
 
-const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-99-hedges-amagansett', '/commercial': 'biz-rachel-lynch-pools', '/creator-studios': 'cs-demo-reel' };
+const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-yankee-barn-film', '/commercial': 'biz-rachel-lynch-pools', '/creator-studios': 'cs-demo-reel' };
 await check('primary-nav pages open with a silent autoplaying 16:9 hero video, poster, pause/play control, no Watch the film prompt', async () => {
   for (const [path, id] of Object.entries(heroPages)) {
     const p = await newPage();
@@ -910,7 +910,7 @@ await check('Field Notes opens with a rights-approved house photograph and the P
   const first = p.locator('main > section').first();
   assert(await first.locator('video').count() === 0, 'photo opener, not a reel');
   const src = await first.locator('.page-hero__media img').getAttribute('src');
-  assert(/ph-dune-twilight-pool/.test(src), 'house photo: ' + src);
+  assert(/ph-oceanfront-twilight-pool/.test(src), 'house photo: ' + src);
   assert((await first.locator('.page-hero__media img').getAttribute('alt')).length > 5, 'alt text');
   const href = await p.locator('.fn-card__title a').first().getAttribute('href');
   await p.goto(base + href);
@@ -1045,20 +1045,27 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   await p.goto(base + '/architecture-design');
   const shown = () => p.locator('#ag-grid .gcard:not([hidden])').count();
   const total = +(await p.textContent('#ag-count')).match(/\d+/)[0];
-  assert(total >= 5 && total <= 12 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
+  assert(total >= 4 && total <= 12 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
   // Only segments with mapped, evidenced projects are offered; nothing is inferred from a house name.
   const segs = await p.locator('#ag-segment option').evaluateAll((os) => os.map((o) => o.value).filter(Boolean));
   const mapped = new Set(work.projects.filter((x) => x.category === 'architecture-design' && x.segments?.length).flatMap((x) => x.segments));
   assert(JSON.stringify(segs.sort()) === JSON.stringify([...mapped].sort()), 'segments offered ' + segs.join(','));
-  assert(segs.includes('builder') && !segs.includes('architect') && !segs.includes('designer'), 'only builder is mapped today');
-  assert(work.projects.find((x) => x.slug === 'peterson-ramlowtan').segments.length === 0, 'Peterson not tagged without owner approval');
+  // James, Sep 27 2026: Peterson & Ramlowtan = architect + builder; Yankee Barn Builders = builder; Kerry Delrose = designer; Barba Architectural = architect.
+  assert(JSON.stringify(segs) === JSON.stringify(['architect', 'builder', 'designer']), 'all three disciplines mapped: ' + segs.join(','));
+  const segOf = (slug) => work.projects.find((x) => x.slug === slug).segments.join('+');
+  assert(segOf('peterson-ramlowtan') === 'architect+builder' && segOf('yankee-barn-builders') === 'builder' && segOf('kerry-delrose') === 'designer' && segOf('barba-architectural') === 'architect', 'owner mapping');
+  const bySeg = async (seg) => { await p.selectOption('#ag-segment', seg); return (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).sort().join(','); };
+  assert(await bySeg('architect') === 'barba-architectural,peterson-ramlowtan', 'architects');
+  assert(await bySeg('designer') === 'kerry-delrose', 'designers');
   await p.selectOption('#ag-segment', 'builder');
-  const b = await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project));
-  assert(b.length === 1 && b[0] === 'yankee-home-builders' && (await p.textContent('#ag-count')) === '1 piece', 'builders: Yankee only');
+  const b = (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).sort();
+  assert(b.join(',') === 'peterson-ramlowtan,yankee-barn-builders' && (await p.textContent('#ag-count')) === '2 pieces', 'builders: ' + b.join(','));
   assert(new URL(p.url()).searchParams.get('segment') === 'builder' && await p.isVisible('#portfolio .filters__clear'), 'segment in URL, reset visible');
   await p.selectOption('#ag-type', 'video');
-  assert(await shown() === 0 && await p.isVisible('#ag-empty') && (await p.textContent('#ag-empty-title')) === 'Nothing for Builders in video yet.', 'builder + video empty state: ' + await p.textContent('#ag-empty-title'));
-  assert((await p.textContent('#ag-segment option[value="builder"]')).includes('(0)'), 'segment count follows type');
+  assert(await shown() === 1 && (await p.locator('#ag-grid .gcard:not([hidden])').getAttribute('data-project')) === 'yankee-barn-builders', 'builders + video = the Yankee Barn Builders film');
+  await p.selectOption('#ag-segment', 'designer');
+  assert(await shown() === 0 && await p.isVisible('#ag-empty') && (await p.textContent('#ag-empty-title')) === 'Nothing for Designers in video yet.', 'designer + video empty state: ' + await p.textContent('#ag-empty-title'));
+  assert((await p.textContent('#ag-segment option[value="designer"]')).includes('(0)') && (await p.textContent('#ag-segment option[value="builder"]')).includes('(1)'), 'segment counts follow type');
   await p.click('#portfolio [data-rg-show-all]');
   assert(await p.inputValue('#ag-segment') === '' && await p.inputValue('#ag-type') === 'video' && await shown() >= 1, 'show all keeps media type');
   // Inline film plays in the card, no dialog, with controls.
@@ -1077,7 +1084,7 @@ await check('Architecture & design gallery: segment and media filters, counts, r
     const html = await r.text();
     for (const m of work.media.filter((x) => x.project === slug && x.rights === 'approved')) assert(html.includes(m.id) || html.includes(m.src), `${m.id} missing from its project page`);
   }
-  // Codex review of bdfe4d0: visitor-facing copy only; one card per project (99 Hedges grouped); honest link promises.
+  // Codex review of bdfe4d0 + James Sep 27: visitor copy only; one card per project (Yankee Barn Builders merged); client names, no addresses.
   const gtext = await p.locator('#portfolio').textContent();
   assert(gtext.includes('Explore project photography and film. Choose a discipline or media type.'), 'invitation copy');
   assert(!/confirmed|we label|once the firm|its role/i.test(gtext), 'internal tagging process shown to visitors');
@@ -1085,11 +1092,11 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   // (Codex review of 8184566): All = film lead, Video = film, Photo = a still-led card.
   const hedgesIn = async (type) => {
     await p.selectOption('#ag-type', type);
-    return p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.filter((e) => /99 Hedges/.test(e.textContent)).map((e) => ({ kind: e.dataset.kind, proj: e.dataset.project, href: e.querySelector('a[href^="/architecture-design/"]')?.getAttribute('href') })));
+    return p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.filter((e) => e.dataset.project === 'yankee-barn-builders').map((e) => ({ kind: e.dataset.kind, proj: e.dataset.project, href: e.querySelector('a[href^="/architecture-design/"]')?.getAttribute('href') })));
   };
   for (const [type, kind] of [['', 'video'], ['video', 'video'], ['photo', 'image']]) {
     const h = await hedgesIn(type);
-    assert(h.length === 1 && h[0].kind === kind && h[0].proj === '99-hedges-lane' && h[0].href === '/architecture-design/99-hedges-lane', `99 Hedges in "${type || 'all'}": ${JSON.stringify(h)}`);
+    assert(h.length === 1 && h[0].kind === kind && h[0].proj === 'yankee-barn-builders' && h[0].href === '/architecture-design/yankee-barn-builders', `Yankee Barn Builders in "${type || 'all'}": ${JSON.stringify(h)}`);
   }
   await p.selectOption('#ag-type', 'photo');
   const photoCount = +(await p.textContent('#ag-type option[value="photo"]')).match(/\((\d+)\)/)[1];
@@ -1100,13 +1107,14 @@ await check('Architecture & design gallery: segment and media filters, counts, r
     assert(c.proj === c.link, 'only project cards promise a project page');
     if (!c.proj) assert(/Single (photo|film)/.test(c.sub), 'single piece labelled: ' + c.sub);
     else assert(/Project/.test(c.sub), 'project labelled: ' + c.sub);
+    assert(!/\b\d{1,5} [A-Z][a-z]+/.test(c.sub), 'address in card: ' + c.sub);
   }
   // Labels are accessible.
   for (const id of ['ag-segment', 'ag-type']) assert(await p.locator(`label[for="${id}"]`).count() === 1, id + ' label');
   await p.context().close();
   const ph = await newPage({ width: 375, height: 812 });
-  await ph.goto(base + '/architecture-design?segment=builder');
-  assert(await ph.inputValue('#ag-segment') === 'builder' && await ph.locator('#ag-grid .gcard:not([hidden])').count() === 1, 'phone deep link');
+  await ph.goto(base + '/architecture-design?segment=designer');
+  assert(await ph.inputValue('#ag-segment') === 'designer' && await ph.locator('#ag-grid .gcard:not([hidden])').count() === 1, 'phone deep link');
   // A single filtered result uses the full mobile column; several results keep two columns.
   const one = await ph.locator('#ag-grid .gcard:not([hidden])').boundingBox(); const gridW = (await ph.locator('#ag-grid').boundingBox()).width;
   assert(one.width > gridW * 0.9, `single result width ${one.width} of ${gridW}`);
@@ -1115,7 +1123,7 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   assert(widths.length > 1 && widths.every((w) => w < gridW * 0.6), 'two compact columns for several results');
   await ph.selectOption('#ag-type', 'photo');
   const pw = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => [e.dataset.project || e.dataset.media, Math.round(e.getBoundingClientRect().width)]));
-  assert(pw.filter(([id]) => id === '99-hedges-lane').length === 1 && pw.every(([, w]) => w < gridW * 0.6), 'phone photo view: ' + JSON.stringify(pw));
+  assert(pw.filter(([id]) => id === 'yankee-barn-builders').length === 1 && pw.every(([, w]) => w < gridW * 0.6), 'phone photo view: ' + JSON.stringify(pw));
   await ph.evaluate(() => { document.querySelectorAll('.reveal').forEach((e) => e.classList.add('is-in')); document.querySelectorAll('img').forEach((i) => { i.loading = 'eager'; }); });
   await ph.waitForTimeout(800);
   await ph.locator('#portfolio').screenshot({ path: shots + 'arch-gallery-photo-375.png' });
@@ -1128,6 +1136,22 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   assert(hd.y >= rb.y + rb.height - 1, 'header covers the review strip');
   assert(await ph.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'phone overflow');
   await ph.context().close();
+});
+
+// James, Sep 27 2026: no street addresses anywhere on the site, only client names.
+await check('no street addresses in any page, caption, alt text, URL or media file name', async () => {
+  const { readdir } = await import('node:fs/promises');
+  const dist = new URL('../dist/', import.meta.url).pathname;
+  const walk = async (d) => (await Promise.all((await readdir(d, { withFileTypes: true })).map((e) => (e.isDirectory() ? walk(d + e.name + '/') : [d + e.name])))).flat();
+  const files = await walk(dist);
+  const addr = /\b\d{1,5}[- ][A-Z][a-z]+(?: [A-Z][a-z]+)* (?:Lane|Ln|Road|Rd|Street|St|Place|Pl|Avenue|Ave|Drive|Dr|Court|Ct|Way|Path|Highway|Hwy|Boulevard|Blvd)\b|Hedges Lane|Two Holes|Hawthorne|Exchange Place|Penniman|Dune Road|Woodland|Dartmouth|Vee Jay/;
+  const hits = [];
+  for (const f of files) {
+    const rel = f.slice(dist.length);
+    if (/hedges|woodland|two-holes|hawthorne|exchange|penniman|dune-|dartmouth/i.test(rel.replace(/hedgestone/g, ''))) hits.push('file ' + rel);
+    if (/\.(html|xml|json|txt|vtt)$/.test(f)) { const m = (await readFile(f, 'utf8')).match(addr); if (m) hits.push(`${rel}: ${m[0]}`); }
+  }
+  assert(hits.length === 0, hits.slice(0, 8).join(' | '));
 });
 
 // Screenshots for the handoff

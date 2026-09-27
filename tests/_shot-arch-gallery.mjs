@@ -5,7 +5,7 @@ const server = await start(0); const base = `http://localhost:${server.address()
 const b = await chromium.launch();
 const out = new URL('../docs/screenshots/', import.meta.url).pathname;
 for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
-  for (const [name, q] of [['all', ''], ['builders', '?segment=builder'], ['video', '?type=video'], ['photo', '?type=photo'], ['empty', '?segment=builder&type=video']]) {
+  for (const [name, q] of [['all', ''], ['builders', '?segment=builder'], ['video', '?type=video'], ['photo', '?type=photo'], ['architects', '?segment=architect'], ['designers', '?segment=designer'], ['empty', '?segment=designer&type=video']]) {
     const p = await (await b.newContext({ viewport: vp })).newPage();
     await p.goto(base + '/architecture-design' + q + '#portfolio', { waitUntil: 'networkidle' });
     await p.evaluate(async () => { document.querySelectorAll('.reveal').forEach((e) => e.classList.add('is-in')); document.querySelectorAll('img').forEach((i) => { i.loading = 'eager'; }); await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); const h = document.querySelector('.site-header, header'); if (h) h.style.position = 'absolute'; });

@@ -103,28 +103,29 @@
       "path": "/agent-content/property-tour-agent-media"
     },
     {
-      "slug": "yankee-home-builders",
-      "title": "Yankee Home Builders",
-      "shortTitle": "Yankee Home Builders",
-      "client": "Yankee Home Builders",
+      "slug": "yankee-barn-builders",
+      "title": "Yankee Barn Builders",
+      "shortTitle": "Yankee Barn Builders",
+      "client": "Yankee Barn Builders",
       "category": "architecture-design",
       "location": "Amagansett",
       "services": [
         "Project photography",
         "Architecture film"
       ],
-      "summary": "Project photography and an architecture film documenting exterior form and material detail.",
+      "summary": "Project photography and an architecture film of an Amagansett home by Yankee Barn Builders.",
       "story": "Coverage planned around the builder's portfolio: the full exterior form, the way the house sits on its site and the material details that show the quality of the build.",
       "hero": "/images/photografik-2027/curated/yankee-hero.webp",
       "heroAlt": "Vaulted great room with exposed timber trusses, Amagansett",
       "rights": "approved",
-      "rightsNote": "Approved for display Sept 23 2026. Film needs an MP4 export before it can be shown.",
+      "rightsNote": "Approved for display Sept 23 2026. Film, great room and exterior (formerly listed separately) merged Sep 27 2026.",
       "heroOrientation": "vertical",
-      "path": "/architecture-design/yankee-home-builders",
+      "path": "/architecture-design/yankee-barn-builders",
       "segments": [
         "builder"
       ],
-      "segmentSource": "Client is Yankee Home Builders, a home builder (Codex/James direction, Sep 27 2026)."
+      "segmentSource": "James, Sep 27 2026: Yankee Barn Builders is the builder; the former 99 Hedges film and photos are the same client and house (merged).",
+      "_renamed": "Was \"Yankee Home Builders\" (/architecture-design/yankee-home-builders); James, Sep 27 2026. Old URL and /architecture-design/99-hedges-lane redirect here."
     },
     {
       "slug": "peterson-ramlowtan",
@@ -139,35 +140,60 @@
         "Exteriors"
       ],
       "summary": "Architecture, interior and exterior photography documenting a finished residence.",
-      "story": "A finished residence photographed the way the designers think about it: light, proportion and how each space leads to the next.",
+      "story": "A finished residence photographed the way its architects and builders think about it: light, proportion and how each space leads to the next.",
       "hero": "/images/photografik-2027/curated/peterson-hero.webp",
       "heroAlt": "Walnut kitchen in an East Hampton residence by Peterson & Ramlowtan",
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026.",
       "heroOrientation": "horizontal",
       "path": "/architecture-design/peterson-ramlowtan",
-      "segments": [],
-      "segmentSource": "Pending James: the project story refers to 'the designers' and a public contractor listing (BuildZoom) names Peterson & Ramlowtan LLC, so architect/builder/designer is not confirmed from an owner-approved source. Shown under All only."
+      "segments": [
+        "architect",
+        "builder"
+      ],
+      "segmentSource": "James, Sep 27 2026: Peterson & Ramlowtan are architects and builders in one."
     },
     {
-      "slug": "99-hedges-lane",
-      "title": "99 Hedges Lane",
-      "shortTitle": "99 Hedges Lane",
-      "client": null,
+      "slug": "kerry-delrose",
+      "title": "Kerry Delrose",
+      "shortTitle": "Kerry Delrose",
+      "client": "Kerry Delrose",
       "category": "architecture-design",
-      "location": "Amagansett",
+      "location": "Southampton",
       "services": [
-        "Architecture film",
         "Project photography"
       ],
-      "summary": "A film and photographs of 99 Hedges Lane in Amagansett.",
+      "summary": "Project photography for designer Kerry Delrose.",
       "story": null,
       "rights": "approved",
-      "rightsNote": "Grouped Sep 27 2026 (Codex review of bdfe4d0) from three already-approved media records that share the 99 Hedges Lane address. No client, firm role or outcome is stated.",
+      "rightsNote": "Photo already approved for display; client named by James, Sep 27 2026.",
       "heroOrientation": "horizontal",
-      "path": "/architecture-design/99-hedges-lane",
-      "segments": [],
-      "segmentSource": "Unmapped: the film names designer, architect and builder but not the firms; James to supply."
+      "path": "/architecture-design/kerry-delrose",
+      "segments": [
+        "designer"
+      ],
+      "segmentSource": "James, Sep 27 2026: this project is for designer Kerry Delrose."
+    },
+    {
+      "slug": "barba-architectural",
+      "title": "Barba Architectural",
+      "shortTitle": "Barba Architectural",
+      "client": "Barba Architectural",
+      "category": "architecture-design",
+      "location": "Westhampton Beach",
+      "services": [
+        "Project photography"
+      ],
+      "summary": "Project photography for Barba Architectural.",
+      "story": null,
+      "rights": "approved",
+      "rightsNote": "Photo already approved for display; client named by James, Sep 27 2026.",
+      "heroOrientation": "horizontal",
+      "path": "/architecture-design/barba-architectural",
+      "segments": [
+        "architect"
+      ],
+      "segmentSource": "James, Sep 27 2026: this project is for the architect Barba Architectural."
     },
     {
       "slug": "revivaluxe",
@@ -387,24 +413,24 @@
       "sortPriority": 0
     },
     {
-      "id": "arch-99-hedges-amagansett",
+      "id": "arch-yankee-barn-film",
       "type": "video",
-      "project": "99-hedges-lane",
-      "title": "99 Hedges Lane: designer, architect and builder film",
+      "project": "yankee-barn-builders",
+      "title": "Yankee Barn Builders film",
       "service": [
         "video"
       ],
       "category": "architecture-design",
       "orientation": "horizontal",
-      "src": "/v/arch-99-hedges-amagansett.mp4",
-      "poster": "/v/arch-99-hedges-amagansett.webp",
+      "src": "/v/arch-yankee-barn-film.mp4",
+      "poster": "/v/arch-yankee-barn-film.webp",
       "duration": 104,
       "dialogue": false,
       "captions": null,
       "transcript": null,
       "featured": true,
       "rights": "approved",
-      "alt": null,
+      "alt": "Designer, architect and builder film of an Amagansett home by Yankee Barn Builders",
       "location": "Amagansett",
       "client": null,
       "source": "drive",
@@ -412,7 +438,7 @@
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
-      "_segmentNote": "Film involves designer, architect and builder but is not an attributed client project; no segment until James confirms the firms and rights."
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
       "id": "agent-market-insight",
@@ -469,15 +495,15 @@
     {
       "id": "yankee-lead",
       "type": "image",
-      "project": "yankee-home-builders",
-      "title": "Yankee Home Builders",
+      "project": "yankee-barn-builders",
+      "title": "Yankee Barn Builders",
       "service": [
         "photography"
       ],
       "category": "architecture-design",
       "orientation": "horizontal",
       "src": "/images/photografik-2027/curated/yankee-card.webp",
-      "alt": "Great room with tall windows in an Amagansett home by Yankee Home Builders",
+      "alt": "Great room with tall windows in an Amagansett home by Yankee Barn Builders",
       "featured": true,
       "rights": "approved",
       "published": true,
@@ -673,18 +699,18 @@
       "_rightsNote": "James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed. Withheld from every build until the film has licensed music or a silent/re-scored version is approved. (Lyrics themselves were acceptable.)"
     },
     {
-      "id": "re-penniman-ln",
+      "id": "re-east-end-listing-reel",
       "type": "video",
       "project": null,
-      "title": "Penniman Lane listing reel",
+      "title": "East End listing reel",
       "service": [
         "video",
         "drone"
       ],
       "category": "real-estate",
       "orientation": "vertical",
-      "src": "/v/re-penniman-ln.mp4",
-      "poster": "/v/re-penniman-ln.webp",
+      "src": "/v/re-east-end-listing-reel.mp4",
+      "poster": "/v/re-east-end-listing-reel.webp",
       "duration": 83,
       "dialogue": false,
       "captions": null,
@@ -698,7 +724,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
       "id": "re-hamptons-aesthetic",
@@ -1113,50 +1140,52 @@
       "sortPriority": 0
     },
     {
-      "id": "ph-dune-twilight-pool",
+      "id": "ph-oceanfront-twilight-pool",
       "type": "image",
       "project": null,
-      "title": "Dune Road estate at twilight",
+      "title": "Oceanfront estate at twilight",
       "service": [
         "photography"
       ],
       "category": "real-estate",
       "orientation": "horizontal",
-      "src": "/v/ph-dune-twilight-pool.webp",
-      "thumb": "/v/ph-dune-twilight-pool-sm.webp",
+      "src": "/v/ph-oceanfront-twilight-pool.webp",
+      "thumb": "/v/ph-oceanfront-twilight-pool-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "Dune Road estate at twilight",
+      "alt": "Oceanfront estate and pool at twilight",
       "location": "The Hamptons",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
-      "id": "ph-dartmouth-twilight",
+      "id": "ph-hamptons-residence-twilight",
       "type": "image",
       "project": null,
-      "title": "Dartmouth residence, twilight",
+      "title": "Hamptons residence at twilight",
       "service": [
         "photography"
       ],
       "category": "real-estate",
       "orientation": "horizontal",
-      "src": "/v/ph-dartmouth-twilight.webp",
-      "thumb": "/v/ph-dartmouth-twilight-sm.webp",
+      "src": "/v/ph-hamptons-residence-twilight.webp",
+      "thumb": "/v/ph-hamptons-residence-twilight-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "Dartmouth residence, twilight",
+      "alt": "Hamptons residence and lawn at twilight",
       "location": "The Hamptons",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_addressRemoved": "James, Sep 27 2026: no street names or addresses; \"Dartmouth\" removed as a probable street name."
     },
     {
       "id": "ph-hampton-aerial-pool-beach",
@@ -1321,20 +1350,20 @@
       "sortPriority": 0
     },
     {
-      "id": "ph-99-hedges-4",
+      "id": "ph-yankee-barn-great-room",
       "type": "image",
-      "project": "99-hedges-lane",
-      "title": "99 Hedges Lane, great room",
+      "project": "yankee-barn-builders",
+      "title": "Yankee Barn Builders, great room",
       "service": [
         "photography"
       ],
       "category": "architecture-design",
       "orientation": "vertical",
-      "src": "/v/ph-99-hedges-4.webp",
-      "thumb": "/v/ph-99-hedges-4-sm.webp",
+      "src": "/v/ph-yankee-barn-great-room.webp",
+      "thumb": "/v/ph-yankee-barn-great-room-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "Great room with exposed timber trusses and a teal sectional at 99 Hedges Lane",
+      "alt": "Great room with exposed timber trusses and a teal sectional in an Amagansett home by Yankee Barn Builders",
       "location": "Amagansett",
       "client": null,
       "source": "drive",
@@ -1342,23 +1371,23 @@
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
-      "_labelFix": "Sep 27 2026: title/alt were swapped with ph-99-hedges-17 (this file is the interior)."
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
-      "id": "ph-99-hedges-17",
+      "id": "ph-yankee-barn-exterior",
       "type": "image",
-      "project": "99-hedges-lane",
-      "title": "99 Hedges Lane, exterior",
+      "project": "yankee-barn-builders",
+      "title": "Yankee Barn Builders, exterior",
       "service": [
         "photography"
       ],
       "category": "architecture-design",
       "orientation": "horizontal",
-      "src": "/v/ph-99-hedges-17.webp",
-      "thumb": "/v/ph-99-hedges-17-sm.webp",
+      "src": "/v/ph-yankee-barn-exterior.webp",
+      "thumb": "/v/ph-yankee-barn-exterior-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "Shingled house and red barn beside the driveway at 99 Hedges Lane",
+      "alt": "Shingled house and red barn beside the driveway of an Amagansett home by Yankee Barn Builders",
       "location": "Amagansett",
       "client": null,
       "source": "drive",
@@ -1366,99 +1395,103 @@
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
-      "_labelFix": "Sep 27 2026: title/alt were swapped with ph-99-hedges-4 (this file is the exterior)."
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
-      "id": "ph-38-woodland",
+      "id": "ph-peterson-game-room",
       "type": "image",
-      "project": null,
-      "title": "38 Woodland",
+      "project": "peterson-ramlowtan",
+      "title": "Peterson & Ramlowtan, game room",
       "service": [
         "photography"
       ],
       "category": "architecture-design",
       "orientation": "horizontal",
-      "src": "/v/ph-38-woodland.webp",
-      "thumb": "/v/ph-38-woodland-sm.webp",
+      "src": "/v/ph-peterson-game-room.webp",
+      "thumb": "/v/ph-peterson-game-room-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "38 Woodland",
+      "alt": "Lower-level game room with a billiards table and wood-slat walls",
       "location": "Southampton",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
-      "id": "ph-142-two-holes",
+      "id": "ph-peterson-dining",
       "type": "image",
-      "project": null,
-      "title": "142 Two Holes of Water",
+      "project": "peterson-ramlowtan",
+      "title": "Peterson & Ramlowtan, dining room",
       "service": [
         "photography"
       ],
       "category": "architecture-design",
       "orientation": "horizontal",
-      "src": "/v/ph-142-two-holes.webp",
-      "thumb": "/v/ph-142-two-holes-sm.webp",
+      "src": "/v/ph-peterson-dining.webp",
+      "thumb": "/v/ph-peterson-dining-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "142 Two Holes of Water",
+      "alt": "Dining room seen through an arched opening, with a mural wall and a blue sofa",
       "location": "East Hampton",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
-      "id": "ph-50-hawthorne",
+      "id": "ph-kerry-delrose-pool",
       "type": "image",
-      "project": null,
-      "title": "50 Hawthorne",
+      "project": "kerry-delrose",
+      "title": "Kerry Delrose, pool terrace",
       "service": [
         "photography"
       ],
       "category": "architecture-design",
       "orientation": "horizontal",
-      "src": "/v/ph-50-hawthorne.webp",
-      "thumb": "/v/ph-50-hawthorne-sm.webp",
+      "src": "/v/ph-kerry-delrose-pool.webp",
+      "thumb": "/v/ph-kerry-delrose-pool-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "50 Hawthorne",
+      "alt": "Pool terrace with white umbrellas overlooking the ocean",
       "location": "Southampton",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
-      "id": "ph-66-exchange",
+      "id": "ph-barba-waterfront",
       "type": "image",
-      "project": null,
-      "title": "66 Exchange Place",
+      "project": "barba-architectural",
+      "title": "Barba Architectural, waterfront residence",
       "service": [
         "photography"
       ],
       "category": "architecture-design",
       "orientation": "horizontal",
-      "src": "/v/ph-66-exchange.webp",
-      "thumb": "/v/ph-66-exchange-sm.webp",
+      "src": "/v/ph-barba-waterfront.webp",
+      "thumb": "/v/ph-barba-waterfront-sm.webp",
       "featured": false,
       "rights": "approved",
-      "alt": "66 Exchange Place",
+      "alt": "Shingled waterfront residence with a private dock",
       "location": "Westhampton Beach",
       "client": null,
       "source": "drive",
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only."
     },
     {
       "id": "ph-rachel-lynch-infinity",

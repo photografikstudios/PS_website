@@ -1,18 +1,18 @@
 
-1280px  images loaded 11/11  overflow 0  page 7490
+1280px  images loaded 10/10  overflow 0  page 7321
   page-hero page-hero--image page-he top 38 h 814
-  approach                           top 851 h 967
-  which-story                        top 1818 h 1176
-  portfolio                          top 2994 h 1250
-  why                                top 4244 h 1243
-  how-it-works                       top 5487 h 784
-  section section--brand on-dark     top 6271 h 570
+  approach                           top 851 h 980
+  which-story                        top 1831 h 1251
+  portfolio                          top 3082 h 993
+  why                                top 4075 h 1243
+  how-it-works                       top 5318 h 784
+  section section--brand on-dark     top 6102 h 570
 
-375px  images loaded 11/11  overflow 0  page 9867
-  page-hero page-hero--image page-he top 28 h 796
-  approach                           top 824 h 1609
-  which-story                        top 2433 h 1878
-  portfolio                          top 4311 h 1232
-  why                                top 5543 h 1661
-  how-it-works                       top 7204 h 1094
-  section section--brand on-dark     top 8297 h 446
+375px  images loaded 10/10  overflow 0  page 9824
+  page-hero page-hero--image page-he top 28 h 780
+  approach                           top 808 h 1661
+  which-story                        top 2469 h 1953
+  portfolio                          top 4423 h 1078
+  why                                top 5501 h 1661
+  how-it-works                       top 7161 h 1094
+  section section--brand on-dark     top 8255 h 446
