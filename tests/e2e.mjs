@@ -959,6 +959,29 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
   await p.context().close();
 });
 
+// James, Sep 26 2026: About page shows client reviews (verbatim Google and site testimonials) and a video testimonial slot.
+await check('About reviews: verbatim quotes, Google rating link, no overflow at 375 px', async () => {
+  const tm = JSON.parse(await readFile(new URL('../content/testimonials.json', import.meta.url), 'utf8'));
+  for (const vp of [{ width: 1440, height: 1000 }, { width: 375, height: 800 }]) {
+    const p = await newPage(vp);
+    await p.goto(base + '/about');
+    const quotes = await p.locator('#reviews .review blockquote p').allTextContents();
+    assert(quotes.length === tm.reviews.filter((r) => r.approval === 'approved').length, 'review count ' + quotes.length);
+    for (const r of tm.reviews) assert(quotes.includes(r.quote), 'quote altered or missing: ' + r.id);
+    const rating = p.locator('#reviews .reviews__rating');
+    assert(/5\.0/.test(await rating.textContent()) && /google\.com/.test(await rating.getAttribute('href')), 'rating link');
+    assert(await rating.getAttribute('rel') === 'noopener', 'rel');
+    const overflow = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    assert(overflow <= 0, 'horizontal overflow ' + overflow);
+    await p.evaluate(() => { document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-in')); document.querySelector('.site-header, header')?.style.setProperty('position', 'static'); });
+    await p.waitForTimeout(1300);
+    await p.locator('#reviews').screenshot({ path: shots + `about-reviews-${vp.width}.png`, animations: 'disabled' });
+    await p.context().close();
+  }
+  const html = await (await fetch(base + '/about')).text();
+  assert(!/AggregateRating/.test(html), 'no self-serving review schema');
+});
+
 // Screenshots for the handoff
 for (const [name, path, vp] of [['desktop-pricing', '/real-estate/pricing?sqft=3200', { width: 1440, height: 1100 }], ['mobile-pricing', '/real-estate/pricing?sqft=5501', { width: 390, height: 1400 }], ['desktop-work', '/real-estate#portfolio', { width: 1440, height: 1100 }], ['mobile-work', '/commercial#portfolio', { width: 390, height: 1400 }]]) {
   const p = await newPage(vp);

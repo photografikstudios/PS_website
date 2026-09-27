@@ -5,7 +5,7 @@ import { facts, editorialOrder, TYPE_FILTERS, optionCounts } from './lib/gallery
 const arrow = '<span aria-hidden="true">→</span>';
 
 export function buildPages(ctx) {
-  const { site, pricing, work, offers, faqs, img, videoPlayer, needsApproval, visible, ambient, reviewMode } = ctx;
+  const { site, pricing, work, offers, faqs, testimonials, img, videoPlayer, needsApproval, visible, ambient, reviewMode } = ctx;
   const booking = site.destinations.booking.href;
   const bookBtn = (loc, label = 'Book a Shoot', cls = 'btn btn--solid') =>
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
@@ -1111,6 +1111,34 @@ ${csRecent.length ? `<section class="section section--ink on-dark" id="portfolio
   }
 
   // ---------- ABOUT ----------
+  // Reviews: verbatim quotes from content/testimonials.json (Google Business Profile and the live site's testimonial block).
+  const tm = testimonials || { reviews: [] };
+  const tmReviews = tm.reviews.filter((r) => r.approval === 'approved' || reviewMode);
+  const tmVideo = tm.video?.id ? work.media.find((m) => m.id === tm.video.id && m.rights === 'approved') : null;
+  const tmVideoBlock = tmVideo
+    ? `<div class="reviews__video reveal">${videoPlayer(tmVideo, { sizes: '(min-width: 900px) 40vw, 90vw' })}</div>`
+    : (reviewMode ? `<div class="reviews__video reviews__video--slot"><p class="review-placeholder">Client video testimonial goes here once the file is confirmed with James.</p> ${needsApproval({ approval: 'pending' }, 'Video testimonial file not yet supplied')}</div>` : '');
+  const g = tm.google;
+  const aboutReviews = tmReviews.length ? `
+<section class="section reviews" id="reviews" aria-labelledby="reviews-h">
+  <div class="wrap">
+    <div class="reviews__head">
+      <div>
+        <p class="eyebrow">Client reviews</p>
+        <h2 class="h2 reveal" id="reviews-h">In our clients’ words.</h2>
+      </div>
+      ${g ? `<a class="reviews__rating" href="${esc(g.href)}" target="_blank" rel="noopener" data-track="reviews_click" data-track-location="about_reviews_rating"><span class="reviews__score">${esc(g.rating.toFixed(1))}</span><span class="reviews__stars" aria-hidden="true">★★★★★</span><span class="reviews__count">${esc(String(g.count))} Google reviews <span class="sr-only">(opens Google)</span></span></a>` : ''}
+    </div>
+    <div class="reviews__body${tmVideoBlock ? ' reviews__body--video' : ''}">
+      ${tmVideoBlock}
+      <ul class="reviews__list" role="list">
+        ${tmReviews.map((r) => `<li class="review reveal"><figure><blockquote><p>${esc(r.quote)}</p></blockquote><figcaption><span class="review__name">${esc(r.name)}</span>${r.org ? `<span class="review__org">${esc(r.org)}</span>` : ''}<span class="review__src">${r.source === 'google' ? 'Google review' : 'Client testimonial'}</span></figcaption></figure></li>`).join('')}
+      </ul>
+    </div>
+    ${g ? `<p class="reviews__more"><a class="link-arrow" href="${esc(g.href)}" target="_blank" rel="noopener" data-track="reviews_click" data-track-location="about_reviews_more">Read all our Google reviews ${arrow}</a></p>` : ''}
+  </div>
+</section>` : '';
+
   pages['/about'] = {
     overlay: true,
     body: `${pageHero({
@@ -1144,6 +1172,7 @@ ${csRecent.length ? `<section class="section section--ink on-dark" id="portfolio
     </div>
   </div>
 </section>
+${aboutReviews}
 ${splitCta('Let us help with the next one.')}`,
   };
 

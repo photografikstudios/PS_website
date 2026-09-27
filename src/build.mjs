@@ -30,8 +30,8 @@ const siteMode = process.env.SITE_MODE || (vercelEnv === 'production' ? 'product
 const reviewMode = siteMode !== 'production';
 const onVercel = !!process.env.VERCEL && process.env.LOCAL_IMAGES !== '1';
 
-const [site, pricing, work, offers, faqs, seo, fieldNotes, legacyArticles] = await Promise.all(
-  ['site.json', 'pricing.json', 'work.json', 'offers.json', 'faqs.json', 'seo.json', 'field-notes.json', 'legacy-articles.json'].map(readJSON),
+const [site, pricing, work, offers, faqs, seo, fieldNotes, legacyArticles, testimonials] = await Promise.all(
+  ['site.json', 'pricing.json', 'work.json', 'offers.json', 'faqs.json', 'seo.json', 'field-notes.json', 'legacy-articles.json', 'testimonials.json'].map(readJSON),
 );
 const fnErrors = validateFieldNotes(fieldNotes, legacyArticles, work);
 if (fnErrors.length) { console.error('Field Notes errors:\n - ' + fnErrors.join('\n - ')); process.exit(1); }
@@ -76,7 +76,7 @@ if (!reviewMode) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, fieldNotes, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.
 if (!pages['/field-notes']) {
