@@ -792,3 +792,16 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
   .cs-formats { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) { .cs-formats { grid-template-columns: 1fr; } .cs-recent { grid-template-columns: 1fr 1fr; gap: 12px; } }
+
+/* Creator Studios sessions and FAQ (James, Sep 26 2026: licreatorstudios.com pricing and how-it-works) */
+.cs-sessions--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .cs-sessions--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .cs-sessions--3 { grid-template-columns: 1fr; } }
+.plan__unit { font: 400 11px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.plan__min { display: block; margin-top: 6px; }
+.plan__list { margin: 14px 0 16px; padding: 0; list-style: none; }
+.plan__list li { padding: 7px 0 7px 18px; border-top: 1px solid var(--line); position: relative; font-size: 15.5px; }
+.plan__list li::before { content: ""; position: absolute; left: 2px; top: 16px; width: 6px; height: 6px; background: var(--rust); border-radius: 50%; }
+.plan__cta { margin-top: 18px; }
+.cs-faq { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
+@media (max-width: 860px) { .cs-faq { grid-template-columns: 1fr; } }

@@ -175,7 +175,7 @@ export function buildPages(ctx) {
       ${join([
         { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, horizontal and vertical film, drone, twilight and floor plans.', go: 'Real estate' },
         { href: '/architecture-design', vid: 'arch-99-hedges-amagansett', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
-        { href: '/commercial', vid: 'biz-revivaluxe-tour', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
+        { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
         { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'Creator Studios' },
       ], (c) => `
       <a class="path reveal" href="${c.href}">
@@ -932,13 +932,29 @@ ${cp.length || b2b.length ? `<section class="section">
   const csFrom = sessions.filter(isApproved).reduce((lo, x) => (lo && lo < x.amount ? lo : x.amount), 0);
   const csStart = (loc, label = 'Book a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}"${creatorExternal} data-track="creator_click" data-track-location="${loc}">${label}${creatorExternal ? '<span class="sr-only"> (opens Long Island Creator Studios booking in a new tab)</span>' : ''}</a>`;
   const csBookingNote = `<p class="small booking-note">Studio sessions are booked through Long Island Creator Studios in Bohemia on Square. Choose your session and time there. Not sure which session fits? <a href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_inquiry">Ask us first</a>.</p>`;
-  const scope = (included) => `<span class="scope-tag scope-tag--${included ? 'in' : 'out'}">${included ? 'Part of a session' : 'Scoped separately'}</span>`;
+  const scope = (included) => `<span class="scope-tag scope-tag--${included ? 'in' : 'out'}">${included ? 'Part of a session' : 'With Recording + Editing, or by quote'}</span>`;
   // James, Sep 26 2026 (page density): Recent Sessions shows a couple of strong examples; the other approved
   // photos and clips sit beside the section they explain. Reels are a temporary selection and will be replaced.
   const csById = Object.fromEntries(media.filter((m) => m.category === 'creator-studios').map((m) => [m.id, m]));
   const csCard = (id) => (csById[id] ? mediaCard(csById[id], { sizes: '(min-width: 900px) 30vw, 80vw' }) : '');
   const csFig = (id) => { const m = csById[id]; return m ? `<figure class="cs-fig cs-fig--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 40vw, 100vw' })}<figcaption>${esc(m.title)}</figcaption></figure>` : ''; };
   const csRecent = ['cs-noah-knows-short', 'cs-tick'].map((id) => csById[id]).filter(Boolean);
+  const csSessionPhoto = { 'podcast-session': 'cs-ph-island-federal', 'content-session': 'cs-ph-solo-couch', 'recording-editing': 'cs-ph-cc-ep20' };
+  // James, Sep 26 2026: How it works and FAQ follow licreatorstudios.com/how-it-works.
+  const csFaq = [
+    ['Can I come solo, or with fewer than four guests?', 'Yes. We adjust the setup to suit any number of guests.'],
+    ['How quickly do I receive my files?', 'An initial video with the live cuts is available the next day. If you ask for further editing or social media clips, those are typically delivered within 72 hours.'],
+    ['Why would I need further editing?', 'The live cut satisfies most people. Additional editing is there when you want the episode as polished as possible.'],
+    ['Will I receive every audio and video file separately?', 'Typically, no. We can record every camera and microphone separately for more in-depth editing; to receive the isolated files, bring a Samsung T5 or T7 SSD for us to record to. Contact us for details.'],
+    ['Can I livestream from the studio?', 'Yes. We have fast internet and can stream to any platform.'],
+    ['Can you help with uploading and promoting the podcast?', 'Yes. Editing, social media optimization and distribution help are available. Contact us for details.'],
+    ['Can I book by the hour, or for less time?', 'No. Podcast sessions are booked in 90-minute blocks. Studio content is booked by the hour with a 2-hour minimum. For longer sessions, please contact us.'],
+    ['What is the cancellation policy?', 'Cancel with at least 48 hours’ notice for a full refund, or with 24 hours’ notice for a 50% refund. Cancellations with less than 24 hours’ notice are not refunded.'],
+  ];
+  const csBy = Object.fromEntries(sessions.filter(isApproved).map((x) => [x.id, x]));
+  const csCtaLine = csBy['podcast-session'] && csBy['content-session']
+    ? `Single studio sessions are ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes. Studio content is ${formatUSD(csBy['content-session'].amount)} an hour with a 2-hour minimum.${csBy['recording-editing'] ? ` Recording + Editing is ${formatUSD(csBy['recording-editing'].amount)} a month.` : ''}`
+    : 'Tell us who you want to reach and what you want to talk about.';
   pages['/creator-studios'] = {
     overlay: true,
     seo: { title: 'Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
@@ -964,11 +980,15 @@ ${cp.length || b2b.length ? `<section class="section">
 <section class="section section--tint" id="sessions" aria-labelledby="cs-sessions-h">
   <div class="wrap">
     <p class="eyebrow">Sessions</p>
-    <h2 class="h2 reveal" id="cs-sessions-h">Two ways to start.</h2>
-    <div class="cs-sessions">${join(sessions, (s) => `<div class="plan plan--media reveal">
-      ${csFig(s.id === 'podcast-session' ? 'cs-ph-island-federal' : 'cs-ph-solo-couch')}
-      <h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3><p class="plan__price">${approvedPrice(s, `Starting at <strong>${formatUSD(s.amount)}</strong>`)}</p><p>${esc(s.detail)}</p></div>`)}</div>
-    <div class="actions">${csStart('creator_sessions')}</div>
+    <h2 class="h2 reveal" id="cs-sessions-h">Choose how you want to work.</h2>
+    <div class="cs-sessions cs-sessions--${sessions.length}">${join(sessions, (s) => `<div class="plan plan--media reveal" data-session="${esc(s.id)}">
+      ${csFig(csSessionPhoto[s.id] || 'cs-ph-solo-couch')}
+      <h3 class="h3">${esc(s.name)} ${needsApproval(s)}</h3>
+      <p class="plan__price">${approvedPrice(s, `<strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`)}</p>
+      <p>${esc(s.detail)}</p>
+      ${s.includes?.length ? `<ul class="plan__list">${join(s.includes, (x) => `<li>${esc(x)}</li>`)}</ul>` : ''}
+      ${s.extra ? `<p class="small muted">${esc(s.extra)}</p>` : ''}
+      <div class="plan__cta">${s.booking === 'inquiry' ? `<a class="link-arrow" href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_plan_${esc(s.id)}">Ask about ${esc(s.name)} ${arrow}</a>` : csStart(`creator_plan_${s.id}`, 'Book this session', 'btn btn--solid')}</div></div>`)}</div>
     ${csBookingNote}
   </div>
 </section>
@@ -996,7 +1016,7 @@ ${cp.length || b2b.length ? `<section class="section">
       <li><h3>Short-form clips and reels</h3><p>Vertical clips for social, scoped with you.</p>${scope(false)}</li>
       <li><h3>Planned for your channels</h3><p>Topics, a publishing plan and distribution.</p>${scope(false)}</li>
     </ul>
-    <p class="aside-line">Sessions are delivered without editing. Editing, clips, strategy and distribution are quoted separately.</p>
+    <p class="aside-line">A single session includes the live-cut file. Editing is available by quote, or every month with Recording + Editing.</p>
   </div>
 </section>
 
@@ -1015,15 +1035,23 @@ ${cp.length || b2b.length ? `<section class="section">
 <section class="section section--ink on-dark" aria-labelledby="cs-process-h">
   <div class="wrap">
     <div class="split">
-      <div class="split__label"><p class="eyebrow">How it works ${needsApproval({ approval: 'pending' }, 'Process wording awaiting James\'s confirmation against current studio practice')}</p></div>
-      <div><h2 class="h2 reveal" id="cs-process-h">From an idea to content you can use.</h2></div>
+      <div class="split__label"><p class="eyebrow">How it works</p></div>
+      <div><h2 class="h2 reveal" id="cs-process-h">Book, record, and walk out with your files.</h2></div>
     </div>
     <ol class="steps steps--4">
-      <li class="reveal"><span class="steps__n">01 / Story</span><h3>Clarify the story and the audience.</h3></li>
-      <li class="reveal"><span class="steps__n">02 / Plan</span><h3>Plan the topic or the guests.</h3></li>
-      <li class="reveal"><span class="steps__n">03 / Record</span><h3>Record with direction.</h3></li>
-      <li class="reveal"><span class="steps__n">04 / Use</span><h3>Choose what to make from it.</h3></li>
+      <li class="reveal"><span class="steps__n">01 / Book</span><h3>Choose your studio and a time.</h3><p>Pick your set, then a date and time that work for you. For longer sessions, contact us.</p></li>
+      <li class="reveal"><span class="steps__n">02 / Record</span><h3>Sit back and record.</h3><p>We handle the equipment while you focus on the conversation.</p></li>
+      <li class="reveal"><span class="steps__n">03 / Receive</span><h3>Files within 24 hours.</h3><p>Your files are sent within 24 hours. Additional editing is available.</p></li>
+      <li class="reveal"><span class="steps__n">04 / Partner</span><h3>Keep going with us.</h3><p>Add services, improved rates and more end-to-end support when you record regularly.</p></li>
     </ol>
+  </div>
+</section>
+
+<section class="section" id="faq" aria-labelledby="cs-faq-h">
+  <div class="wrap cs-faq">
+    <div><p class="eyebrow">Questions</p>
+    <h2 class="h2 reveal" id="cs-faq-h">Before you book.</h2></div>
+    <div class="faq">${join(csFaq, ([q, a]) => `<details class="faq__item"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`)}</div>
   </div>
 </section>
 
@@ -1038,7 +1066,7 @@ ${csRecent.length ? `<section class="section section--ink on-dark" id="portfolio
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
     <h2 class="h2 reveal">Plan your first session.</h2>
-    <p>${sessions.length === 2 && sessions.every(isApproved) ? `Podcast sessions start at ${formatUSD(sessions[0].amount)} and content sessions at ${formatUSD(sessions[1].amount)}, without editing.` : 'Tell us who you want to reach and what you want to talk about.'}</p>
+    <p>${csCtaLine}</p>
     <div class="actions">${csStart('creator_final', 'Book a Studio Session', 'btn btn--gold')}<a class="link-arrow" href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_final_plan">Plan Your Content ${arrow}</a></div>
   </div>
 </section>`,

@@ -850,18 +850,22 @@ await check('creator studios: story, formats with scope, conversations, process,
   const p = await newPage();
   await p.goto(base + '/creator-studios');
   const text = await p.textContent('main');
-  for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Clarify the story']) assert(text.includes(s), s);
+  for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Files within 24 hours', 'Before you book']) assert(text.includes(s), s);
   assert(await p.locator('.scope-tag--out').count() >= 2, 'separately scoped formats labelled');
-  // James, Sep 25 2026: $250 / 1.5-hour podcast and $500 / 2-hour content sessions, without editing, are approved.
+  // James, Sep 26 2026: pricing follows licreatorstudios.com/pricing ($249 single session, $250/hour content with a
+  // 2-hour minimum, $999/month Recording + Editing); How it works and FAQ follow licreatorstudios.com/how-it-works.
   assert(await p.locator('.plan .needs-approval').count() === 0, 'session prices approved');
-  const prices = await p.locator('.plan__price').allTextContents();
-  assert(prices.some((t) => t.includes('$250')) && prices.some((t) => t.includes('$500')), 'session prices shown: ' + prices.join('|'));
+  const prices = (await p.locator('.plan__price').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim());
+  assert(prices.length === 3 && prices[0].includes('$249') && /\$250 per hour.*2-hour minimum/i.test(prices[1]) && /\$999 per month/i.test(prices[2]), 'session prices shown: ' + prices.join('|'));
   const plans = (await p.locator('.plan').allTextContents()).join(' ');
-  assert(/1\.5 hours/.test(plans) && /2 hours/.test(plans) && /without editing/.test(plans), 'session scope');
+  for (const t of ['Up to 90 minutes', 'Engineer included', 'Camera operator', 'Two 90-minute sessions per month', 'Up to 10 social media clips', 'start-up package']) assert(plans.includes(t), 'plan detail: ' + t);
+  assert(await p.locator('[data-session="recording-editing"] a[href^="/contact?type=creator-studios"]').count() === 1, 'Recording + Editing goes to an inquiry');
+  const faqs = await p.locator('#faq details.faq__item').count();
+  assert(faqs === 8 && /48 hours’ notice for a full refund/.test(text), 'FAQ with cancellation policy: ' + faqs);
   // Square is the booking destination; the page must not claim Square shows these prices or carries a selection over.
   const square = 'https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services';
-  const book = p.locator('main a:has-text("Book a Studio Session")');
-  assert(await book.count() >= 3, 'booking CTAs');
+  const book = p.locator('main a:has-text("Book a Studio Session"), main a:has-text("Book this session")');
+  assert(await book.count() >= 4, 'booking CTAs');
   for (const h of await book.evaluateAll((els) => els.map((e) => [e.getAttribute('href'), e.getAttribute('target'), e.getAttribute('rel')]))) assert(h[0] === square && h[1] === '_blank' && /noopener/.test(h[2]), 'square link ' + h.join());
   assert(text.includes('Long Island Creator Studios'), 'visible connection to the studio');
   assert(!/Square (shows|lists|displays)[^.]*\$|selection (carries|transfers)/i.test(text), 'no Square price or transfer claim');
@@ -924,9 +928,9 @@ await check('Listing Engine is listing sale-cycle content with the HDPH agent-on
   await p.context().close();
 });
 
-await check('speech clips carry caption tracks that load and parse, a transcript link, and a machine-draft review tag; RevivaLuxe music description marked for review', async () => {
+await check('speech clips carry caption tracks that load and parse, no Creator transcripts, and a machine-draft review tag; unlicensed RevivaLuxe films withheld', async () => {
   const p = await newPage();
-  for (const [path, id] of [['/creator-studios', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera'], ['/commercial/revivaluxe', 'revivaluxe-film']]) {
+  for (const [path, id] of [['/creator-studios', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
     await p.goto(base + path);
     const card = p.locator(`.card:has([data-id="${id}"])`).first();
     const src = await card.locator('video track[kind="captions"]').getAttribute('src');
@@ -942,11 +946,16 @@ await check('speech clips carry caption tracks that load and parse, a transcript
       return t.cues ? t.cues.length : 0;
     });
     assert(cues >= (id === 'revivaluxe-film' ? 1 : 2), `${id} parsed cues ${cues}`);
-    assert(await card.locator('a[href="/captions/' + id + '.txt"]').count() === 1, `${id} transcript link`);
+    // James, Sep 26 2026: Creator videos need no separate transcripts (they carry burned-in captions plus a CC track).
+    assert(await card.locator('a[href="/captions/' + id + '.txt"]').count() === (id.startsWith('cs-') ? 0 : 1), `${id} transcript link`);
     assert(/machine-transcribed draft/.test(await card.locator('.needs-approval').last().getAttribute('title') || ''), `${id} draft tag`);
   }
-  await p.goto(base + '/commercial/revivaluxe');
-  assert(await p.locator('.card:has([data-id="revivaluxe-film"]) .needs-approval[title*="machine-transcribed draft"]').count() === 1, 'RevivaLuxe music description still marked for review');
+  // James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed, so both RevivaLuxe films are withheld everywhere.
+  for (const path of ['/', '/commercial', '/commercial/revivaluxe']) {
+    const html = await (await fetch(base + path)).text();
+    assert(!/revivaluxe-film|biz-revivaluxe-tour|commercial-revivaluxe/.test(html), 'RevivaLuxe film referenced on ' + path);
+  }
+  for (const f of ['/v/biz-revivaluxe-tour.mp4', '/media/photografik-2027/commercial-revivaluxe.mp4']) assert((await fetch(base + f)).status === 404, f + ' still served');
   await p.context().close();
 });
 

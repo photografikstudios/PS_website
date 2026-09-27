@@ -2,9 +2,9 @@
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "https://ps-website-rust.vercel.app",
   "recordedAt": "2026-09-26",
-  "count": 114,
-  "totalBytes": 291878383,
-  "aggregate": "455b2fdfe53c61ffedf40f6577c6ad0191b8986911dcdc52dd8aca79816f6f19",
+  "count": 111,
+  "totalBytes": 282010062,
+  "aggregate": "cf7d49f7964e6f2cbba6abe1239d49605f50b788f517cb0dbc6511f091d24c22",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -141,18 +141,6 @@
     "/v/biz-rachel-lynch-pools-loop.mp4": {
       "bytes": 423883,
       "sha256": "d0bb8db519180c8227f2e31231c92695d478285c373a7b9b7179161442bf06df"
-    },
-    "/v/biz-revivaluxe-tour.mp4": {
-      "bytes": 8634821,
-      "sha256": "38f28ba3a55facbe20bfcdb2d99ac8094f91f892485475f63b94f1203fece53a"
-    },
-    "/v/biz-revivaluxe-tour.webp": {
-      "bytes": 29972,
-      "sha256": "62a7ab0d95eb6124438b274cd2c97a56730937e543f8878369f9cce42c84283f"
-    },
-    "/v/biz-revivaluxe-tour-loop.mp4": {
-      "bytes": 1203528,
-      "sha256": "a425b901cc5ed0dde658a0edd9c4c8777a84b86111d196734c9a4796582e763f"
     },
     "/v/biz-torella-pools.mp4": {
       "bytes": 11631450,
@@ -462,5 +450,6 @@
       "bytes": 4382,
       "sha256": "42e530a968e59e2bbea81f858db08872c39ab02ee656e66414e4a2418621b282"
     }
-  }
+  },
+  "_withheld": "Sep 26: biz-revivaluxe-tour (3 files) removed, unlicensed soundtrack."
 }

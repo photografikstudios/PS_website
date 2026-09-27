@@ -315,7 +315,7 @@
       "captions": "/captions/revivaluxe-film.vtt",
       "transcript": "/captions/revivaluxe-film.txt",
       "featured": true,
-      "rights": "approved",
+      "rights": "withheld",
       "alt": null,
       "published": true,
       "packageIds": [],
@@ -324,7 +324,8 @@
       "clientId": "revivaluxe",
       "client": "RevivaLuxe",
       "captionsNote": "Sep 26 (large-v3 pass, no VAD): the soundtrack is a hip-hop song with vocals running the full 33 s, not dialogue or narration. The lyrics include explicit language. Captions describe the music rather than reproducing lyrics. James to confirm (1) the description is enough, (2) the track is licensed for commercial web use, (3) explicit lyrics are acceptable on a client showcase.",
-      "captionsStatus": "machine-draft"
+      "captionsStatus": "machine-draft",
+      "_rightsNote": "James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed. Withheld from every build until the film has licensed music or a silent/re-scored version is approved. (Lyrics themselves were acceptable.)"
     },
     {
       "id": "lauryn-lead",
@@ -487,7 +488,7 @@
       "duration": 87,
       "dialogue": true,
       "captions": "/captions/cs-jm2-architecture.vtt",
-      "transcript": "/captions/cs-jm2-architecture.txt",
+      "transcript": null,
       "featured": false,
       "rights": "approved",
       "alt": null,
@@ -618,7 +619,7 @@
       "captions": null,
       "transcript": null,
       "featured": false,
-      "rights": "approved",
+      "rights": "withheld",
       "alt": null,
       "location": "Long Island",
       "client": "RevivaLuxe",
@@ -627,7 +628,8 @@
       "packageIds": [],
       "capturedYear": null,
       "sortPriority": 0,
-      "clientId": "revivaluxe"
+      "clientId": "revivaluxe",
+      "_rightsNote": "James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed. Withheld from every build until the film has licensed music or a silent/re-scored version is approved. (Lyrics themselves were acceptable.)"
     },
     {
       "id": "re-penniman-ln",
@@ -782,7 +784,7 @@
       "duration": 86,
       "dialogue": true,
       "captions": "/captions/cs-noah-knows-short.vtt",
-      "transcript": "/captions/cs-noah-knows-short.txt",
+      "transcript": null,
       "featured": false,
       "rights": "approved",
       "alt": null,
@@ -870,7 +872,7 @@
       "duration": 47,
       "dialogue": true,
       "captions": "/captions/cs-tick.vtt",
-      "transcript": "/captions/cs-tick.txt",
+      "transcript": null,
       "featured": false,
       "rights": "approved",
       "alt": null,

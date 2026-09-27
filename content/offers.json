@@ -1,24 +1,179 @@
 {
   "_readme": "Non-residential offers. 'contract' prices are 12-month contracts billed monthly (not prepaid). Pending records render only in review builds.",
   "agentMonthly": [
-    { "id": "agent-video-starter", "name": "Video Starter", "tagline": "Build the habit.", "monthly": 999, "contract": 899, "scope": ["Up to 3 agent-on-camera social videos (30–45 sec)", "Still photography", "2 filming hours, about 60 minutes of raw footage", "Custom scripting"], "approval": "pending" },
-    { "id": "agent-video-accelerator", "name": "Video Accelerator", "tagline": "Build momentum.", "monthly": 1799, "contract": 1699, "scope": ["Up to 5 social videos", "Still photography", "2 hours on site + 1 hour in studio, about 90 minutes of raw footage", "Custom scripting", "Dedicated content strategist and a monthly strategy meeting"], "approval": "pending" },
-    { "id": "agent-video-pro", "name": "Video Pro", "tagline": "Own the conversation.", "monthly": 2099, "contract": 1999, "scope": ["Up to 10 social videos", "Still photography", "2 hours on site + 2 hours in studio, about 120 minutes of raw footage", "Custom scripting", "Prioritized content strategist and a monthly strategy meeting"], "approval": "pending" }
+    {
+      "id": "agent-video-starter",
+      "name": "Video Starter",
+      "tagline": "Build the habit.",
+      "monthly": 999,
+      "contract": 899,
+      "scope": [
+        "Up to 3 agent-on-camera social videos (30–45 sec)",
+        "Still photography",
+        "2 filming hours, about 60 minutes of raw footage",
+        "Custom scripting"
+      ],
+      "approval": "pending"
+    },
+    {
+      "id": "agent-video-accelerator",
+      "name": "Video Accelerator",
+      "tagline": "Build momentum.",
+      "monthly": 1799,
+      "contract": 1699,
+      "scope": [
+        "Up to 5 social videos",
+        "Still photography",
+        "2 hours on site + 1 hour in studio, about 90 minutes of raw footage",
+        "Custom scripting",
+        "Dedicated content strategist and a monthly strategy meeting"
+      ],
+      "approval": "pending"
+    },
+    {
+      "id": "agent-video-pro",
+      "name": "Video Pro",
+      "tagline": "Own the conversation.",
+      "monthly": 2099,
+      "contract": 1999,
+      "scope": [
+        "Up to 10 social videos",
+        "Still photography",
+        "2 hours on site + 2 hours in studio, about 120 minutes of raw footage",
+        "Custom scripting",
+        "Prioritized content strategist and a monthly strategy meeting"
+      ],
+      "approval": "pending"
+    }
   ],
-  "socialManagementFrom": { "amount": 1000, "approval": "pending" },
+  "socialManagementFrom": {
+    "amount": 1000,
+    "approval": "pending"
+  },
   "businessMonthly": [
-    { "id": "b2b-video-starter", "name": "Video Starter", "monthly": 1499, "contract": 1399, "scope": ["Up to 3 social videos (30–45 sec)", "Still photography", "2 filming hours"], "approval": "pending" },
-    { "id": "b2b-video-accelerator", "name": "Video Accelerator", "monthly": 2699, "contract": 2499, "scope": ["Up to 5 social videos", "Still photography", "2 hours on site + 1 hour in studio", "Content strategist and monthly strategy meeting"], "approval": "pending" },
-    { "id": "b2b-video-pro", "name": "Video Pro + Management", "monthly": 2999, "contract": 2699, "scope": ["Up to 10 social videos", "Still photography", "2 hours on site + 2 hours in studio", "Prioritized strategist and monthly strategy meeting"], "approval": "pending" }
+    {
+      "id": "b2b-video-starter",
+      "name": "Video Starter",
+      "monthly": 1499,
+      "contract": 1399,
+      "scope": [
+        "Up to 3 social videos (30–45 sec)",
+        "Still photography",
+        "2 filming hours"
+      ],
+      "approval": "pending"
+    },
+    {
+      "id": "b2b-video-accelerator",
+      "name": "Video Accelerator",
+      "monthly": 2699,
+      "contract": 2499,
+      "scope": [
+        "Up to 5 social videos",
+        "Still photography",
+        "2 hours on site + 1 hour in studio",
+        "Content strategist and monthly strategy meeting"
+      ],
+      "approval": "pending"
+    },
+    {
+      "id": "b2b-video-pro",
+      "name": "Video Pro + Management",
+      "monthly": 2999,
+      "contract": 2699,
+      "scope": [
+        "Up to 10 social videos",
+        "Still photography",
+        "2 hours on site + 2 hours in studio",
+        "Prioritized strategist and monthly strategy meeting"
+      ],
+      "approval": "pending"
+    }
   ],
   "commercialProperty": [
-    { "id": "cp-storefront", "name": "Storefront or single tenant", "amount": 550, "plus": false, "approval": "pending" },
-    { "id": "cp-small", "name": "Small commercial", "amount": 750, "plus": false, "approval": "pending" },
-    { "id": "cp-mid", "name": "Mid-size commercial", "amount": 950, "plus": false, "approval": "pending" },
-    { "id": "cp-large", "name": "Large or multi-building", "amount": 1250, "plus": true, "approval": "pending" }
+    {
+      "id": "cp-storefront",
+      "name": "Storefront or single tenant",
+      "amount": 550,
+      "plus": false,
+      "approval": "pending"
+    },
+    {
+      "id": "cp-small",
+      "name": "Small commercial",
+      "amount": 750,
+      "plus": false,
+      "approval": "pending"
+    },
+    {
+      "id": "cp-mid",
+      "name": "Mid-size commercial",
+      "amount": 950,
+      "plus": false,
+      "approval": "pending"
+    },
+    {
+      "id": "cp-large",
+      "name": "Large or multi-building",
+      "amount": 1250,
+      "plus": true,
+      "approval": "pending"
+    }
   ],
   "creatorSessions": [
-    { "id": "podcast-session", "name": "Podcast session", "amount": 250, "detail": "1.5 hours in studio with standard multi-camera switching. The full episode is delivered without editing.", "approval": "approved", "note": "James, Sep 25 2026: $250 for a 1.5-hour podcast session, without editing." },
-    { "id": "content-session", "name": "Studio content session", "amount": 500, "detail": "2 hours in studio. The complete session is delivered without editing.", "approval": "approved", "note": "James, Sep 25 2026: $500 for a 2-hour studio content session, without editing." }
+    {
+      "id": "podcast-session",
+      "name": "Single studio session",
+      "amount": 249,
+      "priceLabel": "$249",
+      "unit": null,
+      "detail": "Up to 90 minutes of recording time.",
+      "includes": [
+        "Live-cut file (raw files), video and audio",
+        "Engineer included",
+        "All set options available"
+      ],
+      "booking": "square",
+      "approval": "approved",
+      "note": "James, Sep 26 2026: use licreatorstudios.com pricing. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing."
+    },
+    {
+      "id": "content-session",
+      "name": "General studio content",
+      "amount": 250,
+      "priceLabel": "$250",
+      "unit": "per hour",
+      "minimum": "2-hour minimum",
+      "detail": "Film anything you like in the studio: short-form content, educational videos, photoshoots and more.",
+      "includes": [
+        "Full studio access and custom setups",
+        "Professional cameras, lighting and audio",
+        "Camera operator",
+        "Raw file transfer",
+        "Editing available by quote"
+      ],
+      "booking": "square",
+      "approval": "approved",
+      "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing."
+    },
+    {
+      "id": "recording-editing",
+      "name": "Recording + editing",
+      "amount": 999,
+      "priceLabel": "$999",
+      "unit": "per month",
+      "detail": "Two 90-minute sessions a month, edited and ready to post.",
+      "includes": [
+        "Two 90-minute sessions per month",
+        "Engineer included",
+        "Up to 10 social media clips",
+        "Custom thumbnails",
+        "Basic intro and outro"
+      ],
+      "extra": "Optional start-up package: an in-studio photoshoot, an announcement video and social post, a custom podcast intro and outro, and a one-on-one coaching and strategy meeting.",
+      "booking": "inquiry",
+      "approval": "approved",
+      "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing."
+    }
   ]
 }

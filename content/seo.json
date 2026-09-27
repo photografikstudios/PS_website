@@ -1,15 +1,51 @@
 {
   "_readme": "Page titles and meta descriptions by route. Keep titles under ~60 characters and descriptions under ~155.",
-  "/": { "title": "Photografik Studios | Real Estate, Architecture & Brand Media", "description": "Photo, video, drone and content production for Long Island agents, builders, designers and businesses who want their work to stand out." },
-  "/real-estate": { "title": "Real Estate Photography & Video | Hamptons & Long Island", "description": "Coordinated listing photography, cinematic video, vertical reels, drone and floor plans for agents on Long Island, the Hamptons and North Fork." },
-  "/real-estate/pricing": { "title": "Real Estate Media Pricing by Square Footage | Photografik", "description": "Enter the property size to see published base prices for every Photografik listing package and à la carte service." },
-  "/agent-content": { "title": "Agent Content, Listing Engine & Agent Engine | Photografik", "description": "On-camera video and monthly content plans that help real estate agents become familiar and trusted before the first conversation." },
-  "/architecture-design": { "title": "Architecture & Interior Design Photography | Photografik", "description": "Project photography and film for builders, architects and designers on Long Island and the East End, planned around how the work will be used." },
-  "/commercial": { "title": "Commercial Photo & Video Production | Long Island | Photografik", "description": "Brand photography, film and recurring content for healthcare, legal, hospitality and corporate teams that need a dependable production partner." },
-  "/agency-partnerships": { "title": "Production Partner for Agencies | Photografik Studios", "description": "Crew, studio, filming, editing and white-label delivery for advertising and marketing agencies working on Long Island and in New York City." },
-  "/creator-studios": { "title": "Creator Studios | Podcast & Content Studio in Bohemia, NY", "description": "A podcast and content studio in Bohemia with hands-on production support. 1.5-hour podcast sessions are $250 and 2-hour studio content sessions are $500, without editing." },
-  "/work": { "title": "Work | Photography & Film by Photografik Studios", "description": "Selected real estate, architecture, commercial and agent content projects. Filter by service and industry." },
-  "/about": { "title": "About Photografik Studios | Our Approach", "description": "A boutique visual media studio on Long Island that pairs strong production with practical marketing judgment." },
-  "/contact": { "title": "Start a Project | Photografik Studios", "description": "Tell us about your architecture, commercial, agency or content project and we will follow up with next steps." },
-  "/404": { "title": "Page not found | Photografik Studios", "description": "The page you were looking for has moved." }
+  "/": {
+    "title": "Photografik Studios | Real Estate, Architecture & Brand Media",
+    "description": "Photo, video, drone and content production for Long Island agents, builders, designers and businesses who want their work to stand out."
+  },
+  "/real-estate": {
+    "title": "Real Estate Photography & Video | Hamptons & Long Island",
+    "description": "Coordinated listing photography, cinematic video, vertical reels, drone and floor plans for agents on Long Island, the Hamptons and North Fork."
+  },
+  "/real-estate/pricing": {
+    "title": "Real Estate Media Pricing by Square Footage | Photografik",
+    "description": "Enter the property size to see published base prices for every Photografik listing package and à la carte service."
+  },
+  "/agent-content": {
+    "title": "Agent Content, Listing Engine & Agent Engine | Photografik",
+    "description": "On-camera video and monthly content plans that help real estate agents become familiar and trusted before the first conversation."
+  },
+  "/architecture-design": {
+    "title": "Architecture & Interior Design Photography | Photografik",
+    "description": "Project photography and film for builders, architects and designers on Long Island and the East End, planned around how the work will be used."
+  },
+  "/commercial": {
+    "title": "Commercial Photo & Video Production | Long Island | Photografik",
+    "description": "Brand photography, film and recurring content for healthcare, legal, hospitality and corporate teams that need a dependable production partner."
+  },
+  "/agency-partnerships": {
+    "title": "Production Partner for Agencies | Photografik Studios",
+    "description": "Crew, studio, filming, editing and white-label delivery for advertising and marketing agencies working on Long Island and in New York City."
+  },
+  "/creator-studios": {
+    "title": "Creator Studios | Podcast & Content Studio in Bohemia, NY",
+    "description": "A podcast and content studio in Bohemia, NY. Single studio sessions are $249 for up to 90 minutes; studio content is $250 per hour with a 2-hour minimum; Recording + Editing is $999 per month."
+  },
+  "/work": {
+    "title": "Work | Photography & Film by Photografik Studios",
+    "description": "Selected real estate, architecture, commercial and agent content projects. Filter by service and industry."
+  },
+  "/about": {
+    "title": "About Photografik Studios | Our Approach",
+    "description": "A boutique visual media studio on Long Island that pairs strong production with practical marketing judgment."
+  },
+  "/contact": {
+    "title": "Start a Project | Photografik Studios",
+    "description": "Tell us about your architecture, commercial, agency or content project and we will follow up with next steps."
+  },
+  "/404": {
+    "title": "Page not found | Photografik Studios",
+    "description": "The page you were looking for has moved."
+  }
 }

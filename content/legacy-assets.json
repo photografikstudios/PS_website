@@ -2,8 +2,8 @@
   "_readme": "Pinned copies of the 23 legacy stills and clips the site still references. Each must be committed under static/<path> with this exact size and SHA-256 (npm run check:legacy). Recorded Sep 26, 2026 from the review alias ps-website-rust.vercel.app (revision 442d7d5), which serves the same bytes the Vercel build copied; Replit is not a source.",
   "recordedFrom": "https://ps-website-rust.vercel.app",
   "recordedAt": "2026-09-26",
-  "count": 23,
-  "totalBytes": 18045107,
+  "count": 22,
+  "totalBytes": 12895731,
   "files": {
     "/images/photografik-2027/brand/photografik-logo.webp": {
       "bytes": 365880,
@@ -84,10 +84,6 @@
     "/media/photografik-2027/agent-property-tour.mp4": {
       "bytes": 2260979,
       "sha256": "2e0fa1cc4c263ec1ecf9e88bf0c2c50d96dfcb07e7bf2887995213e2f0e3316f"
-    },
-    "/media/photografik-2027/commercial-revivaluxe.mp4": {
-      "bytes": 5149376,
-      "sha256": "b56a8e09fce6c99ace2c586deecc061a3e516d0fded2426ddce188ab80b2be60"
     },
     "/media/photografik-2027/jb-andreassi.mp4": {
       "bytes": 3142908,
