@@ -849,3 +849,15 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 @media (max-width: 1000px) { .audiences, .why-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } .story-guide { grid-template-columns: 1fr; } }
 @media (max-width: 519px) { .why-list { grid-template-columns: 1fr; } }
 @media (max-width: 519px) { .audiences { grid-template-columns: 1fr; gap: 24px; } }
+.section--tight { padding-top: clamp(40px, 5vw, 72px); padding-bottom: clamp(40px, 5vw, 72px); }
+.pgrid--proof { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pgrid--proof .pgrid__title { font-size: clamp(19px, 1.6vw, 24px); }
+#selected-projects .section-head { margin-bottom: 24px; }
+@media (max-width: 899px) { .pgrid--proof { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pgrid--proof > :nth-child(3):last-child { grid-column: 1 / -1; } }
+@media (max-width: 700px) {
+  .arch-intro, #which-story, #why { padding-top: 56px; padding-bottom: 56px; }
+  .arch-intro .split { margin-bottom: 28px; }
+  .story-guide { gap: 16px; margin-top: 24px; }
+  .story-guide__item { padding: 20px; }
+  .audiences { gap: 20px; }
+}

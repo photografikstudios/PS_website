@@ -739,6 +739,10 @@ ${agentMonthly.length ? `<section class="section section--tint">
     .map((p) => { const items = archMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: deliveredOf(items) }; })
     .filter((x) => x.items.length);
   const archMore = archMedia.filter((m) => !m.project || !archProjects.some((x) => x.p.slug === m.project));
+  // Early proof (Codex, Sep 27): the verified project cards plus the 99 Hedges film as a labelled film teaser
+  // (not attributed to a client). Everything else stays in the compact portfolio grid lower down.
+  const archTeaser = archMore.find((m) => m.id === 'arch-99-hedges-amagansett' && m.type === 'video');
+  const archProof = [...archProjects, ...(archTeaser ? [{ p: null, rep: archTeaser, label: '99 Hedges Lane' }] : [])].slice(0, 4);
   pages['/architecture-design'] = {
     overlay: true,
     body: `${pageHero({
@@ -753,8 +757,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <div class="split__label"><p class="eyebrow">Who this is for</p></div>
     <div>
       <h2 class="h2 reveal" id="arch-intro-h">Your next client is judging more than <em>the finished room.</em></h2>
-      <p class="lede">Before they call, the people you want to work with are trying to understand your point of view, the quality of your craft, how you run a project and what it will feel like to work with you. You are the one they are deciding to trust. Our job is to help them see it.</p>
-      <p>That is why we start with questions, not a shot list: who you want to win next, where the media will be used, and what those people need to believe about you. Then we recommend the coverage that fits.</p>
+      <p class="lede">Before they call, the people you want to work with are trying to understand your point of view, your craft and what it will be like to work with you. We start with who you want to win next and where the media will be used, then recommend the coverage that helps them see it.</p>
     </div>
   </div>
   <div class="wrap">
@@ -780,16 +783,31 @@ ${agentMonthly.length ? `<section class="section section--tint">
   </div>
 </section>
 
+<section class="section section--tight" id="selected-projects" aria-labelledby="arch-proof-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Selected projects</p><h2 class="h3 reveal" id="arch-proof-h">Recent work, one project at a time.</h2></div><a class="link-arrow" href="#portfolio" data-track="project_click" data-track-location="arch_proof_more">More work ${arrow}</a></div>
+    <ul class="pgrid pgrid--proof" role="list">${join(archProof, (x) => x.p ? `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
+      <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, archCardSizes) : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, archCardSizes)}</a>`}</div>
+      <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="arch_proof">${esc(x.p.client || x.p.title)}</a></h3>
+      <p class="pgrid__meta">${esc(x.delivered.join(' · '))}${x.p.location ? ` · ${esc(x.p.location)}` : ''}</p>
+    </li>` : `<li class="pgrid__item" data-media="${esc(x.rep.id)}">
+      <div class="pgrid__media">${repFrame(x.rep, archCardSizes)}</div>
+      <h3 class="pgrid__title">${esc(x.label)}</h3>
+      <p class="pgrid__meta">Film${x.rep.location ? ` · ${esc(x.rep.location)}` : ''}</p>
+    </li>`)}</ul>
+  </div>
+</section>
+
 <section class="section" id="why" aria-labelledby="arch-why-h">
   <div class="wrap">
     <div>
       <p class="eyebrow">How we help</p>
-      <h2 class="h2 reveal" id="arch-why-h">You are the hero of this story. <em>We are the guide.</em></h2>
+      <h2 class="h2 reveal" id="arch-why-h">Future clients see your thinking, your craft <em>and what it is like to work with you.</em></h2>
       <ul class="why-list" role="list">
         <li><h3 class="h4">Marketing judgment before production</h3><p>We plan around the clients you want and where the media will be used, so the coverage does a job.</p></li>
-        <li><h3 class="h4">Timed for light</h3><p>Exteriors, interiors and twilight are scheduled for when each space looks its best.</p></li>
+        <li><h3 class="h4">Timed for light</h3><p>Where the scope includes them, exteriors, interiors and twilight are scheduled for the light that suits each space.</p></li>
         <li><h3 class="h4">Materials and details</h3><p>The joinery, finishes and hardware your clients paid for get the attention they deserve.</p></li>
-        <li><h3 class="h4">Coordinated with everyone on the project</h3><p>We work around homeowners, design teams, builders and the weather, so the shoot does not become your problem.</p></li>
+        <li><h3 class="h4">Coordinated with the project team</h3><p>We plan timing and access with homeowners, design teams and builders, and adjust for weather.</p></li>
         <li><h3 class="h4">Deliverables and licensing in writing</h3><p>What you receive, and who can use it where and for how long, is agreed before production.</p></li>
       </ul>
       <p class="small muted">Every architecture and design project is quoted to its scope. Coverage, deliverables, usage and licensing are set out in a written estimate.</p>
@@ -812,20 +830,13 @@ ${agentMonthly.length ? `<section class="section section--tint">
   </div>
 </section>
 
-<section class="section" id="portfolio" aria-labelledby="arch-work-h">
+<section class="section" id="portfolio" aria-labelledby="arch-more-h">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Selected projects</p><h2 class="h2 reveal" id="arch-work-h">Recent work, <em>one project at a time.</em></h2></div></div>
-    <ul class="pgrid" role="list">${join(archProjects, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
-      <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, archCardSizes) : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, archCardSizes)}</a>`}</div>
-      <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="arch_grid">${esc(x.p.client || x.p.title)}</a></h3>
-      <p class="pgrid__meta">${esc(x.delivered.join(' · '))}${x.p.location ? ` · ${esc(x.p.location)}` : ''}</p>
-      <a class="link-arrow pgrid__go" href="${projectPath(x.p)}" aria-label="View the ${esc(x.p.client || x.p.title)} project">View project ${arrow}</a>
-    </li>`)}</ul>
-    ${archMore.length ? `<h3 class="h4 arch-more__h" id="arch-more-h">More architecture and design work</h3>
-    <ul class="pgrid pgrid--more" role="list" aria-labelledby="arch-more-h">${join(archMore, (m) => `<li class="pgrid__item" data-media="${esc(m.id)}">
+    <div class="section-head"><div><p class="eyebrow">Portfolio</p><h2 class="h3 reveal" id="arch-more-h">More architecture and design work</h2></div></div>
+    <ul class="pgrid pgrid--more" role="list">${join(archMore.filter((m) => !archProof.some((x) => !x.p && x.rep.id === m.id)), (m) => `<li class="pgrid__item" data-media="${esc(m.id)}">
       <div class="pgrid__media">${repFrame(m, archCardSizes)}</div>
       <p class="pgrid__caption">${esc(m.title)}${m.location && !m.title.includes(m.location) ? `<span>${esc(m.location)}</span>` : ''}</p>
-    </li>`)}</ul>` : ''}
+    </li>`)}</ul>
   </div>
 </section>
 <section class="section section--brand on-dark">

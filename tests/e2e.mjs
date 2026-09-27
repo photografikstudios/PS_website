@@ -160,7 +160,7 @@ await check('portfolios: every approved item appears on its own service page, on
     // Commercial (James, Sep 26): the index shows one card per project; every item lives on its project page.
     if (cat === 'commercial') for (const slug of new Set(mine.map((m) => m.project))) pageHtml += await (await fetch(`${base}/commercial/${slug}`)).text();
     // Architecture & design (owner correction, Sep 27): one card per project; the full set lives on each project page.
-    if (cat === 'architecture-design') for (const slug of new Set(mine.map((m) => m.project).filter(Boolean))) pageHtml += await (await fetch(`${base}/architecture-design/${slug}`)).text();
+    if (cat === 'architecture-design') { pageHtml += await p.locator('main').evaluate((el) => el.outerHTML); for (const slug of new Set(mine.map((m) => m.project).filter(Boolean))) pageHtml += await (await fetch(`${base}/architecture-design/${slug}`)).text(); }
     // Creator Studios (James, Sep 26): media sit beside their sections across the page; the full set is on All sessions.
     if (cat === 'creator-studios') pageHtml += (await p.locator('main').evaluate((el) => el.outerHTML)) + await (await fetch(`${base}/creator-studios/sessions`)).text();
     const missing = mine.filter((m) => !pageHtml.includes(m.id) && !(m.src && pageHtml.includes(m.src)) && !(m.poster && pageHtml.includes(m.poster)));
@@ -1007,16 +1007,21 @@ await check('Architecture & design: audience, story guide, differentiators and s
     await p.goto(base + '/architecture-design');
     const top = (sel) => p.locator(sel).evaluate((el) => el.getBoundingClientRect().top + scrollY);
     const hero = await p.locator('.page-hero').evaluate((el) => el.getBoundingClientRect().bottom + scrollY);
-    const order = [await top('#approach'), await top('#which-story'), await top('#why'), await top('#how-it-works'), await top('#portfolio')];
+    const order = [await top('#approach'), await top('#which-story'), await top('#selected-projects'), await top('#why'), await top('#how-it-works'), await top('#portfolio')];
     assert(order.every((v, i) => i === 0 || v > order[i - 1]), 'section order ' + order.join(','));
     assert(Math.abs(order[0] - hero) < 2, 'audience section directly after the hero');
     const text = await p.textContent('main');
-    for (const s of ['Architects', 'Custom builders', 'Interior designers', 'Specialty trades', 'Which story should we tell?', 'Project photography', 'Project film', 'Brand story and interviews', 'not automatic', 'Start with project proof', 'We are the guide', 'Timed for light', 'Deliverables and licensing in writing', 'quoted to its scope']) assert(text.includes(s), 'missing: ' + s);
-    assert(!/guarantee|increase(d)? (sales|leads)|featured in|award-winning/i.test(text), 'unsupported outcome claim');
+    for (const s of ['Architects', 'Custom builders', 'Interior designers', 'Specialty trades', 'Which story should we tell?', 'Project photography', 'Project film', 'Brand story and interviews', 'not automatic', 'Start with project proof', 'Future clients see your thinking, your craft', 'Where the scope includes them', 'Timed for light', 'Deliverables and licensing in writing', 'quoted to its scope']) assert(text.includes(s), 'missing: ' + s);
+    assert(!/guarantee|increase(d)? (sales|leads)|featured in|award-winning|hero of this story|We are the guide/i.test(text), 'unsupported claim or StoryBrand jargon');
+    // Early proof (Codex, Sep 27): real project evidence within ~4.5 phone screens / ~4 desktop screens.
+    assert(order[2] < (vp.width < 500 ? 812 * 4.5 : 720 * 4), 'first proof too far down: ' + order[2]);
     const cta = p.locator('#how-it-works a.btn');
     assert(await cta.getAttribute('href') === '/contact?type=architecture-design', 'service path CTA');
     // Compact cards: one asset per project card; each card no taller than ~half a viewport on desktop.
-    const cards = p.locator('#portfolio .pgrid:not(.pgrid--more) > .pgrid__item');
+    const cards = p.locator('#selected-projects .pgrid__item[data-project]');
+    assert(await p.locator('#selected-projects .pgrid__item').count() <= 4, 'proof strip stays small');
+    const ids = await p.locator('main [data-media], main [data-project]').evaluateAll((els) => els.map((e) => e.dataset.media || e.dataset.project));
+    assert(new Set(ids).size === ids.length, 'an asset or project repeats on the landing page');
     const n = await cards.count();
     assert(n >= 2, 'project cards ' + n);
     for (let i = 0; i < n; i++) {
