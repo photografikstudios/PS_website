@@ -10,15 +10,17 @@ export const TYPE_FILTERS = [
 ];
 
 /** Compact per-item facts the browser needs to filter (derived from a media record). */
-export const facts = (m) => ({
+export const facts = (m, segments = []) => ({
   kind: m.type === 'video' ? 'video' : 'image',
   drone: (m.service || []).includes('drone'),
   packages: m.packageIds || [],
+  segments,
 });
 
 /** Does an item (facts) match the package + type filters? Empty filter = no constraint. */
-export function matches(f, { pkg = '', type = '' } = {}) {
+export function matches(f, { pkg = '', seg = '', type = '' } = {}) {
   if (pkg && !f.packages.includes(pkg)) return false;
+  if (seg && !(f.segments || []).includes(seg)) return false;
   if (type === 'video' && f.kind !== 'video') return false;
   if (type === 'photo' && f.kind !== 'image') return false;
   if (type === 'drone' && !f.drone) return false;
@@ -30,6 +32,12 @@ export function editorialOrder(list) {
   return list.map((m, i) => [m, i])
     .sort((a, b) => (b[0].sortPriority || 0) - (a[0].sortPriority || 0) || a[1] - b[1])
     .map(([m]) => m);
+}
+
+/** Segments a media record inherits from its project (evidence lives on the project, never on the house name). */
+export function segmentsOf(m, projectBySlug) {
+  const p = m.project ? projectBySlug[m.project] : null;
+  return p && Array.isArray(p.segments) ? p.segments : [];
 }
 
 /** Result counts for each option of one filter, holding the other filter fixed. */
@@ -53,6 +61,15 @@ export function validateMedia(work, packageIds, { thisYear = new Date().getFullY
     }
     if (m.packageIds?.length && m.category !== 'real-estate') errors.push(`${m.id}: package tags only apply to real estate media`);
     if (typeof m.published !== 'boolean') errors.push(`${m.id}: published must be true or false`);
+    if ('segments' in m) errors.push(`${m.id}: segments belong on the project, not the media record`);
+  }
+  const segIds = (work.taxonomy?.segment || []).map((s) => s.id);
+  for (const p of work.projects || []) {
+    if (p.segments === undefined) continue;
+    if (!Array.isArray(p.segments)) { errors.push(`${p.slug}: segments must be an array`); continue; }
+    for (const s of p.segments) if (!segIds.includes(s)) errors.push(`${p.slug}: unknown segment "${s}"`);
+    if (p.segments.length && !p.segmentSource) errors.push(`${p.slug}: segments need a segmentSource (evidence)`);
+    if (p.segments.length && p.category !== 'architecture-design') errors.push(`${p.slug}: segments only apply to architecture & design projects`);
   }
   return errors;
 }

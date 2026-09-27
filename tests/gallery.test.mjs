@@ -49,3 +49,17 @@ test('editorial order: sortPriority first, then collection order', () => {
   const o = editorialOrder([{ id: 'a' }, { id: 'b', sortPriority: 5 }, { id: 'c' }, { id: 'd', sortPriority: 5 }]).map((m) => m.id);
   assert.deepEqual(o, ['b', 'd', 'a', 'c']);
 });
+
+test('architecture segments: inherited from the project with evidence, filterable, never on media records', async () => {
+  const { matches, facts, segmentsOf, validateMedia } = await import('../src/lib/gallery-core.js');
+  const projects = { y: { slug: 'y', segments: ['builder'] }, p: { slug: 'p', segments: [] } };
+  const a = facts({ type: 'image', project: 'y' }, segmentsOf({ project: 'y' }, projects));
+  const b = facts({ type: 'video' }, segmentsOf({}, projects));
+  assert.ok(matches(a, { seg: 'builder' }) && !matches(b, { seg: 'builder' }) && matches(b, { seg: '' }));
+  assert.ok(!matches(a, { seg: 'builder', type: 'video' }));
+  const base = { taxonomy: { segment: [{ id: 'builder' }] }, media: [], projects: [] };
+  assert.deepEqual(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['builder'], segmentSource: 'owner' }] }, []), []);
+  assert.ok(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['builder'] }] }, [])[0].includes('segmentSource'));
+  assert.ok(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['architect-guess'], segmentSource: 's' }] }, [])[0].includes('unknown segment'));
+  assert.ok(validateMedia({ ...base, media: [{ id: 'm', packageIds: [], published: true, segments: ['builder'] }] }, [])[0].includes('belong on the project'));
+});

@@ -861,3 +861,30 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
   .story-guide__item { padding: 20px; }
   .audiences { gap: 20px; }
 }
+
+/* Architecture & design: text and media together (James, Sep 27 2026) */
+.pair { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(28px, 5vw, 80px); align-items: center; }
+.pair--flip { align-items: start; }
+.pair__text .h2 { margin-top: 0; }
+.pair-fig { margin: 0; }
+.pair-fig .still { aspect-ratio: 4 / 3; }
+.pair-fig .still--vertical { aspect-ratio: 4 / 5; }
+.pair-fig img { width: 100%; height: 100%; object-fit: cover; }
+.pair-fig figcaption { margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+.on-dark .pair-fig figcaption { color: var(--on-dark-muted, #b9bfb8); }
+.pair__media--sticky { position: sticky; top: 112px; }
+.arch-intro .pair { margin-bottom: clamp(36px, 4vw, 56px); }
+#why .why-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.story-guide__fig, .story-guide__film { display: block; margin: calc(-1 * clamp(24px, 2.4vw, 36px)) calc(-1 * clamp(24px, 2.4vw, 36px)) 20px; text-decoration: none; }
+.story-guide__fig .still, .story-guide__film .still { aspect-ratio: 16 / 9; display: block; position: relative; }
+.story-guide__fig img, .story-guide__film img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.story-guide__fig figcaption { padding: 8px clamp(24px, 2.4vw, 36px) 0; }
+.story-guide__film .sw-card__play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.story-guide__filmcap { display: block; padding: 8px clamp(24px, 2.4vw, 36px) 0; font-size: 13.5px; color: var(--charcoal); text-decoration: underline; text-underline-offset: 3px; }
+.regallery--arch .regallery__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.gcard__title a { color: inherit; text-decoration: none; } .gcard__title a:hover, .gcard__title a:focus-visible { text-decoration: underline; }
+.gcard__go { color: inherit; white-space: nowrap; }
+@media (max-width: 1000px) { .regallery--arch .regallery__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .pair { grid-template-columns: 1fr; } .pair__media--sticky { position: static; } #why .why-list { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .regallery--arch .regallery__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; } .regallery--arch .gcard__sub { font-size: 12.5px; } }
+.pair-fig figcaption a { display: inline-block; padding: 4px 0; min-height: 24px; }

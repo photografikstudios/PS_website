@@ -1,32 +1,34 @@
-// Real Estate gallery: package × media type filters, Load More, and a configurable player.
-// Player mode comes from content/site.json (galleries.realEstate.player): 'inline' plays in the card,
-// 'lightbox' opens the shared viewer. Review builds also accept ?player=inline|lightbox for comparison.
+// Filterable service galleries (Real Estate; Architecture & Design): package / segment × media type filters,
+// Load More, and a configurable player. One media collection (content/work.json) feeds every gallery.
+// Player mode comes from data-player: 'inline' plays in the card, 'lightbox' opens the shared viewer.
+// Review builds also accept ?player=inline|lightbox for comparison.
 import { matches, optionCounts } from './gallery-core.js';
 import { createLightbox } from './lightbox.js';
 // Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
 const track = (name, props) => window.pgkTrack?.(name, props);
+// Form field name → filter key (the URL keeps the readable name).
+const KEYS = { package: 'pkg', segment: 'seg', type: 'type' };
 
-const root = document.querySelector('[data-regallery]');
-if (root) {
+for (const root of document.querySelectorAll('[data-regallery]')) {
+  const where = root.dataset.where || 'real_estate';
   const items = JSON.parse(root.querySelector('[data-gallery-items]').textContent);
-  const cards = [...root.querySelectorAll('.gcard')];
-  // The package filter is only rendered once at least one package has a verified example; otherwise use an inert stand-in.
-  const pkgLive = root.querySelector('#rg-package');
-  const pkgSel = pkgLive || Object.assign(document.createElement('select'), { innerHTML: '<option value="">All packages</option>' });
-  const typeSel = root.querySelector('#rg-type');
-  const resetBtn = root.querySelector('.filters__clear');
-  const count = root.querySelector('#rg-count');
-  const empty = root.querySelector('#rg-empty');
-  const emptyTitle = root.querySelector('#rg-empty-title');
-  const more = root.querySelector('#rg-more');
+  const grid = root.querySelector('.regallery__grid');
+  const cards = [...grid.querySelectorAll('.gcard')];
+  const form = root.querySelector('[data-rg-filters]');
+  const sels = () => [...form.querySelectorAll('select')].filter((s) => KEYS[s.name]);
+  const resetBtn = form.querySelector('.filters__clear');
+  const count = root.querySelector('.filters__count');
+  const empty = root.querySelector('.empty');
+  const emptyTitle = empty.querySelector('.h3');
+  const more = root.querySelector('.regallery__more button');
   // Phones get a shorter first batch so the page stays scannable.
-  const BATCH = matchMedia('(max-width: 620px)').matches ? 6 : Number(root.dataset.batch) || 9;
+  const BATCH = matchMedia('(max-width: 620px)').matches ? Number(root.dataset.batchPhone) || 6 : Number(root.dataset.batch) || 9;
 
   const params = new URLSearchParams(location.search);
   let mode = root.dataset.player === 'lightbox' ? 'lightbox' : 'inline';
   if (root.hasAttribute('data-allow-player-override') && ['inline', 'lightbox'].includes(params.get('player'))) mode = params.get('player');
   root.dataset.mode = mode;
-  const lb = mode === 'lightbox' ? createLightbox(root.querySelector('dialog'), items, { where: 'real_estate' }) : null;
+  const lb = mode === 'lightbox' ? createLightbox(root.querySelector('dialog'), items, { where }) : null;
 
   let shown = BATCH;
   let current = [];
@@ -54,7 +56,7 @@ if (root) {
     pauseAll(v);
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
     v.focus({ preventScroll: true });
-    track('video_play', { video: d.id, where: 'real_estate_inline' });
+    track('video_play', { video: d.id, where: `${where}_inline` });
   }
 
   if (mode === 'inline') {
@@ -69,7 +71,7 @@ if (root) {
     }
   }
 
-  root.querySelector('#rg-grid').addEventListener('click', (e) => {
+  grid.addEventListener('click', (e) => {
     const btn = e.target.closest('button.gcard__open');
     if (!btn) return;
     const card = btn.closest('.gcard');
@@ -78,17 +80,19 @@ if (root) {
   });
 
   // ---------- filters ----------
-  const labels = (sel) => Object.fromEntries([...sel.options].map((o) => [o.value, o.textContent.replace(/\s*\(\d+\)$/, '')]));
-  const pkgLabels = labels(pkgSel);
-  const typeLabels = labels(typeSel);
+  const labelMap = new Map();
+  const labelsOf = (sel) => { if (!labelMap.has(sel)) labelMap.set(sel, Object.fromEntries([...sel.options].map((o) => [o.value, o.textContent.replace(/\s*\(\d+\)$/, '')]))); return labelMap.get(sel); };
+  sels().forEach(labelsOf);
   const valid = (sel, v) => [...sel.options].some((o) => o.value === v);
-  if (valid(pkgSel, params.get('package'))) pkgSel.value = params.get('package');
-  if (valid(typeSel, params.get('type'))) typeSel.value = params.get('type');
+  const byKey = (k) => sels().find((s) => KEYS[s.name] === k);
+  for (const sel of sels()) if (valid(sel, params.get(sel.name))) sel.value = params.get(sel.name);
   // Old /work?service=… links redirect here with their query; keep that intent when no type is given.
-  else { const svc = { video: 'video', photography: 'photo', drone: 'drone' }[params.get('service')]; if (svc && valid(typeSel, svc)) typeSel.value = svc; }
+  const typeSel = byKey('type');
+  if (typeSel && !params.get('type')) { const svc = { video: 'video', photography: 'photo', drone: 'drone' }[params.get('service')]; if (svc && valid(typeSel, svc)) typeSel.value = svc; }
+  const filtersNow = () => Object.fromEntries(sels().map((s) => [KEYS[s.name], s.value]));
 
   function render({ push = true, source } = {}) {
-    const f = { pkg: pkgSel.value, type: typeSel.value };
+    const f = filtersNow();
     current = items.map((it, i) => (matches(it, f) ? i : -1)).filter((i) => i >= 0);
     const on = new Set(current.slice(0, shown));
     for (const card of cards) {
@@ -99,36 +103,49 @@ if (root) {
     const n = current.length;
     count.textContent = n === 1 ? '1 piece' : `${n} pieces`;
     empty.hidden = n > 0;
-    if (!n) emptyTitle.textContent = f.pkg ? `No confirmed ${pkgLabels[f.pkg]} examples${f.type ? ` in ${typeLabels[f.type].toLowerCase()}` : ''} yet.` : 'Nothing matches this filter yet.';
+    if (!n) {
+      const lab = (k) => { const s = byKey(k); return s ? labelsOf(s)[f[k]] : ''; };
+      const typeWord = f.type ? ` in ${lab('type').toLowerCase()}` : '';
+      emptyTitle.textContent = f.pkg ? `No confirmed ${lab('pkg')} examples${typeWord} yet.`
+        : f.seg ? `Nothing for ${lab('seg')}${typeWord} yet.` : 'Nothing matches this filter yet.';
+    }
     const left = n - Math.min(shown, n);
     more.hidden = left <= 0;
     more.textContent = `Load more (${left})`;
-    resetBtn.hidden = !f.pkg && !f.type;
-    const pc = optionCounts(items, f, 'pkg', [...pkgSel.options].map((o) => o.value));
-    for (const o of pkgSel.options) o.textContent = o.value ? `${pkgLabels[o.value]} (${pc[o.value]})` : pkgLabels[''];
-    const tc = optionCounts(items, f, 'type', [...typeSel.options].map((o) => o.value));
-    for (const o of typeSel.options) o.textContent = o.value ? `${typeLabels[o.value]} (${tc[o.value]})` : typeLabels[''];
+    resetBtn.hidden = !Object.values(f).some(Boolean);
+    for (const sel of sels()) {
+      const k = KEYS[sel.name]; const labels = labelsOf(sel);
+      const c = optionCounts(items, f, k, [...sel.options].map((o) => o.value));
+      for (const o of sel.options) o.textContent = o.value ? `${labels[o.value]} (${c[o.value]})` : labels[''];
+    }
     if (push) {
       const url = new URL(location.href);
-      f.pkg ? url.searchParams.set('package', f.pkg) : url.searchParams.delete('package');
-      f.type ? url.searchParams.set('type', f.type) : url.searchParams.delete('type');
+      for (const sel of sels()) sel.value ? url.searchParams.set(sel.name, sel.value) : url.searchParams.delete(sel.name);
       history.replaceState(null, '', url);
     }
-    if (source) track('gallery_filter', { where: 'real_estate', filter: source, package: f.pkg || 'all', type: f.type || 'all', results: n });
+    if (source) track('gallery_filter', { where, filter: source, ...Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v || 'all'])), results: n });
   }
 
-  pkgLive?.addEventListener('change', () => { shown = BATCH; render({ source: 'package' }); });
-  typeSel.addEventListener('change', () => { shown = BATCH; render({ source: 'type' }); });
-  const reset = (focusEl) => { pkgSel.value = ''; typeSel.value = ''; shown = BATCH; render({ source: 'reset' }); focusEl.focus(); };
-  root.querySelector('[data-rg-filters]').addEventListener('reset', (e) => { e.preventDefault(); reset(pkgLive || typeSel); });
-  root.querySelector('[data-rg-show-all]').addEventListener('click', () => { pkgSel.value = ''; shown = BATCH; render({ source: 'show_all' }); (pkgLive || typeSel).focus(); });
+  form.addEventListener('change', (e) => {
+    const sel = e.target.closest('select');
+    if (!sel || !KEYS[sel.name]) return;
+    shown = BATCH; render({ source: sel.name });
+  });
+  const first = () => sels()[0];
+  form.addEventListener('reset', (e) => { e.preventDefault(); for (const s of sels()) s.value = ''; shown = BATCH; render({ source: 'reset' }); first()?.focus(); });
+  root.querySelector('[data-rg-show-all]').addEventListener('click', () => {
+    // Clear the audience/package filter and keep the media type (the empty state is about the narrower filter).
+    for (const s of sels()) if (KEYS[s.name] !== 'type') s.value = '';
+    if (!sels().some((s) => KEYS[s.name] !== 'type') && typeSel) typeSel.value = '';
+    shown = BATCH; render({ source: 'show_all' }); first()?.focus();
+  });
   more.addEventListener('click', () => {
-    const first = current[shown];
+    const firstNew = current[shown];
     shown += BATCH;
     render({ push: false });
     // Keyboard users continue from the first newly revealed item.
-    root.querySelector(`.gcard[data-i="${first}"] .gcard__open, .gcard[data-i="${first}"] video`)?.focus?.();
-    track('gallery_load_more', { where: 'real_estate', shown: Math.min(shown, current.length) });
+    root.querySelector(`.gcard[data-i="${firstNew}"] .gcard__open, .gcard[data-i="${firstNew}"] video`)?.focus?.();
+    track('gallery_load_more', { where, shown: Math.min(shown, current.length) });
   });
 
   render({ push: false });

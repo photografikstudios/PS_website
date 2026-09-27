@@ -40,7 +40,22 @@
         "id": "creator-studios",
         "label": "Creator Studios"
       }
-    ]
+    ],
+    "segment": [
+      {
+        "id": "architect",
+        "label": "Architects"
+      },
+      {
+        "id": "builder",
+        "label": "Builders"
+      },
+      {
+        "id": "designer",
+        "label": "Designers"
+      }
+    ],
+    "_segmentReadme": "Architecture & Design gallery segments (James, Sep 27 2026). A PROJECT carries 'segments' only with evidence recorded in 'segmentSource'; its media inherit them. Never infer a segment from a house name. A segment with no mapped media is not shown as a filter."
   },
   "projects": [
     {
@@ -105,7 +120,11 @@
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026. Film needs an MP4 export before it can be shown.",
       "heroOrientation": "vertical",
-      "path": "/architecture-design/yankee-home-builders"
+      "path": "/architecture-design/yankee-home-builders",
+      "segments": [
+        "builder"
+      ],
+      "segmentSource": "Client is Yankee Home Builders, a home builder (Codex/James direction, Sep 27 2026)."
     },
     {
       "slug": "peterson-ramlowtan",
@@ -126,7 +145,9 @@
       "rights": "approved",
       "rightsNote": "Approved for display Sept 23 2026.",
       "heroOrientation": "horizontal",
-      "path": "/architecture-design/peterson-ramlowtan"
+      "path": "/architecture-design/peterson-ramlowtan",
+      "segments": [],
+      "segmentSource": "Pending James: the project story refers to 'the designers' and a public contractor listing (BuildZoom) names Peterson & Ramlowtan LLC, so architect/builder/designer is not confirmed from an owner-approved source. Shown under All only."
     },
     {
       "slug": "revivaluxe",
@@ -370,7 +391,8 @@
       "published": true,
       "packageIds": [],
       "capturedYear": null,
-      "sortPriority": 0
+      "sortPriority": 0,
+      "_segmentNote": "Film involves designer, architect and builder but is not an attributed client project; no segment until James confirms the firms and rights."
     },
     {
       "id": "agent-market-insight",

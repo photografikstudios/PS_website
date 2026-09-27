@@ -1,6 +1,6 @@
 import { esc, join } from './lib/html.js';
 import { formatUSD, resolvePrice, inclusion, includeLabels, tierLabel, findTier } from './lib/pricing-core.js';
-import { facts, editorialOrder, TYPE_FILTERS, optionCounts } from './lib/gallery-core.js';
+import { facts, editorialOrder, TYPE_FILTERS, optionCounts, segmentsOf } from './lib/gallery-core.js';
 
 const arrow = '<span aria-hidden="true">→</span>';
 
@@ -68,7 +68,7 @@ export function buildPages(ctx) {
   const galFull = (m) => (m.type === 'video' ? ctx.mediaUrl(m.src) : ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
   const galleryItem = (m) => ({
     id: m.id, title: m.title, sub: [m.client, m.location].filter(Boolean).join(' · '), src: galFull(m),
-    poster: m.type === 'video' ? galThumb(m) : null, alt: m.alt || m.title, category: m.category, orientation: m.orientation, ...facts(m),
+    poster: m.type === 'video' ? galThumb(m) : null, alt: m.alt || m.title, category: m.category, orientation: m.orientation, ...facts(m, segmentsOf(m, projectBySlug)),
     captions: m.type === 'video' && m.captions && m.captions !== 'burned-in' ? m.captions : undefined,
     openCaptions: m.openCaptions || undefined,
   });
@@ -731,20 +731,48 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const repOf = (items) => [...items].sort((x, y) => ((y.type === 'video' && y.orientation === 'horizontal') - (x.type === 'video' && x.orientation === 'horizontal')) || ((y.sortPriority || 0) - (x.sortPriority || 0)))[0];
   const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
   const archMedia = media.filter((m) => m.category === 'architecture-design');
-  // Owner correction, Sep 27 2026: the landing page sells the story first; projects appear as compact cards with
-  // ONE representative asset each (full sets on the project pages). Media without a verified project stay together in
-  // a compact "more work" grid and are never attached to a client by guess.
-  const archCardSizes = '(min-width: 1200px) 24vw, (min-width: 700px) 32vw, 50vw';
+  const archById = Object.fromEntries(archMedia.map((m) => [m.id, m]));
+  // James, Sep 27 2026: explanation and evidence sit together. Each supporting image is used once on this page;
+  // captions name only what is verified (a house or place, or a client project with its page).
+  const archPairIds = { intro: 'ph-142-two-holes', photo: 'ph-38-woodland', detail: 'peterson-detail' };
+  const archUsed = new Set(Object.values(archPairIds));
+  const archFig = (id, { sizes = '(min-width: 900px) 40vw, 100vw', cls = '' } = {}) => {
+    const m = archById[id]; if (!m) return '';
+    const pr = m.project ? projectBySlug[m.project] : null;
+    const cap = pr && visible(pr)
+      ? `${esc(m.alt || m.title)}. <a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_pair">${esc(pr.client || pr.title)}${pr.location ? `, ${esc(pr.location)}` : ''}</a>`
+      : `${esc(m.title)}${m.location && !m.title.includes(m.location) ? `, ${esc(m.location)}` : ''}`;
+    return `<figure class="pair-fig ${cls}" data-media="${esc(m.id)}"><div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div><figcaption>${cap}</figcaption></figure>`;
+  };
+  // Gallery (Home Selected Work style, same work.json collection): ONE item per project (its lead asset; the rest stay
+  // on the project page) plus approved work without a verified project. Segments come from the project, never a house name.
   const archProjects = work.projects.filter((p) => p.category === 'architecture-design' && visible(p))
-    .map((p) => { const items = archMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: deliveredOf(items) }; })
-    .filter((x) => x.items.length);
-  const archMore = archMedia.filter((m) => !m.project || !archProjects.some((x) => x.p.slug === m.project));
-  // Early proof (Codex, Sep 27): the verified project cards plus the 99 Hedges film as a labelled film teaser
-  // (not attributed to a client). Everything else stays in the compact portfolio grid lower down.
-  const archTeaser = archMore.find((m) => m.id === 'arch-99-hedges-amagansett' && m.type === 'video');
-  const archProof = [...archProjects, ...(archTeaser ? [{ p: null, rep: archTeaser, label: '99 Hedges Lane' }] : [])].slice(0, 4);
+    .map((p) => ({ p, rep: repOf(archMedia.filter((m) => m.project === p.slug)) })).filter((x) => x.rep);
+  const archGallery = [
+    ...archProjects.map((x) => x.rep),
+    ...editorialOrder(archMedia.filter((m) => !m.project || !projectBySlug[m.project] || !visible(projectBySlug[m.project]))).sort((x, y) => (y.type === 'video') - (x.type === 'video')),
+  ].filter((m) => !archUsed.has(m.id) && (m.type !== 'video' || m.poster));
+  const archFacts = archGallery.map((m) => facts(m, segmentsOf(m, projectBySlug)));
+  const segOptions = (work.taxonomy.segment || []);
+  const segCounts = optionCounts(archFacts, { type: '' }, 'seg', ['', ...segOptions.map((x) => x.id)]);
+  const segLive = segOptions.filter((x) => segCounts[x.id] > 0);
+  const archTypes = TYPE_FILTERS.filter((t) => t.id !== 'drone');
+  const archTypeCounts = optionCounts(archFacts, { seg: '' }, 'type', archTypes.map((t) => t.id));
+  const archVideo = archGallery.find((m) => m.type === 'video');
+  const archCard = (m, i) => {
+    const pr = m.project && projectBySlug[m.project] && visible(projectBySlug[m.project]) ? projectBySlug[m.project] : null;
+    const kind = m.type === 'video' ? 'video' : 'image';
+    return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}>
+      <button type="button" class="gcard__open" aria-label="${kind === 'video' ? 'Play' : 'View'} ${esc(pr ? (pr.client || pr.title) : m.title)}">
+        <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
+        ${kind === 'video' ? playIcon : ''}
+      </button>
+      <div class="gcard__meta"><p class="gcard__title">${pr ? `<a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_gallery">${esc(pr.client || pr.title)}</a>` : esc(m.title)}</p><p class="gcard__sub">${esc([(pr?.location || m.location), kind === 'video' ? 'Film' : 'Photo', ...(pr ? segmentsOf(m, projectBySlug).map((id) => segOptions.find((x) => x.id === id)?.label.replace(/s$/, '')) : [])].filter(Boolean).join(' · '))}${pr ? ` · <a class="gcard__go" href="${projectPath(pr)}" aria-label="View the ${esc(pr.client || pr.title)} project">View project →</a>` : ''}</p></div>
+    </article>`;
+  };
   pages['/architecture-design'] = {
     overlay: true,
+    scripts: ['re-gallery.js'],
     body: `${pageHero({
       eyebrow: 'Architecture & design',
       title: 'Your work, presented with <em>the care it was built with.</em>',
@@ -753,12 +781,13 @@ ${agentMonthly.length ? `<section class="section section--tint">
       video: { loop: 'arch-99-hedges-amagansett', film: 'arch-99-hedges-amagansett' },
     })}
 <section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
-  <div class="wrap split">
-    <div class="split__label"><p class="eyebrow">Who this is for</p></div>
-    <div>
+  <div class="wrap pair">
+    <div class="pair__text">
+      <p class="eyebrow">Who this is for</p>
       <h2 class="h2 reveal" id="arch-intro-h">Your next client is judging more than <em>the finished room.</em></h2>
       <p class="lede">Before they call, the people you want to work with are trying to understand your point of view, your craft and what it will be like to work with you. We start with who you want to win next and where the media will be used, then recommend the coverage that helps them see it.</p>
     </div>
+    ${archFig(archPairIds.intro, { cls: 'pair__media' })}
   </div>
   <div class="wrap">
     <ul class="audiences" role="list">
@@ -775,32 +804,41 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <p class="eyebrow">Which story should we tell?</p>
     <h2 class="h2 reveal" id="arch-story-h">Pick the story that wins <em>the next project.</em></h2>
     <div class="story-guide">
-      <div class="story-guide__item reveal"><p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
-      <div class="story-guide__item reveal"><p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
+      <div class="story-guide__item reveal">${archFig(archPairIds.photo, { sizes: '(min-width: 1000px) 30vw, 100vw', cls: 'story-guide__fig' })}<p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
+      <div class="story-guide__item reveal">${archVideo ? `<a class="story-guide__film" href="?type=video#portfolio" data-track="gallery_filter" data-track-location="arch_story_film"><span class="still still--horizontal"><img src="${esc(galThumb(archVideo))}" alt="" loading="lazy" decoding="async">${playIcon}</span><span class="story-guide__filmcap">Watch the ${esc(archVideo.title.split(':')[0])} film in the gallery</span></a>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
       <div class="story-guide__item reveal"><p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
     </div>
     <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
   </div>
 </section>
 
-<section class="section section--tight" id="selected-projects" aria-labelledby="arch-proof-h">
+<section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-batch="8" data-batch-phone="4">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Selected projects</p><h2 class="h3 reveal" id="arch-proof-h">Recent work, one project at a time.</h2></div><a class="link-arrow" href="#portfolio" data-track="project_click" data-track-location="arch_proof_more">More work ${arrow}</a></div>
-    <ul class="pgrid pgrid--proof" role="list">${join(archProof, (x) => x.p ? `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
-      <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, archCardSizes) : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, archCardSizes)}</a>`}</div>
-      <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="arch_proof">${esc(x.p.client || x.p.title)}</a></h3>
-      <p class="pgrid__meta">${esc(x.delivered.join(' · '))}${x.p.location ? ` · ${esc(x.p.location)}` : ''}</p>
-    </li>` : `<li class="pgrid__item" data-media="${esc(x.rep.id)}">
-      <div class="pgrid__media">${repFrame(x.rep, archCardSizes)}</div>
-      <h3 class="pgrid__title">${esc(x.label)}</h3>
-      <p class="pgrid__meta">Film${x.rep.location ? ` · ${esc(x.rep.location)}` : ''}</p>
-    </li>`)}</ul>
+    <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Recent work, <em>one project at a time.</em></h2></div></div>
+    <form class="filters filters--inline" data-rg-filters aria-label="Filter architecture and design work" onsubmit="return false">
+      ${segLive.length ? `<div class="filters__field"><label for="ag-segment">Work for</label>
+        <select id="ag-segment" name="segment"><option value="">All work</option>${join(segLive, (x) => `<option value="${x.id}">${esc(x.label)} (${segCounts[x.id]})</option>`)}</select></div>` : ''}
+      <div class="filters__field"><label for="ag-type">Media</label>
+        <select id="ag-type" name="type">${join(archTypes.filter((t) => !t.id || archTypeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}${t.id ? ` (${archTypeCounts[t.id]})` : ''}</option>`)}</select></div>
+      <button type="reset" class="filters__clear" hidden>Reset filters</button>
+    </form>
+    <p class="filters__count" id="ag-count" aria-live="polite">${archGallery.length} pieces</p>
+    <p class="regallery__note">We label work by architect, builder or designer once the firm and its role are confirmed. Everything else is under All work. Each project card opens that project's own page with the full set.</p>
+    <div class="regallery__grid" id="ag-grid">${join(archGallery, archCard)}</div>
+    <div class="empty" id="ag-empty" hidden>
+      <p class="h3" id="ag-empty-title">Nothing matches this filter yet.</p>
+      <p>We add work to a group once the firm and its role are confirmed. See everything in the meantime, or ask us for examples like yours.</p>
+      <p><button type="button" class="btn btn--gold" data-rg-show-all>Show all work</button></p>
+    </div>
+    <div class="regallery__more"><button type="button" class="btn btn--light" id="ag-more" hidden>Load more</button></div>
   </div>
+  ${lightboxDialog()}
+  ${itemsJson(archGallery)}
 </section>
 
 <section class="section" id="why" aria-labelledby="arch-why-h">
-  <div class="wrap">
-    <div>
+  <div class="wrap pair pair--flip">
+    <div class="pair__text">
       <p class="eyebrow">How we help</p>
       <h2 class="h2 reveal" id="arch-why-h">Future clients see your thinking, your craft <em>and what it is like to work with you.</em></h2>
       <ul class="why-list" role="list">
@@ -812,6 +850,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       </ul>
       <p class="small muted">Every architecture and design project is quoted to its scope. Coverage, deliverables, usage and licensing are set out in a written estimate.</p>
     </div>
+    ${archFig(archPairIds.detail, { cls: 'pair__media pair__media--sticky' })}
   </div>
 </section>
 
@@ -827,16 +866,6 @@ ${agentMonthly.length ? `<section class="section section--tint">
       <li class="reveal"><span class="steps__n">03 / Produce</span><h3>We shoot and deliver.</h3><p>Photography and film on site, one agreed review round, then files in the formats each use needs.</p></li>
     </ol>
     <p class="arch-path__cta"><a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_path">Start a Project</a></p>
-  </div>
-</section>
-
-<section class="section" id="portfolio" aria-labelledby="arch-more-h">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Portfolio</p><h2 class="h3 reveal" id="arch-more-h">More architecture and design work</h2></div></div>
-    <ul class="pgrid pgrid--more" role="list">${join(archMore.filter((m) => !archProof.some((x) => !x.p && x.rep.id === m.id)), (m) => `<li class="pgrid__item" data-media="${esc(m.id)}">
-      <div class="pgrid__media">${repFrame(m, archCardSizes)}</div>
-      <p class="pgrid__caption">${esc(m.title)}${m.location && !m.title.includes(m.location) ? `<span>${esc(m.location)}</span>` : ''}</p>
-    </li>`)}</ul>
   </div>
 </section>
 <section class="section section--brand on-dark">

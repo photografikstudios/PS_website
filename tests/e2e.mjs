@@ -1000,43 +1000,91 @@ await check('RevivaLuxe copy matches the licensed stills only', async () => {
   await p.context().close();
 });
 
-// Owner correction, Sep 27 2026: Architecture & design sells the story before the gallery.
-await check('Architecture & design: audience, story guide, differentiators and service path before compact project cards', async () => {
+// Owner corrections, Sep 27 2026: Architecture & design sells the story first, with supporting media beside the text,
+// and a segmented gallery (Home Selected Work style) from the same work.json collection.
+await check('Architecture & design: story first, text and media paired, early proof, no repeats, clear paths', async () => {
   for (const vp of [{ width: 1280, height: 720 }, { width: 375, height: 812 }]) {
     const p = await newPage(vp);
     await p.goto(base + '/architecture-design');
     const top = (sel) => p.locator(sel).evaluate((el) => el.getBoundingClientRect().top + scrollY);
     const hero = await p.locator('.page-hero').evaluate((el) => el.getBoundingClientRect().bottom + scrollY);
-    const order = [await top('#approach'), await top('#which-story'), await top('#selected-projects'), await top('#why'), await top('#how-it-works'), await top('#portfolio')];
+    const order = [await top('#approach'), await top('#which-story'), await top('#portfolio'), await top('#why'), await top('#how-it-works')];
     assert(order.every((v, i) => i === 0 || v > order[i - 1]), 'section order ' + order.join(','));
     assert(Math.abs(order[0] - hero) < 2, 'audience section directly after the hero');
     const text = await p.textContent('main');
-    for (const s of ['Architects', 'Custom builders', 'Interior designers', 'Specialty trades', 'Which story should we tell?', 'Project photography', 'Project film', 'Brand story and interviews', 'not automatic', 'Start with project proof', 'Future clients see your thinking, your craft', 'Where the scope includes them', 'Timed for light', 'Deliverables and licensing in writing', 'quoted to its scope']) assert(text.includes(s), 'missing: ' + s);
+    for (const s of ['Architects', 'Custom builders', 'Interior designers', 'Specialty trades', 'Which story should we tell?', 'Project photography', 'Project film', 'Brand story and interviews', 'not automatic', 'Start with project proof', 'Future clients see your thinking, your craft', 'Where the scope includes them', 'Deliverables and licensing in writing', 'quoted to its scope']) assert(text.includes(s), 'missing: ' + s);
     assert(!/guarantee|increase(d)? (sales|leads)|featured in|award-winning|hero of this story|We are the guide/i.test(text), 'unsupported claim or StoryBrand jargon');
-    // Early proof (Codex, Sep 27): real project evidence within ~4.5 phone screens / ~4 desktop screens.
-    assert(order[2] < (vp.width < 500 ? 812 * 4.5 : 720 * 4), 'first proof too far down: ' + order[2]);
-    const cta = p.locator('#how-it-works a.btn');
-    assert(await cta.getAttribute('href') === '/contact?type=architecture-design', 'service path CTA');
-    // Compact cards: one asset per project card; each card no taller than ~half a viewport on desktop.
-    const cards = p.locator('#selected-projects .pgrid__item[data-project]');
-    assert(await p.locator('#selected-projects .pgrid__item').count() <= 4, 'proof strip stays small');
-    const ids = await p.locator('main [data-media], main [data-project]').evaluateAll((els) => els.map((e) => e.dataset.media || e.dataset.project));
-    assert(new Set(ids).size === ids.length, 'an asset or project repeats on the landing page');
-    const n = await cards.count();
-    assert(n >= 2, 'project cards ' + n);
-    for (let i = 0; i < n; i++) {
-      const c = cards.nth(i);
-      assert(await c.locator('.pgrid__media img, .pgrid__media video').count() === 1, 'one asset per card');
-      assert(/^\/architecture-design\//.test(await c.locator('.pgrid__title a').getAttribute('href')), 'card links to its project page');
-      if (vp.width > 1000) assert((await c.boundingBox()).height < 420, 'card too tall');
+    // First real work (a captioned photo) appears with the opening text; the gallery follows the story guide.
+    const firstFig = await top('#approach .pair-fig');
+    assert(firstFig < hero + (vp.width < 500 ? 812 * 1.5 : 720), 'first supporting photo too far down: ' + firstFig);
+    assert(order[2] < (vp.width < 500 ? 812 * 5.5 : 720 * 4.5), 'gallery too far down: ' + order[2]);
+    // Pairings: on desktop the text and its photo share the row; captions exist; a project photo links to its page.
+    for (const sec of ['#approach', '#why']) {
+      const t = await p.locator(`${sec} .pair__text`).boundingBox(); const f = await p.locator(`${sec} .pair-fig`).boundingBox();
+      if (vp.width > 1000) assert(f.x > t.x + t.width - 2 && f.y < t.y + t.height, `${sec}: media not beside its text`);
+      assert((await p.locator(`${sec} .pair-fig figcaption`).textContent()).trim().length > 5, `${sec}: caption`);
     }
-    if (vp.width > 1000) {
-      const xs = await cards.evaluateAll((els) => new Set(els.map((e) => Math.round(e.getBoundingClientRect().top))).size);
-      assert(xs === 1, 'desktop project cards share one row');
-    }
+    assert(/^\/architecture-design\/peterson-ramlowtan$/.test(await p.locator('#why .pair-fig figcaption a').getAttribute('href')), 'detail photo links to its project');
+    assert(await p.locator('#which-story .story-guide__fig img').count() === 1 && await p.locator('#which-story a.story-guide__film').count() === 1, 'story guide photo and film examples');
+    // No asset appears twice on the landing page (the hero film loop is decoration and plays the same film).
+    const ids = await p.locator('main [data-media]').evaluateAll((els) => els.map((e) => e.dataset.media));
+    assert(new Set(ids).size === ids.length, 'an asset repeats on the landing page: ' + ids.join(','));
+    // Every visible image decodes.
+    await p.evaluate(async () => { document.querySelectorAll('main img').forEach((i) => { i.loading = 'eager'; }); await Promise.all([...document.querySelectorAll('main img')].map((i) => i.decode().catch(() => {}))); });
+    const broken = await p.evaluate(() => [...document.querySelectorAll('main img')].filter((i) => i.closest('[hidden]') === null && !(i.naturalWidth > 0)).map((i) => i.src));
+    assert(broken.length === 0, 'broken images ' + broken.join(','));
+    assert(await p.locator('#how-it-works a.btn').getAttribute('href') === '/contact?type=architecture-design', 'service path CTA');
     assert(await p.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'overflow');
     await p.context().close();
   }
+});
+
+await check('Architecture & design gallery: segment and media filters, counts, reset, empty state, inline film, project links', async () => {
+  const work = JSON.parse(await readFile(new URL('../content/work.json', import.meta.url), 'utf8'));
+  const p = await newPage();
+  await p.goto(base + '/architecture-design');
+  const shown = () => p.locator('#ag-grid .gcard:not([hidden])').count();
+  const total = await p.locator('#ag-grid .gcard').count();
+  assert(total >= 5 && total <= 12 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
+  // Only segments with mapped, evidenced projects are offered; nothing is inferred from a house name.
+  const segs = await p.locator('#ag-segment option').evaluateAll((os) => os.map((o) => o.value).filter(Boolean));
+  const mapped = new Set(work.projects.filter((x) => x.category === 'architecture-design' && x.segments?.length).flatMap((x) => x.segments));
+  assert(JSON.stringify(segs.sort()) === JSON.stringify([...mapped].sort()), 'segments offered ' + segs.join(','));
+  assert(segs.includes('builder') && !segs.includes('architect') && !segs.includes('designer'), 'only builder is mapped today');
+  assert(work.projects.find((x) => x.slug === 'peterson-ramlowtan').segments.length === 0, 'Peterson not tagged without owner approval');
+  await p.selectOption('#ag-segment', 'builder');
+  const b = await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project));
+  assert(b.length === 1 && b[0] === 'yankee-home-builders' && (await p.textContent('#ag-count')) === '1 piece', 'builders: Yankee only');
+  assert(new URL(p.url()).searchParams.get('segment') === 'builder' && await p.isVisible('#portfolio .filters__clear'), 'segment in URL, reset visible');
+  await p.selectOption('#ag-type', 'video');
+  assert(await shown() === 0 && await p.isVisible('#ag-empty') && (await p.textContent('#ag-empty-title')) === 'Nothing for Builders in video yet.', 'builder + video empty state: ' + await p.textContent('#ag-empty-title'));
+  assert((await p.textContent('#ag-segment option[value="builder"]')).includes('(0)'), 'segment count follows type');
+  await p.click('#portfolio [data-rg-show-all]');
+  assert(await p.inputValue('#ag-segment') === '' && await p.inputValue('#ag-type') === 'video' && await shown() >= 1, 'show all keeps media type');
+  // Inline film plays in the card, no dialog, with controls.
+  await p.locator('#ag-grid .gcard[data-kind="video"]:not([hidden]) button.gcard__open').first().click();
+  assert(await p.locator('#ag-grid video[controls]').count() === 1 && !(await p.locator('dialog[open]').count()), 'inline film');
+  const vid = await p.locator('#ag-grid video').evaluate((v) => new Promise((r) => { if (v.readyState >= 1) r(v.duration); else v.addEventListener('loadedmetadata', () => r(v.duration)); setTimeout(() => r(-1), 8000); }));
+  assert(vid > 1, 'film metadata loads ' + vid);
+  await p.selectOption('#ag-type', 'photo');
+  assert(await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.every((e) => e.dataset.kind === 'image')), 'photo filter');
+  await p.click('#portfolio .filters__clear');
+  assert(await p.inputValue('#ag-type') === '' && (await p.textContent('#ag-count')) === `${total} pieces`, 'reset');
+  // Project cards link to their pages, and those pages hold the rest of the project's media.
+  for (const slug of await p.locator('#ag-grid .gcard[data-project]').evaluateAll((es) => es.map((e) => e.dataset.project))) {
+    assert(await p.locator(`#ag-grid .gcard[data-project="${slug}"] a[href="/architecture-design/${slug}"]`).count() >= 1, slug + ' link');
+    const r = await fetch(`${base}/architecture-design/${slug}`); assert(r.status === 200, slug + ' page');
+    const html = await r.text();
+    for (const m of work.media.filter((x) => x.project === slug && x.rights === 'approved')) assert(html.includes(m.id) || html.includes(m.src), `${m.id} missing from its project page`);
+  }
+  // Labels are accessible.
+  for (const id of ['ag-segment', 'ag-type']) assert(await p.locator(`label[for="${id}"]`).count() === 1, id + ' label');
+  await p.context().close();
+  const ph = await newPage({ width: 375, height: 812 });
+  await ph.goto(base + '/architecture-design?segment=builder');
+  assert(await ph.inputValue('#ag-segment') === 'builder' && await ph.locator('#ag-grid .gcard:not([hidden])').count() === 1, 'phone deep link');
+  assert(await ph.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'phone overflow');
+  await ph.context().close();
 });
 
 // Screenshots for the handoff
