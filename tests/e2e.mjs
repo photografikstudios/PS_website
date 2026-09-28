@@ -1091,6 +1091,8 @@ await check('Commercial: property media prices, add-ons and portfolio rates; Rev
     const port = await p.locator('.cpm__portfolio .prow__price').allTextContents();
     assert(JSON.stringify(port.map((t) => t.trim())) === JSON.stringify(['Standard rate', '10% preferred rate', '15% preferred rate', 'Custom portfolio agreement']), 'portfolio ' + port);
     assert(await p.locator('.cpm .needs-approval, .cpm .price-pending').count() === 0, 'approved commercial prices shown without review tags');
+    const cpmText = await p.locator('.cpm').innerText();
+    for (const line of ['Professional media built to help owners, operators and brokers market spaces, showcase improvements, support leasing efforts and present commercial assets at their best.', 'FAA Part 107 certified pilot; subject to airspace and site restrictions.', 'Helps prospects visualize vacant or unfinished commercial spaces.', 'complex multi-property assignments can be tailored to the asset and its marketing objective.', 'Pricing effective 2026. Travel, extensive staging, specialty retouching, permits and third-party licensing may be additional.']) assert(cpmText.includes(line), 'price sheet line missing: ' + line);
     assert(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'no horizontal overflow at ' + vp.width);
     const cs = await p.locator('#case-study').innerText();
     assert(/new storefront/.test(cs) && /Team headshots/.test(cs) && !/to be written|Needs approval/i.test(cs), 'RevivaLuxe case study wording');

@@ -1000,16 +1000,17 @@ ${cp.length || b2b.length ? `<section class="section">
     <h2 class="h2 reveal">Where standard scopes begin.</h2>
     ${cp.length ? `<div class="cpm">
       <h3 class="h3">Commercial property media</h3>
-      <p class="cpm__lede">Photography, aerial, video and portfolio coverage that helps owners, operators and brokers market spaces, show improvements, support leasing and present commercial assets at their best.</p>
+      <p class="cpm__kicker">Photography · Aerial · Video · Portfolio coverage</p>
+      ${cpPort?.lede ? `<p class="cpm__lede">${esc(cpPort.lede)}</p>` : ''}
       <ul class="cpm__tiers" role="list">${join(cp, (c) => `<li class="cpm__tier">
         <p class="cpm__name">${esc(c.name)} ${needsApproval(c)}</p>
         <p class="cpm__price">${approvedPrice(c, `${formatUSD(c.amount)}${c.plus ? '+' : ''}`)}</p>
         ${c.summary ? `<p class="cpm__summary">${esc(c.summary)}</p>` : ''}
         ${c.scope ? `<p class="cpm__scope"><span class="cpm__label">Typical scope</span> ${esc(c.scope)}</p>` : ''}
       </li>`)}</ul>
-      <p class="small muted cpm__how">The level is set by the overall production scope: the number of buildings and spaces, interior and exterior coverage, complexity and time on site, not square footage alone. The sizes above are general guidelines.</p>
+      <p class="small muted cpm__how">The level is set by the overall production scope: the number of buildings and spaces, interior and exterior coverage, complexity and time on site, not square footage alone. The square footage ranges above are general guidelines.</p>
       ${cpAdd.length ? `<h4 class="cpm__sub">Popular add-ons</h4><ul class="cpm__addons" role="list">${join(cpAdd, (a) => `<li><p class="cpm__name">${esc(a.name)} ${needsApproval(a)}</p><p class="cpm__addprice">${approvedPrice(a, esc(a.price))}</p><p class="small muted">${esc(a.detail)}</p></li>`)}</ul>` : ''}
-      ${cpPort ? `<h4 class="cpm__sub">Portfolio pricing</h4><p class="small">${esc(cpPort.intro)}</p><ul class="prows prows--compact cpm__portfolio">${join(cpPort.tiers, ([n, r]) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(n)}</p></div><div class="prow__price">${approvedPrice(cpPort, `<strong>${esc(r)}</strong>`)}</div></li>`)}</ul><p class="small muted">${esc(cpPort.fine)} Large developments, hospitality, construction progress, acquisition documentation and multi-property assignments are scoped to the asset and its marketing goal.</p>` : ''}
+      ${cpPort ? `<h4 class="cpm__sub">Portfolio pricing</h4><p class="small">${esc(cpPort.intro)}</p><ul class="prows prows--compact cpm__portfolio">${join(cpPort.tiers, ([n, r]) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(n)}</p></div><div class="prow__price">${approvedPrice(cpPort, `<strong>${esc(r)}</strong>`)}</div></li>`)}</ul><p class="small muted">${esc(cpPort.fine)}</p>${cpPort.custom ? `<p class="cpm__custom"><strong>Need a custom scope?</strong> ${esc(cpPort.custom)}</p>` : ''}` : ''}
     </div>` : ''}
     ${b2b.length ? `<div class="two-col two-col--top cpm__monthly">
       <div><h3 class="h3">Monthly business content</h3><ul class="prows prows--compact">${join(b2b, (o) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(o.name)} ${needsApproval(o)}</p><p class="prow__detail">${esc(o.scope.join(' · '))}</p></div><div class="prow__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/mo<br><span class="small muted">${formatUSD(o.contract)}/mo on 12 months</span>`)}</div></li>`)}</ul><p class="small muted">12-month rates are billed monthly. Larger annual programs are planned with you.</p></div>

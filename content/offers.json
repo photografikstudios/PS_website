@@ -188,7 +188,7 @@
       "id": "cp-aerial",
       "name": "Aerial photography",
       "price": "+$300",
-      "detail": "FAA Part 107 certified pilot, subject to airspace and site restrictions.",
+      "detail": "FAA Part 107 certified pilot; subject to airspace and site restrictions.",
       "approval": "approved"
     },
     {
@@ -209,7 +209,7 @@
       "id": "cp-staging",
       "name": "Virtual staging",
       "price": "$150+ per image",
-      "detail": "Helps prospects picture vacant or unfinished commercial spaces.",
+      "detail": "Helps prospects visualize vacant or unfinished commercial spaces.",
       "approval": "approved"
     }
   ],
@@ -234,7 +234,9 @@
       ]
     ],
     "approval": "approved",
-    "fine": "Pricing effective 2026. Travel, extensive staging, specialty retouching, permits and third-party licensing may be additional."
+    "fine": "Pricing effective 2026. Travel, extensive staging, specialty retouching, permits and third-party licensing may be additional.",
+    "custom": "Large developments, hospitality, construction progress, acquisition documentation and complex multi-property assignments can be tailored to the asset and its marketing objective.",
+    "lede": "Professional media built to help owners, operators and brokers market spaces, showcase improvements, support leasing efforts and present commercial assets at their best."
   },
   "_commercialSource": "James, Sep 28 2026: Commercial Property Media price sheet (sent in chat), approved for the site. Pricing release for production still follows pricing.json releaseApproved."
 }
