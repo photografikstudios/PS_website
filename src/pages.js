@@ -48,7 +48,8 @@ export function buildPages(ctx) {
 </section>`;
   };
 
-  const mediaCard = (m, { showMeta = true, sizes } = {}) => {
+  // James, Sep 28 2026: galleries show the media only, with no captions beneath (names stay in alt text and labels).
+  const mediaCard = (m, { showMeta = false, sizes } = {}) => {
     const project = m.project ? projectBySlug[m.project] : null;
     const href = project && visible(project) ? projectPath(project) : null;
     const frame = m.type === 'video'
@@ -215,7 +216,6 @@ export function buildPages(ctx) {
       ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${i >= homeLimit ? ' hidden' : ''}>
         <img src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async">
         ${m.type === 'video' ? playIcon : ''}
-        <span class="sw-card__title">${esc(m.title)}${m.location ? ` <span class="sw-card__loc">${esc(m.location)}</span>` : ''}</span>
       </button>`)}
     </div>
     <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">start a project</a>.</p>
@@ -478,9 +478,6 @@ ${join(topicsUsed, (t) => `
   const pkgCounts = optionCounts(reFacts, { type: '' }, 'pkg', ['', ...pkgOptions.map((p) => p.id)]);
   // Only offer a package filter for packages with at least one verified example (James, Sep 25: labels stay blank until checked).
   const pkgTagged = pkgOptions.filter((p) => pkgCounts[p.id] > 0);
-  const pkgNote = pkgTagged.length
-    ? 'We label a piece with a package only after confirming what was delivered. Unlabelled pieces appear under All packages.'
-    : 'Package labels are added only after we confirm what each shoot delivered, so none are shown yet. Every piece is here; filter by media type.';
   const typeCounts = optionCounts(reFacts, { pkg: '' }, 'type', TYPE_FILTERS.map((t) => t.id));
   const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}"${i >= reBatch ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}">
@@ -500,7 +497,6 @@ ${join(topicsUsed, (t) => `
       <button type="reset" class="filters__clear" hidden>Reset filters</button>
     </form>
     <p class="filters__count sr-only" id="rg-count" aria-live="polite">${reItems.length} results</p>
-    <p class="regallery__note">${pkgNote}</p>
     <div class="regallery__grid" id="rg-grid">${join(reItems, reCard)}</div>
     <div class="empty" id="rg-empty" hidden>
       <p class="h3" id="rg-empty-title">No confirmed examples for this package yet.</p>
@@ -823,7 +819,6 @@ ${agentMonthly.length ? `<section class="section section--tint">
         <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
         ${kind === 'video' ? playIcon : ''}
       </button>
-      <div class="gcard__meta"><p class="gcard__title">${pr ? `<a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_gallery">${esc(pr.client || pr.title)}</a>` : esc(m.title)}</p><p class="gcard__sub">${esc([(pr?.location || m.location), ...(pr ? segmentsOf(m, projectBySlug).map((id) => segOptions.find((x) => x.id === id)?.label.replace(/s$/, '')) : [])].filter(Boolean).join(' · '))}</p></div>
     </article>`;
   };
   pages['/architecture-design'] = {
@@ -887,6 +882,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       <p><button type="button" class="btn btn--gold" data-rg-show-all>Show all work</button></p>
     </div>
     <div class="regallery__more"><button type="button" class="btn btn--light" id="ag-more" hidden>Load more</button></div>
+    <nav class="gallery-projects" aria-label="Architecture and design projects"><span class="gallery-projects__label">Projects</span>${join(archProjects.map((x) => x.p), (p) => `<a href="${projectPath(p)}" data-track="project_click" data-track-location="arch_gallery">${esc(p.client || p.title)}</a>`)}</nav>
   </div>
   ${lightboxDialog()}
   <script type="application/json" data-gallery-items>${JSON.stringify(archEntries.map((e, i) => ({ ...galleryItem(e.m), ...archFacts[i] }))).replace(/</g, '\\u003c')}</script>
@@ -988,7 +984,6 @@ ${caseStudy ? `<section class="section section--ink on-dark" id="case-study" ari
     <ul class="pgrid" role="list">${join(comProjects, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
       <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw') : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw')}</a>`}</div>
       <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="com_grid">${esc(x.p.client || x.p.title)}</a></h3>
-      <p class="pgrid__meta">${esc(x.delivered.join(' · '))}${x.p.location ? ` · ${esc(x.p.location)}` : ''}</p>
       <a class="link-arrow pgrid__go" href="${projectPath(x.p)}" aria-label="View the ${esc(x.p.client || x.p.title)} project">View project ${arrow}</a>
     </li>`)}</ul>
   </div>

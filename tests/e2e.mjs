@@ -557,8 +557,9 @@ await check('RE gallery: untagged catalog hides the package control (no (0) opti
   assert(await p.locator('#rg-package').count() === 0, 'no package control while nothing is tagged');
   assert(!(await p.locator('#portfolio').textContent()).match(/\(0\)/), 'no zero-result options');
   assert(!(await p.isVisible('#rg-empty')) && (await p.textContent('#rg-count')) === `${total} results`, 'stale ?package= link falls back to all work');
-  const note = await p.textContent('.regallery__note');
-  assert(/none are shown yet/.test(note) && !/some pieces/.test(note), 'note: ' + note);
+  // James, Sep 28 2026: no note about pieces or tagging; the gallery shows the media only.
+  assert(await p.locator('#portfolio .regallery__note').count() === 0 && !/piece/i.test(await p.textContent('#portfolio')), 'no pieces note');
+  assert(await p.locator('#rg-grid .gcard__meta, #rg-grid figcaption').count() === 0, 'no captions under RE tiles');
   await p.focus('#rg-type');
   await p.keyboard.press('ArrowDown');
   await p.selectOption('#rg-type', 'video');
@@ -966,7 +967,8 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
     assert(cues >= (id === 'revivaluxe-film' ? 1 : 2), `${id} parsed cues ${cues}`);
     // James, Sep 26 2026: Creator videos need no separate transcripts (they carry burned-in captions plus a CC track).
     assert(await card.locator('a[href="/captions/' + id + '.txt"]').count() === 0, `${id} no visible transcript link`);
-    if (id.startsWith('cs-')) assert(/machine-transcribed draft/.test(await card.locator('.needs-approval').last().getAttribute('title') || ''), `${id} draft tag`);
+    // James, Sep 28 2026: no captions beneath gallery media (caption proofing stays on the owner list).
+    assert(await card.locator('.card__meta, figcaption').count() === 0, `${id} no caption beneath`);
   }
   // James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed, so both RevivaLuxe films are withheld everywhere.
   for (const path of ['/', '/commercial', '/commercial/revivaluxe']) {
@@ -1046,6 +1048,28 @@ await check('RevivaLuxe: silent film loop only, copy matches visible media', asy
   await rm.goto(base + '/commercial'); await rm.locator('#case-study').scrollIntoViewIfNeeded(); await rm.waitForTimeout(800);
   assert(await rm.locator('.silent-loop video').evaluate((v) => v.paused), 'reduced motion keeps the loop still');
   await rm.context().close();
+});
+
+// James, Sep 28 2026: galleries across the site show the media only: no captions, no piece counts, plain Load more.
+await check('galleries: media only, no captions, no piece counts, plain Load more', async () => {
+  for (const path of ['/', '/real-estate', '/architecture-design', '/agent-content', '/creator-studios/sessions', '/commercial/revivaluxe', '/architecture-design/kerry-delrose']) {
+    const p = await newPage();
+    await p.goto(base + path);
+    const n = await p.locator('.sw-card__title, .gcard__meta, .card__meta, .regallery__grid figcaption, .justified figcaption').count();
+    assert(n === 0, `${n} gallery captions on ${path}`);
+    for (const t of await p.locator('#sw-more, #rg-more, #ag-more').allTextContents()) assert(!/\d/.test(t), `${path} more button: ${t}`);
+    const text = await p.locator('main').innerText();
+    assert(!/\d+\s+pieces|Every piece|\(\d+\)/i.test(text), 'piece count or note on ' + path);
+    await p.context().close();
+  }
+  const p = await newPage();
+  await p.goto(base + '/');
+  await p.selectOption('#sw-kind', 'image');
+  await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
+  await p.waitForSelector('dialog[open]');
+  assert(!(await p.locator('#lb-title').isVisible()) || (await p.locator('#lb-title').boundingBox()).width <= 1, 'viewer title hidden');
+  assert(await p.locator('#lb-caption').evaluate((e) => getComputedStyle(e).color === 'rgba(0, 0, 0, 0)'), 'viewer caption not shown');
+  await p.context().close();
 });
 
 // Owner corrections, Sep 27 2026: Architecture & design sells the story first, with supporting media beside the text,
@@ -1131,7 +1155,7 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   assert(await p.inputValue('#ag-type') === '' && (await p.textContent('#ag-count')) === `${total} results`, 'reset');
   // Project cards link to their pages, and those pages hold the rest of the project's media.
   for (const slug of await p.locator('#ag-grid .gcard[data-project]').evaluateAll((es) => es.map((e) => e.dataset.project))) {
-    assert(await p.locator(`#ag-grid .gcard[data-project="${slug}"] a[href="/architecture-design/${slug}"]`).count() >= 1, slug + ' link');
+    assert(await p.locator(`#ag-grid .gcard[data-project="${slug}"]`).count() >= 1 && await p.locator(`.gallery-projects a[href="/architecture-design/${slug}"]`).count() === 1, slug + ' link');
     const r = await fetch(`${base}/architecture-design/${slug}`); assert(r.status === 200, slug + ' page');
     const html = await r.text();
     for (const m of work.media.filter((x) => x.project === slug && x.rights === 'approved')) assert(html.includes(m.id) || html.includes(m.src), `${m.id} missing from its project page`);
@@ -1144,7 +1168,7 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   // (Codex review of 8184566): All = film lead, Video = film, Photo = a still-led card.
   const hedgesIn = async (type) => {
     await p.selectOption('#ag-type', type);
-    return p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.filter((e) => e.dataset.project === 'yankee-barn-builders').map((e) => ({ kind: e.dataset.kind, proj: e.dataset.project, href: e.querySelector('a[href^="/architecture-design/"]')?.getAttribute('href') })));
+    return p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.filter((e) => e.dataset.project === 'yankee-barn-builders').map((e) => ({ kind: e.dataset.kind, proj: e.dataset.project, href: document.querySelector(`.gallery-projects a[href="/architecture-design/${e.dataset.project}"]`)?.getAttribute('href') })));
   };
   for (const [type, kind] of [['', 'video'], ['video', 'video'], ['photo', 'image']]) {
     const h = await hedgesIn(type);
@@ -1155,11 +1179,11 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   assert(photoCount === await p.locator('#ag-grid .gcard:not([hidden])').count() && (await p.textContent('#ag-count')) === `${photoCount} results`, 'photo count coherent');
   await p.selectOption('#ag-type', '');
   assert((await p.textContent('#ag-count')) === `${total} results` && await shown() === total, 'All shows each project once');
-  for (const c of await p.locator('#ag-grid .gcard').evaluateAll((es) => es.map((e) => ({ proj: !!e.dataset.project, link: !!e.querySelector('a[href^="/architecture-design/"]'), sub: e.querySelector('.gcard__sub').textContent })))) {
-    assert(c.proj === c.link, 'only project cards promise a project page');
-    assert(!/\bproject\b|pieces|Single/i.test(c.sub), 'subtitle is town and discipline only: ' + c.sub);
-    assert(!/\b\d{1,5} [A-Z][a-z]+/.test(c.sub), 'address in card: ' + c.sub);
-  }
+  // James, Sep 28 2026: tiles show the media only; every project page is linked once in the list under the gallery.
+  assert(await p.locator('#ag-grid .gcard__meta, #ag-grid figcaption, #ag-grid a').count() === 0, 'no captions or text links on Architecture tiles');
+  const projLinks = await p.locator('.gallery-projects a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+  const tileProjects = [...new Set(await p.locator('#ag-grid .gcard[data-project]').evaluateAll((es) => es.map((e) => '/architecture-design/' + e.dataset.project)))];
+  assert(tileProjects.every((h) => projLinks.includes(h)) && projLinks.length === tileProjects.length, 'project list: ' + projLinks.join());
   // Labels are accessible.
   for (const id of ['ag-segment', 'ag-type']) assert(await p.locator(`label[for="${id}"]`).count() === 1, id + ' label');
   await p.context().close();

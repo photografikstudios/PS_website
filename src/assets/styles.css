@@ -596,7 +596,10 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .lightbox__nav--prev { left: clamp(10px, 2vw, 28px); }
 .lightbox__nav--next { right: clamp(10px, 2vw, 28px); }
 .lightbox__nav[hidden] { display: none; }
-.lightbox__caption { margin: 0; padding: 14px 16px 22px; text-align: center; font: 500 16px/1.3 var(--sans); }
+.lightbox__caption { margin: 0; padding: 14px 16px 22px; text-align: center; font: 500 16px/1.3 var(--sans); color: transparent; user-select: none; }
+/* James, Sep 28 2026: galleries show the media only. The viewer's title and position stay for screen readers. */
+.lightbox__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.lightbox__bar { justify-content: flex-end; }
 @media (max-width: 620px) { .lightbox__stage { padding: 0 8px; } .lightbox__nav { top: auto; bottom: 14px; margin: 0; } .lightbox__caption { padding-bottom: 76px; } }
 
 /* ---------- Compare what's included (/real-estate#compare) ---------- */
@@ -959,3 +962,8 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .pair-fig figcaption a { display: inline-block; padding: 4px 0; min-height: 24px; }
 /* One filtered result on a phone uses a comfortable full column; several keep two compact columns. */
 @media (max-width: 620px) { .regallery--arch .regallery__grid[data-shown="1"] { grid-template-columns: minmax(0, 1fr); } .regallery--arch .regallery__grid[data-shown="1"] .gcard__title { font-size: 18px; } }
+
+/* James, Sep 28 2026: gallery tiles show the media only; project pages stay one click away in this plain list. */
+.gallery-projects { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 22px; margin-top: clamp(22px, 3vw, 34px); }
+.gallery-projects__label { font: 400 11px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--on-dark-muted, currentColor); }
+.gallery-projects a { color: inherit; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
