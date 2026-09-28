@@ -57,9 +57,13 @@ export function createContext({ site, reviewMode, onVercel }) {
 </div>`;
   }
 
-  /** Muted, looping background video (hero and tiles). Decorative: poster shows when motion is reduced or before load. */
-  function ambient(id, { cls = '', eager = false } = {}) {
-    return `<video class="ambient ${cls}" data-ambient muted loop playsinline ${eager ? 'preload="auto"' : 'preload="none"'} poster="/v/${esc(id)}.webp" aria-hidden="true" tabindex="-1" disableremoteplayback>
+  /** Muted, looping video (hero, tiles, in-page examples). Poster shows when motion is reduced or before load.
+   *  Every loop starts preload="none"; site.js starts it on screen (on phones only after the page has loaded).
+   *  Only the hero (eager) carries its poster up front; other posters load as they near the viewport.
+   *  Decorative by default (aria-hidden); pass a label when the loop is an example the visitor should know about. */
+  function ambient(id, { cls = '', eager = false, label = '' } = {}) {
+    const poster = `/v/${esc(id)}.webp`;
+    return `<video class="ambient ${cls}" data-ambient muted loop playsinline preload="none" ${eager ? `poster="${poster}"` : `data-poster="${poster}"`} ${label ? `aria-label="${esc(label)}"` : 'aria-hidden="true"'} tabindex="-1" disableremoteplayback>
     <source src="/v/${esc(id)}-loop.mp4" type="video/mp4"></video>`;
   }
 

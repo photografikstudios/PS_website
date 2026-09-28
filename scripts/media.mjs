@@ -135,6 +135,9 @@ const t0 = Date.now();
 for (const it of items) {
   if (committedItems.has(it.id)) { manifest[it.id] = committedManifest[it.id]; continue; }
   if (it.montage) continue; // assembled below from already-encoded films
+  // Loop-only clips (a muted excerpt and its poster, cut by hand from a staged original; see the item's _note) have no
+  // Drive re-encode path: they must be committed and pinned.
+  if (it.loopOnly) { failed++; console.error(`media: FAILED ${it.id}: loop-only clip is not committed and pinned under static/v`); continue; }
   if (it.image) {
     // Stills: full-size WebP (max 2000px wide) for the lightbox and a 900px card version.
     const big = join(cache, `${it.id}-img1.webp`);

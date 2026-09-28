@@ -15,6 +15,9 @@ export function buildPages(ctx) {
   const svcLabel = Object.fromEntries(work.taxonomy.service.map((c) => [c.id, c.label]));
   const pkg = Object.fromEntries(pricing.packages.map((p) => [p.id, p]));
   const starting = (rec) => formatUSD(resolvePrice(rec, null).amount);
+  // James, Sep 28 2026: the Social Media plan carries the "Most Popular" label and the featured treatment.
+  const pkgFeatured = (p) => p.badge === 'Most Popular';
+  const pkgTag = (p) => p.badge || (p.role === 'Premium' ? 'Premium anchor' : p.role);
 
   // ---------- shared pieces ----------
   const allMediaById = Object.fromEntries(work.media.map((m) => [m.id, m]));
@@ -24,7 +27,6 @@ export function buildPages(ctx) {
   // Offer prices that James has not approved never reach HTML (the review alias is public): show the offer, not the figure.
   const approvedPrice = (rec, html, pending = 'Price confirmed when we scope it') => (isApproved(rec) ? html : `<span class="price-pending">${pending}</span>`);
   const projectPath = (p) => p.path || `${serviceRoute[p.category]}/${p.slug}`;
-  const countSummary = (items) => { const films = items.filter((m) => m.type === 'video').length; const stills = items.length - films; return [films ? `${films} film${films > 1 ? 's' : ''}` : '', stills ? `${stills} photo${stills > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · '); };
   const mmss = (d) => `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
   // Hero video: the page's relevant 16:9 footage autoplays silently in its frame (muted, playsinline, poster first).
   // No separate film stage or play prompt; the visitor can pause it, and reduced motion or blocked autoplay keeps the poster.
@@ -55,7 +57,6 @@ export function buildPages(ctx) {
     const meta = showMeta ? `<div class="card__meta">
         <p class="card__title">${href ? `<a href="${href}">${esc(m.title)}</a>` : esc(m.title)}</p>
         <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}${m.type === 'video' && m.dialogue !== false && !m.captions ? ` ${needsApproval({ approval: 'pending' }, m.dialogue ? 'Captions and transcript needed before launch' : 'Check whether this film has speech; captions needed if it does')}` : ''}${m.type === 'video' && m.captions && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? ` ${needsApproval({ approval: 'pending' }, 'Captions are a machine-transcribed draft; James to proofread names and wording before launch')}` : ''}</p>
-        ${m.transcript ? `<p class="card__sub"><a href="${esc(m.transcript)}">Read the transcript</a></p>` : ''}
       </div>` : '';
     return `<article class="card card--${m.orientation} card--${m.type} reveal" style="--ar:${m.orientation === 'vertical' ? '0.5625' : m.type === 'video' ? '1.7778' : '1.5'}"
       data-service="${esc(m.service.join(' '))}" data-category="${esc(m.category)}" data-kind="${m.type}">
@@ -117,6 +118,19 @@ export function buildPages(ctx) {
   </div>
 </section>`;
 
+  // James, Sep 28 2026: an image above each step or service block, and full-bleed image footers with a legible overlay.
+  const blockFig = (src, alt, { thumb, cls = '', sizes = '(min-width: 900px) 30vw, 100vw', pos } = {}) => (src ? `<figure class="block-fig ${cls}"${pos ? ` style="--pos:${pos}"` : ''}>${img(src, { alt, thumb, sizes })}</figure>` : '');
+  const mediaFig = (id, opts = {}) => { const m = allMediaById[id]; if (!m) return ''; return blockFig(m.type === 'video' ? m.poster : m.src, opts.alt || (m.type === 'video' ? `Frame from ${m.title}` : (m.alt || m.title)), { thumb: m.thumb, ...opts }); };
+  const bleedCta = ({ title, text, cta, image, alt = '', eyebrow = '' }) => `
+<section class="closing closing--bleed on-dark">
+  <div class="closing__media">${img(image, { alt, sizes: '100vw' })}</div>
+  <div class="wrap closing__inner cta-band">
+    ${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ''}
+    <h2 class="h2 reveal">${title}</h2>
+    <p>${text}</p>
+    ${cta}
+  </div>
+</section>`;
   const pages = {};
 
   // ---------- HOME ----------
@@ -176,7 +190,7 @@ export function buildPages(ctx) {
         { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, horizontal and vertical film, drone, twilight and floor plans.', go: 'Real estate' },
         { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
         { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
-        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'Creator Studios' },
+        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'LI Creator Studios' },
       ], (c) => `
       <a class="path reveal" href="${c.href}">
         <span class="path__img">${ambient(c.vid)}</span>
@@ -219,8 +233,8 @@ export function buildPages(ctx) {
     </div>
     <div class="ladder">
       ${join(['listing-starter', 'luxury-media', 'signature'].map((id) => pkg[id]).filter(visible), (p) => `
-      <div class="ladder__item reveal ${p.role === 'Recommended' ? 'ladder__item--featured' : ''}">
-        <p class="tag">${esc(p.role === 'Premium' ? 'Premium anchor' : p.role || 'Package')}</p>
+      <div class="ladder__item reveal ${pkgFeatured(p) ? 'ladder__item--featured' : ''}">
+        <p class="tag">${esc(pkgTag(p) || 'Package')}</p>
         <h3 class="h3">${esc(p.name)}</h3>
         <p>${esc(p.for)}</p>
         <p class="price-line">Starting at <strong>${starting(p)}</strong> ${needsApproval(p)}</p>
@@ -473,7 +487,6 @@ ${join(topicsUsed, (t) => `
         <img src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
         ${m.type === 'video' ? playIcon : ''}
       </button>
-      <div class="gcard__meta"><p class="gcard__title">${esc(m.title)}</p><p class="gcard__sub">${esc([m.location, m.type === 'video' ? (m.orientation === 'vertical' ? 'Vertical reel' : 'Film') : 'Photo', m.capturedYear].filter(Boolean).join(' · '))}${m.packageIds.length ? ` · <span class="gcard__pkg">${esc(m.packageIds.map((id) => pkg[id]?.name).filter(Boolean).join(', '))}</span>` : ''} ${needsApproval(m.published === false ? { note: 'Unpublished: awaiting title, rights and tag checks' } : { approval: 'approved' })}</p></div>
     </article>`;
   const reGallery = () => `
 <section class="section section--ink on-dark regallery" id="portfolio" aria-labelledby="rg-h" data-regallery data-player="${esc(reCfg.player || 'inline')}" data-batch="${reBatch}"${reviewMode ? ' data-allow-player-override' : ''}>
@@ -481,12 +494,12 @@ ${join(topicsUsed, (t) => `
     <div class="section-head"><div><p class="eyebrow">Real estate portfolio</p><h2 class="h2 reveal" id="rg-h">Listings, filmed and photographed.</h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter real estate work" onsubmit="return false">
       ${pkgTagged.length ? `<div class="filters__field"><label for="rg-package">Package</label>
-        <select id="rg-package" name="package"><option value="">All packages</option>${join(pkgTagged, (p) => `<option value="${p.id}">${esc(p.name)} (${pkgCounts[p.id]})</option>`)}</select></div>` : ''}
+        <select id="rg-package" name="package"><option value="">All packages</option>${join(pkgTagged, (p) => `<option value="${p.id}">${esc(p.name)}</option>`)}</select></div>` : ''}
       <div class="filters__field"><label for="rg-type">Media</label>
-        <select id="rg-type" name="type">${join(TYPE_FILTERS.filter((t) => !t.id || typeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}${t.id ? ` (${typeCounts[t.id]})` : ''}</option>`)}</select></div>
+        <select id="rg-type" name="type">${join(TYPE_FILTERS.filter((t) => !t.id || typeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}</option>`)}</select></div>
       <button type="reset" class="filters__clear" hidden>Reset filters</button>
     </form>
-    <p class="filters__count" id="rg-count" aria-live="polite">${reItems.length} pieces</p>
+    <p class="filters__count sr-only" id="rg-count" aria-live="polite">${reItems.length} results</p>
     <p class="regallery__note">${pkgNote}</p>
     <div class="regallery__grid" id="rg-grid">${join(reItems, reCard)}</div>
     <div class="empty" id="rg-empty" hidden>
@@ -500,6 +513,17 @@ ${join(topicsUsed, (t) => `
   ${itemsJson(reItems)}
 </section>`;
 
+  // James, Sep 28 2026: a more image-led Real Estate page. Each service block leads with an authentic frame from our
+  // own work (a film's poster for film; the agent-on-camera clip's frame for "You, on camera"); floor plans get a
+  // schematic drawing because no plan image is committed yet.
+  const reFeatureFig = (id, key) => {
+    if (key === 'floor-plan') return `<figure class="feature__img feature__img--plan" aria-hidden="true"><svg viewBox="0 0 300 200" role="presentation"><g fill="none" stroke="currentColor" stroke-width="3"><rect x="20" y="20" width="260" height="160"/><path d="M130 20v70h-40M20 110h70v70M130 130v50M190 20v90h90M190 150v30M130 90h20"/></g><g font-family="Space Mono, monospace" font-size="9" fill="currentColor" letter-spacing="1"><text x="36" y="58">LIVING</text><text x="36" y="148">KITCHEN</text><text x="206" y="62">PRIMARY</text><text x="150" y="160">DINING</text></g></svg></figure>`;
+    const m = allMediaById[id];
+    const src = m ? (m.type === 'video' ? m.poster : m.src) : (id === 'agent-expertise-hero' ? '/v/agent-expertise-hero.webp' : '');
+    if (!src) return '';
+    const alt = m ? (m.type === 'video' ? `Frame from the ${m.title.toLowerCase()}` : (m.alt || m.title)) : 'Agent speaking to camera, a frame from an Agent Engine clip';
+    return `<figure class="feature__img">${img(src, { alt, thumb: m?.thumb, sizes: '(min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw' })}</figure>`;
+  };
   pages['/real-estate'] = {
     overlay: true,
     scripts: ['compare.js', 're-gallery.js'],
@@ -510,17 +534,25 @@ ${join(topicsUsed, (t) => `
       cta: `${bookBtn('re_hero')}<a class="link-arrow" href="/real-estate/pricing">See pricing ${arrow}</a>`,
       video: { loop: 're-hamptons-calm', film: 're-hamptons-calm' },
     })}
-<section class="section">
+<section class="section re-coverage">
   <div class="wrap">
-    <p class="eyebrow">What goes into a listing campaign</p>
-    <h2 class="h2 reveal">Enough coverage to tell the whole story. No padding.</h2>
-    <div class="features">
-      <div class="feature reveal" id="photography"><h3 class="h3">Photography</h3><p>A complete stills set, from room flow and material detail to the exterior setting. Vertical social-ready frames are included where they suit the property.</p></div>
-      <div class="feature reveal" id="video"><h3 class="h3">Horizontal and vertical film</h3><p>Horizontal film plays on the listing page, YouTube and in your presentations. Vertical reels are made for Instagram, TikTok and Reels. We plan and shoot each format on purpose rather than cropping one into the other.</p></div>
-      <div class="feature reveal" id="drone"><h3 class="h3">Drone</h3><p>Aerials show what a ground photo cannot: the water, the land, the neighborhood and how the home sits in it.</p></div>
-      <div class="feature reveal" id="floor-plan"><h3 class="h3">Floor plans</h3><p>A schematic floor plan lets buyers understand the layout before they visit, so the people who book showings arrive better prepared.</p></div>
-      <div class="feature reveal" id="twilight"><h3 class="h3">Twilight and day-to-night</h3><p>For launches that deserve it, twilight stills and day-to-night film carry the presentation into the evening.</p></div>
-      <div class="feature reveal" id="agent"><h3 class="h3">You, on camera</h3><p>Optional. Listing Engine puts you on camera presenting the listing through its sale; Agent Engine turns the same shoot day into content about you. We coach you if the camera is not your favorite place.</p></div>
+    <div class="re-coverage__head">
+      <div>
+        <p class="eyebrow">What goes into a listing campaign</p>
+        <h2 class="h2 reveal">Enough coverage to tell the whole story. No padding.</h2>
+        <p class="re-coverage__lede">Stills, film, aerials and plans, planned together so every format shows the same home at its best.</p>
+      </div>
+      <div class="re-coverage__film">${ambient('re-hamptons-beachfront', { label: 'Beachfront estate film, muted excerpt' })}</div>
+    </div>
+    <div class="features features--media">
+      ${join([
+        ['photography', 'ph-hamptons-kitchen', 'Photography', 'A complete stills set, from room flow and material detail to the exterior setting. Vertical social-ready frames are included where they suit the property.'],
+        ['video', 're-hamptons-standout', 'Horizontal and vertical film', 'Horizontal film plays on the listing page, YouTube and in your presentations. Vertical reels are made for Instagram, TikTok and Reels. We plan and shoot each format on purpose rather than cropping one into the other.'],
+        ['drone', 'ph-hampton-aerial-pool-beach', 'Drone', 'Aerials show what a ground photo cannot: the water, the land, the neighborhood and how the home sits in it.'],
+        ['floor-plan', '', 'Floor plans', 'A schematic floor plan lets buyers understand the layout before they visit, so the people who book showings arrive better prepared.'],
+        ['twilight', 'ph-oceanfront-twilight-pool', 'Twilight and day-to-night', 'For launches that deserve it, twilight stills and day-to-night film carry the presentation into the evening.'],
+        ['agent', 'agent-expertise-hero', 'You, on camera', 'Optional. Listing Engine puts you on camera presenting the listing through its sale; Agent Engine turns the same shoot day into content about you. We coach you if the camera is not your favorite place.'],
+      ], ([id, mid, h, t]) => `<div class="feature reveal" id="${id}">${reFeatureFig(mid, id)}<h3 class="h3">${h}</h3><p>${t}</p></div>`)}
     </div>
   </div>
 </section>
@@ -530,8 +562,8 @@ ${join(topicsUsed, (t) => `
     <div class="section-head"><div><p class="eyebrow">Packages</p><h2 class="h2 reveal">Start with the right package.</h2></div><div class="section-head__links"><a class="link-arrow" href="#compare">Compare what's included ${arrow}</a><a class="link-arrow" href="/real-estate/pricing">Pricing by property size ${arrow}</a></div></div>
     <div class="ladder ladder--4">
       ${join(pricing.packages.filter(visible), (p) => `
-      <div class="ladder__item ${p.role === 'Recommended' ? 'ladder__item--featured' : ''}">
-        ${p.role ? `<p class="tag">${esc(p.role === 'Premium' ? 'Premium anchor' : p.role)}</p>` : ''}
+      <div class="ladder__item ${pkgFeatured(p) ? 'ladder__item--featured' : ''}">
+        ${pkgTag(p) ? `<p class="tag">${esc(pkgTag(p))}</p>` : ''}
         <h3 class="h3">${esc(p.name)}</h3>
         <p class="small">${esc(p.for)}</p>
         <p class="price-line">Starting at <strong>${starting(p)}</strong> ${needsApproval(p)}</p>
@@ -570,28 +602,30 @@ ${fnTeaser('real-estate-media')}
     return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span></p>
       <p class="pcard__hint" data-hint-for="${esc(rec.id)}">Enter square footage for your price.</p>`;
   };
-  const pkgMedia = {
-    'luxury-media': { type: 'image', src: '/images/photografik-2027/curated/lauryn-card.webp', alt: 'White colonial listing at dusk, photographed for a Luxury Media campaign' },
-    'signature': { type: 'image', src: '/images/photografik-2027/curated/home-estate-twilight.webp', alt: 'Shingle-style estate at twilight' },
-    'social-media': { type: 'video', id: 'agent-on-camera' },
-    'listing-starter': { type: 'image', src: '/images/photografik-2027/curated/agent-card.webp', alt: 'Open-plan kitchen and living room' },
+  // James, Sep 28 2026: each package card plays its own muted 25 s loop in place (like the Home tiles), chosen to match
+  // what the package includes. Listing Starter has no film, so its card cycles through the kinds of stills it delivers.
+  const pkgLoops = {
+    'luxury-media': { id: 're-hampton-luxury-home', label: 'Luxury Media example: aerial, exterior and interiors from a Hamptons listing film' },
+    'signature': { id: 're-hamptons-upbeat', label: 'Signature example: day and twilight exteriors and a dusk aerial from a Hamptons listing film' },
+    'social-media': { id: 're-east-end-listing-reel', label: 'Social Media example: an East End vertical listing reel' },
   };
-  const packageCard = (p) => {
-    const pm = pkgMedia[p.id];
-    let mediaHtml = '';
-    if (pm?.type === 'video') { const m = media.find((x) => x.id === pm.id); if (m) mediaHtml = videoPlayer({ ...m, title: `${p.name} package example: ${m.title}` }); }
-    else if (pm) mediaHtml = `<div class="pcard__still">${img(pm.src, { alt: pm.alt, sizes: '(min-width: 1000px) 33vw, 100vw' })}</div>`;
-    return `<article class="pcard ${p.role === 'Recommended' ? 'pcard--featured' : ''}" data-record="${esc(p.id)}" aria-labelledby="pk-${esc(p.id)}">
-      <div class="pcard__media">${mediaHtml}${p.role ? `<span class="pcard__badge">${esc(p.role === 'Premium' ? 'Premium anchor' : p.role)}</span>` : ''}</div>
+  const starterStills = ['ph-hampton-exterior', 'ph-hamptons-kitchen', 'ph-hampton-aerial-pool-beach', 'ph-hamptons-bedroom-beach'].map((id) => allMediaById[id]).filter(Boolean);
+  const pkgMediaHtml = (p) => {
+    const l = pkgLoops[p.id];
+    if (l) return `<div class="pcard__loop">${ambient(l.id, { label: `${l.label} (muted)` })}</div>`;
+    if (p.id === 'listing-starter' && starterStills.length) return `<div class="pcard__seq" role="group" aria-label="Listing Starter examples: interior, exterior and aerial photographs">${join(starterStills, (m, i) => `<div class="pcard__seq-item" style="--i:${i};--n:${starterStills.length}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 1180px) 22vw, (min-width: 680px) 45vw, 100vw' })}</div>`)}</div>`;
+    return '';
+  };
+  const packageCard = (p) => `<article class="pcard ${pkgFeatured(p) ? 'pcard--featured' : ''}" data-record="${esc(p.id)}" aria-labelledby="pk-${esc(p.id)}">
+      <div class="pcard__media">${pkgMediaHtml(p)}${pkgTag(p) ? `<span class="pcard__badge${pkgFeatured(p) ? ' pcard__badge--popular' : ''}">${esc(pkgTag(p))}</span>` : ''}</div>
       <div class="pcard__body">
         <h3 class="h3" id="pk-${esc(p.id)}">${esc(p.name)} ${needsApproval(p)}</h3>
         <p class="pcard__for">${esc(p.for)}</p>
         ${priceCell(p)}
         <ul class="checks">${join(includeLabels(p, pricing.features), (i) => `<li>${esc(i)}</li>`)}</ul>
-        <a class="btn ${p.role === 'Recommended' ? 'btn--solid' : 'btn--outline'} pcard__cta" href="${booking}" data-track="book_click" data-track-location="pricing_card" data-track-package="${esc(p.id)}">Book ${esc(p.name)}</a>
+        <a class="btn ${pkgFeatured(p) ? 'btn--solid' : 'btn--outline'} pcard__cta" href="${booking}" data-track="book_click" data-track-location="pricing_card" data-track-package="${esc(p.id)}">Book ${esc(p.name)}</a>
       </div>
     </article>`;
-  };
   const serviceRow = (s) => `<li class="prow" data-record="${esc(s.id)}">
       <div class="prow__text"><h3 class="prow__name">${esc(s.name)} ${needsApproval(s)}</h3>${s.detail ? `<p class="prow__detail">${esc(s.detail)}</p>` : ''}</div>
       <div class="prow__price">${priceCell(s)}</div>
@@ -607,7 +641,8 @@ ${fnTeaser('real-estate-media')}
     records: [...pricing.packages, ...pricing.services].filter(visible).map((r) => ({ id: r.id, name: r.name, max: r.max, tiers: r.tiers })),
   };
   const tabs = [
-    { id: 'packages', label: 'Packages', html: `<div class="pcards">${join(pricing.packages.filter(visible), packageCard)}</div>` },
+    { id: 'packages', label: 'Packages', html: `<div class="pcards">${join(pricing.packages.filter(visible), packageCard)}</div>
+        <p class="pcards__motion">${motionToggle.replace('class="motion-toggle"', 'class="motion-toggle motion-toggle--inline"')}</p>` },
     { id: 'photo', label: 'Photo', html: `<ul class="prows">${join(svc('photography'), serviceRow)}</ul>` },
     { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}${join(fixedG('video'), (f) => fixedRow(f))}</ul>
         <div class="explain"><h3 class="h3">Horizontal or vertical?</h3><p>Horizontal film is for the listing page, YouTube, email and presentations. Vertical reels are for Instagram, TikTok and Reels. Choose one, or both from the same shoot.</p></div>` },
@@ -665,7 +700,6 @@ ${fnTeaser('real-estate-media')}
   const agentMonthly = offers.agentMonthly.filter(visible);
   const engines = pricing.fixed.filter((f) => f.group === 'engines').filter(visible);
   const agentVids = media.filter((m) => m.category === 'agent-content' && m.type === 'video');
-  const agentProject = work.projects.find((p) => p.category === 'agent-content' && visible(p));
   pages['/agent-content'] = {
     overlay: true,
     body: `${pageHero({
@@ -673,11 +707,24 @@ ${fnTeaser('real-estate-media')}
       title: 'People hire agents they <em>already feel they know.</em>',
       lede: 'On-camera video that helps future sellers understand who you are and how you work before the first conversation. We handle the ideas, direction and editing. You bring what you know.',
       cta: `<a class="btn btn--solid" href="/contact?type=agent-content" data-track="retainer_click" data-track-location="agent_hero">Plan My Content</a>`,
+      // James, Sep 28 2026: open with a relevant horizontal film. The on-camera expertise clip, muted and framed 16:9.
+      video: { loop: 'agent-expertise-hero', credit: 'agent-expertise' },
     })}
-<section class="section" id="portfolio" aria-labelledby="ac-work-h">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Agent content portfolio</p><h2 class="h2 reveal" id="ac-work-h">On camera, in the agent's own words.</h2></div>${agentProject ? `<a class="link-arrow" href="${projectPath(agentProject)}">${esc(agentProject.title)}: the project ${arrow}</a>` : ''}</div>
-    <div class="vrow">${join(agentVids, (m) => mediaCard(m, { sizes: '(min-width: 900px) 25vw, 70vw' }))}</div>
+<section class="section ac-split" id="portfolio" aria-labelledby="ac-q-h">
+  <div class="wrap ac-split__grid">
+    <div class="ac-split__examples" aria-label="Agent content examples">
+      <p class="eyebrow">Examples</p>
+      <div class="ac-examples">${join(agentVids, (m) => `<div class="ac-example">${videoPlayer(m, { sizes: '(min-width: 900px) 18vw, 45vw' })}</div>`)}</div>
+    </div>
+    <div class="ac-split__qa">
+      <p class="eyebrow">Fair questions</p>
+      <h2 class="h2 reveal" id="ac-q-h">What agents usually ask us.</h2>
+      <div class="qa qa--stack">
+        <div><h3 class="h3">“I hate being on camera.”</h3><p>Most people do at first. We coach delivery, help you find a natural opening line and keep takes short. A lot of the confidence comes from knowing exactly what you want to say.</p></div>
+        <div><h3 class="h3">“I don't know what to say.”</h3><p>That part is on us. We bring structured ideas built around your market, your town and your process, and we write with you so it still sounds like you.</p></div>
+        <div><h3 class="h3">“I can film this on my phone.”</h3><p>You can, and sometimes you should. What we add is the plan, the coaching, the quality and the consistency that make people remember you.</p></div>
+      </div>
+    </div>
   </div>
 </section>
 <section class="section section--tint">
@@ -691,21 +738,11 @@ ${fnTeaser('real-estate-media')}
     ${(() => { const e = engines.find((x) => x.id === 'full-engine'); return e ? `<p class="aside-line">Both together as the Full Engine: <strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}
   </div>
 </section>
-<section class="section">
-  <div class="wrap narrow">
-    <p class="eyebrow">Fair questions</p>
-    <h2 class="h2 reveal">What agents usually ask us.</h2>
-    <div class="qa">
-      <div><h3 class="h3">“I hate being on camera.”</h3><p>Most people do at first. We coach delivery, help you find a natural opening line and keep takes short. A lot of the confidence comes from knowing exactly what you want to say.</p></div>
-      <div><h3 class="h3">“I don't know what to say.”</h3><p>That part is on us. We bring structured ideas built around your market, your town and your process, and we write with you so it still sounds like you.</p></div>
-      <div><h3 class="h3">“I can film this on my phone.”</h3><p>You can, and sometimes you should. What we add is the plan, the coaching, the quality and the consistency that make people remember you.</p></div>
-    </div>
-  </div>
-</section>
 ${agentMonthly.length ? `<section class="section section--tint">
   <div class="wrap">
     <p class="eyebrow">Monthly content plans</p>
     <h2 class="h2 reveal">Stay visible between listings.</h2>
+    <p class="section-lede">Sellers choose agents they recognize and trust. Regular video lets them see your point of view and how you work before they ever call. A monthly plan gives you a steady supply of social content built around your goals, so you are not starting from a blank page each week.</p>
     <div class="plans">${join(agentMonthly, (o) => `<div class="plan reveal"><h3 class="h3">${esc(o.name)} ${needsApproval(o)}</h3><p class="plan__tag">${esc(o.tagline)}</p>
       <p class="plan__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/month`)}</p>${isApproved(o) ? `<p class="plan__alt">${formatUSD(o.contract)}/month on a 12-month contract, billed monthly</p>` : ''}
       <ul class="checks">${join(o.scope, (s) => `<li>${esc(s)}</li>`)}</ul></div>`)}</div>
@@ -726,7 +763,8 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const deliveredOf = (items) => {
     const n = (t) => items.filter(t).length;
     const films = n((m) => m.type === 'video'); const photos = n((m) => m.type === 'image' && !m.service.includes('drone')); const drone = n((m) => m.service.includes('drone'));
-    return [films ? `Film${films > 1 ? ` (${films})` : ''}` : '', photos ? `Photography${photos > 1 ? ` (${photos})` : ''}` : '', drone ? 'Drone photography' : ''].filter(Boolean);
+    // James, Sep 28 2026: say what was delivered, without item counts.
+    return [films ? 'Film' : '', photos ? 'Photography' : '', drone ? 'Drone photography' : ''].filter(Boolean);
   };
   const repOf = (items) => [...items].sort((x, y) => ((y.type === 'video' && y.orientation === 'horizontal') - (x.type === 'video' && x.orientation === 'horizontal')) || ((y.sortPriority || 0) - (x.sortPriority || 0)))[0];
   const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
@@ -770,7 +808,6 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const archTypes = TYPE_FILTERS.filter((t) => t.id !== 'drone');
   const archTypeCounts = optionCounts(archFacts, { seg: '' }, 'type', archTypes.map((t) => t.id));
   const archVideo = archGallery.find((m) => m.type === 'video');
-  const projCount = (pr) => archMedia.filter((x) => x.project === pr.slug).length;
   const archCard = (m, i, views) => {
     const pr = m.project && projectBySlug[m.project] && visible(projectBySlug[m.project]) ? projectBySlug[m.project] : null;
     const kind = m.type === 'video' ? 'video' : 'image';
@@ -780,7 +817,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
         <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
         ${kind === 'video' ? playIcon : ''}
       </button>
-      <div class="gcard__meta"><p class="gcard__title">${pr ? `<a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_gallery">${esc(pr.client || pr.title)}</a>` : esc(m.title)}</p><p class="gcard__sub">${esc([(pr?.location || m.location), pr ? (projCount(pr) > 1 ? `Project · ${projCount(pr)} pieces` : 'Project') : `Single ${kind === 'video' ? 'film' : 'photo'}`, ...(pr ? segmentsOf(m, projectBySlug).map((id) => segOptions.find((x) => x.id === id)?.label.replace(/s$/, '')) : [])].filter(Boolean).join(' · '))}${pr ? ` · <a class="gcard__go" href="${projectPath(pr)}" aria-label="View the ${esc(pr.client || pr.title)} project">View project →</a>` : ''}</p></div>
+      <div class="gcard__meta"><p class="gcard__title">${pr ? `<a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_gallery">${esc(pr.client || pr.title)}</a>` : esc(m.title)}</p><p class="gcard__sub">${esc([(pr?.location || m.location), ...(pr ? segmentsOf(m, projectBySlug).map((id) => segOptions.find((x) => x.id === id)?.label.replace(/s$/, '')) : [])].filter(Boolean).join(' · '))}</p></div>
     </article>`;
   };
   pages['/architecture-design'] = {
@@ -819,7 +856,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <div class="story-guide">
       <div class="story-guide__item reveal">${archFig(archPairIds.photo, { sizes: '(min-width: 1000px) 30vw, 100vw', cls: 'story-guide__fig' })}<p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
       <div class="story-guide__item reveal">${archVideo ? `<a class="story-guide__film" href="?type=video#portfolio" data-track="gallery_filter" data-track-location="arch_story_film"><span class="still still--horizontal"><img src="${esc(galThumb(archVideo))}" alt="" loading="lazy" decoding="async">${playIcon}</span><span class="story-guide__filmcap">Watch the ${esc(archVideo.project && projectBySlug[archVideo.project] ? projectBySlug[archVideo.project].title : archVideo.title.split(':')[0])} film below</span></a>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
-      <div class="story-guide__item reveal"><p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
+      <div class="story-guide__item reveal">${(() => { const m = allMediaById['cs-jm2-architecture']; return m?.poster ? `<figure class="story-guide__fig story-guide__fig--person"><span class="still still--horizontal">${img(m.poster, { alt: 'A JM2 Architecture founder speaking on camera, from a podcast clip', sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })()}<p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
     </div>
     <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
   </div>
@@ -830,12 +867,12 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Recent projects, <em>by discipline.</em></h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter architecture and design work" onsubmit="return false">
       ${segLive.length ? `<div class="filters__field"><label for="ag-segment">Work for</label>
-        <select id="ag-segment" name="segment"><option value="">All work</option>${join(segLive, (x) => `<option value="${x.id}">${esc(x.label)} (${segCounts[x.id]})</option>`)}</select></div>` : ''}
+        <select id="ag-segment" name="segment"><option value="">All work</option>${join(segLive, (x) => `<option value="${x.id}">${esc(x.label)}</option>`)}</select></div>` : ''}
       <div class="filters__field"><label for="ag-type">Media</label>
-        <select id="ag-type" name="type">${join(archTypes.filter((t) => !t.id || archTypeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}${t.id ? ` (${archTypeCounts[t.id]})` : ''}</option>`)}</select></div>
+        <select id="ag-type" name="type">${join(archTypes.filter((t) => !t.id || archTypeCounts[t.id] > 0), (t) => `<option value="${t.id}">${esc(t.label)}</option>`)}</select></div>
       <button type="reset" class="filters__clear" hidden>Reset filters</button>
     </form>
-    <p class="filters__count" id="ag-count" aria-live="polite">${archFacts.filter((f) => !f.views || f.views.includes('')).length} pieces</p>
+    <p class="filters__count sr-only" id="ag-count" aria-live="polite">${archFacts.filter((f) => !f.views || f.views.includes('')).length} results</p>
     <p class="regallery__note">Explore project photography and film. Choose a discipline or media type.</p>
     <div class="regallery__grid" id="ag-grid">${join(archEntries, (e, i) => archCard(e.m, i, e.views))}</div>
     <div class="empty" id="ag-empty" hidden>
@@ -874,20 +911,14 @@ ${agentMonthly.length ? `<section class="section section--tint">
       <div><h2 class="h2 reveal" id="arch-path-h">Three steps from finished project <em>to the work you want next.</em></h2></div>
     </div>
     <ol class="steps">
-      <li class="reveal"><span class="steps__n">01 / Tell us</span><h3>Share the project.</h3><p>The project, the location, your timing and the clients you want to reach.</p></li>
-      <li class="reveal"><span class="steps__n">02 / Plan</span><h3>Get a recommendation.</h3><p>We suggest the story and coverage, then send a plan and a written estimate with deliverables and licensing.</p></li>
-      <li class="reveal"><span class="steps__n">03 / Produce</span><h3>We shoot and deliver.</h3><p>Photography and film on site, one agreed review round, then files in the formats each use needs.</p></li>
+      <li class="reveal">${mediaFig('ph-yankee-barn-exterior')}<span class="steps__n">01 / Tell us</span><h3>Share the project.</h3><p>The project, the location, your timing and the clients you want to reach.</p></li>
+      <li class="reveal">${mediaFig('ph-peterson-game-room')}<span class="steps__n">02 / Plan</span><h3>Get a recommendation.</h3><p>We suggest the story and coverage, then send a plan and a written estimate with deliverables and licensing.</p></li>
+      <li class="reveal">${mediaFig('ph-kerry-delrose-pool')}<span class="steps__n">03 / Produce</span><h3>We shoot and deliver.</h3><p>Photography and film on site, one agreed review round, then files in the formats each use needs.</p></li>
     </ol>
     <p class="arch-path__cta"><a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_path">Start a Project</a></p>
   </div>
 </section>
-<section class="section section--brand on-dark">
-  <div class="wrap cta-band">
-    <h2 class="h2 reveal">Finished something worth showing?</h2>
-    <p>Share the project, location and timing. We will come back with a plan and an estimate.</p>
-    <a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_final">Start a Project</a>
-  </div>
-</section>`,
+${bleedCta({ title: 'Finished something worth showing?', text: 'Share the project, location and timing. We will come back with a plan and an estimate.', cta: '<a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_final">Start a Project</a>', image: allMediaById['ph-barba-waterfront']?.src || '/v/ph-barba-waterfront.webp', alt: '' })}`,
   };
 
   // ---------- COMMERCIAL ----------
@@ -923,10 +954,10 @@ ${agentMonthly.length ? `<section class="section section--tint">
       </div>
     </div>
     <div class="features features--4">
-      <div class="feature reveal"><h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
-      <div class="feature reveal"><h3 class="h3">Film and short-form</h3><p>Brand films, project showcases and short cuts for every channel you use.</p></div>
-      <div class="feature reveal"><h3 class="h3">Podcasts and studio days</h3><p>Recorded at <a href="/creator-studios">Creator Studios</a> or on location.</p></div>
-      <div class="feature reveal"><h3 class="h3">Recurring production</h3><p>A monthly cadence so content keeps coming without hiring several separate roles.</p></div>
+      <div class="feature reveal">${mediaFig('ph-revivaluxe-portrait')}<h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
+      <div class="feature reveal">${mediaFig('biz-bpe-ironworks', { alt: 'Frame from the BPE Ironworks film' })}<h3 class="h3">Film and short-form</h3><p>Brand films, project showcases and short cuts for every channel you use.</p></div>
+      <div class="feature reveal">${mediaFig('cs-ph-island-federal')}<h3 class="h3">Podcasts and studio days</h3><p>Recorded at <a href="/creator-studios">LI Creator Studios</a> or on location.</p></div>
+      <div class="feature reveal">${mediaFig('ph-clos-lighting')}<h3 class="h3">Recurring production</h3><p>A monthly cadence so content keeps coming without hiring several separate roles.</p></div>
     </div>
   </div>
 </section>
@@ -947,7 +978,7 @@ ${caseStudy ? `<section class="section section--ink on-dark" id="case-study" ari
 </section>` : ''}
 <section class="section" id="portfolio" aria-labelledby="com-work-h">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">One project, <em>one client.</em></h2></div></div>
+    <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">Recent work for <em>businesses like yours.</em></h2><p class="section-lede">Open any client to see the film, the photographs and what we delivered.</p></div></div>
     <ul class="pgrid" role="list">${join(comProjects, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
       <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw') : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw')}</a>`}</div>
       <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="com_grid">${esc(x.p.client || x.p.title)}</a></h3>
@@ -971,6 +1002,7 @@ ${cp.length || b2b.length ? `<section class="section">
     <div>
       <p class="eyebrow">For agencies</p>
       <h2 class="h2 reveal" id="agency-h">Production capacity for <em>advertising and marketing agencies.</em></h2>
+      ${mediaFig('cs-ph-hedgestone-switch', { cls: 'agency-fig' })}
     </div>
     <div>
       <p>Crew, studio or on-location production, filming, editing and project management for your clients. Client-facing, behind the scenes, collaborative or white-label, with roles and approvals agreed before we start.</p>
@@ -978,13 +1010,7 @@ ${cp.length || b2b.length ? `<section class="section">
     </div>
   </div>
 </section>
-<section class="section section--brand on-dark">
-  <div class="wrap cta-band">
-    <h2 class="h2 reveal">Tell us what you need to make.</h2>
-    <p>A short call is the fastest way to scope a campaign or a recurring program.</p>
-    <a class="btn btn--gold" href="/contact?type=commercial" data-track="project_click" data-track-location="com_final">Start a Project</a>
-  </div>
-</section>`,
+${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the fastest way to scope a campaign or a recurring program.', cta: '<a class="btn btn--gold" href="/contact?type=commercial" data-track="project_click" data-track-location="com_final">Start a Project</a>', image: allMediaById['ph-rachel-lynch-infinity']?.src || '/v/ph-rachel-lynch-infinity.webp' })}`,
   };
 
   // ---------- AGENCY ----------
@@ -1029,20 +1055,32 @@ ${cp.length || b2b.length ? `<section class="section">
 
   // ---------- CREATOR STUDIOS ----------
   const sessions = offers.creatorSessions.filter(visible);
-  const csProject = work.projects.find((p) => p.category === 'creator-studios' && visible(p));
   const creatorHref = site.destinations.creatorBooking.href;
   const creatorInquiry = site.destinations.creatorInquiry?.href || '/contact?type=creator-studios';
   const creatorExternal = /^https?:/.test(creatorHref) ? ' target="_blank" rel="noopener"' : '';
   const csFrom = sessions.filter(isApproved).reduce((lo, x) => (lo && lo < x.amount ? lo : x.amount), 0);
-  const csStart = (loc, label = 'Book a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}"${creatorExternal} data-track="creator_click" data-track-location="${loc}">${label}${creatorExternal ? '<span class="sr-only"> (opens Long Island Creator Studios booking in a new tab)</span>' : ''}</a>`;
-  const csBookingNote = `<p class="small booking-note">Studio sessions are booked through Long Island Creator Studios in Bohemia on Square. Choose your session and time there. Not sure which session fits? <a href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_inquiry">Ask us first</a>.</p>`;
+  const csStart = (loc, label = 'Book a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}"${creatorExternal} data-track="creator_click" data-track-location="${loc}">${label}${creatorExternal ? '<span class="sr-only"> (opens LI Creator Studios booking in a new tab)</span>' : ''}</a>`;
+  // James, Sep 28 2026: booking is through LI Creator Studios (the button still opens the verified booking flow).
+  const csBookingNote = `<p class="small booking-note">Studio sessions are booked through LI Creator Studios. Choose your session and time there. Not sure which session fits? <a href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_inquiry">Ask us first</a>.</p>`;
   const scope = (included) => `<span class="scope-tag scope-tag--${included ? 'in' : 'out'}">${included ? 'Part of a session' : 'With Recording + Editing, or by quote'}</span>`;
-  // James, Sep 26 2026 (page density): Recent Sessions shows a couple of strong examples; the other approved
-  // photos and clips sit beside the section they explain. Reels are a temporary selection and will be replaced.
+  // James, Sep 28 2026: no Recent Sessions section; approved photos and clips sit beside the copy they support,
+  // with no captions beneath them (each keeps its alt text or accessible name).
   const csById = Object.fromEntries(media.filter((m) => m.category === 'creator-studios').map((m) => [m.id, m]));
-  const csCard = (id) => (csById[id] ? mediaCard(csById[id], { sizes: '(min-width: 900px) 30vw, 80vw' }) : '');
-  const csFig = (id) => { const m = csById[id]; return m ? `<figure class="cs-fig cs-fig--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 40vw, 100vw' })}<figcaption>${esc(m.title)}</figcaption></figure>` : ''; };
-  const csRecent = ['cs-noah-knows-short', 'cs-tick'].map((id) => csById[id]).filter(Boolean);
+  const csFig = (id, sizes = '(min-width: 900px) 40vw, 100vw') => { const m = csById[id]; return m ? `<figure class="cs-fig cs-fig--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</figure>` : ''; };
+  // Opening section: three current vertical examples, quietly looping in place (muted excerpts, 25 s each).
+  const csLoops = [
+    ['cs-ifcu-clip', 'Island Federal podcast short, muted excerpt'],
+    ['cs-noah-knows-short', 'Noah Knows podcast short, muted excerpt'],
+    ['cs-jm2-architecture', 'JM2 Architecture on the podcast, muted excerpt'],
+  ];
+  // Formats (James, Sep 28 2026): a photo above each block, matched to what the block describes.
+  const csFormatImg = { podcasts: 'cs-ph-cc-onsite', multicam: 'cs-ph-hedgestone-switch', longform: 'ph-noah-knows', solo: 'cs-ph-solo-bts', short: 'cs-tick', planned: 'creator-still' };
+  const csFormatFig = (key) => {
+    const m = csById[csFormatImg[key]]; if (!m) return '';
+    const src = m.type === 'video' ? m.poster : m.src;
+    const alt = m.type === 'video' ? 'Frame from a vertical podcast clip with word-by-word captions' : (m.alt || m.title);
+    return `<figure class="cs-format__img">${img(src, { alt, thumb: m.thumb, sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
+  };
   const csSessionPhoto = { 'podcast-session': 'cs-ph-island-federal', 'content-session': 'cs-ph-solo-couch', 'recording-editing': 'cs-ph-cc-ep20' };
   // James, Sep 26 2026: How it works and FAQ follow licreatorstudios.com/how-it-works.
   const csFaq = [
@@ -1057,20 +1095,21 @@ ${cp.length || b2b.length ? `<section class="section">
   ];
   const csBy = Object.fromEntries(sessions.filter(isApproved).map((x) => [x.id, x]));
   // Only approved figures are quoted. James, Sep 27 2026: the single session is $249.
+  // James, Sep 28 2026: "Starting at" before every displayed price; general studio content starts at $499 for a 2-hour minimum.
   const csCtaParts = [
-    csBy['podcast-session'] && `Single studio sessions are ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes.`,
-    csBy['content-session'] && `Studio content is ${formatUSD(csBy['content-session'].amount)} an hour with a 2-hour minimum.`,
-    csBy['recording-editing'] && `Recording + Editing is ${formatUSD(csBy['recording-editing'].amount)} a month.`,
+    csBy['podcast-session'] && `Single studio sessions start at ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes.`,
+    csBy['content-session'] && `General studio content starts at ${formatUSD(csBy['content-session'].amount)} for a 2-hour minimum.`,
+    csBy['recording-editing'] && `Recording + Editing starts at ${formatUSD(csBy['recording-editing'].amount)} a month.`,
   ].filter(Boolean);
   const csCtaLine = csCtaParts.length ? csCtaParts.join(' ') : 'Tell us who you want to reach and what you want to talk about.';
   pages['/creator-studios'] = {
     overlay: true,
-    seo: { title: 'Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
+    seo: { title: 'LI Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
     body: `${pageHero({
-      eyebrow: 'Creator Studios · Bohemia, NY',
+      eyebrow: 'LI Creator Studios · Bohemia, NY',
       title: 'Show people <em>who is behind the business.</em>',
       lede: 'Podcasts, interviews and on-camera content for business owners, agents, founders and experts, recorded with a team that helps you sound like yourself.',
-      cta: `${csStart('creator_hero')}<a class="link-arrow" href="#sessions">${csFrom ? `Sessions from ${formatUSD(csFrom)}` : 'Studio sessions'} ${arrow}</a>`,
+      cta: `${csStart('creator_hero')}<a class="link-arrow" href="#sessions">${csFrom ? `Sessions starting at ${formatUSD(csFrom)}` : 'Studio sessions'} ${arrow}</a>`,
       video: { loop: 'cs-demo-reel', film: 'cs-demo-reel' },
     })}
 <section class="section" aria-labelledby="cs-story-h">
@@ -1080,8 +1119,9 @@ ${cp.length || b2b.length ? `<section class="section">
       <h2 class="h2 reveal" id="cs-story-h">People choose who they work with <em>before they ever call.</em></h2>
       <p>Your website lists what you do. A recorded conversation lets customers hear why you do it, what you believe and how you think, in your own words.</p>
       <ul class="cs-points"><li><strong>The person.</strong> Where you came from and why you do this work.</li><li><strong>The purpose.</strong> The standard you hold your work to.</li><li><strong>The expertise.</strong> The questions you answer every week, explained properly.</li></ul>
+      <p><a class="link-arrow" href="/creator-studios/sessions" data-track="project_click" data-track-location="creator_story">See all sessions ${arrow}</a></p>
     </div>
-    <div class="cs-pair__media cs-pair__media--narrow">${csCard('cs-jm2-architecture')}</div>
+    <div class="cs-pair__media cs-loops" role="group" aria-label="Examples of podcast shorts made with clients">${join(csLoops, ([id, label]) => `<div class="cs-loop">${ambient(id, { label })}</div>`)}</div>
   </div>
 </section>
 
@@ -1092,7 +1132,7 @@ ${cp.length || b2b.length ? `<section class="section">
     <div class="cs-sessions cs-sessions--${sessions.length}">${join(sessions, (s) => `<div class="plan plan--media reveal" data-session="${esc(s.id)}">
       ${csFig(csSessionPhoto[s.id] || 'cs-ph-solo-couch')}
       <h3 class="h3">${esc(s.name)} ${needsApproval(s, s.reviewNote)}</h3>
-      <p class="plan__price">${approvedPrice(s, `<strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`, 'Price being confirmed')}</p>
+      <p class="plan__price">${approvedPrice(s, `<span class="plan__from">Starting at</span> <strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`, 'Price being confirmed')}</p>
       <p>${esc(s.detail)}</p>
       ${s.includes?.length ? `<ul class="plan__list">${join(s.includes, (x) => `<li>${esc(x)}</li>`)}</ul>` : ''}
       ${s.extra ? `<p class="small muted">${esc(s.extra)}</p>` : ''}
@@ -1108,7 +1148,9 @@ ${cp.length || b2b.length ? `<section class="section">
       <h2 class="h2 reveal" id="cs-space-h">Multi-camera, <em>switched as you record.</em></h2>
       <p>Sets, lights, cameras and sound are ready when you arrive. We switch angles live, coach pacing and delivery, and suggest a retake when a moment could land better.</p>
     </div>
-    <div class="cs-pair__media cs-duo">${csFig('cs-ph-solo-bts')}${csFig('cs-ph-hedgestone-switch')}</div>
+    <div class="cs-pair__media cs-space-reel">
+      <video class="ambient cs-space-reel__video" data-ambient muted loop playsinline controls preload="none" data-poster="/v/cs-demo-reel-silent.webp" aria-label="LI Creator Studios demo reel: podcast and on-camera sessions recorded in the studio (no sound)" disableremoteplayback><source src="/v/cs-demo-reel-silent-loop.mp4" type="video/mp4"></video>
+    </div>
   </div>
 </section>
 
@@ -1117,12 +1159,12 @@ ${cp.length || b2b.length ? `<section class="section">
     <p class="eyebrow">Formats</p>
     <h2 class="h2 reveal" id="cs-formats-h">What you can make here.</h2>
     <ul class="cs-formats">
-      <li><h3>Podcasts and guest conversations</h3><p>A host and one or more guests.</p>${scope(true)}</li>
-      <li><h3>Multi-camera interviews</h3><p>Several angles, switched live.</p>${scope(true)}</li>
-      <li><h3>Long-form episodes</h3><p>The full episode, ready for YouTube, your site or your feed.</p>${scope(true)}</li>
-      <li><h3>Solo on-camera pieces</h3><p>Explainers, updates and answers to common questions.</p>${scope(true)}</li>
-      <li><h3>Short-form clips and reels</h3><p>Vertical clips for social, scoped with you.</p>${scope(false)}</li>
-      <li><h3>Planned for your channels</h3><p>Topics, a publishing plan and distribution.</p>${scope(false)}</li>
+      <li>${csFormatFig('podcasts')}<h3>Podcasts and guest conversations</h3><p>A host and one or more guests.</p>${scope(true)}</li>
+      <li>${csFormatFig('multicam')}<h3>Multi-camera interviews</h3><p>Several angles, switched live.</p>${scope(true)}</li>
+      <li>${csFormatFig('longform')}<h3>Long-form episodes</h3><p>The full episode, ready for YouTube, your site or your feed.</p>${scope(true)}</li>
+      <li>${csFormatFig('solo')}<h3>Solo on-camera pieces</h3><p>Explainers, updates and answers to common questions.</p>${scope(true)}</li>
+      <li>${csFormatFig('short')}<h3>Short-form clips and reels</h3><p>Vertical clips for social, scoped with you.</p>${scope(false)}</li>
+      <li>${csFormatFig('planned')}<h3>Planned for your channels</h3><p>Topics, a publishing plan and distribution.</p>${scope(false)}</li>
     </ul>
     <p class="aside-line">A single session includes the live-cut file. Editing is available by quote, or every month with Recording + Editing.</p>
   </div>
@@ -1163,13 +1205,6 @@ ${cp.length || b2b.length ? `<section class="section">
   </div>
 </section>
 
-${csRecent.length ? `<section class="section section--ink on-dark" id="portfolio" aria-labelledby="cs-proof-h">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Recent sessions</p><h2 class="h2 reveal" id="cs-proof-h">Recorded with real businesses.</h2></div>${csProject ? `<a class="link-arrow" href="${projectPath(csProject)}">All sessions ${arrow}</a>` : ''}</div>
-    <div class="cs-recent">${join(csRecent, (m) => mediaCard(m))}</div>
-    <p class="small proof-note">Captions name the show or client. We label a session in studio or on location only where that is confirmed.</p>
-  </div>
-</section>` : ''}
 
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">

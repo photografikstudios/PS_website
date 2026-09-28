@@ -17,7 +17,12 @@
       "id": "re-hampton-luxury-home",
       "drive": "1lLiXcO-L60Jx7NlHQPGEZHlmSXs7ntsa",
       "file": "hampton-luxury-home-cinematic-real-estate-video-photografik-studios.mp4",
-      "posterAt": 8
+      "posterAt": 8,
+      "loop": [
+        0,
+        25
+      ],
+      "_loopNote": "James, Sep 28 2026 page review: Luxury Media package-card loop (aerial, exterior, interiors), cut from the committed 720p film."
     },
     {
       "id": "re-hamptons-aesthetic",
@@ -63,7 +68,12 @@
       "id": "re-hamptons-upbeat",
       "drive": "1OEHdsBPtJQk5ReWbk7aBtk_wyAogAxud",
       "file": "hamptons-luxury-home-upbeat-cinematic-video-photografik-studios.mp4",
-      "posterAt": 6
+      "posterAt": 6,
+      "loop": [
+        8,
+        26
+      ],
+      "_loopNote": "James, Sep 28 2026 page review: Signature package-card loop: day exterior to twilight exterior and dusk aerial (matches twilight and day-to-night inclusions), cut from the committed 720p film."
     },
     {
       "id": "re-hamptons-cinematic",
@@ -75,7 +85,12 @@
       "id": "re-east-end-listing-reel",
       "drive": "1nHCJYPwfb0Is-sAXfG6KIErvWloCM8s7",
       "file": "V4_9 Penniman Ln.mp4",
-      "posterAt": 4
+      "posterAt": 4,
+      "loop": [
+        4,
+        25
+      ],
+      "_loopNote": "James, Sep 28 2026 page review: Social Media package-card loop (vertical reel), cut from the committed 720p film."
     },
     {
       "id": "arch-yankee-barn-film",
@@ -134,15 +149,21 @@
       "file": "li-creator-studios-long-island-ny-jm2-architecture-podcast-business-clip.mp4",
       "loop": [
         3,
-        10
+        25
       ],
-      "posterAt": 4
+      "posterAt": 4,
+      "_loopNote": "James, Sep 28 2026 page review: 25 s muted vertical loop (one of three Creator opening loops), re-cut from the committed 720p film."
     },
     {
       "id": "cs-noah-knows-short",
       "drive": "1DWbEDY6f3GHm3bz413pZZT4AFNTHc0jD",
       "file": "li-creator-studios-long-island-ny-noah-knows-podcast-short-form-video.mp4",
-      "posterAt": 4
+      "posterAt": 4,
+      "loop": [
+        2,
+        25
+      ],
+      "_loopNote": "James, Sep 28 2026 page review: 25 s muted vertical loop (Creator opening), cut from the committed 720p film."
     },
     {
       "id": "cs-tick",
@@ -329,6 +350,25 @@
       "loopHeight": 1080,
       "posterAt": 6,
       "_note": "James, Sep 25 2026: Creator Studios horizontal opener. ~327 MB 4K original stays in Drive; the build makes a 720p film, a 1080p muted hero loop and a WebP poster."
+    },
+    {
+      "id": "cs-ifcu-clip",
+      "drive": "1XS7j9BHT_j9nXCDzac-TxH1tMlJLph_x",
+      "file": "Copy of IFCU Clip 7.mp4",
+      "loopOnly": true,
+      "_note": "James, Sep 28 2026 page review: Island Federal podcast short (vertical 1080x1920, HEVC, 33.4 s, 32,961,936 bytes, SHA-256 f9716a2cfd7527166e91ac6824255e06a908018b72d799b001a78a3eef39b039), staged unchanged by Codex. Muted 25 s excerpt from 3 s (540x960, libx264 CRF 28) and a WebP poster at 6 s, encoded on the Cowork VM. The clip has word-by-word captions burned in; it plays muted only, so no caption track is offered."
+    },
+    {
+      "id": "agent-expertise-hero",
+      "source": "/media/photografik-2027/jb-andreassi.mp4",
+      "loopOnly": true,
+      "_note": "James, Sep 28 2026 page review: Agent Content hero: the committed on-camera expertise clip (vertical 720x1280), 25 s muted excerpt from 3 s, centred over a blurred fill of itself in a 1280x720 frame. Muted and decorative; the playable clip with its burned-in captions stays in the examples."
+    },
+    {
+      "id": "cs-demo-reel-silent",
+      "source": "/v/cs-demo-reel.mp4",
+      "loopOnly": true,
+      "_note": "James, Sep 28 2026 page review: Creator Studios Space section: the approved 36 s horizontal demo reel with the audio track removed (video stream copied, no re-encode), so the in-section player autoplays muted and has no soundtrack to unmute. Poster is the reel poster."
     }
   ],
   "docs": [

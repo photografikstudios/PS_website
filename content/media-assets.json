@@ -1,10 +1,10 @@
 {
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "local dist/v (MEDIA_ALLOW_ENCODE build)",
-  "recordedAt": "2026-09-27",
-  "count": 111,
-  "totalBytes": 282010030,
-  "aggregate": "af77b8ac15e0b281f86ca1d7e4c097ace09423f9b32034927e46877b34545277",
+  "recordedAt": "2026-09-28",
+  "count": 121,
+  "totalBytes": 301629762,
+  "aggregate": "ba65556fb43efdef946307f9b3a58e2b02e2a8953fdc3093c4de7eaa6efa5368",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -29,6 +29,10 @@
     "/v/re-hampton-luxury-home.webp": {
       "bytes": 153372,
       "sha256": "b86c994837074dcbfff12a37931505aa07d35cde28067a0753c7d5d61234b85e"
+    },
+    "/v/re-hampton-luxury-home-loop.mp4": {
+      "bytes": 2903397,
+      "sha256": "4ef71c1d20dc36e8c1532624253cb8cdad0190b74814845963e3efdb517f5381"
     },
     "/v/re-hamptons-aesthetic.mp4": {
       "bytes": 19706844,
@@ -86,6 +90,10 @@
       "bytes": 89040,
       "sha256": "c77b90ef34e2667714e67a1d7ce36e4c5b0a776b19c5a7f4205f71dd968fc577"
     },
+    "/v/re-hamptons-upbeat-loop.mp4": {
+      "bytes": 3584966,
+      "sha256": "5dbf6d0fc13dc55824e148dbf3814d68dd2ab2f73a32a8933da31eaf330ef73c"
+    },
     "/v/re-hamptons-cinematic.mp4": {
       "bytes": 18986715,
       "sha256": "265c37b3072b3daf92d9b9dccc6667ac23e5f143925ff7edcdb303517bd93fbd"
@@ -101,6 +109,10 @@
     "/v/re-east-end-listing-reel.webp": {
       "bytes": 63300,
       "sha256": "39f3ce971631817cf292f07616434ef0ad5a551c920f297f5dd911c0858d2ebc"
+    },
+    "/v/re-east-end-listing-reel-loop.mp4": {
+      "bytes": 3342348,
+      "sha256": "dd3c8886b5c5b64eea12d3dd4e9636b3620740bad484755b0ddd52647c8f075e"
     },
     "/v/arch-yankee-barn-film.mp4": {
       "bytes": 19442069,
@@ -159,8 +171,8 @@
       "sha256": "b7ce580a22b06323dc1dea3d734261033a5780f092008943c36ac09e419b6b84"
     },
     "/v/cs-jm2-architecture-loop.mp4": {
-      "bytes": 280813,
-      "sha256": "ff191e394712eba012336d88ee5a4000680bccd4a324b0df58e30e44c6dc2e99"
+      "bytes": 860221,
+      "sha256": "50963d306280fd752a3c2c0a05619bfff36fe5d6891e12e1e385c88075ac6974"
     },
     "/v/cs-noah-knows-short.mp4": {
       "bytes": 8025386,
@@ -169,6 +181,10 @@
     "/v/cs-noah-knows-short.webp": {
       "bytes": 35498,
       "sha256": "1c4db106eedc4e94e027cd0da4b31fc83456ab9e6e5dd8bd21eb3e5cf668cd63"
+    },
+    "/v/cs-noah-knows-short-loop.mp4": {
+      "bytes": 1542395,
+      "sha256": "5fe6751d27e5431359c68b99b93a37fc49df901ddd66e9a09375a281f9917725"
     },
     "/v/cs-tick.mp4": {
       "bytes": 4061113,
@@ -446,9 +462,33 @@
       "bytes": 2753101,
       "sha256": "946c9fd3bc52b7bcc2da3bb0d543ef37884d72c4ff26aaf7cffbb88d652d8624"
     },
+    "/v/cs-ifcu-clip-loop.mp4": {
+      "bytes": 1932899,
+      "sha256": "0e31f24b4d19bd65df2abcb9ada96a98d7368c6532b7f058506cd642fd125b40"
+    },
+    "/v/cs-ifcu-clip.webp": {
+      "bytes": 86590,
+      "sha256": "3cf00add9da45cdea5b7ce479fb3e0762ea5a3666424e41210b2ed389430f135"
+    },
+    "/v/agent-expertise-hero-loop.mp4": {
+      "bytes": 1199647,
+      "sha256": "dd657e4a7d9be2f52379899ac9d442e7af40d29db349e16038073a1aa0e5399f"
+    },
+    "/v/agent-expertise-hero.webp": {
+      "bytes": 22634,
+      "sha256": "9cce7d10c3470b188194555e36a1c66ead74512b82618281e437c7ccce1a110d"
+    },
+    "/v/cs-demo-reel-silent-loop.mp4": {
+      "bytes": 4329184,
+      "sha256": "587528d292f28b17999c6ce8fbbb3a175e6742b28be2c32a7d3a0f03e4598787"
+    },
+    "/v/cs-demo-reel-silent.webp": {
+      "bytes": 95950,
+      "sha256": "669ea05191773ed6e4db3888573c95606d607c0309f561cba1d99596f4c89ece"
+    },
     "/v/manifest.json": {
-      "bytes": 4350,
-      "sha256": "8cc598a1ef01147460a7f38390ce0b1e2baee1e8c735e2fed28b13c07ed50ec8"
+      "bytes": 4664,
+      "sha256": "cf6dffd01d9e9d191174091aaa01e874ed3750f03413f063a295f5cae06082a1"
     }
   }
 }

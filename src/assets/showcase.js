@@ -33,7 +33,7 @@ if (root) {
     empty.hidden = matches.length > 0;
     const route = routes[cat] || '/real-estate';
     more.href = `${route}${route === '/real-estate' ? `?type=${kind === 'video' ? 'video' : 'photo'}` : ''}#portfolio`;
-    more.textContent = matches.length > LIMIT ? `View more (${matches.length})` : 'View more';
+    more.textContent = 'View more'; // James, Sep 28: no visible item counts
   }
 
   const changed = () => track('gallery_filter', { where: 'home', kind: kindSel.value, category: catSel.value });

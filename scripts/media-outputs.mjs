@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const outputsFor = (it) => (it.image ? [`${it.id}.webp`, `${it.id}-sm.webp`]
-  : it.montage ? [`${it.id}-loop.mp4`, `${it.id}.webp`]
+  : it.montage || it.loopOnly ? [`${it.id}-loop.mp4`, `${it.id}.webp`]
     : [`${it.id}.mp4`, `${it.id}.webp`, ...(it.loop ? [`${it.id}-loop.mp4`] : [])]);
 
 export async function publishedOutputs(root) {

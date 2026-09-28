@@ -29,7 +29,7 @@
     },
     "creatorBooking": {
       "href": "https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services",
-      "label": "Long Island Creator Studios booking on Square",
+      "label": "LI Creator Studios booking",
       "verified": true,
       "note": "James, Sep 25 2026: Square services page is the studio booking/pricing destination. Some Square listings say 'Price varies'; never claim Square shows $250/$500 or that booking carries over a Photografik selection."
     },
@@ -74,7 +74,7 @@
       "href": "/commercial"
     },
     {
-      "label": "Creator Studios",
+      "label": "LI Creator Studios",
       "href": "/creator-studios"
     },
     {
@@ -112,7 +112,7 @@
       "href": "/agency-partnerships"
     },
     {
-      "label": "Creator Studios",
+      "label": "LI Creator Studios",
       "href": "/creator-studios"
     },
     {

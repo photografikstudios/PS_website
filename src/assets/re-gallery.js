@@ -2,7 +2,7 @@
 // Load More, and a configurable player. One media collection (content/work.json) feeds every gallery.
 // Player mode comes from data-player: 'inline' plays in the card, 'lightbox' opens the shared viewer.
 // Review builds also accept ?player=inline|lightbox for comparison.
-import { matches, optionCounts } from './gallery-core.js';
+import { matches } from './gallery-core.js';
 import { createLightbox } from './lightbox.js';
 // Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
 const track = (name, props) => window.pgkTrack?.(name, props);
@@ -102,7 +102,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     }
     const n = current.length;
     grid.dataset.shown = String(on.size);
-    count.textContent = n === 1 ? '1 piece' : `${n} pieces`;
+    count.textContent = n === 1 ? '1 result' : `${n} results`; // screen-reader only (visually hidden)
     empty.hidden = n > 0;
     if (!n) {
       const lab = (k) => { const s = byKey(k); return s ? labelsOf(s)[f[k]] : ''; };
@@ -112,12 +112,11 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     }
     const left = n - Math.min(shown, n);
     more.hidden = left <= 0;
-    more.textContent = `Load more (${left})`;
+    more.textContent = 'Load more';
     resetBtn.hidden = !Object.values(f).some(Boolean);
     for (const sel of sels()) {
-      const k = KEYS[sel.name]; const labels = labelsOf(sel);
-      const c = optionCounts(items, f, k, [...sel.options].map((o) => o.value));
-      for (const o of sel.options) o.textContent = o.value ? `${labels[o.value]} (${c[o.value]})` : labels[''];
+      const labels = labelsOf(sel);
+      for (const o of sel.options) o.textContent = labels[o.value] ?? o.textContent;
     }
     if (push) {
       const url = new URL(location.href);

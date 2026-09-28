@@ -137,11 +137,26 @@ const ambients = [...document.querySelectorAll('video[data-ambient]')];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 let motionOff = reduce.matches;
 try { if (localStorage.getItem('pgk-motion') === 'off') motionOff = true; } catch { /* storage unavailable */ }
-const toggleBtn = document.querySelector('[data-motion-toggle]');
+// Every [data-motion-toggle] (the hero's, and one beside in-page loops on pages without a hero film) controls all
+// ambient video together.
+const toggleBtns = [...document.querySelectorAll('[data-motion-toggle]')];
 const inView = new WeakMap();
+// Phones: ambient loops (the hero included) start after the page has loaded, so the poster frame, text and fonts
+// win the first paint (James/Codex, Sep 28 2026: reversible preview optimization for Home mobile LCP).
+const phone = matchMedia('(max-width: 700px)');
+let pageLoaded = document.readyState === 'complete';
+addEventListener('load', () => { pageLoaded = true; setTimeout(() => ambients.forEach(syncAmbient), 0); }, { once: true });
+const setToggles = (off, blocked) => { document.documentElement.classList.toggle('motion-off', off); toggleBtns.forEach((b) => {
+  b.setAttribute('aria-pressed', String(off));
+  b.querySelector('.motion-toggle__label').textContent = off ? 'Play video' : 'Pause video';
+  if (blocked) b.dataset.blocked = '1'; else delete b.dataset.blocked;
+}); };
 
 function syncAmbient(v) {
-  if (motionOff || !inView.get(v) || document.hidden) { if (!v.paused) v.pause(); return; }
+  // A loop with native controls (Creator Studios Space reel) that the visitor paused stays paused.
+  if (v.dataset.userPaused) return;
+  if (motionOff || !inView.get(v) || document.hidden) { if (!v.paused) { v._sysPause = true; v.pause(); } return; }
+  if (!pageLoaded && phone.matches) return;
   if (v.preload === 'none') v.preload = 'auto';
   v.muted = true;
   const p = v.play();
@@ -149,32 +164,37 @@ function syncAmbient(v) {
     // Only a policy refusal counts as blocked. An AbortError just means the visitor paused before loading finished.
     if (!e || e.name !== 'NotAllowedError' || motionOff) return;
     // Autoplay refused (browser policy, data saver): the poster stays and the control offers Play.
-    if (v.closest('.hero, .page-hero') && toggleBtn) { toggleBtn.setAttribute('aria-pressed', 'true'); toggleBtn.querySelector('.motion-toggle__label').textContent = 'Play video'; toggleBtn.dataset.blocked = '1'; }
+    if (toggleBtns.length) setToggles(true, true);
   });
 }
 function setMotion(off, remember) {
   motionOff = off;
-  if (toggleBtn) delete toggleBtn.dataset.blocked;
-  if (toggleBtn) {
-    toggleBtn.setAttribute('aria-pressed', String(off));
-    toggleBtn.querySelector('.motion-toggle__label').textContent = off ? 'Play video' : 'Pause video';
-  }
+  setToggles(off, false);
   if (remember) { try { localStorage.setItem('pgk-motion', off ? 'off' : 'on'); } catch { /* ignore */ } }
   ambients.forEach(syncAmbient);
 }
+ambients.filter((v) => v.controls).forEach((v) => {
+  v.addEventListener('pause', () => { if (v._sysPause) v._sysPause = false; else v.dataset.userPaused = '1'; });
+  v.addEventListener('play', () => { delete v.dataset.userPaused; });
+});
 if (ambients.length) {
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) { inView.set(e.target, e.isIntersecting); syncAmbient(e.target); }
     }, { rootMargin: '120px 0px', threshold: 0.01 });
     ambients.forEach((v) => io.observe(v));
-  } else ambients.forEach((v) => { inView.set(v, true); syncAmbient(v); });
+    // Posters of off-screen loops load as they approach, instead of competing with the first screen.
+    const posters = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { const v = e.target; if (v.dataset.poster && !v.poster) v.poster = v.dataset.poster; posters.unobserve(v); }
+    }, { rootMargin: '600px 0px' });
+    ambients.filter((v) => v.dataset.poster).forEach((v) => posters.observe(v));
+  } else ambients.forEach((v) => { if (v.dataset.poster) v.poster = v.dataset.poster; inView.set(v, true); syncAmbient(v); });
   reduce.addEventListener?.('change', (m) => setMotion(m.matches, false));
   document.addEventListener('visibilitychange', () => ambients.forEach(syncAmbient));
-  toggleBtn?.addEventListener('click', () => {
+  toggleBtns.forEach((b) => b.addEventListener('click', () => {
     // After a blocked autoplay the click is a user gesture, so Play can start the footage.
-    if (toggleBtn.dataset.blocked) { delete toggleBtn.dataset.blocked; setMotion(false, true); } else setMotion(!motionOff, true);
-  });
+    if (b.dataset.blocked) setMotion(false, true); else setMotion(!motionOff, true);
+  }));
   setMotion(motionOff, false);
 }
 

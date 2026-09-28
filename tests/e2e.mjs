@@ -154,7 +154,7 @@ await check('portfolios: every approved item appears on its own service page, on
   const p = await newPage();
   for (const [cat, path] of Object.entries(route)) {
     await p.goto(base + path);
-    const html = await p.locator('#portfolio').evaluate((el) => el.outerHTML);
+    const html = await p.locator(cat === 'creator-studios' ? 'main' : '#portfolio').evaluate((el) => el.outerHTML);
     const mine = approved.filter((m) => m.category === cat);
     let pageHtml = html;
     // Commercial (James, Sep 26): the index shows one card per project; every item lives on its project page.
@@ -531,7 +531,7 @@ await check('RE gallery: package matches, package × type intersection, zero res
   const total = await p.locator('#rg-grid .gcard').count();
   assert(total >= 12, `total ${total}`);
   await p.selectOption('#rg-package', 'luxury-media');
-  assert(await rgShown(p) === 2 && (await p.textContent('#rg-count')) === '2 pieces', 'luxury 2');
+  assert(await rgShown(p) === 2 && (await p.textContent('#rg-count')) === '2 results', 'luxury 2');
   assert(p.url().includes('package=luxury-media'), 'url');
   await p.selectOption('#rg-package', 'signature');
   assert(await rgShown(p) === 1, 'signature 1');
@@ -541,11 +541,12 @@ await check('RE gallery: package matches, package × type intersection, zero res
   await p.selectOption('#rg-package', 'signature');
   assert(await rgShown(p) === 0 && await p.isVisible('#rg-empty'), 'signature + photo empty');
   assert((await p.textContent('#rg-empty-title')).includes('Signature'), 'empty names package');
-  assert((await p.textContent('#rg-package option[value="signature"]')).includes('(0)'), 'option count reflects type');
+  // James, Sep 28 2026: no visible catalog statistics; option labels carry no counts.
+  assert(!/\(\d+\)/.test(await p.textContent('#rg-package')) && !/\(\d+\)/.test(await p.textContent('#rg-type')), 'no counts in option labels');
   await p.click('[data-rg-show-all]');
   assert(await p.inputValue('#rg-package') === '' && await rgShown(p) > 1, 'show all');
   await p.click('.filters__clear');
-  assert(await p.inputValue('#rg-type') === '' && (await p.textContent('#rg-count')) === `${total} pieces`, 'reset');
+  assert(await p.inputValue('#rg-type') === '' && (await p.textContent('#rg-count')) === `${total} results`, 'reset');
   await p.context().close();
 });
 
@@ -555,7 +556,7 @@ await check('RE gallery: untagged catalog hides the package control (no (0) opti
   const total = await p.locator('#rg-grid .gcard').count();
   assert(await p.locator('#rg-package').count() === 0, 'no package control while nothing is tagged');
   assert(!(await p.locator('#portfolio').textContent()).match(/\(0\)/), 'no zero-result options');
-  assert(!(await p.isVisible('#rg-empty')) && (await p.textContent('#rg-count')) === `${total} pieces`, 'stale ?package= link falls back to all work');
+  assert(!(await p.isVisible('#rg-empty')) && (await p.textContent('#rg-count')) === `${total} results`, 'stale ?package= link falls back to all work');
   const note = await p.textContent('.regallery__note');
   assert(/none are shown yet/.test(note) && !/some pieces/.test(note), 'note: ' + note);
   await p.focus('#rg-type');
@@ -565,7 +566,7 @@ await check('RE gallery: untagged catalog hides the package control (no (0) opti
   assert(kinds.length && kinds.every((k) => k === 'video'), kinds.join());
   assert(await p.isVisible('.filters__clear'), 'reset appears');
   await p.click('.filters__clear');
-  assert(await p.inputValue('#rg-type') === '' && (await p.textContent('#rg-count')) === `${total} pieces`, 'reset to all');
+  assert(await p.inputValue('#rg-type') === '' && (await p.textContent('#rg-count')) === `${total} results`, 'reset to all');
   assert(await p.evaluate(() => document.activeElement.id) === 'rg-type', 'focus returns to the media filter');
   await p.context().close();
   const ph = await newPage({ width: 375, height: 812 });
@@ -858,7 +859,8 @@ await check('creator studios: story, formats with scope, conversations, process,
   // held after Codex S15-16 because he earlier said $250). The page never claims Square checkout shows these figures.
   assert(await p.locator('.plan .needs-approval').count() === 0, 'session prices approved');
   const prices = (await p.locator('.plan__price').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim());
-  assert(prices.length === 3 && prices[0].includes('$249') && /\$250 per hour.*2-hour minimum/i.test(prices[1]) && /\$999 per month/i.test(prices[2]), 'session prices shown: ' + prices.join('|'));
+  // James, Sep 28 2026: "Starting at" before every price; general studio content starts at $499 for a 2-hour minimum.
+  assert(prices.length === 3 && /^Starting at \$249$/.test(prices[0]) && /^Starting at \$499 for a 2-hour minimum$/.test(prices[1]) && /^Starting at \$999 per month$/.test(prices[2]), 'session prices shown: ' + prices.join('|'));
   // James, Sep 27: recorded live session within 24 hours; editing about 5 to 7 days. One promise in both places.
   assert(!/next day|immediately|72 hours/i.test(text) && (text.match(/within 24 hours/g) || []).length >= 2 && (text.match(/5 to 7 days/g) || []).length >= 2, 'single delivery promise');
   assert(await p.locator('#faq .needs-approval').count() === 0, 'delivery and cancellation confirmed by James');
@@ -872,15 +874,24 @@ await check('creator studios: story, formats with scope, conversations, process,
   const book = p.locator('main a:has-text("Book a Studio Session"), main a:has-text("Book this session")');
   assert(await book.count() >= 4, 'booking CTAs');
   for (const h of await book.evaluateAll((els) => els.map((e) => [e.getAttribute('href'), e.getAttribute('target'), e.getAttribute('rel')]))) assert(h[0] === square && h[1] === '_blank' && /noopener/.test(h[2]), 'square link ' + h.join());
-  assert(text.includes('Long Island Creator Studios'), 'visible connection to the studio');
+  // James, Sep 28 2026: the business name is LI Creator Studios; booking is "through LI Creator Studios", not "through Square".
+  assert(text.includes('booked through LI Creator Studios') && !/Long Island Creator Studios|through Square|on Square/.test(text), 'LI Creator Studios booking wording');
   assert(!/Square (shows|lists|displays)[^.]*\$|selection (carries|transfers)/i.test(text), 'no Square price or transfer claim');
   // The eight photos James approved on Sep 25 now render; all eight ids, nothing else from that folder.
   const ids = ['cs-ph-cc-onsite', 'cs-ph-cc-ep20', 'cs-ph-hedgestone-switch', 'cs-ph-island-federal', 'cs-ph-determined-society', 'cs-ph-solo-couch', 'cs-ph-solo-bts', 'cs-ph-dan-dan-conversation'];
   // James, Sep 26 (density): photos sit beside their sections; the rest live on the All sessions page.
   const html = (await p.content()) + await (await fetch(base + '/creator-studios/sessions')).text();
   for (const id of ids) assert(html.includes(`/v/${id}`), id + ' rendered');
-  assert(await p.locator('#portfolio .card').count() <= 3, 'Recent sessions is a short preview');
-  assert(await p.locator('#portfolio .section-head a[href="/creator-studios/sessions"]').count() === 1, 'All sessions link');
+  // James, Sep 28 2026: Recent Sessions is removed; the opening section plays three vertical examples in place
+  // (muted, looping, named for assistive tech, no captions or transcript links beneath); All sessions stays reachable.
+  assert(await p.locator('#portfolio').count() === 0 && !/Recent sessions/i.test(text), 'Recent Sessions removed');
+  const loops = await p.locator('.cs-loops video').evaluateAll((vs) => vs.map((v) => [v.muted || v.hasAttribute('muted'), v.loop, v.getAttribute('aria-label'), v.querySelector('source').getAttribute('src'), !!v.closest('figure')?.querySelector('figcaption')]));
+  assert(loops.length === 3 && loops.every((l) => l[0] && l[1] && l[2] && /-loop\.mp4$/.test(l[3]) && !l[4]), 'three muted vertical loops: ' + JSON.stringify(loops));
+  assert(loops.map((l) => l[3]).join() === '/v/cs-ifcu-clip-loop.mp4,/v/cs-noah-knows-short-loop.mp4,/v/cs-jm2-architecture-loop.mp4', 'loop sources');
+  assert(await p.locator('section:has(#cs-story-h) a[href="/creator-studios/sessions"]').count() === 1, 'All sessions link');
+  assert(await p.locator('.cs-formats li').count() === 6 && await p.locator('.cs-formats li > figure.cs-format__img:first-child img').count() === 6, 'an image above each format');
+  const reel = await p.locator('section:has(#cs-space-h) video').evaluate((v) => [v.muted || v.hasAttribute('muted'), v.controls, v.querySelector('source').getAttribute('src'), v.dataset.poster]);
+  assert(reel[0] && reel[1] && reel[2] === '/v/cs-demo-reel-silent-loop.mp4' && reel[3] === '/v/cs-demo-reel-silent.webp', 'space demo reel: ' + reel.join());
   for (const sec of ['#cs-story-h', '#cs-sessions-h', '#cs-space-h', '#cs-conv-h']) assert(await p.locator(`section:has(${sec}) img, section:has(${sec}) video`).count() >= 1, sec + ' has adjacent media');
   const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.id || x.getAttribute('aria-labelledby')));
   assert(order.indexOf('sessions') > 0 && order.indexOf('sessions') <= 2, 'sessions near the top: ' + order.join());
@@ -889,7 +900,7 @@ await check('creator studios: story, formats with scope, conversations, process,
   const card = await p.locator('img[src*="cs-ph-hedgestone-switch"]').first().evaluate((i) => [i.getAttribute('src'), i.getAttribute('srcset')]);
   assert(card[0].endsWith('-sm.webp') && /-sm\.webp 900w/.test(card[1]) && /cs-ph-hedgestone-switch\.webp 2000w/.test(card[1]), 'card srcset ' + card.join(' '));
   // Clips with speech and no captions are flagged in review (production build refuses them).
-  assert(await p.locator('.card:has([data-id="cs-jm2-architecture"]) .needs-approval').count() === 1, 'uncaptioned dialogue clip flagged');
+  assert(await p.locator('main video:not([muted])').count() === 0, 'no clip on the page can play sound (examples are muted loops)');
   const noah = await p.locator('.card--image:has(img[src*="ph-noah-knows"]) .card__sub').allTextContents();
   assert(!noah.some((t) => /Bohemia/.test(t)), 'Noah Knows kitchen shoot not labelled Bohemia');
   const cta = p.locator('main a:has-text("Ask us first")').first();
@@ -935,9 +946,11 @@ await check('Listing Engine is listing sale-cycle content with the HDPH agent-on
 
 await check('speech clips carry caption tracks that load and parse, no Creator transcripts, and a machine-draft review tag; unlicensed RevivaLuxe films withheld', async () => {
   const p = await newPage();
-  for (const [path, id] of [['/creator-studios', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
+  // James, Sep 28 2026: Creator Studios shows muted loops (no sound, so no track); the playable clips with CC live on
+  // All sessions. Agent Content examples play inline with CC but no caption text or transcript link beneath.
+  for (const [path, id] of [['/creator-studios/sessions', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
     await p.goto(base + path);
-    const card = p.locator(`.card:has([data-id="${id}"])`).first();
+    const card = p.locator(`.card:has([data-id="${id}"]), .ac-example:has([data-id="${id}"])`).first();
     const src = await card.locator('video track[kind="captions"]').getAttribute('src');
     assert(src === `/captions/${id}.vtt`, `${id} track ${src}`);
     const isDefault = await card.locator('video track[kind="captions"]').evaluate((t) => t.hasAttribute('default'));
@@ -952,8 +965,8 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
     });
     assert(cues >= (id === 'revivaluxe-film' ? 1 : 2), `${id} parsed cues ${cues}`);
     // James, Sep 26 2026: Creator videos need no separate transcripts (they carry burned-in captions plus a CC track).
-    assert(await card.locator('a[href="/captions/' + id + '.txt"]').count() === (id.startsWith('cs-') ? 0 : 1), `${id} transcript link`);
-    assert(/machine-transcribed draft/.test(await card.locator('.needs-approval').last().getAttribute('title') || ''), `${id} draft tag`);
+    assert(await card.locator('a[href="/captions/' + id + '.txt"]').count() === 0, `${id} no visible transcript link`);
+    if (id.startsWith('cs-')) assert(/machine-transcribed draft/.test(await card.locator('.needs-approval').last().getAttribute('title') || ''), `${id} draft tag`);
   }
   // James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed, so both RevivaLuxe films are withheld everywhere.
   for (const path of ['/', '/commercial', '/commercial/revivaluxe']) {
@@ -1025,7 +1038,11 @@ await check('Architecture & design: story first, text and media paired, early pr
       assert((await p.locator(`${sec} .pair-fig figcaption`).textContent()).trim().length > 5, `${sec}: caption`);
     }
     assert(/^\/architecture-design\/peterson-ramlowtan$/.test(await p.locator('#why .pair-fig figcaption a').getAttribute('href')), 'detail photo links to its project');
-    assert(await p.locator('#which-story .story-guide__fig img').count() === 1 && await p.locator('#which-story a.story-guide__film').count() === 1, 'story guide photo and film examples');
+    // James, Sep 28 2026: a photo above Brand Story & Interviews too (the JM2 Architecture podcast frame).
+    assert(await p.locator('#which-story .story-guide__fig img').count() === 2 && await p.locator('#which-story a.story-guide__film').count() === 1, 'story guide photo and film examples');
+    assert(await p.locator('#how-it-works .steps li > figure.block-fig:first-child img').count() === 3, 'a still above each How it works step');
+    assert(await p.locator('section.closing--bleed:has-text("Finished something worth showing?") .closing__media img').count() === 1, 'full-bleed footer image');
+    assert(!/\bpieces\b/.test(await p.locator('#portfolio').innerText()) && !/\bproject\b/i.test((await p.locator('#ag-grid .gcard__sub').allInnerTexts()).join(' ')), 'no piece counts; tile subtitles omit the word project');
     // No asset appears twice on the landing page (the hero film loop is decoration and plays the same film).
     const ids = await p.locator('main [data-media]').evaluateAll((els) => els.map((e) => e.dataset.media));
     assert(new Set(ids).size === ids.length, 'an asset repeats on the landing page: ' + ids.join(','));
@@ -1059,13 +1076,13 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   assert(await bySeg('designer') === 'kerry-delrose', 'designers');
   await p.selectOption('#ag-segment', 'builder');
   const b = (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).sort();
-  assert(b.join(',') === 'peterson-ramlowtan,yankee-barn-builders' && (await p.textContent('#ag-count')) === '2 pieces', 'builders: ' + b.join(','));
+  assert(b.join(',') === 'peterson-ramlowtan,yankee-barn-builders' && (await p.textContent('#ag-count')) === '2 results', 'builders: ' + b.join(','));
   assert(new URL(p.url()).searchParams.get('segment') === 'builder' && await p.isVisible('#portfolio .filters__clear'), 'segment in URL, reset visible');
   await p.selectOption('#ag-type', 'video');
   assert(await shown() === 1 && (await p.locator('#ag-grid .gcard:not([hidden])').getAttribute('data-project')) === 'yankee-barn-builders', 'builders + video = the Yankee Barn Builders film');
   await p.selectOption('#ag-segment', 'designer');
   assert(await shown() === 0 && await p.isVisible('#ag-empty') && (await p.textContent('#ag-empty-title')) === 'Nothing for Designers in video yet.', 'designer + video empty state: ' + await p.textContent('#ag-empty-title'));
-  assert((await p.textContent('#ag-segment option[value="designer"]')).includes('(0)') && (await p.textContent('#ag-segment option[value="builder"]')).includes('(1)'), 'segment counts follow type');
+  assert(!/\(\d+\)/.test(await p.textContent('#ag-segment')) && !/\(\d+\)/.test(await p.textContent('#ag-type')), 'no counts in option labels');
   await p.click('#portfolio [data-rg-show-all]');
   assert(await p.inputValue('#ag-segment') === '' && await p.inputValue('#ag-type') === 'video' && await shown() >= 1, 'show all keeps media type');
   // Inline film plays in the card, no dialog, with controls.
@@ -1076,7 +1093,7 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   await p.selectOption('#ag-type', 'photo');
   assert(await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.every((e) => e.dataset.kind === 'image')), 'photo filter');
   await p.click('#portfolio .filters__clear');
-  assert(await p.inputValue('#ag-type') === '' && (await p.textContent('#ag-count')) === `${total} pieces`, 'reset');
+  assert(await p.inputValue('#ag-type') === '' && (await p.textContent('#ag-count')) === `${total} results`, 'reset');
   // Project cards link to their pages, and those pages hold the rest of the project's media.
   for (const slug of await p.locator('#ag-grid .gcard[data-project]').evaluateAll((es) => es.map((e) => e.dataset.project))) {
     assert(await p.locator(`#ag-grid .gcard[data-project="${slug}"] a[href="/architecture-design/${slug}"]`).count() >= 1, slug + ' link');
@@ -1099,14 +1116,13 @@ await check('Architecture & design gallery: segment and media filters, counts, r
     assert(h.length === 1 && h[0].kind === kind && h[0].proj === 'yankee-barn-builders' && h[0].href === '/architecture-design/yankee-barn-builders', `Yankee Barn Builders in "${type || 'all'}": ${JSON.stringify(h)}`);
   }
   await p.selectOption('#ag-type', 'photo');
-  const photoCount = +(await p.textContent('#ag-type option[value="photo"]')).match(/\((\d+)\)/)[1];
-  assert(photoCount === await p.locator('#ag-grid .gcard:not([hidden])').count() && (await p.textContent('#ag-count')) === `${photoCount} pieces`, 'photo count coherent');
+  const photoCount = +(await p.textContent('#ag-count')).match(/\d+/)[0]; // screen-reader result count (no visible counts)
+  assert(photoCount === await p.locator('#ag-grid .gcard:not([hidden])').count() && (await p.textContent('#ag-count')) === `${photoCount} results`, 'photo count coherent');
   await p.selectOption('#ag-type', '');
-  assert((await p.textContent('#ag-count')) === `${total} pieces` && await shown() === total, 'All shows each project once');
+  assert((await p.textContent('#ag-count')) === `${total} results` && await shown() === total, 'All shows each project once');
   for (const c of await p.locator('#ag-grid .gcard').evaluateAll((es) => es.map((e) => ({ proj: !!e.dataset.project, link: !!e.querySelector('a[href^="/architecture-design/"]'), sub: e.querySelector('.gcard__sub').textContent })))) {
     assert(c.proj === c.link, 'only project cards promise a project page');
-    if (!c.proj) assert(/Single (photo|film)/.test(c.sub), 'single piece labelled: ' + c.sub);
-    else assert(/Project/.test(c.sub), 'project labelled: ' + c.sub);
+    assert(!/\bproject\b|pieces|Single/i.test(c.sub), 'subtitle is town and discipline only: ' + c.sub);
     assert(!/\b\d{1,5} [A-Z][a-z]+/.test(c.sub), 'address in card: ' + c.sub);
   }
   // Labels are accessible.
@@ -1135,6 +1151,50 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   const rb = await ph.locator('.review-bar').boundingBox(); const hd = await ph.locator('.site-header').boundingBox();
   assert(hd.y >= rb.y + rb.height - 1, 'header covers the review strip');
   assert(await ph.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'phone overflow');
+  await ph.context().close();
+});
+
+// James, Sep 28 2026 page review.
+await check('James Sep 28: pricing four across, Most Popular, package loops; RE image-led, no tile captions; no counts; Agent split; phone hero waits for load', async () => {
+  const p = await newPage({ width: 1280, height: 900 });
+  await p.goto(base + '/real-estate/pricing');
+  const cards = await p.locator('#panel-packages .pcard').evaluateAll((els) => els.map((e) => ({ id: e.dataset.record, top: Math.round(e.getBoundingClientRect().top), badge: e.querySelector('.pcard__badge')?.textContent, featured: e.classList.contains('pcard--featured'), loop: e.querySelector('.pcard__loop video source')?.getAttribute('src'), label: e.querySelector('.pcard__loop video')?.getAttribute('aria-label'), muted: e.querySelector('.pcard__loop video')?.hasAttribute('muted'), seq: e.querySelectorAll('.pcard__seq img').length })));
+  assert(cards.length === 4 && new Set(cards.map((c) => c.top)).size === 1, 'four cards on one desktop row: ' + JSON.stringify(cards.map((c) => c.top)));
+  const social = cards.find((c) => c.id === 'social-media');
+  assert(social.badge === 'Most Popular' && social.featured && cards.filter((c) => c.featured).length === 1, 'Social Media is Most Popular and the only featured card');
+  assert(cards.find((c) => c.id === 'luxury-media').loop === '/v/re-hampton-luxury-home-loop.mp4' && cards.find((c) => c.id === 'signature').loop === '/v/re-hamptons-upbeat-loop.mp4' && social.loop === '/v/re-east-end-listing-reel-loop.mp4', 'package loops');
+  assert(cards.filter((c) => c.loop).every((c) => c.muted && /example/.test(c.label)) && cards.find((c) => c.id === 'listing-starter').seq >= 3, 'loops muted and named; Listing Starter shows its stills');
+  assert(await p.locator('.pcards__motion [data-motion-toggle]').count() === 1, 'pause control for the examples');
+  // Prices still come from the pricing data and the square-footage tiers (spot check at 2,800 sq ft).
+  await p.fill('#sqft', '2800'); await p.waitForTimeout(400);
+  const prices = (await p.locator('#panel-packages .pcard__amount').allTextContents()).sort();
+  assert(JSON.stringify(prices) === JSON.stringify(['$1,220', '$2,140', '$3,155', '$795']), 'dynamic prices unchanged: ' + prices);
+  await p.goto(base + '/real-estate');
+  assert(await p.locator('.re-coverage__film video[aria-label]').count() === 1 && await p.locator('.features--media .feature .feature__img').count() === 6, 'film beside the coverage heading and an image per service block');
+  assert(await p.locator('#rg-grid .gcard__meta, #rg-grid .gcard__title').count() === 0, 'no captions beneath Real Estate tiles');
+  const named = await p.locator('#rg-grid .gcard').evaluateAll((els) => els.filter((e) => e.querySelector('[aria-label]')?.getAttribute('aria-label') || e.querySelector('img')?.getAttribute('alt')).length);
+  assert(named === await p.locator('#rg-grid .gcard').count(), 'every tile keeps an accessible name (button label or image alt)');
+  for (const path of ['/', '/real-estate', '/architecture-design', '/commercial', '/creator-studios', '/agent-content']) {
+    await p.goto(base + path);
+    const visibleText = await p.locator('main').innerText();
+    assert(!/\b\d+ (pieces|piece|results|films|photos)\b|\(\d+\)|(Load|View) more \(\d+\)/.test(visibleText), `${path} shows a numeric count`);
+  }
+  await p.goto(base + '/agent-content');
+  assert(await p.locator('.page-hero video source[src="/v/agent-expertise-hero-loop.mp4"]').count() === 1, 'Agent hero film');
+  assert(!/the project/i.test(await p.locator('main').innerText()), 'no "the project" link');
+  const split = await p.evaluate(() => { const e = document.querySelector('.ac-split__examples').getBoundingClientRect(), q = document.querySelector('.ac-split__qa').getBoundingClientRect(); return [e.left < q.left, Math.abs(e.top - q.top) < 80, [...document.querySelectorAll('main > section')].findIndex((x) => x.classList.contains('ac-split'))]; });
+  assert(split[0] && split[1] && split[2] === 1, 'examples left, Fair questions right, directly after the hero: ' + split);
+  assert(await p.locator('.ac-example .vplayer').count() === 3 && await p.locator('.ac-split a[href$=".txt"], .ac-split .card__meta').count() === 0, 'inline examples without captions or transcript links beneath');
+  assert(/recognize and trust/.test(await p.textContent('main')), 'monthly plans lead-in');
+  await p.context().close();
+  // Phones: the Home hero loop does not start (or load) before the page load event; afterwards it plays.
+  const ph = await newPage({ width: 390, height: 844 });
+  await ph.addInitScript(() => { window.__heroPlayBeforeLoad = false; const orig = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { if (document.readyState !== 'complete' && this.classList.contains('hero__video')) window.__heroPlayBeforeLoad = true; return orig.call(this); }; });
+  await ph.goto(base + '/', { waitUntil: 'load' });
+  await ph.waitForTimeout(600);
+  const served = (await (await fetch(base + '/')).text()).match(/<video class="ambient hero__video"[^>]*>/)[0];
+  const hero = await ph.evaluate(() => { const v = document.querySelector('.hero__video'); return [window.__heroPlayBeforeLoad, v.preload, !!v.getAttribute('poster')]; });
+  assert(/preload="none"/.test(served) && hero[0] === false && hero[1] === 'auto' && hero[2], 'phone hero deferred until load, then started: ' + hero + ' ' + served);
   await ph.context().close();
 });
 
