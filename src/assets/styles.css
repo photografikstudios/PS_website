@@ -795,6 +795,12 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .case__media .vplayer, .case__media .still { aspect-ratio: 16 / 9; }
 .case__media img { width: 100%; height: 100%; object-fit: cover; }
 .case__media video { width: 100%; height: 100%; object-fit: contain; }
+.media-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(10px, 1.4vw, 18px); align-items: start; }
+.media-pair > :first-child { aspect-ratio: 9 / 16; overflow: hidden; height: auto; }
+.media-pair > :first-child img, .media-pair > img, .project__hero .media-pair img, .case__media .media-pair img { width: 100%; height: 100%; max-height: none; object-fit: cover; }
+.silent-loop { position: relative; aspect-ratio: 9 / 16; background: #111; overflow: hidden; }
+.silent-loop .silent-loop__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.silent-loop .motion-toggle { right: 10px; bottom: 10px; }
 .case__facts { margin: 0; display: grid; gap: 22px; }
 .case__facts dt { font: 400 12px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--on-dark-muted); margin-bottom: 6px; }
 .case__facts dd { margin: 0; color: var(--on-dark); }

@@ -1003,14 +1003,49 @@ await check('About reviews: curated verbatim quotes, Google link, no empty video
   assert(!/AggregateRating/.test(html), 'no self-serving review schema');
 });
 
-// Codex S15-16: RevivaLuxe copy must describe only what a visitor can see (stills; both films withheld).
-await check('RevivaLuxe copy matches the licensed stills only', async () => {
+// Codex S15-16 / James Sep 28 2026: RevivaLuxe copy describes only what a visitor can see. The film appears only as the
+// approved silent export (audio stream physically removed): muted, looping, inline, labelled and pausable, beside a still.
+const mp4Tracks = (buf) => { // handler types of every trak in the moov box
+  const b = Buffer.from(buf); let i = 0; let moov = null;
+  while (i + 8 <= b.length) { let size = b.readUInt32BE(i); const type = b.toString('latin1', i + 4, i + 8); if (size === 1) size = Number(b.readBigUInt64BE(i + 8)); if (size < 8) break; if (type === 'moov') { moov = b.subarray(i, i + size); break; } i += size; }
+  if (!moov) return null; const out = []; let j = 0;
+  while ((j = moov.indexOf('hdlr', j, 'latin1')) !== -1) { out.push(moov.toString('latin1', j + 12, j + 16)); j += 4; }
+  return out;
+};
+await check('RevivaLuxe: silent film loop only, copy matches visible media', async () => {
+  const buf = await (await fetch(base + '/v/revivaluxe-silent-loop.mp4')).arrayBuffer();
+  const tracks = mp4Tracks(buf);
+  assert(tracks && tracks.includes('vide') && !tracks.includes('soun'), 'silent export track handlers: ' + tracks);
+  for (const path of ['/commercial', '/commercial/revivaluxe']) {
+    const served = (await (await fetch(base + path)).text()).match(/<video[^>]*silent-loop__video[^>]*>/g) || [];
+    assert(served.length === 1 && /preload="none"/.test(served[0]) && /data-poster=/.test(served[0]), path + ' served loop starts lazy: ' + served);
+    for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
+      const p = await newPage(vp);
+      await p.goto(base + path);
+      const vids = p.locator('main video');
+      assert(await vids.count() >= 1, 'silent loop on ' + path);
+      const rl = p.locator('.media-pair .silent-loop video');
+      assert(await rl.count() === 1, 'one RevivaLuxe loop beside a still on ' + path);
+      const a = await rl.evaluate((v) => ({ src: v.querySelector('source').getAttribute('src'), muted: v.muted, loop: v.loop, inline: v.playsInline, controls: v.controls, preload: v.getAttribute('preload'), poster: v.getAttribute('poster') || v.dataset.poster, label: v.getAttribute('aria-label') || '' }));
+      assert(a.src === '/v/revivaluxe-silent-loop.mp4' && a.muted && a.loop && a.inline && !a.controls && a.poster === '/v/revivaluxe-silent.webp' && /no sound/.test(a.label), path + ' loop attrs ' + JSON.stringify(a));
+      const toggle = p.locator('.media-pair .silent-loop [data-motion-toggle]');
+      await toggle.scrollIntoViewIfNeeded(); await toggle.click();
+      assert(await toggle.getAttribute('aria-pressed') === 'true' && await rl.evaluate((v) => v.paused), path + ' pause control');
+      await toggle.click();
+      if (path === '/commercial') assert(await p.locator('.page-hero video source[src="/v/biz-rachel-lynch-pools-loop.mp4"]').count() === 1, 'Rachel Lynch stays the Commercial hero');
+      await p.context().close();
+    }
+  }
   const p = await newPage();
   await p.goto(base + '/commercial/revivaluxe');
   const text = await p.textContent('main');
-  assert(!/brand film/i.test(text), 'brand film promised on RevivaLuxe');
-  assert(await p.locator('main video').count() === 0, 'RevivaLuxe film rendered');
+  assert(!/brand film/i.test(text.replace(/RevivaLuxe brand film, no sound[^]*?interior/g, '')), 'film wording beyond the visible loop');
+  assert(/Film/.test(await p.textContent('.project__facts')), 'Delivered names the film that is shown');
   await p.context().close();
+  const rm = await newPage(undefined, { reducedMotion: 'reduce' });
+  await rm.goto(base + '/commercial'); await rm.locator('#case-study').scrollIntoViewIfNeeded(); await rm.waitForTimeout(800);
+  assert(await rm.locator('.silent-loop video').evaluate((v) => v.paused), 'reduced motion keeps the loop still');
+  await rm.context().close();
 });
 
 // Owner corrections, Sep 27 2026: Architecture & design sells the story first, with supporting media beside the text,

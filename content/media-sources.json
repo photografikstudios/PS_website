@@ -369,6 +369,12 @@
       "source": "/v/cs-demo-reel.mp4",
       "loopOnly": true,
       "_note": "James, Sep 28 2026 page review: Creator Studios Space section: the approved 36 s horizontal demo reel with the audio track removed (video stream copied, no re-encode), so the in-section player autoplays muted and has no soundtrack to unmute. Poster is the reel poster."
+    },
+    {
+      "id": "revivaluxe-silent",
+      "source": "git 189b3bd:static/media/photografik-2027/commercial-revivaluxe.mp4",
+      "loopOnly": true,
+      "_note": "James, Sep 28 2026: silent visual use of the 33 s RevivaLuxe brand film approved for Commercial. Exact source: the previously published commercial-revivaluxe.mp4 (git blob f5736cec5970aabfe7a86858264252cea2466698, 5,149,376 bytes, SHA-256 b56a8e09fce6c99ace2c586deecc061a3e516d0fded2426ddce188ab80b2be60; vertical 720x1280 h264, 33.43 s, with an AAC music track and a data stream). The unlicensed soundtrack is physically removed: video stream only (-map 0:v:0 -an -dn -sn, metadata stripped), re-encoded 540x960 libx264 CRF 28 faststart; ffprobe reports one stream. WebP poster at 8 s (treatment). The audio-bearing film and the separate 75 s tour stay withheld."
     }
   ],
   "docs": [

@@ -766,7 +766,13 @@ ${agentMonthly.length ? `<section class="section section--tint">
     // James, Sep 28 2026: say what was delivered, without item counts.
     return [films ? 'Film' : '', photos ? 'Photography' : '', drone ? 'Drone photography' : ''].filter(Boolean);
   };
+  const filmDelivered = (p, list) => (p.silentLoop && !list.includes('Film') ? ['Film', ...list] : list);
   const repOf = (items) => [...items].sort((x, y) => ((y.type === 'video' && y.orientation === 'horizontal') - (x.type === 'video' && x.orientation === 'horizontal')) || ((y.sortPriority || 0) - (x.sortPriority || 0)))[0];
+  // James, Sep 28 2026: a project's approved silent film (audio stream physically removed) plays as a muted,
+  // labelled loop beside its still, with an inline pause control. Only the silent export is ever referenced.
+  const silentLoopLabel = { 'revivaluxe-silent': 'RevivaLuxe brand film, no sound: a provider with a client, a skin treatment and the clinic interior' };
+  const silentLoop = (id) => `<div class="silent-loop">${ambient(id, { cls: 'silent-loop__video', label: silentLoopLabel[id] || 'Silent film excerpt' })}${motionToggle}</div>`;
+  const withLoop = (p, still) => (p.silentLoop ? `<div class="media-pair">${still}${silentLoop(p.silentLoop)}</div>` : still);
   const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
   const archMedia = media.filter((m) => m.category === 'architecture-design');
   const archById = Object.fromEntries(archMedia.map((m) => [m.id, m]));
@@ -927,7 +933,7 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
   const comMedia = media.filter((m) => m.category === 'commercial');
   const comOrder = ['revivaluxe', 'rachel-lynch-pools', 'torella-pools'];
   const comProjects = work.projects.filter((p) => p.category === 'commercial' && visible(p))
-    .map((p) => { const items = comMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: deliveredOf(items) }; })
+    .map((p) => { const items = comMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: filmDelivered(p, deliveredOf(items)) }; })
     .filter((x) => x.items.length)
     .sort((x, y) => ((comOrder.indexOf(x.p.slug) + 1 || 99) - (comOrder.indexOf(y.p.slug) + 1 || 99)));
   // Client blurbs are written with James before launch: review builds show a marked placeholder, production omits it.
@@ -966,7 +972,7 @@ ${caseStudy ? `<section class="section section--ink on-dark" id="case-study" ari
     <p class="eyebrow">Case study</p>
     <h2 class="h2 reveal" id="com-case-h">${esc(caseStudy.p.client || caseStudy.p.title)}</h2>
     <div class="case">
-      <div class="case__media">${repFrame(caseStudy.rep, '(min-width: 1000px) 58vw, 100vw')}</div>
+      <div class="case__media">${withLoop(caseStudy.p, repFrame(caseStudy.rep, caseStudy.p.silentLoop ? '(min-width: 1000px) 36vw, 62vw' : '(min-width: 1000px) 58vw, 100vw'))}</div>
       <dl class="case__facts">
         <div><dt>Goal</dt><dd>${blurb(caseStudy.p.goal, 'The client goal')}</dd></div>
         <div><dt>Our approach</dt><dd>${blurb(caseStudy.p.story, 'Our approach')}</dd></div>
@@ -1227,7 +1233,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const rep = p.hero ? null : repOf(pm);
     const heroHtml = p.hero ? img(p.hero, { alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
     const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
-    const services = isCom ? deliveredOf(pm).join(' · ') : (p.services || []).join(', ');
+    const services = isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : (p.services || []).join(', ');
     const goal = isCom ? blurb(p.goal, 'Project goal') : '';
     const desc = p.summary || `${p.client || p.title}: ${catLabel[p.category].toLowerCase()} by Photografik Studios.`;
     pages[projectPath(p)] = {
@@ -1243,7 +1249,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
         <dl class="project__facts">${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}<div><dt>${isCom ? 'Delivered' : 'Services'}</dt><dd>${esc(services)}</dd></div>${goal ? `<div><dt>Goal</dt><dd>${goal}</dd></div>` : ''}${p.location ? `<div><dt>Location</dt><dd>${esc(p.location)}</dd></div>` : ''}</dl>
         <div class="actions">${cta}</div>
       </div>
-      <div class="project__hero">${heroHtml}</div>
+      <div class="project__hero">${withLoop(p, heroHtml)}</div>
     </div>
   </header>
   ${(rest => rest.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(rest, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : '')(rep ? pm.filter((m) => m !== rep) : pm)}

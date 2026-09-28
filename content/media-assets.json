@@ -2,9 +2,9 @@
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "local dist/v (MEDIA_ALLOW_ENCODE build)",
   "recordedAt": "2026-09-28",
-  "count": 121,
-  "totalBytes": 301629762,
-  "aggregate": "ba65556fb43efdef946307f9b3a58e2b02e2a8953fdc3093c4de7eaa6efa5368",
+  "count": 123,
+  "totalBytes": 304146245,
+  "aggregate": "3b3b0525f85974e9865392ffcf584b322481d9f0f4de2efd3c62cfc7bf000d8e",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -486,9 +486,17 @@
       "bytes": 95950,
       "sha256": "669ea05191773ed6e4db3888573c95606d607c0309f561cba1d99596f4c89ece"
     },
+    "/v/revivaluxe-silent-loop.mp4": {
+      "bytes": 2487551,
+      "sha256": "cff26d60957657ee13a88e1bf1f37b250da70be79da19403ca6bc6d15fb5415e"
+    },
+    "/v/revivaluxe-silent.webp": {
+      "bytes": 28830,
+      "sha256": "cc31cf2c6bd781c2b6fa17543d231a092ca91b9ff5ea183f4bf102929a46f50a"
+    },
     "/v/manifest.json": {
-      "bytes": 4664,
-      "sha256": "cf6dffd01d9e9d191174091aaa01e874ed3750f03413f063a295f5cae06082a1"
+      "bytes": 4766,
+      "sha256": "9a600af9c85ec90626c3bb98c9bf7435350734d1d79022725232e1252cc14380"
     }
   }
 }

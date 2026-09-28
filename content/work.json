@@ -216,7 +216,8 @@
       "goal": null,
       "blurbApproved": false,
       "_blurb": "Story/summary are drafts until James approves final client wording (Sep 26 2026 Commercial direction).",
-      "_films": "Sep 27 2026: both RevivaLuxe films are withheld (unlicensed soundtrack). Copy describes only the stills shown. Restore film wording only with a silent or licensed version."
+      "_films": "Sep 28 2026: James approved silent visual use of the 33 s brand film. Only the silent export /v/revivaluxe-silent-loop.mp4 (audio stream physically removed) is shown, as a muted loop in the Commercial case study and on this project page. The audio-bearing revivaluxe-film and the 75 s biz-revivaluxe-tour stay withheld. Film wording may describe only that silent loop.",
+      "silentLoop": "revivaluxe-silent"
     },
     {
       "slug": "rachel-lynch-pools",
