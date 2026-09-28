@@ -106,7 +106,9 @@
         "film": true,
         "reel": true
       },
-      "suits": "Listings that need the complete launch"
+      "suits": "Listings that need the complete launch",
+      "badge": "Most Popular",
+      "badgeNote": "James, Sep 28 2026 (chat): \"most popular for the luxury media package\". Display only; replaces the Recommended tag and the earlier Social Media label. Prices and inclusions unchanged."
     },
     {
       "id": "signature",
@@ -313,9 +315,7 @@
         "drone": true,
         "reel": true
       },
-      "suits": "Launches led by Instagram, TikTok and Reels",
-      "badge": "Most Popular",
-      "badgeNote": "James, Sep 28 2026 page review: label the Social Media plan \"Most Popular\". Display only; prices and inclusions unchanged."
+      "suits": "Launches led by Instagram, TikTok and Reels"
     },
     {
       "id": "listing-starter",

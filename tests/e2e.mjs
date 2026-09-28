@@ -818,7 +818,8 @@ await check('commercial (James Sep 26): value prop after hero, one case study, c
   // Case study: goal, approach, delivered; unverified wording is a marked review placeholder, not a claim.
   const facts = await p.locator('#case-study .case__facts').textContent();
   for (const k of ['Goal', 'Our approach', 'Delivered']) assert(facts.includes(k), k);
-  assert(await p.locator('#case-study .needs-approval').count() >= 1, 'case study wording marked for review');
+  // James, Sep 28 2026 gave the RevivaLuxe goal and approach, so the case study is no longer a review placeholder.
+  assert(await p.locator('#case-study .needs-approval, #case-study .review-placeholder').count() === 0, 'owner-approved case study wording');
   // Grid: exactly one representative card per client, 4 columns at 1440, each linking to its own project page.
   const cards = await p.locator('.pgrid__item').evaluateAll((els) => els.map((e) => ({ slug: e.dataset.project, media: e.querySelectorAll('.vplayer, .still').length, href: e.querySelector('.pgrid__title a').getAttribute('href') })));
   assert(cards.length === clients.length && new Set(cards.map((c) => c.slug)).size === clients.length, JSON.stringify(cards));
@@ -1042,7 +1043,7 @@ await check('RevivaLuxe: silent film loop only, copy matches visible media', asy
   await p.goto(base + '/commercial/revivaluxe');
   const text = await p.textContent('main');
   assert(!/brand film/i.test(text.replace(/RevivaLuxe brand film, no sound[^]*?interior/g, '')), 'film wording beyond the visible loop');
-  assert(/Film/.test(await p.textContent('.project__facts')), 'Delivered names the film that is shown');
+  assert(/Service film/.test(await p.textContent('.project__facts')), 'Delivered names the film (James, Sep 28)');
   await p.context().close();
   const rm = await newPage(undefined, { reducedMotion: 'reduce' });
   await rm.goto(base + '/commercial'); await rm.locator('#case-study').scrollIntoViewIfNeeded(); await rm.waitForTimeout(800);
@@ -1070,6 +1071,25 @@ await check('galleries: media only, no captions, no piece counts, plain Load mor
   assert(!(await p.locator('#lb-title').isVisible()) || (await p.locator('#lb-title').boundingBox()).width <= 1, 'viewer title hidden');
   assert(await p.locator('#lb-caption').evaluate((e) => getComputedStyle(e).color === 'rgba(0, 0, 0, 0)'), 'viewer caption not shown');
   await p.context().close();
+});
+
+// James, Sep 28 2026 (chat): Commercial property media price sheet, and RevivaLuxe goal and approach in his words.
+await check('Commercial: property media prices, add-ons and portfolio rates; RevivaLuxe case study wording', async () => {
+  for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
+    const p = await newPage(vp);
+    await p.goto(base + '/commercial');
+    const tiers = await p.locator('.cpm__tier').evaluateAll((es) => es.map((e) => [e.querySelector('.cpm__name').textContent.trim(), e.querySelector('.cpm__price').textContent.trim()]));
+    assert(JSON.stringify(tiers) === JSON.stringify([['Storefront or single tenant', '$550'], ['Small commercial', '$750'], ['Mid-size commercial', '$950'], ['Large or multi-building', '$1,250+']]), 'tiers ' + JSON.stringify(tiers));
+    const add = await p.locator('.cpm__addons li').evaluateAll((es) => es.map((e) => e.querySelector('.cpm__addprice').textContent.trim()));
+    assert(JSON.stringify(add) === JSON.stringify(['+$300', '+$400', '$850+', '$150+ per image']), 'add-ons ' + add);
+    const port = await p.locator('.cpm__portfolio .prow__price').allTextContents();
+    assert(JSON.stringify(port.map((t) => t.trim())) === JSON.stringify(['Standard rate', '10% preferred rate', '15% preferred rate', 'Custom portfolio agreement']), 'portfolio ' + port);
+    assert(await p.locator('.cpm .needs-approval, .cpm .price-pending').count() === 0, 'approved commercial prices shown without review tags');
+    assert(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'no horizontal overflow at ' + vp.width);
+    const cs = await p.locator('#case-study').innerText();
+    assert(/new storefront/.test(cs) && /Team headshots/.test(cs) && !/to be written|Needs approval/i.test(cs), 'RevivaLuxe case study wording');
+    await p.context().close();
+  }
 });
 
 // Owner corrections, Sep 27 2026: Architecture & design sells the story first, with supporting media beside the text,
@@ -1220,7 +1240,9 @@ await check('James Sep 28: pricing four across, Most Popular, package loops; RE 
   const cards = await p.locator('#panel-packages .pcard').evaluateAll((els) => els.map((e) => ({ id: e.dataset.record, top: Math.round(e.getBoundingClientRect().top), badge: e.querySelector('.pcard__badge')?.textContent, featured: e.classList.contains('pcard--featured'), loop: e.querySelector('.pcard__loop video source')?.getAttribute('src'), label: e.querySelector('.pcard__loop video')?.getAttribute('aria-label'), muted: e.querySelector('.pcard__loop video')?.hasAttribute('muted'), seq: e.querySelectorAll('.pcard__seq img').length })));
   assert(cards.length === 4 && new Set(cards.map((c) => c.top)).size === 1, 'four cards on one desktop row: ' + JSON.stringify(cards.map((c) => c.top)));
   const social = cards.find((c) => c.id === 'social-media');
-  assert(social.badge === 'Most Popular' && social.featured && cards.filter((c) => c.featured).length === 1, 'Social Media is Most Popular and the only featured card');
+  // James, Sep 28 2026 (chat): Most Popular moves to Luxury Media, replacing its Recommended tag.
+  const lux = cards.find((c) => c.id === 'luxury-media');
+  assert(lux.badge === 'Most Popular' && lux.featured && cards.filter((c) => c.featured).length === 1 && !social.badge && !/Recommended/.test(await p.locator('#panel-packages').innerText()), 'Luxury Media is Most Popular and the only featured card');
   assert(cards.find((c) => c.id === 'luxury-media').loop === '/v/re-hampton-luxury-home-loop.mp4' && cards.find((c) => c.id === 'signature').loop === '/v/re-hamptons-upbeat-loop.mp4' && social.loop === '/v/re-east-end-listing-reel-loop.mp4', 'package loops');
   assert(cards.filter((c) => c.loop).every((c) => c.muted && /example/.test(c.label)) && cards.find((c) => c.id === 'listing-starter').seq >= 3, 'loops muted and named; Listing Starter shows its stills');
   assert(await p.locator('.pcards__motion [data-motion-toggle]').count() === 1, 'pause control for the examples');

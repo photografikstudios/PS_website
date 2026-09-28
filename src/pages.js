@@ -762,7 +762,8 @@ ${agentMonthly.length ? `<section class="section section--tint">
     // James, Sep 28 2026: say what was delivered, without item counts.
     return [films ? 'Film' : '', photos ? 'Photography' : '', drone ? 'Drone photography' : ''].filter(Boolean);
   };
-  const filmDelivered = (p, list) => (p.silentLoop && !list.includes('Film') ? ['Film', ...list] : list);
+  // James, Sep 28 2026: a project can list exactly what was delivered (owner's words); otherwise it is derived from the media.
+  const filmDelivered = (p, list) => (p.delivered?.length ? p.delivered : p.silentLoop && !list.includes('Film') ? ['Film', ...list] : list);
   const repOf = (items) => [...items].sort((x, y) => ((y.type === 'video' && y.orientation === 'horizontal') - (x.type === 'video' && x.orientation === 'horizontal')) || ((y.sortPriority || 0) - (x.sortPriority || 0)))[0];
   // James, Sep 28 2026: a project's approved silent film (audio stream physically removed) plays as a muted,
   // labelled loop beside its still, with an inline pause control. Only the silent export is ever referenced.
@@ -934,9 +935,13 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
     .sort((x, y) => ((comOrder.indexOf(x.p.slug) + 1 || 99) - (comOrder.indexOf(y.p.slug) + 1 || 99)));
   // Client blurbs are written with James before launch: review builds show a marked placeholder, production omits it.
   const blurb = (text, what) => (text ? `${esc(text)}${reviewMode ? ` ${needsApproval({ approval: 'pending' }, 'Draft: final client wording to be approved with James')}` : ''}` : (reviewMode ? `<span class="review-placeholder">${esc(what)} to be written with James before launch.</span> ${needsApproval({ approval: 'pending' }, 'Placeholder, not a claim')}` : ''));
+  // Owner-approved client wording (blurbApproved) renders as plain text; anything else keeps the review tag or placeholder.
+  const blurbOf = (p, key, what) => (p.blurbApproved && p[key] ? esc(p[key]) : blurb(p[key], what));
   const caseStudy = comProjects.find((x) => x.p.slug === 'revivaluxe') || comProjects[0];
   const cp = offers.commercialProperty.filter(visible);
   const b2b = offers.businessMonthly.filter(visible);
+  const cpAdd = (offers.commercialAddOns || []).filter(visible);
+  const cpPort = offers.commercialPortfolio && visible(offers.commercialPortfolio) ? offers.commercialPortfolio : null;
   pages['/commercial'] = {
     overlay: true,
     body: `${pageHero({
@@ -970,8 +975,8 @@ ${caseStudy ? `<section class="section section--ink on-dark" id="case-study" ari
     <div class="case">
       <div class="case__media">${withLoop(caseStudy.p, repFrame(caseStudy.rep, caseStudy.p.silentLoop ? '(min-width: 1000px) 36vw, 62vw' : '(min-width: 1000px) 58vw, 100vw'))}</div>
       <dl class="case__facts">
-        <div><dt>Goal</dt><dd>${blurb(caseStudy.p.goal, 'The client goal')}</dd></div>
-        <div><dt>Our approach</dt><dd>${blurb(caseStudy.p.story, 'Our approach')}</dd></div>
+        <div><dt>Goal</dt><dd>${blurbOf(caseStudy.p, 'goal', 'The client goal')}</dd></div>
+        <div><dt>Our approach</dt><dd>${blurbOf(caseStudy.p, 'story', 'Our approach')}</dd></div>
         <div><dt>Delivered</dt><dd>${esc(caseStudy.delivered.join(' · '))}</dd></div>
       </dl>
     </div>
@@ -992,10 +997,22 @@ ${cp.length || b2b.length ? `<section class="section">
   <div class="wrap">
     <p class="eyebrow">Starting points</p>
     <h2 class="h2 reveal">Where standard scopes begin.</h2>
-    <div class="two-col two-col--top">
-      ${cp.length ? `<div><h3 class="h3">Commercial property photography</h3><ul class="prows prows--compact">${join(cp, (c) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(c.name)} ${needsApproval(c)}</p></div><div class="prow__price">${approvedPrice(c, `<strong>${formatUSD(c.amount)}${c.plus ? '+' : ''}</strong>`)}</div></li>`)}</ul><p class="small muted">Level is set by production scope, buildings, complexity and time, not square footage alone. Portfolio pricing is available for five or more properties a year.</p></div>` : ''}
-      ${b2b.length ? `<div><h3 class="h3">Monthly business content</h3><ul class="prows prows--compact">${join(b2b, (o) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(o.name)} ${needsApproval(o)}</p><p class="prow__detail">${esc(o.scope.join(' · '))}</p></div><div class="prow__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/mo<br><span class="small muted">${formatUSD(o.contract)}/mo on 12 months</span>`)}</div></li>`)}</ul><p class="small muted">12-month rates are billed monthly. Larger annual programs are planned with you.</p></div>` : ''}
-    </div>
+    ${cp.length ? `<div class="cpm">
+      <h3 class="h3">Commercial property media</h3>
+      <p class="cpm__lede">Photography, aerial, video and portfolio coverage that helps owners, operators and brokers market spaces, show improvements, support leasing and present commercial assets at their best.</p>
+      <ul class="cpm__tiers" role="list">${join(cp, (c) => `<li class="cpm__tier">
+        <p class="cpm__name">${esc(c.name)} ${needsApproval(c)}</p>
+        <p class="cpm__price">${approvedPrice(c, `${formatUSD(c.amount)}${c.plus ? '+' : ''}`)}</p>
+        ${c.summary ? `<p class="cpm__summary">${esc(c.summary)}</p>` : ''}
+        ${c.scope ? `<p class="cpm__scope"><span class="cpm__label">Typical scope</span> ${esc(c.scope)}</p>` : ''}
+      </li>`)}</ul>
+      <p class="small muted cpm__how">The level is set by the overall production scope: the number of buildings and spaces, interior and exterior coverage, complexity and time on site, not square footage alone. The sizes above are general guidelines.</p>
+      ${cpAdd.length ? `<h4 class="cpm__sub">Popular add-ons</h4><ul class="cpm__addons" role="list">${join(cpAdd, (a) => `<li><p class="cpm__name">${esc(a.name)} ${needsApproval(a)}</p><p class="cpm__addprice">${approvedPrice(a, esc(a.price))}</p><p class="small muted">${esc(a.detail)}</p></li>`)}</ul>` : ''}
+      ${cpPort ? `<h4 class="cpm__sub">Portfolio pricing</h4><p class="small">${esc(cpPort.intro)}</p><ul class="prows prows--compact cpm__portfolio">${join(cpPort.tiers, ([n, r]) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(n)}</p></div><div class="prow__price">${approvedPrice(cpPort, `<strong>${esc(r)}</strong>`)}</div></li>`)}</ul><p class="small muted">${esc(cpPort.fine)} Large developments, hospitality, construction progress, acquisition documentation and multi-property assignments are scoped to the asset and its marketing goal.</p>` : ''}
+    </div>` : ''}
+    ${b2b.length ? `<div class="two-col two-col--top cpm__monthly">
+      <div><h3 class="h3">Monthly business content</h3><ul class="prows prows--compact">${join(b2b, (o) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(o.name)} ${needsApproval(o)}</p><p class="prow__detail">${esc(o.scope.join(' · '))}</p></div><div class="prow__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/mo<br><span class="small muted">${formatUSD(o.contract)}/mo on 12 months</span>`)}</div></li>`)}</ul><p class="small muted">12-month rates are billed monthly. Larger annual programs are planned with you.</p></div>
+    </div>` : ''}
   </div>
 </section>` : ''}
 <section class="section" id="agencies" aria-labelledby="agency-h">
@@ -1229,7 +1246,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const heroHtml = p.hero ? img(p.hero, { alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
     const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
     const services = isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : (p.services || []).join(', ');
-    const goal = isCom ? blurb(p.goal, 'Project goal') : '';
+    const goal = isCom ? (p.blurbApproved && p.goal ? esc(p.goal) : blurb(p.goal, 'Project goal')) : '';
     const desc = p.summary || `${p.client || p.title}: ${catLabel[p.category].toLowerCase()} by Photografik Studios.`;
     pages[projectPath(p)] = {
       seo: { title: `${p.title} | ${catLabel[p.category]} | Photografik`, description: desc, image: p.hero || rep?.poster || rep?.src },

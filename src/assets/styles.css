@@ -967,3 +967,24 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .gallery-projects { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 22px; margin-top: clamp(22px, 3vw, 34px); }
 .gallery-projects__label { font: 400 11px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--on-dark-muted, currentColor); }
 .gallery-projects a { color: inherit; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+
+/* Commercial property media price sheet (James, Sep 28 2026). */
+.cpm { margin-top: clamp(20px, 3vw, 32px); }
+.cpm__lede { max-width: 62ch; margin: 8px 0 22px; }
+.cpm__tiers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line, rgba(0,0,0,.18)); }
+.cpm__tier { padding: clamp(16px, 2vw, 24px); display: grid; align-content: start; gap: 8px; }
+.cpm__tier + .cpm__tier { border-left: 1px solid var(--line, rgba(0,0,0,.18)); }
+.cpm__name { margin: 0; font-weight: 600; }
+.cpm__price { margin: 0; font: 400 clamp(26px, 2.4vw, 34px)/1.1 var(--serif); }
+.cpm__summary, .cpm__scope { margin: 0; font-size: 15px; }
+.cpm__label { display: block; font: 400 11px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; opacity: .7; margin-bottom: 2px; }
+.cpm__how { margin-top: 14px; max-width: 80ch; }
+.cpm__sub { margin: clamp(26px, 3.5vw, 40px) 0 12px; font: 400 12px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+.cpm__addons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.cpm__addons p { margin: 0 0 4px; }
+.cpm__addprice { font-weight: 600; }
+.cpm__portfolio { max-width: 720px; margin-left: 0; margin-right: auto; }
+.cpm__portfolio .prow__name, .cpm__portfolio .prow__price strong { font-size: 18px; }
+.cpm__monthly { margin-top: clamp(30px, 4vw, 48px); }
+@media (max-width: 1000px) { .cpm__tiers, .cpm__addons { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cpm__tier:nth-child(3) { border-left: 0; } .cpm__tier:nth-child(n+3) { border-top: 1px solid var(--line, rgba(0,0,0,.18)); } }
+@media (max-width: 620px) { .cpm__tiers, .cpm__addons { grid-template-columns: 1fr; } .cpm__tier + .cpm__tier { border-left: 0; border-top: 1px solid var(--line, rgba(0,0,0,.18)); } }

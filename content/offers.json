@@ -96,28 +96,36 @@
       "name": "Storefront or single tenant",
       "amount": 550,
       "plus": false,
-      "approval": "pending"
+      "approval": "approved",
+      "summary": "Focused coverage for one business, suite or standalone location.",
+      "scope": "One primary interior and exterior, usually under 5,000 sq ft, about 45 to 60 minutes on site. Best for retail, restaurant, medical or small office."
     },
     {
       "id": "cp-small",
       "name": "Small commercial",
       "amount": 750,
       "plus": false,
-      "approval": "pending"
+      "approval": "approved",
+      "summary": "Comprehensive coverage for a straightforward single-building asset.",
+      "scope": "One building with one to five key spaces, often up to 15,000 to 20,000 sq ft, about 1 to 1.5 hours on site. Small office, mixed use, retail strip or warehouse."
     },
     {
       "id": "cp-mid",
       "name": "Mid-size commercial",
       "amount": 950,
       "plus": false,
-      "approval": "pending"
+      "approval": "approved",
+      "summary": "Expanded coverage for larger or multi-tenant commercial assets.",
+      "scope": "Multiple tenants or distinct areas, often 15,000 to 50,000 sq ft, up to about 2 hours on site. Shopping center, office, industrial or multi-tenant retail."
     },
     {
       "id": "cp-large",
       "name": "Large or multi-building",
       "amount": 1250,
       "plus": true,
-      "approval": "pending"
+      "approval": "approved",
+      "summary": "Extended coverage for substantial or complex commercial properties.",
+      "scope": "50,000+ sq ft or multiple buildings, numerous interiors and amenities, often 3+ hours of coverage. Campuses, large centers, industrial complexes or multifamily."
     }
   ],
   "creatorSessions": [
@@ -174,5 +182,59 @@
       "approval": "approved",
       "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing."
     }
-  ]
+  ],
+  "commercialAddOns": [
+    {
+      "id": "cp-aerial",
+      "name": "Aerial photography",
+      "price": "+$300",
+      "detail": "FAA Part 107 certified pilot, subject to airspace and site restrictions.",
+      "approval": "approved"
+    },
+    {
+      "id": "cp-twilight",
+      "name": "Twilight photography",
+      "price": "+$400",
+      "detail": "Architectural lighting, storefront glow and elevated curb appeal.",
+      "approval": "approved"
+    },
+    {
+      "id": "cp-video",
+      "name": "Property video",
+      "price": "$850+",
+      "detail": "A 60 to 90 second cinematic property film. Scope and complexity may affect pricing.",
+      "approval": "approved"
+    },
+    {
+      "id": "cp-staging",
+      "name": "Virtual staging",
+      "price": "$150+ per image",
+      "detail": "Helps prospects picture vacant or unfinished commercial spaces.",
+      "approval": "approved"
+    }
+  ],
+  "commercialPortfolio": {
+    "intro": "For owners, operators, developers and broker teams with recurring property needs. Discounts apply to standard commercial photography.",
+    "tiers": [
+      [
+        "1 to 4 properties a year",
+        "Standard rate"
+      ],
+      [
+        "5 to 9 properties a year",
+        "10% preferred rate"
+      ],
+      [
+        "10 to 19 properties a year",
+        "15% preferred rate"
+      ],
+      [
+        "20+ properties a year",
+        "Custom portfolio agreement"
+      ]
+    ],
+    "approval": "approved",
+    "fine": "Pricing effective 2026. Travel, extensive staging, specialty retouching, permits and third-party licensing may be additional."
+  },
+  "_commercialSource": "James, Sep 28 2026: Commercial Property Media price sheet (sent in chat), approved for the site. Pricing release for production still follows pricing.json releaseApproved."
 }
