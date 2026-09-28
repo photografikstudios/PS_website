@@ -4,90 +4,115 @@
     {
       "id": "agent-video-starter",
       "name": "Video Starter",
-      "tagline": "Build the habit.",
+      "tagline": "Boost your exposure with our Video Starter package. Affordable and effective!",
       "monthly": 999,
       "contract": 899,
       "scope": [
-        "Up to 3 agent-on-camera social videos (30–45 sec)",
+        "Up to 3 social videos (30–45 sec) with agent on camera*",
         "Still photography",
-        "2 filming hours, about 60 minutes of raw footage",
-        "Custom scripting"
+        "Includes 2 hours of filming + 60 mins of raw footage",
+        "Custom script writing",
+        "Unlimited revisions"
       ],
-      "approval": "pending"
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): Monthly Content Packages PDF, approved for the site"
     },
     {
       "id": "agent-video-accelerator",
       "name": "Video Accelerator",
-      "tagline": "Build momentum.",
+      "tagline": "Elevate your marketing with our Video Accelerator package. Stand out with inspiring videos.",
       "monthly": 1799,
       "contract": 1699,
       "scope": [
-        "Up to 5 social videos",
+        "Up to 5 social videos (30–45 sec) with agent on camera*",
         "Still photography",
-        "2 hours on site + 1 hour in studio, about 90 minutes of raw footage",
-        "Custom scripting",
-        "Dedicated content strategist and a monthly strategy meeting"
+        "Includes 2 hours on site + 1 hour in studio + 90 mins of raw footage",
+        "Custom script writing",
+        "Unlimited revisions",
+        "Dedicated content strategist",
+        "Monthly strategy meetings"
       ],
-      "approval": "pending"
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): Monthly Content Packages PDF, approved for the site"
     },
     {
       "id": "agent-video-pro",
       "name": "Video Pro",
-      "tagline": "Own the conversation.",
+      "tagline": "Unleash your real estate potential with our Video Pro package. Our full service team creates stunning property showcases, agent introductions, and provides expert insights.",
       "monthly": 2099,
       "contract": 1999,
       "scope": [
-        "Up to 10 social videos",
+        "Up to 10 social videos (30–45 sec) with agent on camera*",
         "Still photography",
-        "2 hours on site + 2 hours in studio, about 120 minutes of raw footage",
-        "Custom scripting",
-        "Prioritized content strategist and a monthly strategy meeting"
+        "Includes 2 hours on site + 2 hours in studio + 120 mins of raw footage",
+        "Custom script writing",
+        "Unlimited revisions",
+        "Prioritized content strategist",
+        "Monthly strategy meetings"
       ],
-      "approval": "pending"
+      "badge": "Best value",
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): Monthly Content Packages PDF, approved for the site"
     }
   ],
   "socialManagementFrom": {
     "amount": 1000,
-    "approval": "pending"
+    "approval": "approved",
+    "approvedBy": "James, Sep 28 2026 (chat): Monthly Content Packages PDF, approved for the site"
   },
   "businessMonthly": [
     {
       "id": "b2b-video-starter",
       "name": "Video Starter",
+      "tagline": "Boost your business's exposure with our Video Starter package. Affordable and effective!",
       "monthly": 1499,
       "contract": 1399,
       "scope": [
-        "Up to 3 social videos (30–45 sec)",
+        "Up to 3 social videos (30–45 sec)*",
         "Still photography",
-        "2 filming hours"
+        "Includes 2 hours of filming + 60 mins of raw footage",
+        "Custom script writing",
+        "Unlimited revisions"
       ],
-      "approval": "pending"
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): Monthly Content Packages PDF, approved for the site"
     },
     {
       "id": "b2b-video-accelerator",
       "name": "Video Accelerator",
+      "tagline": "Build momentum for your brand with our Video Accelerator package. Create compelling content that drives engagement and establishes your expertise in the marketplace.",
       "monthly": 2699,
       "contract": 2499,
       "scope": [
-        "Up to 5 social videos",
+        "Up to 5 social videos (30–45 sec)*",
         "Still photography",
-        "2 hours on site + 1 hour in studio",
-        "Content strategist and monthly strategy meeting"
+        "Includes 2 hours on site + 1 hour in studio + 90 mins of raw footage",
+        "Custom script writing",
+        "Unlimited revisions",
+        "Dedicated content strategist",
+        "Monthly strategy meetings"
       ],
-      "approval": "pending"
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): Monthly Content Packages PDF, approved for the site"
     },
     {
       "id": "b2b-video-pro",
       "name": "Video Pro + Management",
+      "tagline": "Elevate your brand's presence with our Video Pro package. Our full-service team produces high-impact content that positions your business as an industry leader, from thought leadership videos to product showcases and executive messaging.",
       "monthly": 2999,
       "contract": 2699,
       "scope": [
-        "Up to 10 social videos",
+        "Up to 10 social videos (30–45 sec)*",
         "Still photography",
-        "2 hours on site + 2 hours in studio",
-        "Prioritized strategist and monthly strategy meeting"
+        "Includes 2 hours on site + 2 hours in studio + 120 mins of raw footage",
+        "Custom script writing",
+        "Unlimited revisions",
+        "Prioritized content strategist",
+        "Monthly strategy meetings"
       ],
-      "approval": "pending"
+      "badge": "Best value",
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): Monthly Content Packages PDF, approved for the site"
     }
   ],
   "commercialProperty": [
@@ -238,5 +263,7 @@
     "custom": "Large developments, hospitality, construction progress, acquisition documentation and complex multi-property assignments can be tailored to the asset and its marketing objective.",
     "lede": "Professional media built to help owners, operators and brokers market spaces, showcase improvements, support leasing efforts and present commercial assets at their best."
   },
-  "_commercialSource": "James, Sep 28 2026: Commercial Property Media price sheet (sent in chat), approved for the site. Pricing release for production still follows pricing.json releaseApproved."
+  "_commercialSource": "James, Sep 28 2026: Commercial Property Media price sheet (sent in chat), approved for the site. Pricing release for production still follows pricing.json releaseApproved.",
+  "monthlyFootnote": "*Each package includes a guaranteed on site shoot duration. Final deliverables and raw footage output are estimated based on that shoot time and the creative requirements discussed. Additional deliverables or extended footage needs may incur added costs.",
+  "_monthlySource": "James, Sep 28 2026: Monthly Content Packages PDF (page 1 real estate agents, page 2 B2B). Prices, contract prices, descriptions, inclusions, add-on and footnote are his wording; bullets are shown in sentence case, and 'businesses exposure' reads 'business's exposure' (grammar only, flagged to James). Public pricing release still follows pricing.json releaseApproved."
 }

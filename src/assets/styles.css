@@ -329,7 +329,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 /* ---------- Closing CTA ---------- */
 .closing { position: relative; overflow: hidden; background: var(--charcoal-3); color: var(--ivory); }
 .closing__media { position: absolute; inset: 0; opacity: .38; }
-.closing__media img { width: 100%; height: 100%; object-fit: cover; }
+.closing__media img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%); }
 .closing__inner { position: relative; padding-block: var(--space); }
 .closing--bleed .closing__media { opacity: 1; }
 .closing--bleed .closing__media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(21,24,22,.86) 0%, rgba(21,24,22,.62) 48%, rgba(21,24,22,.28) 100%); }
@@ -994,3 +994,9 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 /* About video testimonial credit (James, Sep 28 2026). */
 .reviews__video { margin: 0; }
 .reviews__credit { margin-top: 12px; }
+
+/* Monthly plans: Best value badge and footnote (James's Monthly Content Packages sheet, Sep 28 2026). */
+.plan--best { position: relative; }
+.plan--best .plan__badge { position: absolute; top: 30px; right: 0; margin: 0; }
+.plan__badge { display: inline-block; margin: 0 0 12px; padding: 4px 10px; background: var(--charcoal); color: var(--ivory); font: 400 10.5px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+.plan__foot { margin-top: 10px; max-width: 80ch; }

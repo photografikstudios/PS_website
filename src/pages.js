@@ -27,6 +27,11 @@ export function buildPages(ctx) {
   const isApproved = (r) => (r.approval ?? 'approved') === 'approved';
   // Offer prices that James has not approved never reach HTML (the review alias is public): show the offer, not the figure.
   const approvedPrice = (rec, html, pending = 'Price confirmed when we scope it') => (isApproved(rec) ? html : `<span class="price-pending">${pending}</span>`);
+  // Monthly content plans (James's Monthly Content Packages sheet, Sep 28 2026): one card format for agents and businesses.
+  const monthlyPlan = (o) => `<div class="plan reveal${o.badge ? ' plan--best' : ''}">${o.badge ? `<p class="plan__badge">${esc(o.badge)}</p>` : ''}<h3 class="h3">${esc(o.name)} ${needsApproval(o)}</h3><p class="plan__tag">${esc(o.tagline)}</p>
+      <p class="plan__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/month`)}</p>${isApproved(o) ? `<p class="plan__alt">${formatUSD(o.contract)}/month with a 1-year contract signed</p>` : ''}
+      <ul class="checks">${join(o.scope, (x) => `<li>${esc(x)}</li>`)}</ul></div>`;
+  const monthlyExtras = () => `${visible(offers.socialManagementFrom) ? `<p class="aside-line"><strong>Frequently added:</strong> social media management${isApproved(offers.socialManagementFrom) ? ` starting at ${formatUSD(offers.socialManagementFrom.amount)}/month` : ' as a monthly add-on'}. ${needsApproval(offers.socialManagementFrom)}</p>` : ''}${offers.monthlyFootnote ? `<p class="small muted plan__foot">${esc(offers.monthlyFootnote)}</p>` : ''}`;
   const projectPath = (p) => p.path || `${serviceRoute[p.category]}/${p.slug}`;
   const mmss = (d) => `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
   // Hero video: the page's relevant 16:9 footage autoplays silently in its frame (muted, playsinline, poster first).
@@ -107,9 +112,10 @@ export function buildPages(ctx) {
     return `<div class="faq">${join(items, (f) => `<details class="faq__item"><summary>${esc(f.q)} ${needsApproval(f)}</summary><p>${esc(f.a)}</p></details>`)}</div>`;
   };
 
-  const splitCta = (title = 'Ready when you are.', image = '/images/photografik-2027/curated/home-estate-exterior.webp') => `
+  // James, Sep 29 2026: keep the whole house in frame (roofline included) at every width.
+  const splitCta = (title = 'Ready when you are.', image = '/images/photografik-2027/curated/home-estate-exterior.webp', pos = '52% 30%') => `
 <section class="closing on-dark">
-  <div class="closing__media">${img(image, { alt: '', sizes: '100vw' })}</div>
+  <div class="closing__media" style="--pos:${pos}">${img(image, { alt: '', sizes: '100vw' })}</div>
   <div class="wrap closing__inner">
     <p class="eyebrow">Next step</p>
     <h2 class="h2 reveal">${title}</h2>
@@ -740,10 +746,8 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <p class="eyebrow">Monthly content plans</p>
     <h2 class="h2 reveal">Stay visible between listings.</h2>
     <p class="section-lede">Sellers choose agents they recognize and trust. Regular video lets them see your point of view and how you work before they ever call. A monthly plan gives you a steady supply of social content built around your goals, so you are not starting from a blank page each week.</p>
-    <div class="plans">${join(agentMonthly, (o) => `<div class="plan reveal"><h3 class="h3">${esc(o.name)} ${needsApproval(o)}</h3><p class="plan__tag">${esc(o.tagline)}</p>
-      <p class="plan__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/month`)}</p>${isApproved(o) ? `<p class="plan__alt">${formatUSD(o.contract)}/month on a 12-month contract, billed monthly</p>` : ''}
-      <ul class="checks">${join(o.scope, (s) => `<li>${esc(s)}</li>`)}</ul></div>`)}</div>
-    ${visible(offers.socialManagementFrom) ? `<p class="aside-line">Social media management is available${isApproved(offers.socialManagementFrom) ? ` from ${formatUSD(offers.socialManagementFrom.amount)}/month` : ' as a monthly add-on'}. ${needsApproval(offers.socialManagementFrom)}</p>` : ''}
+    <div class="plans">${join(agentMonthly, monthlyPlan)}</div>
+    ${monthlyExtras()}
   </div>
 </section>` : ''}
 <section class="section section--brand on-dark">
@@ -1012,8 +1016,11 @@ ${cp.length || b2b.length ? `<section class="section">
       ${cpAdd.length ? `<h4 class="cpm__sub">Popular add-ons</h4><ul class="cpm__addons" role="list">${join(cpAdd, (a) => `<li><p class="cpm__name">${esc(a.name)} ${needsApproval(a)}</p><p class="cpm__addprice">${approvedPrice(a, esc(a.price))}</p><p class="small muted">${esc(a.detail)}</p></li>`)}</ul>` : ''}
       ${cpPort ? `<h4 class="cpm__sub">Portfolio pricing</h4><p class="small">${esc(cpPort.intro)}</p><ul class="prows prows--compact cpm__portfolio">${join(cpPort.tiers, ([n, r]) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(n)}</p></div><div class="prow__price">${approvedPrice(cpPort, `<strong>${esc(r)}</strong>`)}</div></li>`)}</ul><p class="small muted">${esc(cpPort.fine)}</p>${cpPort.custom ? `<p class="cpm__custom"><strong>Need a custom scope?</strong> ${esc(cpPort.custom)}</p>` : ''}` : ''}
     </div>` : ''}
-    ${b2b.length ? `<div class="two-col two-col--top cpm__monthly">
-      <div><h3 class="h3">Monthly business content</h3><ul class="prows prows--compact">${join(b2b, (o) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(o.name)} ${needsApproval(o)}</p><p class="prow__detail">${esc(o.scope.join(' · '))}</p></div><div class="prow__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/mo<br><span class="small muted">${formatUSD(o.contract)}/mo on 12 months</span>`)}</div></li>`)}</ul><p class="small muted">12-month rates are billed monthly. Larger annual programs are planned with you.</p></div>
+    ${b2b.length ? `<div class="cpm__monthly">
+      <h3 class="h3">Monthly business content</h3>
+      <p class="cpm__lede">Social video and photography every month for your business, planned, filmed and edited by one team.</p>
+      <div class="plans">${join(b2b, monthlyPlan)}</div>
+      ${monthlyExtras()}
     </div>` : ''}
   </div>
 </section>` : ''}

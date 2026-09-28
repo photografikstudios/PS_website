@@ -654,6 +654,7 @@ await check('Field Notes: nav, index, article answer-first with truthful schema'
   assert((await p.textContent('h1')).length > 5, 'index h1');
   const cards = await p.locator('.fn-card').count();
   assert(cards === 3, `cards ${cards}`);
+  // James approved the Field Notes section layout (Sep 28 2026); each article's text still needs its own review.
   assert(await p.locator('.fn-card .needs-approval').count() === 3, 'drafts tagged in review');
   await p.click('.fn-card__title a >> nth=0');
   await p.waitForURL(/\/field-notes\/.+/);
@@ -1098,6 +1099,24 @@ await check('Commercial: property media prices, add-ons and portfolio rates; Rev
     assert(/new storefront/.test(cs) && /Team headshots/.test(cs) && !/to be written|Needs approval/i.test(cs), 'RevivaLuxe case study wording');
     await p.context().close();
   }
+});
+
+// James, Sep 28 2026: Monthly Content Packages sheet (page 1 agents, page 2 businesses) and the Home closing image.
+await check('monthly plans match the sheet; Home closing image keeps the house in frame', async () => {
+  for (const [path, want] of [['/agent-content', [['Video Starter', '$999', '$899'], ['Video Accelerator', '$1,799', '$1,699'], ['Video Pro', '$2,099', '$1,999']]], ['/commercial', [['Video Starter', '$1,499', '$1,399'], ['Video Accelerator', '$2,699', '$2,499'], ['Video Pro + Management', '$2,999', '$2,699']]]]) {
+    const p = await newPage();
+    await p.goto(base + path);
+    const got = await p.locator('.plans .plan').evaluateAll((es) => es.map((e) => [e.querySelector('.h3').textContent.trim(), e.querySelector('.plan__price strong').textContent.trim(), (e.querySelector('.plan__alt').textContent.match(/\$[\d,]+/) || [])[0]]));
+    assert(JSON.stringify(got) === JSON.stringify(want), path + ' plans ' + JSON.stringify(got));
+    assert((await p.locator('.plans .plan--best .plan__badge').innerText()).trim().toLowerCase() === 'best value' && await p.locator('.plans .plan--best').count() === 1, path + ' best value on the top plan');
+    const t = await p.locator('main').innerText();
+    assert(/social media management starting at \$1,000\/month/i.test(t) && /guaranteed on site shoot duration/.test(t) && await p.locator('.plans .needs-approval, .plans .price-pending').count() === 0, path + ' add-on, footnote, no review tags');
+    await p.context().close();
+  }
+  const p = await newPage({ width: 1440, height: 900 });
+  await p.goto(base + '/');
+  assert(await p.locator('section.closing').last().locator('.closing__media').evaluate((e) => getComputedStyle(e.querySelector('img')).objectPosition) === '52% 30%', 'closing image position');
+  await p.context().close();
 });
 
 // Owner corrections, Sep 27 2026: Architecture & design sells the story first, with supporting media beside the text,
