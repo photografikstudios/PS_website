@@ -1138,6 +1138,42 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   await ph.context().close();
 });
 
+// Session 28: fonts are self-hosted. The faces load from /assets/fonts, nothing goes to Google Fonts, and the
+// metric-matched fallback keeps the Home hero text block where it is when the web font swaps in.
+await check('fonts: self-hosted faces load, no third-party font requests, fallback keeps Home hero lines', async () => {
+  for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
+    const p = await newPage(vp);
+    const ext = [];
+    p.on('request', (r) => { if (/fonts\.(googleapis|gstatic)\.com/.test(r.url())) ext.push(r.url()); });
+    const fontResp = [];
+    p.on('response', (r) => { if (r.url().includes('/assets/fonts/')) fontResp.push(r.status()); });
+    await p.goto(base + '/');
+    await p.evaluate(() => document.fonts.ready);
+    const st = await p.evaluate(() => ({
+      serif: document.fonts.check('400 40px "Instrument Serif"'),
+      sans: document.fonts.check('400 16px "DM Sans"'),
+      mono: document.fonts.check('400 12px "Space Mono"'),
+      loaded: [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/"/g, '')),
+    }));
+    assert(ext.length === 0, `third-party font requests: ${ext.join(', ')}`);
+    assert(fontResp.length >= 2 && fontResp.every((s) => s === 200), `font responses ${fontResp}`);
+    assert(st.loaded.includes('Instrument Serif') && st.loaded.includes('DM Sans'), `loaded faces: ${st.loaded}`);
+    // Same hero with only the fallback faces: the line count of the headline and the text block height stay close.
+    const measure = async (stack) => p.evaluate((stack) => {
+      document.documentElement.style.setProperty('--serif', stack[0]);
+      document.documentElement.style.setProperty('--sans', stack[1]);
+      const h1 = document.querySelector('.hero h1'); const inner = document.querySelector('.hero__inner');
+      const lh = parseFloat(getComputedStyle(h1).lineHeight);
+      return { lines: Math.round(h1.getBoundingClientRect().height / lh), block: inner.getBoundingClientRect().height, top: inner.getBoundingClientRect().top };
+    }, stack);
+    const web = await measure(['"Instrument Serif"', '"DM Sans"']);
+    const fb = await measure(['"Instrument Serif Fallback", serif', '"DM Sans Fallback", sans-serif']);
+    assert(web.lines === fb.lines, `${vp.width}px headline lines web ${web.lines} vs fallback ${fb.lines}`);
+    assert(Math.abs(web.top - fb.top) <= 24, `${vp.width}px hero block moves ${Math.round(web.top - fb.top)}px on swap`);
+    await p.context().close();
+  }
+});
+
 // James, Sep 27 2026: no street addresses anywhere on the site, only client names.
 await check('no street addresses in any page, caption, alt text, URL or media file name', async () => {
   const { readdir } = await import('node:fs/promises');

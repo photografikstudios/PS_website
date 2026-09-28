@@ -30,9 +30,8 @@ ${reviewMode ? '<meta name="robots" content="noindex, nofollow">' : ''}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#212623">
 <link rel="icon" href="${esc(ctx.optimized(site.media.logo, 480))}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=Space+Mono&display=swap">
+<link rel="preload" href="/assets/fonts/instrument-serif-400-latin-60c06664.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/dm-sans-latin-aa530716.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/styles.css?v=${ctx.version}">
 ${join([].concat(jsonLd || []), (j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`)}
 </head>

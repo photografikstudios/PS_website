@@ -1,5 +1,21 @@
 /* Photografik Studios, 2027. Visual direction v2: warm ivory, charcoal, rust.
    Image-led, editorial, restrained. Tokens first; components below. */
+/* Self-hosted fonts (SIL Open Font License; notices in /assets/fonts/LICENSE.md). Latin subsets, byte-identical to the
+   Google Fonts files. Each "Fallback" face is a local system font scaled to the web font's width and vertical metrics,
+   so text keeps its line breaks when the web font swaps in (Session 28: Home mobile CLS came from this swap). */
+@font-face { font-family: "Instrument Serif"; font-style: normal; font-weight: 400; font-display: swap; src: url("/assets/fonts/instrument-serif-400-latin-60c06664.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Instrument Serif"; font-style: italic; font-weight: 400; font-display: swap; src: url("/assets/fonts/instrument-serif-400-italic-latin-6ee678c3.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "DM Sans"; font-style: normal; font-weight: 400 500; font-display: swap; src: url("/assets/fonts/dm-sans-latin-aa530716.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "DM Sans"; font-style: italic; font-weight: 400; font-display: swap; src: url("/assets/fonts/dm-sans-italic-latin-a3ea623f.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Space Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/assets/fonts/space-mono-400-latin-e0c8e616.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Instrument Serif Fallback"; font-style: normal; font-weight: 400; src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Liberation Serif"), local("LiberationSerif"); size-adjust: 83.18%; ascent-override: 119.01%; descent-override: 37.27%; line-gap-override: 0%; }
+@font-face { font-family: "Instrument Serif Fallback"; font-style: italic; font-weight: 400; src: local("Times New Roman Italic"), local("TimesNewRomanPS-ItalicMT"), local("Liberation Serif Italic"), local("LiberationSerif-Italic"); size-adjust: 87.44%; ascent-override: 113.22%; descent-override: 35.45%; line-gap-override: 0%; }
+@font-face { font-family: "DM Sans Fallback"; font-style: normal; font-weight: 400 500; src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"); size-adjust: 92.87%; ascent-override: 106.82%; descent-override: 33.38%; line-gap-override: 0%; }
+@font-face { font-family: "DM Sans Fallback"; font-style: italic; font-weight: 400 500; src: local("Arial Italic"), local("Arial-ItalicMT"), local("Liberation Sans Italic"), local("LiberationSans-Italic"); size-adjust: 93.20%; ascent-override: 106.44%; descent-override: 33.26%; line-gap-override: 0%; }
+@font-face { font-family: "Space Mono Fallback"; font-style: normal; font-weight: 400; src: local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono"), local("LiberationMono"); size-adjust: 101.74%; ascent-override: 110.09%; descent-override: 35.48%; line-gap-override: 0%; }
+
+/* Text measures use em, not ch: ch comes from whichever font is showing, so it changed width when the web font swapped in.
+   Values are the former ch measures times the web font's "0" advance (DM Sans 0.69, Instrument Serif 0.46). */
 :root {
   --ivory: #f4f2eb;
   --ivory-2: #ebe7dc;
@@ -15,9 +31,9 @@
   --line-dark: rgba(244, 242, 235, 0.16);
   --on-dark: #e9e4d8;
   --on-dark-muted: rgba(233, 228, 216, 0.72);
-  --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
-  --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --serif: "Instrument Serif", "Instrument Serif Fallback", "Iowan Old Style", Georgia, serif;
+  --sans: "DM Sans", "DM Sans Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Space Mono", "Space Mono Fallback", ui-monospace, "SF Mono", Menlo, monospace;
   --wrap: 1400px;
   --gutter: clamp(20px, 4vw, 40px);
   --space: clamp(88px, 11vw, 160px);
@@ -42,15 +58,15 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 [hidden] { display: none !important; }
 
 /* ---------- Type ---------- */
-.display { font: 400 clamp(46px, 6.6vw, 104px)/0.98 var(--serif); letter-spacing: -0.025em; margin: 0 0 28px; max-width: 16ch; text-wrap: balance; }
-.display--xl { font-size: clamp(50px, 6.8vw, 118px); max-width: 19ch; }
+.display { font: 400 clamp(46px, 6.6vw, 104px)/0.98 var(--serif); letter-spacing: -0.025em; margin: 0 0 28px; max-width: 7.36em; text-wrap: balance; }
+.display--xl { font-size: clamp(50px, 6.8vw, 118px); max-width: 8.74em; }
 .display em, .h2 em { font-style: italic; }
-.h2 { font: 400 clamp(36px, 4.6vw, 68px)/1.02 var(--serif); letter-spacing: -0.02em; margin: 0 0 28px; max-width: 18ch; text-wrap: balance; }
+.h2 { font: 400 clamp(36px, 4.6vw, 68px)/1.02 var(--serif); letter-spacing: -0.02em; margin: 0 0 28px; max-width: 8.28em; text-wrap: balance; }
 .h3 { font: 400 clamp(24px, 2.2vw, 30px)/1.12 var(--serif); letter-spacing: -0.01em; margin: 0 0 10px; }
 .eyebrow { font: 400 11.5px/1.5 var(--mono); letter-spacing: .16em; text-transform: uppercase; margin: 0 0 22px; color: var(--muted); }
 .eyebrow a { text-decoration: none; }
 .on-dark .eyebrow, .hero .eyebrow { color: var(--on-dark-muted); }
-.lede { font-size: clamp(18px, 1.5vw, 21px); line-height: 1.6; max-width: 56ch; margin: 0 0 36px; color: var(--muted); }
+.lede { font-size: clamp(18px, 1.5vw, 21px); line-height: 1.6; max-width: 38.64em; margin: 0 0 36px; color: var(--muted); }
 .on-dark .lede, .hero .lede { color: var(--on-dark); }
 .statement { font: 400 clamp(30px, 3.6vw, 52px)/1.14 var(--serif); letter-spacing: -0.015em; margin: 0; text-wrap: pretty; }
 .statement em { color: var(--rust); }
@@ -174,7 +190,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .path__body { padding-top: 22px; display: flex; flex-direction: column; gap: 10px; }
 .path__num { font: 400 11px var(--mono); letter-spacing: .16em; color: var(--muted); }
 .path__title { font: 400 clamp(28px, 2.5vw, 36px)/1.05 var(--serif); letter-spacing: -0.01em; }
-.path__text { color: var(--muted); max-width: 40ch; }
+.path__text { color: var(--muted); max-width: 27.6em; }
 .path__go { font: 400 11.5px var(--mono); letter-spacing: .14em; text-transform: uppercase; margin-top: 6px; }
 .path:hover .path__go { color: var(--rust); }
 .paths--4 { grid-template-columns: repeat(4, 1fr); gap: clamp(16px, 1.6vw, 28px); }
@@ -300,10 +316,10 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .closing__inner { position: relative; padding-block: var(--space); }
 .split-cta__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 80px); margin-top: 48px; }
 .split-cta__grid > div { border-top: 1px solid var(--line-dark); padding-top: 26px; }
-.split-cta__grid p:not(.eyebrow) { color: var(--on-dark); margin: 0 0 28px; max-width: 40ch; }
+.split-cta__grid p:not(.eyebrow) { color: var(--on-dark); margin: 0 0 28px; max-width: 27.6em; }
 @media (max-width: 760px) { .split-cta__grid { grid-template-columns: 1fr; } }
 .cta-band { display: flex; flex-direction: column; align-items: flex-start; }
-.cta-band p { color: var(--on-dark); max-width: 52ch; margin: 0 0 32px; }
+.cta-band p { color: var(--on-dark); max-width: 35.88em; margin: 0 0 32px; }
 
 .faq { border-top: 1px solid var(--charcoal); }
 .faq__item { border-bottom: 1px solid var(--line); }
@@ -311,7 +327,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .faq__item summary::-webkit-details-marker { display: none; }
 .faq__item summary::after { content: "+"; position: absolute; right: 4px; top: 22px; font: 300 28px/1 var(--sans); color: var(--rust); transition: transform .3s var(--ease); }
 .faq__item[open] summary::after { transform: rotate(45deg); }
-.faq__item p { margin: 0 0 28px; color: var(--muted); max-width: 64ch; }
+.faq__item p { margin: 0 0 28px; color: var(--muted); max-width: 44.16em; }
 
 /* ---------- Pricing ---------- */
 .section--pricing { background: var(--charcoal); color: var(--on-dark); padding-top: 0; }
@@ -481,7 +497,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .quick__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(21,24,22,.1) 0%, rgba(21,24,22,.45) 35%, rgba(21,24,22,.92) 100%); }
 .quick__body { padding: clamp(28px, 3.4vw, 48px); max-width: 560px; }
 .quick__title { font: 400 clamp(36px, 3.6vw, 54px)/1 var(--serif); letter-spacing: -0.015em; margin: 0 0 14px; color: #fff; }
-.quick__body p:not(.eyebrow) { color: rgba(244,242,235,.86); margin: 0 0 26px; max-width: 44ch; }
+.quick__body p:not(.eyebrow) { color: rgba(244,242,235,.86); margin: 0 0 26px; max-width: 30.36em; }
 .quick .actions { gap: 12px; margin: 0; }
 .eyebrow--rust, .on-dark .eyebrow--rust { color: var(--rust-soft); margin-bottom: 14px; }
 .quick .eyebrow--rust { display: inline-block; color: #f6d6c2; background: rgba(21,24,22,.72); padding: 6px 10px; border-radius: 2px; text-shadow: none; }
@@ -592,7 +608,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .cmp__addons ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px 32px; }
 .cmp__addons li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
 .cmp__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; margin-top: clamp(28px, 3vw, 44px); }
-.cmp__cta .small { flex: 1 1 100%; margin: 0; color: var(--muted); max-width: 70ch; }
+.cmp__cta .small { flex: 1 1 100%; margin: 0; color: var(--muted); max-width: 48.3em; }
 @media (max-width: 699px) {
   .cmp__size { min-width: 0; width: 100%; }
   .cmp__table tbody th, .cmp__corner { width: 30%; }
@@ -606,7 +622,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 }
 
 /* ---------- Real Estate gallery ---------- */
-.regallery__note { margin: 8px 0 0; font-size: 14px; color: var(--on-dark-muted); max-width: 70ch; }
+.regallery__note { margin: 8px 0 0; font-size: 14px; color: var(--on-dark-muted); max-width: 48.3em; }
 .regallery__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(14px, 1.6vw, 24px); margin-top: clamp(24px, 3vw, 40px); }
 .gcard[hidden] { display: none; }
 .gcard__open { position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; border: 0; padding: 0; border-radius: 10px; background: #121513; color: #fff; cursor: pointer; }
@@ -628,11 +644,11 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 @media (max-width: 1000px) { .regallery__grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 620px) { .regallery__grid { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .gcard__open img, .sw-card img { transition: none; } button.gcard__open:hover img { transform: none; } }
-.cmp__common { margin: 0 0 18px; font-size: 15px; color: var(--charcoal); max-width: 80ch; }
+.cmp__common { margin: 0 0 18px; font-size: 15px; color: var(--charcoal); max-width: 55.2em; }
 
 /* ---------- Field Notes ---------- */
 .fn-head { padding-top: calc(var(--space) * .9); padding-bottom: clamp(24px, 3vw, 40px); }
-.fn-head .lede { max-width: 60ch; }
+.fn-head .lede { max-width: 41.4em; }
 .fn-topic { padding-top: clamp(28px, 3vw, 48px); padding-bottom: clamp(28px, 3vw, 48px); }
 .fn-topic__h { margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .fn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 2.4vw, 36px); }
@@ -767,7 +783,7 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 /* ---------- Creator Studios: media beside the copy it explains (James, Sep 26) ---------- */
 .cs-pair { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(36px, 6vw, 104px); align-items: center; }
 .cs-pair--flip .cs-pair__text { order: 2; }
-.cs-pair__text > p:not(.eyebrow) { max-width: 46ch; }
+.cs-pair__text > p:not(.eyebrow) { max-width: 31.74em; }
 .cs-pair__media--narrow { max-width: 340px; justify-self: center; width: 100%; }
 .cs-points { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px; }
 .cs-points li { padding-left: 18px; border-left: 2px solid var(--rust); }
@@ -842,7 +858,7 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .story-guide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 3vw, 44px); margin-top: clamp(32px, 4vw, 52px); }
 .story-guide__item { background: var(--ivory); padding: clamp(24px, 2.4vw, 36px); border-top: 2px solid var(--rust); }
 .story-guide p.story-guide__n { font: 400 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--rust); margin-bottom: 14px; }
-.story-guide__note { max-width: 70ch; margin: clamp(28px, 3vw, 40px) 0 0; }
+.story-guide__note { max-width: 48.3em; margin: clamp(28px, 3vw, 40px) 0 0; }
 .why-list { list-style: none; margin: clamp(28px, 3vw, 44px) 0 24px; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px clamp(20px, 2.4vw, 36px); }
 .why-list li { border-top: 1px solid var(--line); padding-top: 18px; }
 .arch-path__cta { margin: clamp(32px, 4vw, 48px) 0 0; }
