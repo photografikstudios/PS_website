@@ -10,7 +10,8 @@ export function buildPages(ctx) {
   const bookBtn = (loc, label = 'Book a Shoot', cls = 'btn btn--solid') =>
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
   const projectBySlug = Object.fromEntries(work.projects.map((p) => [p.slug, p]));
-  const media = work.media.filter(visible);
+  // Portfolio media. The About testimonial (category 'about') is used only on About, never in galleries.
+  const media = work.media.filter((m) => visible(m) && m.category !== 'about');
   const catLabel = Object.fromEntries(work.taxonomy.category.map((c) => [c.id, c.label]));
   const svcLabel = Object.fromEntries(work.taxonomy.service.map((c) => [c.id, c.label]));
   const pkg = Object.fromEntries(pricing.packages.map((p) => [p.id, p]));
@@ -1290,7 +1291,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
         <h2 class="h2 reveal" id="reviews-h">In our clients’ words.</h2>
         ${g ? `<a class="reviews__rating" href="${esc(g.href)}" target="_blank" rel="noopener" data-track="reviews_click" data-track-location="about_reviews_rating"><span class="reviews__score">${esc(g.rating.toFixed(1))}</span><span class="reviews__stars" aria-hidden="true">★★★★★</span><span class="reviews__count">${esc(String(g.count))} Google reviews <span class="sr-only">(opens Google)</span></span></a>` : ''}
       </div>
-      ${tmVideo ? `<div class="reviews__video reveal">${videoPlayer(tmVideo, { sizes: '(min-width: 900px) 50vw, 90vw' })}</div>` : `<figure class="review review--lead reveal"><blockquote><p>${esc(lead.quote)}</p></blockquote>${cite(lead)}</figure>`}
+      ${tmVideo ? `<figure class="reviews__video reveal">${videoPlayer(tmVideo, { sizes: '(min-width: 900px) 50vw, 90vw' })}${tm.video.name ? `<figcaption class="reviews__credit"><span class="review__name">${esc(tm.video.name)}</span></figcaption>` : ''}</figure>` : `<figure class="review review--lead reveal"><blockquote><p>${esc(lead.quote)}</p></blockquote>${cite(lead)}</figure>`}
     </div>
     <ul class="reviews__list" role="list">
       ${(tmVideo ? tmReviews : rest).map((r) => `<li class="review reveal"><figure><blockquote><p>${esc(r.quote)}</p></blockquote>${cite(r)}</figure></li>`).join('')}

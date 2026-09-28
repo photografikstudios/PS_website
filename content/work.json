@@ -1926,6 +1926,34 @@
       "client": "Dan Dan",
       "_sourceFile": "Podcast Action Photos/Dan Dan July Podcast Action Shots-75.jpg",
       "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set."
+    },
+    {
+      "id": "testimonial-jack-richardson",
+      "type": "video",
+      "project": null,
+      "title": "Jack Richardson on working with Photografik Studios",
+      "service": [
+        "video"
+      ],
+      "category": "about",
+      "orientation": "horizontal",
+      "src": "/v/testimonial-jack-richardson.mp4",
+      "poster": "/v/testimonial-jack-richardson.webp",
+      "duration": 47,
+      "dialogue": true,
+      "captions": "burned-in",
+      "openCaptions": true,
+      "transcript": null,
+      "featured": false,
+      "rights": "approved",
+      "alt": "Jack Richardson talking about Photografik Studios photo, drone and floor plan work, filmed in the studio",
+      "location": null,
+      "client": null,
+      "published": true,
+      "packageIds": [],
+      "capturedYear": null,
+      "sortPriority": 0,
+      "_rights": "James, Sep 28 2026 (chat): credit Jack Richardson; background music licensed for the website."
     }
   ]
 }

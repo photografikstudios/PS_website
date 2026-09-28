@@ -375,6 +375,11 @@
       "source": "git 189b3bd:static/media/photografik-2027/commercial-revivaluxe.mp4",
       "loopOnly": true,
       "_note": "James, Sep 28 2026: silent visual use of the 33 s RevivaLuxe brand film approved for Commercial. Exact source: the previously published commercial-revivaluxe.mp4 (git blob f5736cec5970aabfe7a86858264252cea2466698, 5,149,376 bytes, SHA-256 b56a8e09fce6c99ace2c586deecc061a3e516d0fded2426ddce188ab80b2be60; vertical 720x1280 h264, 33.43 s, with an AAC music track and a data stream). The unlicensed soundtrack is physically removed: video stream only (-map 0:v:0 -an -dn -sn, metadata stripped), re-encoded 540x960 libx264 CRF 28 faststart; ffprobe reports one stream. WebP poster at 8 s (treatment). The audio-bearing film and the separate 75 s tour stay withheld."
+    },
+    {
+      "id": "testimonial-jack-richardson",
+      "source": "brief folder assets/james-testimonial-photo-drone-floor-plans-video-photografik-studios.mp4",
+      "_note": "James, Sep 28 2026: Jack Richardson video testimonial for About, added by James to the brief folder (3840x2160 h264 30 fps + AAC stereo, 46.93 s, 470,157,272 B, SHA-256 b5dc445dd8ae5053fab3f22e968fb7954ec0248bf2f5abfb3105e263ae62f11b). James confirmed the background music is licensed for the website and the credit is Jack Richardson. Encoded on the Cowork VM: 1280x720 libx264 CRF 23 (maxrate 3000k) + AAC 128k, metadata stripped, faststart; WebP poster at 4 s. Captions are burned in; no separate CC track yet."
     }
   ],
   "docs": [

@@ -9,9 +9,10 @@
     "_source": "Google Business Profile panel for Photografik Studios Inc., 27 Vee Jay Dr, Shoreham, NY, read Sep 26 2026."
   },
   "video": {
-    "approval": "pending",
-    "id": null,
-    "_note": "James, Sep 26 2026: the About page should show the video testimonial. File not yet identified (not in content/work.json, not on the live site's home or about pages). Once James supplies it, add it to media-sources/work.json with rights approved and captions, then set id here. Not rendered as a placeholder on the page (Codex S15-16); the request stays in the editorial brief."
+    "approval": "approved",
+    "id": "testimonial-jack-richardson",
+    "name": "Jack Richardson",
+    "_note": "James, Sep 28 2026: supplied the file (brief folder assets/) and confirmed the credit and the music licence."
   },
   "reviews": [
     {

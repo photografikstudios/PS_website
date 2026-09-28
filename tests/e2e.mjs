@@ -12,6 +12,13 @@ const results = [];
 const shots = new URL('../docs/screenshots/', import.meta.url).pathname;
 await mkdir(shots, { recursive: true });
 
+const mp4Tracks = (buf) => { // handler types of every trak in the moov box
+  const b = Buffer.from(buf); let i = 0; let moov = null;
+  while (i + 8 <= b.length) { let size = b.readUInt32BE(i); const type = b.toString('latin1', i + 4, i + 8); if (size === 1) size = Number(b.readBigUInt64BE(i + 8)); if (size < 8) break; if (type === 'moov') { moov = b.subarray(i, i + size); break; } i += size; }
+  if (!moov) return null; const out = []; let j = 0;
+  while ((j = moov.indexOf('hdlr', j, 'latin1')) !== -1) { out.push(moov.toString('latin1', j + 12, j + 16)); j += 4; }
+  return out;
+};
 async function newPage(viewport = { width: 1280, height: 900 }, opts = {}) {
   const ctx = await browser.newContext({ viewport, ...opts });
   const page = await ctx.newPage();
@@ -982,7 +989,7 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
 
 // James, Sep 26 2026: About page shows client reviews. Codex S15-16: short curated selection, no empty video slot,
 // James confirmed Sep 27 that the Google 'Hampton Innovation' review is Aubri Peele, Brown Harris Stevens (in reserve).
-await check('About reviews: curated verbatim quotes, Google link, no empty video slot, no overflow at 375 px', async () => {
+await check('About reviews: Jack Richardson video testimonial with credit, curated verbatim quotes, Google link, no overflow at 375 px', async () => {
   const tm = JSON.parse(await readFile(new URL('../content/testimonials.json', import.meta.url), 'utf8'));
   const featured = tm.reviews.filter((r) => r.approval === 'approved' && Number.isInteger(r.featured)).sort((a, b) => a.featured - b.featured);
   assert(featured.length >= 3 && featured.length <= 4, 'curated count ' + featured.length);
@@ -992,7 +999,10 @@ await check('About reviews: curated verbatim quotes, Google link, no empty video
     const quotes = await p.locator('#reviews .review blockquote p').allTextContents();
     assert(JSON.stringify(quotes) === JSON.stringify(featured.map((r) => r.quote)), 'quotes differ from the curated JSON order/wording');
     const names = await p.locator('#reviews .review__name').allTextContents();
-    assert(await p.locator('#reviews .reviews__video, #reviews .review-placeholder, #reviews .needs-approval').count() === 0, 'empty video slot or review tag in reviews');
+    // James, Sep 28 2026: Jack Richardson's video testimonial (licensed music, burned-in captions) leads the reviews.
+    assert(await p.locator('#reviews .review-placeholder, #reviews .needs-approval').count() === 0, 'review tag in reviews');
+    const vid = p.locator('#reviews .reviews__video [data-video]');
+    assert(await vid.count() === 1 && await vid.getAttribute('data-id') === 'testimonial-jack-richardson' && (await p.locator('#reviews .reviews__credit').innerText()).trim() === 'Jack Richardson', 'video testimonial with credit');
     const rating = p.locator('#reviews .reviews__rating');
     assert(/5\.0/.test(await rating.textContent()) && /google\.com/.test(await rating.getAttribute('href')) && await rating.getAttribute('rel') === 'noopener', 'rating link');
     const overflow = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -1004,17 +1014,13 @@ await check('About reviews: curated verbatim quotes, Google link, no empty video
   }
   const html = await (await fetch(base + '/about')).text();
   assert(!/AggregateRating/.test(html), 'no self-serving review schema');
+  const tracks = mp4Tracks(await (await fetch(base + '/v/testimonial-jack-richardson.mp4')).arrayBuffer());
+  assert(tracks && tracks.includes('vide') && tracks.includes('soun'), 'testimonial keeps its voice track: ' + tracks);
+  for (const path of ['/', '/real-estate', '/commercial']) assert(!(await (await fetch(base + path)).text()).includes('testimonial-jack-richardson'), 'testimonial kept out of galleries on ' + path);
 });
 
 // Codex S15-16 / James Sep 28 2026: RevivaLuxe copy describes only what a visitor can see. The film appears only as the
 // approved silent export (audio stream physically removed): muted, looping, inline, labelled and pausable, beside a still.
-const mp4Tracks = (buf) => { // handler types of every trak in the moov box
-  const b = Buffer.from(buf); let i = 0; let moov = null;
-  while (i + 8 <= b.length) { let size = b.readUInt32BE(i); const type = b.toString('latin1', i + 4, i + 8); if (size === 1) size = Number(b.readBigUInt64BE(i + 8)); if (size < 8) break; if (type === 'moov') { moov = b.subarray(i, i + size); break; } i += size; }
-  if (!moov) return null; const out = []; let j = 0;
-  while ((j = moov.indexOf('hdlr', j, 'latin1')) !== -1) { out.push(moov.toString('latin1', j + 12, j + 16)); j += 4; }
-  return out;
-};
 await check('RevivaLuxe: silent film loop only, copy matches visible media', async () => {
   const buf = await (await fetch(base + '/v/revivaluxe-silent-loop.mp4')).arrayBuffer();
   const tracks = mp4Tracks(buf);

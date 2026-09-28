@@ -988,3 +988,7 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .cpm__monthly { margin-top: clamp(30px, 4vw, 48px); }
 @media (max-width: 1000px) { .cpm__tiers, .cpm__addons { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cpm__tier:nth-child(3) { border-left: 0; } .cpm__tier:nth-child(n+3) { border-top: 1px solid var(--line, rgba(0,0,0,.18)); } }
 @media (max-width: 620px) { .cpm__tiers, .cpm__addons { grid-template-columns: 1fr; } .cpm__tier + .cpm__tier { border-left: 0; border-top: 1px solid var(--line, rgba(0,0,0,.18)); } }
+
+/* About video testimonial credit (James, Sep 28 2026). */
+.reviews__video { margin: 0; }
+.reviews__credit { margin-top: 12px; }
