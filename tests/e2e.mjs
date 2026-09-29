@@ -162,7 +162,7 @@ await check('portfolios: every approved item appears on its own service page, on
   const p = await newPage();
   for (const [cat, path] of Object.entries(route)) {
     await p.goto(base + path);
-    const html = await p.locator(cat === 'creator-studios' ? 'main' : '#portfolio').evaluate((el) => el.outerHTML);
+    const html = await p.locator(cat === 'creator-studios' || cat === 'agent-content' ? 'main' : '#portfolio').evaluate((el) => el.outerHTML);
     const mine = approved.filter((m) => m.category === cat);
     let pageHtml = html;
     // Commercial (James, Sep 26): the index shows one card per project; every item lives on its project page.
@@ -1147,12 +1147,41 @@ await check('pricing rows: photos, one static note, plain fixed prices, content 
   await p.goto(base + '/architecture-design');
   assert(await p.locator('.arch-detail__fig img[src*="re-bridgehampton"]').count() === 4 && /Bridgehampton residence/.test(await p.locator('.arch-detail').innerText()) && await p.locator('.arch-detail a').count() === 0, 'Bridgehampton design band, not a client project');
   await p.goto(base + '/agent-content');
-  const t = await p.locator('.ac-why, .ac-day, .ac-easy').allInnerTexts();
-  assert(/choosing a person/i.test(t[0]) && /already there/i.test(t[1]) && /We write the scripts/.test(t[2]), 'Agent sell sections');
+  const t = await p.locator('.ac-why, .ac-day').allInnerTexts();
+  assert(/person behind the marketing/i.test(t[0]) && /already at the listing/i.test(t[1]) && /finished once that update actually happens/.test(t[1]) && await p.locator('.ac-why video, .ac-why [data-video]').count() >= 1, 'Agent why/film pair and qualified shoot-day workflow');
+  assert(!/decides whether you get the meeting|your name is the one they remember|probably won't|no waiting|everything that home can give you/i.test(await p.locator('main').innerText()), 'unsupported certainties removed');
   for (const path of ['/', '/real-estate', '/real-estate/pricing', '/architecture-design', '/agent-content']) {
     const html = await (await fetch(base + path)).text();
     assert(!/Halsey|Montauk Hwy|Brick Kiln|Old Orchard|Georgian|Walker Ave|Crane Rd|SERHANT|PS_\d{5}|DJI_/i.test(html), 'address, brokerage or filename leaked on ' + path);
   }
+  await p.context().close();
+});
+
+// Codex, Sep 29 2026: the mobile menu panel must be fully reachable; Home trimmed while keeping every path.
+await check('mobile menu reachable at 320-1024; Home trimmed with every path kept; Video note names fixed vs size-based', async () => {
+  for (const w of [320, 375, 390, 430, 768, 1024]) {
+    const p = await newPage({ width: w, height: 700 }, { hasTouch: true });
+    await p.goto(base + '/');
+    await p.click('.menu-toggle');
+    const r = await p.evaluate(() => { const n = document.getElementById('site-nav'); const q = n.getBoundingClientRect(); return { h: n.clientHeight, top: q.top, bottom: q.bottom, links: n.querySelectorAll('a').length, focusIn: n.contains(document.activeElement), inert: document.getElementById('main').inert }; });
+    assert(r.h >= 700 - r.top - 2 && r.bottom <= 701 && r.links >= 8 && r.focusIn && r.inert, `menu panel at ${w}: ` + JSON.stringify(r));
+    await p.evaluate(() => { const n = document.getElementById('site-nav'); n.scrollTop = n.scrollHeight; });
+    const last = await p.evaluate(() => { const a = [...document.querySelectorAll('#site-nav a')].pop(); const q = a.getBoundingClientRect(); return q.top >= 0 && q.bottom <= innerHeight + 1; });
+    assert(last, 'last menu link reachable at ' + w);
+    await p.keyboard.press('Escape');
+    assert(await p.evaluate(() => !document.getElementById('site-nav').classList.contains('is-open') && !document.getElementById('main').inert && document.activeElement.classList.contains('menu-toggle')), 'Escape closes and returns focus at ' + w);
+    await p.context().close();
+  }
+  const p = await newPage({ width: 390, height: 844 });
+  await p.goto(base + '/');
+  const h = await p.evaluate(() => document.documentElement.scrollHeight);
+  assert(h < 10500, 'Home at 390 px is trimmed: ' + h);
+  const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.id || x.className.split(' ').slice(-1)[0]));
+  assert(order.indexOf('selected-work') === 2 && await p.locator('.path').count() === 4 && await p.locator('#sw-grid .sw-card:not([hidden])').count() === 6, 'Home order and six-item phone preview: ' + order.join(','));
+  for (const href of ['/real-estate', '/architecture-design', '/commercial', '/creator-studios', '/agent-content', '/agency-partnerships', '/real-estate/pricing', '/contact']) assert(await p.locator(`main a[href="${href}"], main a[href^="${href}?"]`).count() >= 1, 'Home keeps a path to ' + href);
+  assert(await p.locator('.home-proof blockquote').count() === 1 && await p.locator('.home-pkgs__item').count() === 4, 'proof quote and four package lines');
+  await p.goto(base + '/real-estate/pricing'); await p.click('#tab-video');
+  assert(/Amounts shown on their own are fixed/.test(await p.locator('#panel-video .prows-note').innerText()), 'Video note distinguishes fixed prices');
   await p.context().close();
 });
 
@@ -1330,8 +1359,8 @@ await check('James Sep 28: pricing four across, Most Popular, package loops; RE 
   const split = await p.evaluate(() => { const e = document.querySelector('.ac-split__examples').getBoundingClientRect(), q = document.querySelector('.ac-split__qa').getBoundingClientRect(); return [e.left < q.left, Math.abs(e.top - q.top) < 80, [...document.querySelectorAll('main > section')].findIndex((x) => x.classList.contains('ac-split'))]; });
   // James, Sep 29 2026: the "why it matters" sell sections come straight after the hero, then examples and Fair questions.
   const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.className));
-  assert(split[0] && split[1] && /ac-why/.test(order[1]) && /ac-day/.test(order[2]) && /ac-easy/.test(order[3]) && split[2] === 4, 'sell sections after the hero, then examples left and Fair questions right: ' + split + ' ' + order.slice(0, 5).join(' | '));
-  assert(await p.locator('.ac-example .vplayer').count() === 3 && await p.locator('.ac-split a[href$=".txt"], .ac-split .card__meta').count() === 0, 'inline examples without captions or transcript links beneath');
+  assert(split[0] && split[1] && /ac-why/.test(order[1]) && /ac-day/.test(order[2]) && split[2] === 4, 'sell sections after the hero, then examples left and Fair questions right: ' + split + ' ' + order.slice(0, 5).join(' | '));
+  assert(await p.locator('.ac-example .vplayer').count() === 2 && await p.locator('.ac-why .vplayer').count() === 1 && await p.locator('.ac-split a[href$=".txt"], .ac-split .card__meta').count() === 0, 'inline examples without captions or transcript links beneath');
   assert(/recognize and trust/.test(await p.textContent('main')), 'monthly plans lead-in');
   await p.context().close();
   // Phones: the Home hero loop does not start (or load) before the page load event; afterwards it plays.

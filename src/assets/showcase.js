@@ -12,7 +12,8 @@ if (root) {
   const cards = [...root.querySelectorAll('.sw-card')];
   const empty = root.querySelector('#sw-empty');
   const more = root.querySelector('#sw-more');
-  const LIMIT = Number(root.dataset.limit) || 9;
+  // Codex/James Sep 29 2026: six items on phones keep the preview compact; View more goes to the service gallery.
+  const LIMIT = (matchMedia('(max-width: 700px)').matches && Number(root.dataset.limitPhone)) || Number(root.dataset.limit) || 9;
   let routes = {}; try { routes = JSON.parse(root.dataset.routes || '{}'); } catch { /* keep default */ }
   const lb = createLightbox(root.querySelector('dialog'), data, { where: 'home' });
   let visible = [];

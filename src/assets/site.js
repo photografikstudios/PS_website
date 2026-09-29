@@ -20,15 +20,26 @@ document.addEventListener('click', (e) => {
 const toggle = document.querySelector('.menu-toggle');
 const nav = document.getElementById('site-nav');
 if (toggle && nav) {
+  const hdr = document.querySelector('.site-header');
+  const main = document.getElementById('main');
+  const footer = document.querySelector('.site-footer');
   const setOpen = (open) => {
+    // Size the panel from the header's real bottom edge (the review bar can push the header down).
+    if (open && hdr) document.documentElement.style.setProperty('--nav-top', `${Math.max(0, Math.round(hdr.getBoundingClientRect().bottom))}px`);
     toggle.setAttribute('aria-expanded', String(open));
+    toggle.querySelector('.menu-toggle__label')?.replaceChildren(open ? 'Close' : 'Menu');
     nav.classList.toggle('is-open', open);
     document.body.classList.toggle('menu-open', open);
     document.body.style.overflow = open ? 'hidden' : '';
+    // Keep keyboard and screen-reader focus inside the open menu.
+    [main, footer].forEach((el) => { if (el) el.inert = open; });
+    if (open) nav.querySelector('a')?.focus({ preventScroll: true });
   };
+  nav.addEventListener('click', (e) => { if (e.target.closest('a') && nav.classList.contains('is-open')) setOpen(false); });
+  addEventListener('resize', () => { if (nav.classList.contains('is-open') && hdr) document.documentElement.style.setProperty('--nav-top', `${Math.max(0, Math.round(hdr.getBoundingClientRect().bottom))}px`); });
   toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && nav.classList.contains('is-open')) { setOpen(false); toggle.focus(); } });
-  matchMedia('(min-width: 1081px)').addEventListener('change', (m) => { if (m.matches) setOpen(false); });
+  matchMedia('(min-width: 1101px)').addEventListener('change', (m) => { if (m.matches) setOpen(false); });
 }
 
 // ---------- Header over hero images ----------

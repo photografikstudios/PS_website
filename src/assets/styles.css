@@ -134,7 +134,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 
 @media (max-width: 1100px) {
   .menu-toggle { display: inline-flex; }
-  .nav { position: fixed; inset: 76px 0 0 0; background: var(--ivory); color: var(--charcoal); flex-direction: column; align-items: stretch; padding: 32px var(--gutter) 48px; gap: 28px; overflow-y: auto; display: none; }
+  .nav { position: fixed; top: var(--nav-top, 76px); left: 0; right: 0; height: calc(100vh - var(--nav-top, 76px)); height: calc(100dvh - var(--nav-top, 76px)); background: var(--ivory); color: var(--charcoal); flex-direction: column; align-items: stretch; padding: 32px var(--gutter) 48px; gap: 28px; overflow-y: auto; overscroll-behavior: contain; display: none; }
   .nav.is-open { display: flex; }
   .nav__list { flex-direction: column; gap: 0; }
   .nav__item { border-bottom: 1px solid var(--line); }
@@ -1021,3 +1021,31 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .arch-detail__fig img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media (max-width: 800px) { .arch-detail__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .feature__img--photo-plan img, #floor-plan .feature__img img { object-fit: contain; background: #fff; }
+
+/* Mobile menu (Codex, Sep 29 2026): a backdrop-filter on the header made it the containing block for the fixed
+   nav, collapsing the open panel to about 80 px. While the menu is open the header drops the filter and the panel
+   is sized to the viewport below the header (JS sets --nav-top). */
+@media (max-width: 1100px) {
+  .menu-open .site-header, .has-overlay.menu-open .site-header { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--ivory); color: var(--charcoal); }
+  .page--dark.menu-open .site-header { background: var(--charcoal); color: var(--ivory); }
+}
+
+/* Home trim (Codex brief assessment, Sep 29 2026). */
+.paths__more { margin: 28px 0 0; display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: baseline; color: var(--muted); font-size: 15px; }
+.home-proof__grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 20px clamp(32px, 5vw, 80px); align-items: start; }
+.home-proof__quote { margin: 0; }
+.home-proof__more { grid-column: 2; margin: 0; }
+.home-pkgs__list { list-style: none; margin: 0 0 36px; padding: 0; border-top: 1px solid var(--charcoal); }
+.home-pkgs__item { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr); gap: 8px 28px; padding: 20px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.home-pkgs__name { font: 400 24px/1.2 var(--serif); }
+.home-pkgs__item.is-featured .home-pkgs__name { color: var(--rust); }
+.home-pkgs__tag { font: 400 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; vertical-align: middle; margin-left: 6px; }
+.home-pkgs__for { color: var(--muted); }
+.home-pkgs__price { text-align: right; font-size: 14px; color: var(--muted); } .home-pkgs__price strong { font: 400 26px/1 var(--serif); color: var(--charcoal); margin-left: 6px; }
+@media (max-width: 800px) {
+  .home-proof__grid { grid-template-columns: 1fr; } .home-proof__more { grid-column: 1; }
+  .home-pkgs__item { grid-template-columns: 1fr auto; } .home-pkgs__for { grid-column: 1 / -1; grid-row: 2; font-size: 15px; } .home-pkgs__price { grid-row: 1; grid-column: 2; }
+}
+
+.ac-steps { margin: 22px 0 0; padding-left: 1.2em; display: grid; gap: 12px; }
+.ac-why__film { max-width: 360px; margin-inline: auto; width: 100%; }

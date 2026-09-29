@@ -146,6 +146,8 @@ export function buildPages(ctx) {
   const showcase = editorialOrder(media.filter((m) => (m.type === 'video' ? !!m.poster : true)));
   const homeLimit = site.galleries?.home?.limit || 9;
   const insight = media.find((x) => x.id === 'agent-market-insight');
+  // Codex/James Sep 29 2026: one approved written review on Home; the rest and Jack's film stay on About.
+  const homeQuote = (testimonials?.reviews || []).find((r) => r.approval === 'approved' && r.name === 'Kimberly Cammarata');
   pages['/'] = {
     overlay: true,
     scripts: ['showcase.js'],
@@ -190,28 +192,10 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-<section class="section section--tint" aria-labelledby="paths-h">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Who we work with</p><h2 class="h2 reveal" id="paths-h">Find your starting point.</h2></div></div>
-    <div class="paths paths--4">
-      ${join([
-        { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, horizontal and vertical film, drone, twilight and floor plans.', go: 'Real estate' },
-        { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
-        { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
-        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'LI Creator Studios' },
-      ], (c) => `
-      <a class="path reveal" href="${c.href}">
-        <span class="path__img">${ambient(c.vid)}</span>
-        <span class="path__body"><span class="path__num">${c.n}</span><span class="path__title">${c.t}</span><span class="path__text">${c.x}</span><span class="path__go">${c.go} →</span></span>
-      </a>`)}
-    </div>
-  </div>
-</section>
-
-<section class="section section--ink on-dark showcase" id="selected-work" aria-labelledby="work-h" data-showcase data-limit="${homeLimit}" data-routes="${esc(JSON.stringify(serviceRoute))}">
+<section class="section section--ink on-dark showcase" id="selected-work" aria-labelledby="work-h" data-showcase data-limit="${homeLimit}" data-limit-phone="6" data-routes="${esc(JSON.stringify(serviceRoute))}">
   <div class="wrap">
     <div class="showcase__head">
-      <div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="work-h">Different briefs. <em>One standard.</em></h2></div>
+      <div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="work-h">Recent listings, projects <em>and films.</em></h2></div>
       <div class="showcase__filters" role="group" aria-label="Filter selected work">
         <label class="sr-only" for="sw-kind">Media type</label>
         <select id="sw-kind" class="pill-select"><option value="video">Videos</option><option value="image">Photos</option></select>
@@ -232,52 +216,50 @@ export function buildPages(ctx) {
   ${itemsJson(showcase)}
 </section>
 
-<section class="section" aria-labelledby="pkg-h">
+<section class="section section--tint" aria-labelledby="paths-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Who we work with</p><h2 class="h2 reveal" id="paths-h">Different briefs. <em>One standard.</em></h2></div></div>
+    <div class="paths paths--4">
+      ${join([
+        { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, horizontal and vertical film, drone, twilight and floor plans.', go: 'Real estate' },
+        { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
+        { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
+        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'LI Creator Studios' },
+      ], (c) => `
+      <a class="path reveal" href="${c.href}">
+        <span class="path__img">${ambient(c.vid)}</span>
+        <span class="path__body"><span class="path__num">${c.n}</span><span class="path__title">${c.t}</span><span class="path__text">${c.x}</span><span class="path__go">${c.go} →</span></span>
+      </a>`)}
+    </div>
+    <p class="paths__more">Also: <a class="link-arrow" href="/agent-content" data-track="path_click" data-track-location="home_paths_more">Agent content, on camera with your listings</a> <a class="link-arrow" href="/agency-partnerships" data-track="partnership_click" data-track-location="home_paths_more">Production for agencies</a></p>
+  </div>
+</section>
+
+<section class="section home-proof" aria-labelledby="proof-h">
+  <div class="wrap home-proof__grid">
+    <div>
+      <p class="eyebrow">In our clients' words</p>
+      <h2 class="h2 reveal" id="proof-h">Trusted with the work <em>behind the brand.</em></h2>
+    </div>
+    ${homeQuote ? `<figure class="review review--lead reveal home-proof__quote"><blockquote><p>${esc(homeQuote.quote)}</p></blockquote><figcaption><span class="review__name">${esc(homeQuote.name)}</span>${homeQuote.org ? `<span class="review__org">${esc(homeQuote.org)}</span>` : ''}</figcaption></figure>` : ''}
+    <p class="home-proof__more"><a class="link-arrow" href="/about#reviews" data-track="reviews_click" data-track-location="home_proof">More reviews, and a video testimonial →</a></p>
+  </div>
+</section>
+
+<section class="section home-pkgs" aria-labelledby="pkg-h">
   <div class="wrap">
     <div class="split">
       <div class="split__label"><p class="eyebrow">Listing packages</p></div>
-      <div><h2 class="h2 reveal" id="pkg-h">A complete listing campaign, <em>captured in one visit.</em></h2><p class="lede reveal">Choose the level the property and the launch call for. Every package is shot and edited to the same standard.</p></div>
+      <div><h2 class="h2 reveal" id="pkg-h">A starting point for <em>the way you market.</em></h2><p class="lede reveal">Four packages, shot and edited to the same standard. Enter the home's size on the pricing page to see your price.</p></div>
     </div>
-    <div class="ladder">
-      ${join(['listing-starter', 'luxury-media', 'signature'].map((id) => pkg[id]).filter(visible), (p) => `
-      <div class="ladder__item reveal ${pkgFeatured(p) ? 'ladder__item--featured' : ''}">
-        <p class="tag">${esc(pkgTag(p) || 'Package')}</p>
-        <h3 class="h3">${esc(p.name)}</h3>
-        <p>${esc(p.for)}</p>
-        <p class="price-line">Starting at <strong>${starting(p)}</strong> ${needsApproval(p)}</p>
-      </div>`)}
-    </div>
+    <ul class="home-pkgs__list" role="list">
+      ${join(pricing.packages.filter(visible), (p) => `<li class="home-pkgs__item${pkgFeatured(p) ? ' is-featured' : ''}"><span class="home-pkgs__name">${esc(p.name)}${pkgFeatured(p) ? ` <span class="home-pkgs__tag">${esc(pkgTag(p))}</span>` : ''}</span><span class="home-pkgs__for">${esc(p.for)}</span><span class="home-pkgs__price">Starting at <strong>${starting(p)}</strong> ${needsApproval(p)}</span></li>`)}
+    </ul>
     <div class="actions"><a class="btn btn--ink" href="/real-estate/pricing" data-track="pricing_nav" data-track-location="home_packages">Price your listing</a>${bookBtn('home_packages', 'Book a Shoot', 'link-arrow')}</div>
   </div>
 </section>
 
-${threeSteps(true)}
-
-<section class="section">
-  <div class="wrap two-col">
-    <div>
-      <p class="eyebrow">Beyond the listing</p>
-      <h2 class="h2 reveal">One listing day can market <em>more than the house.</em></h2>
-      <p class="lede reveal">The same shoot can produce horizontal film, vertical reels, aerials, a floor plan and on-camera pieces about you. Listing Engine, Agent Engine and monthly content plans help future sellers know you before the first meeting.</p>
-      <a class="link-arrow" href="/agent-content">Agent content →</a>
-    </div>
-    <div class="two-col__media">${insight ? mediaCard(insight, { sizes: '(min-width: 900px) 30vw, 80vw' }) : ''}</div>
-  </div>
-</section>
-
-<section class="section section--tint">
-  <div class="wrap two-col">
-    <div class="two-col__media"><div class="frame frame--tall reveal-img">${img('/images/photografik-2027/curated/revivaluxe-hero.webp', { alt: 'RevivaLuxe founder in the practice reception area', sizes: '(min-width: 900px) 45vw, 100vw' })}</div></div>
-    <div>
-      <p class="eyebrow">Commercial & agency production</p>
-      <h2 class="h2 reveal">A production partner, <em>on location or in studio.</em></h2>
-      <p class="lede reveal">Crew, locations, filming, editing and delivery, managed as one project. Client-facing or behind your agency, with roles and approvals agreed before we start.</p>
-      <div class="actions"><a class="link-arrow" href="/commercial">Commercial →</a><a class="link-arrow" href="/agency-partnerships">Agencies →</a></div>
-    </div>
-  </div>
-</section>
-
-${splitCta('Ready when you are.')}`,
+${splitCta('Bring us the property, <em>the project or the brief.</em>')}`,
   };
 
   // ---------- FIELD NOTES ----------
@@ -638,7 +620,9 @@ ${fnTeaser('real-estate-media')}
       ${rowThumb(s)}<div class="prow__text"><h3 class="prow__name">${esc(s.name)} ${needsApproval(s)}</h3>${s.detail ? `<p class="prow__detail">${esc(s.detail)}</p>` : ''}</div>
       <div class="prow__price">${rowPrice(s)}</div>
     </li>`;
-  const priceNote = '<p class="prows-note">Prices follow the size tiers in our booking portal and are confirmed at checkout. Travel fees may apply.</p>';
+  const priceNote = '<p class="prows-note">These prices follow the size tiers in our booking portal and are confirmed at checkout. Travel fees may apply.</p>';
+  // Codex, Sep 29 2026: the Video table mixes size-based and fixed rows, so the note says which is which.
+  const priceNoteMixed = '<p class="prows-note">Prices marked “Starting at” follow the size tiers in our booking portal and are confirmed at checkout. Amounts shown on their own are fixed and do not change with square footage. Travel fees may apply.</p>';
   const fixedRow = (f, label = 'Fixed price') => `<li class="prow prow--fixed" data-fixed="${esc(f.id)}">
       <div class="prow__text"><h3 class="prow__name">${esc(f.name)} ${needsApproval(f)}</h3>${f.detail ? `<p class="prow__detail">${esc(f.detail)}</p>` : ''}</div>
       <div class="prow__price"><p class="pcard__price">${f.standalone ? '<span class="pcard__label">Added to a shoot</span> ' : ''}<span class="pcard__amount">${formatUSD(f.amount)}</span></p>${f.standalone ? `<p class="pcard__hint">${formatUSD(f.standalone)} on its own.</p>` : ''}</div>
@@ -653,7 +637,7 @@ ${fnTeaser('real-estate-media')}
     { id: 'packages', label: 'Packages', html: `<div class="pcards">${join(pricing.packages.filter(visible), packageCard)}</div>
         <p class="pcards__motion">${motionToggle.replace('class="motion-toggle"', 'class="motion-toggle motion-toggle--inline"')}</p>` },
     { id: 'photo', label: 'Photo', html: `<ul class="prows prows--thumbs">${join(svc('photography'), serviceRow)}</ul>${priceNote}` },
-    { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}${join(fixedG('video'), (f) => fixedRow(f))}</ul>${priceNote}
+    { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}${join(fixedG('video'), (f) => fixedRow(f))}</ul>${priceNoteMixed}
         <div class="explain"><h3 class="h3">Horizontal or vertical?</h3><p>Horizontal film is for the listing page, YouTube, email and presentations. Vertical reels are for Instagram, TikTok and Reels. Choose one, or both from the same shoot.</p></div>
         <h3 class="h3 prows-head">Content add-ons</h3>
         <ul class="prows">${join(fixedG('engines'), (f) => fixedRow(f))}</ul>
@@ -710,55 +694,41 @@ ${fnTeaser('real-estate-media')}
   const agentMonthly = offers.agentMonthly.filter(visible);
   const engines = pricing.fixed.filter((f) => f.group === 'engines').filter(visible);
   const agentVids = media.filter((m) => m.category === 'agent-content' && m.type === 'video');
-  // James, Sep 29 2026: right after the hero, sell why agent content matters, why filming it on the listing shoot day
-  // saves time, and how we make it easy. Persuasive, but no invented statistics or outcome guarantees.
+  // James, Sep 29 2026 + Codex brief assessment: after the hero, one text/film pair on why it matters and one
+  // practical shoot-day workflow, then the engines, examples with objections, and the approved monthly plans.
+  // Supportable wording only: no promised meetings, recall or finished status videos before the status exists.
   const acWhyFig = (id, cls = '') => { const m = allMediaById[id]; return m ? `<figure class="ac-why__fig ${cls}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 45vw, 100vw' })}</figure>` : ''; };
+  const acLead = agentVids.find((m) => m.id === 'agent-market-insight');
   const acWhy = () => `
 <section class="section ac-why" aria-labelledby="ac-why-h">
-  <div class="wrap">
-    <div class="split">
-      <div class="split__label"><p class="eyebrow">Why it matters</p></div>
-      <div>
-        <h2 class="h2 reveal" id="ac-why-h">Sellers are choosing a person, <em>not a sign in the yard.</em></h2>
-        <p class="lede reveal">Before a homeowner ever calls, they look you up. What they find decides whether you get the meeting. Video lets them see how you think, how you talk and how you work, so by the time you walk in they already feel they know you. Every agent can open a door. Very few show what they actually do.</p>
-      </div>
+  <div class="wrap two-col">
+    <div>
+      <p class="eyebrow">Why it matters</p>
+      <h2 class="h2 reveal" id="ac-why-h">Show sellers the person <em>behind the marketing.</em></h2>
+      <p class="reveal">Homeowners often look an agent up before they call. Short videos help them see how you think and how you work: what you did for a recent listing, what you know about their town and how you plan to reach the right buyer. That is a reason to choose you that goes well beyond opening a door.</p>
+      <ul class="checks reveal">
+        <li>What you did for this listing, or your last one</li>
+        <li>Market updates for the town or neighborhood you want to be known for</li>
+        <li>How you price, prepare and present a home</li>
+        <li>Your background, and why you do this work</li>
+      </ul>
     </div>
-    <div class="features features--3 ac-why__points">
-      <div class="feature reveal"><h3 class="h3">Show what you did for the home</h3><p>Walk viewers through this listing, or your last one: how you priced it, prepared it and put it in front of the right people. It proves your process instead of describing it.</p></div>
-      <div class="feature reveal"><h3 class="h3">Own your town</h3><p>Market reports and neighborhood videos make you the go-to voice for a town, a street or a stretch of the coast. When someone there is ready to sell, your name is the one they remember.</p></div>
-      <div class="feature reveal"><h3 class="h3">Let them meet you first</h3><p>Your background, why you got into this, what makes you different. People hire the agent they trust, and trust starts long before the listing appointment.</p></div>
-      <div class="feature reveal"><h3 class="h3">Explain how you find the buyer</h3><p>Show how your experience, your network and your marketing reach the right buyers, and why you invest in presenting a home properly rather than just listing it.</p></div>
-      <div class="feature reveal"><h3 class="h3">Show homes differently</h3><p>Sellers compare how agents present property. Film, photography and you on camera, together, show them exactly how their home would be marketed.</p></div>
-      <div class="feature reveal"><h3 class="h3">Stay visible between listings</h3><p>A steady supply of short videos keeps you in front of past clients and future sellers, so you are not starting from zero every time a new listing comes up.</p></div>
-    </div>
+    <div class="two-col__media ac-why__film">${acLead ? videoPlayer(acLead, { sizes: '(min-width: 900px) 30vw, 80vw' }) : ''}</div>
   </div>
 </section>
 <section class="section section--tint ac-day" aria-labelledby="ac-day-h">
   <div class="wrap two-col">
     <div>
-      <p class="eyebrow">One day, everything you need</p>
-      <h2 class="h2 reveal" id="ac-day-h">Film it while we are <em>already there.</em></h2>
-      <p class="reveal">We are at the property for the listing media anyway: the crew, the lighting and the drone are set up and the home looks its best. Filming your agent content in the same visit means no second shoot to schedule, no second round of staging and no waiting. Whether the home hits the market this week or months from now, we capture everything that home can give you in a single day.</p>
-      <ul class="checks reveal">
-        <li>You presenting the property on camera</li>
-        <li>Just Listed, Under Contract and Just Sold videos, ready for each stage of the sale</li>
-        <li>A market update filmed in the neighborhood you want to be known for</li>
-        <li>Short videos about you, your background and how you work</li>
-      </ul>
+      <p class="eyebrow">How the shoot day works</p>
+      <h2 class="h2 reveal" id="ac-day-h">Film it while we are <em>already at the listing.</em></h2>
+      <p class="reveal">We are at the property for the listing media, with the home prepared and the crew set up, so your on-camera pieces can be filmed in the same visit instead of a separate shoot. Whether the home goes on the market now or later, the process is the same.</p>
+      <ol class="ac-steps reveal">
+        <li><strong>Before the shoot.</strong> We plan the videos around your market and goals and write the scripts with you, so it still sounds like you.</li>
+        <li><strong>On the day.</strong> We film the listing media and your pieces, with short takes and coaching as you go.</li>
+        <li><strong>After.</strong> We edit and deliver videos ready to post. Status videos such as Under Contract or Just Sold are finished once that update actually happens.</li>
+      </ol>
     </div>
     <div class="two-col__media">${acWhyFig('re-lloyd-harbor-front')}</div>
-  </div>
-</section>
-<section class="section ac-easy" aria-labelledby="ac-easy-h">
-  <div class="wrap">
-    <p class="eyebrow">We make it easy</p>
-    <h2 class="h2 reveal" id="ac-easy-h">You bring what you know. <em>We handle the rest.</em></h2>
-    <div class="features features--3">
-      <div class="feature reveal"><h3 class="h3">We write the scripts</h3><p>We plan every video around your market, your listing and your goals, and write it with you so it still sounds like you.</p></div>
-      <div class="feature reveal"><h3 class="h3">We get you comfortable</h3><p>Short takes, clear direction and coaching on delivery. Most agents settle in quickly, and it shows on screen.</p></div>
-      <div class="feature reveal"><h3 class="h3">We edit and deliver</h3><p>Cut for the platforms you use and ready to post, so all that is left for you is sharing it.</p></div>
-    </div>
-    <p class="ac-easy__close reveal">You could skip it. The agents you compete with for your next listing probably won't.</p>
   </div>
 </section>`;
   pages['/agent-content'] = {
@@ -766,30 +736,13 @@ ${fnTeaser('real-estate-media')}
     body: `${pageHero({
       eyebrow: 'Agent content',
       title: 'People hire agents they <em>already feel they know.</em>',
-      lede: 'On-camera video that helps future sellers understand who you are and how you work before the first conversation. We handle the ideas, direction and editing. You bring what you know.',
+      lede: 'Listing media shows how you market a property. Agent content shows the person behind the marketing. We help you turn real listings and real expertise into video you can use consistently.',
       cta: `<a class="btn btn--solid" href="/contact?type=agent-content" data-track="retainer_click" data-track-location="agent_hero">Plan My Content</a>`,
       // James, Sep 28 2026: open with a relevant horizontal film. The on-camera expertise clip, muted and framed 16:9.
       video: { loop: 'agent-expertise-hero', credit: 'agent-expertise' },
     })}
 ${acWhy()}
-<section class="section ac-split" id="portfolio" aria-labelledby="ac-q-h">
-  <div class="wrap ac-split__grid">
-    <div class="ac-split__examples" aria-label="Agent content examples">
-      <p class="eyebrow">Examples</p>
-      <div class="ac-examples">${join(agentVids, (m) => `<div class="ac-example">${videoPlayer(m, { sizes: '(min-width: 900px) 18vw, 45vw' })}</div>`)}</div>
-    </div>
-    <div class="ac-split__qa">
-      <p class="eyebrow">Fair questions</p>
-      <h2 class="h2 reveal" id="ac-q-h">What agents usually ask us.</h2>
-      <div class="qa qa--stack">
-        <div><h3 class="h3">“I hate being on camera.”</h3><p>Most people do at first. We coach delivery, help you find a natural opening line and keep takes short. A lot of the confidence comes from knowing exactly what you want to say.</p></div>
-        <div><h3 class="h3">“I don't know what to say.”</h3><p>That part is on us. We bring structured ideas built around your market, your town and your process, and we write with you so it still sounds like you.</p></div>
-        <div><h3 class="h3">“I can film this on my phone.”</h3><p>You can, and sometimes you should. What we add is the plan, the coaching, the quality and the consistency that make people remember you.</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-<section class="section section--tint">
+<section class="section">
   <div class="wrap">
     <p class="eyebrow">Listing Engine & Agent Engine</p>
     <h2 class="h2 reveal">Turn one shoot day into weeks of content.</h2>
@@ -800,6 +753,24 @@ ${acWhy()}
     ${(() => { const e = engines.find((x) => x.id === 'full-engine'); return e ? `<p class="aside-line">Both together as the Full Engine: <strong>${formatUSD(e.amount)}</strong> with a listing shoot, ${formatUSD(e.standalone)} on its own ${needsApproval(e)}</p>` : ''; })()}
   </div>
 </section>
+<section class="section ac-split" id="portfolio" aria-labelledby="ac-q-h">
+  <div class="wrap ac-split__grid">
+    <div class="ac-split__examples" aria-label="Agent content examples">
+      <p class="eyebrow">Examples</p>
+      <div class="ac-examples">${join(agentVids.filter((m) => m !== acLead), (m) => `<div class="ac-example">${videoPlayer(m, { sizes: '(min-width: 900px) 18vw, 45vw' })}</div>`)}</div>
+    </div>
+    <div class="ac-split__qa">
+      <p class="eyebrow">Fair questions</p>
+      <h2 class="h2 reveal" id="ac-q-h">Before you say yes to <em>being on camera.</em></h2>
+      <div class="qa qa--stack">
+        <div><h3 class="h3">“I hate being on camera.”</h3><p>Most people do at first. We coach delivery, help you find a natural opening line and keep takes short. A lot of the confidence comes from knowing exactly what you want to say.</p></div>
+        <div><h3 class="h3">“I don't know what to say.”</h3><p>That part is on us. We bring structured ideas built around your market, your town and your process, and we write with you so it still sounds like you.</p></div>
+        <div><h3 class="h3">“I can film this on my phone.”</h3><p>You can, and sometimes you should. What we add is the plan, the coaching, professional production and a consistent look across everything you post.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 ${agentMonthly.length ? `<section class="section section--tint">
   <div class="wrap">
     <p class="eyebrow">Monthly content plans</p>
@@ -811,8 +782,8 @@ ${agentMonthly.length ? `<section class="section section--tint">
 </section>` : ''}
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
-    <h2 class="h2 reveal">Let's plan what you will say.</h2>
-    <p>Tell us about your market and goals. We will suggest a starting point.</p>
+    <h2 class="h2 reveal">Start with the market you want to own.</h2>
+    <p>You do not need fifty ideas before the first shoot. Start with the questions your clients already ask and the listings you already market.</p>
     <a class="btn btn--gold" href="/contact?type=agent-content" data-track="retainer_click" data-track-location="agent_final">Plan My Content</a>
   </div>
 </section>`,
