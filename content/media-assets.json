@@ -2,9 +2,9 @@
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "local dist/v (MEDIA_ALLOW_ENCODE build)",
   "recordedAt": "2026-09-29",
-  "count": 251,
-  "totalBytes": 339938721,
-  "aggregate": "4a06eea8a5a0658a46effe562cf6e77573c921291debdc4bb1b6ebcf097333a4",
+  "count": 253,
+  "totalBytes": 340070553,
+  "aggregate": "0a6967bbe8f24cdd575b2cfab0cd8f0d2e2a7e5839d42fc05e2c6a90ad9d3d89",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1006,9 +1006,17 @@
       "bytes": 60814,
       "sha256": "129e7aedf76358f0f9c750fc19c0b319efdb5f816510f0d30e9fbf1843d7f989"
     },
+    "/v/ph-bpe-torch-cut.webp": {
+      "bytes": 84760,
+      "sha256": "d8dad49dd9eafada483380a8f2cac1513fbec59124067950dd22d643070d19a8"
+    },
+    "/v/ph-bpe-torch-cut-sm.webp": {
+      "bytes": 46998,
+      "sha256": "0252deb21fefb3af857fa4577db1e29794ac127a81a98918f491ad00ef6acd45"
+    },
     "/v/manifest.json": {
-      "bytes": 9885,
-      "sha256": "7e31fcf097a12798bb3f5ce6ddf14585a555ebf60a2d7848fa248b9111102823"
+      "bytes": 9959,
+      "sha256": "8fa245562c87dc08fe9eb6901ce18cfa7f3c46e8c93ef082c349324e80bd137c"
     }
   }
 }

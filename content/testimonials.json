@@ -38,21 +38,23 @@
     {
       "id": "dave-hancock",
       "name": "Dave Hancock",
-      "org": null,
+      "org": "DH Technologies",
       "source": "google",
       "quote": "Their creativity, dedication, and expertise in utilizing various platforms have boosted our online presence and engagement. We have received positive feedback from our clients and builders.",
       "approval": "approved",
       "_note": "Excerpt of two consecutive sentences from a longer Google review about his smart home business.",
-      "featured": 4
+      "featured": 4,
+      "_org": "James, Sep 29 2026 (Vercel comment on /about)"
     },
     {
       "id": "bob-mcinnis",
       "name": "Bob McInnis",
-      "org": null,
+      "org": "McInnis Digital",
       "source": "google",
       "quote": "He's fantastic at photographing spaces--he shoots some of the finest Hamptons and North Fork real estate and businesses and captures incredible drone shots, too. Lots of my clients use him, too.",
       "approval": "approved",
-      "featured": 3
+      "featured": 3,
+      "_org": "James, Sep 29 2026 (Vercel comment on /about)"
     },
     {
       "id": "aubri-peele",

@@ -821,6 +821,13 @@
       "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
       "source": "bridgehampton/218-PS_00303_1.jpg + floorplan/001-All Floors.jpg",
       "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers. Floor plan cropped to remove the street address, brokerage logo and disclaimer band."
+    },
+    {
+      "id": "ph-bpe-torch-cut",
+      "image": true,
+      "drive": "1IMHxLNE_GVzfvSbHamu7_pXnUF1ym016",
+      "source": "frame at 61 s of the approved BPE Ironworks film (biz-bpe-ironworks web encode, 1280x720)",
+      "_note": "James, Sep 29 2026 (Vercel comment on /commercial): use a better action shot of BPE Ironworks. Frame chosen from a 3 s contact sheet of the film; torch cutting a beam with sparks. WebP q82 + 900 px -sm q76."
     }
   ],
   "docs": [

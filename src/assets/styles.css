@@ -1050,3 +1050,10 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .ac-steps { margin: 22px 0 0; padding-left: 1.2em; display: grid; gap: 12px; }
 .ac-why__film { max-width: 360px; margin-inline: auto; width: 100%; }
 .pcards__note { max-width: none; margin-top: 20px; text-align: left; }
+
+/* James, Sep 29 2026 (Vercel comments). */
+/* Commercial "What we do": eyebrow over the heading, body starts at the left margin so the heading runs on two lines. */
+.com-value .h2 { max-width: 17em; }
+.com-value .lede { max-width: 62ch; }
+/* Best value badge: to the right only when the card is wide enough; otherwise above the plan name. */
+@media (max-width: 1279px) { .plan--best .plan__badge { position: static; margin: 0 0 12px; } }

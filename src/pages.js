@@ -48,7 +48,7 @@ export function buildPages(ctx) {
     <h1 class="display">${title}</h1>
     ${lede ? `<p class="lede">${lede}</p>` : ''}
     ${cta ? `<div class="actions">${cta}</div>` : ''}
-    ${video && allMediaById[video.credit || video.film || video.loop] ? `<p class="hero-credit">On screen: ${esc(allMediaById[video.credit || video.film || video.loop].title)}</p>` : video?.creditText ? `<p class="hero-credit">${esc(video.creditText)} ${video.pending ? needsApproval({ approval: 'pending' }, video.pending) : ''}</p>` : ''}
+    ${video?.creditText ? `<p class="hero-credit">${esc(video.creditText)} ${video.pending ? needsApproval({ approval: 'pending' }, video.pending) : ''}</p>` : ''}
   </div>
   ${video ? motionToggle : ''}
 </section>`;
@@ -150,7 +150,6 @@ export function buildPages(ctx) {
       <p class="hero__meta">East End · Hamptons · North Fork<br>Suffolk · Nassau · NYC</p>
     </div>
   </div>
-  <p class="hero-credit hero-credit--home wrap">On screen: ${esc(allMediaById['re-hamptons-beachfront']?.title || '')}</p>
   ${motionToggle}
 </section>
 
@@ -800,11 +799,8 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const archUsed = new Set(Object.values(archPairIds));
   const archFig = (id, { sizes = '(min-width: 900px) 40vw, 100vw', cls = '' } = {}) => {
     const m = archById[id]; if (!m) return '';
-    const pr = m.project ? projectBySlug[m.project] : null;
-    const cap = pr && visible(pr)
-      ? `${esc(m.alt || m.title)}. <a href="${projectPath(pr)}" data-track="project_click" data-track-location="arch_pair">${esc(pr.client || pr.title)}${pr.location ? `, ${esc(pr.location)}` : ''}</a>`
-      : `${esc(m.title)}${m.location && !m.title.includes(m.location) ? `, ${esc(m.location)}` : ''}`;
-    return `<figure class="pair-fig ${cls}" data-media="${esc(m.id)}"><div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div><figcaption>${cap}</figcaption></figure>`;
+    // James, Sep 29 2026 (Vercel comment): no caption beneath these photos; each keeps its alt text.
+    return `<figure class="pair-fig ${cls}" data-media="${esc(m.id)}"><div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div></figure>`;
   };
   // Gallery (Home Selected Work style, same work.json collection): ONE item per project (its lead asset; the rest stay
   // on the project page) plus approved work without a verified project. Segments come from the project, never a house name.
@@ -981,16 +977,16 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
     })}
 <section class="section" aria-labelledby="com-value-h">
   <div class="wrap">
-    <div class="split">
-      <div class="split__label"><p class="eyebrow">What we do</p></div>
+    <div class="com-value">
+      <p class="eyebrow">What we do</p>
       <div>
         <h2 class="h2 reveal" id="com-value-h">Photography and film that show <em>what your business actually does.</em></h2>
         <p class="lede reveal">We plan, shoot, edit and deliver brand media for businesses and their agencies: your people, your spaces and your work, made to be used across your website, social channels and sales. One team from the first call to the final files, so you get consistent content without building an in-house department.</p>
       </div>
     </div>
     <div class="features features--4">
-      <div class="feature reveal">${mediaFig('ph-revivaluxe-portrait')}<h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
-      <div class="feature reveal">${mediaFig('biz-bpe-ironworks', { alt: 'Frame from the BPE Ironworks film' })}<h3 class="h3">Film and short-form</h3><p>Brand films, project showcases and short cuts for every channel you use.</p></div>
+      <div class="feature reveal">${mediaFig('ph-revivaluxe-portrait', { pos: '50% 22%' })}<h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
+      <div class="feature reveal">${mediaFig('ph-bpe-torch-cut')}<h3 class="h3">Film and short-form</h3><p>Brand films, project showcases and short cuts for every channel you use.</p></div>
       <div class="feature reveal">${mediaFig('cs-ph-island-federal')}<h3 class="h3">Podcasts and studio days</h3><p>Recorded at <a href="/creator-studios">LI Creator Studios</a> or on location.</p></div>
       <div class="feature reveal">${mediaFig('ph-clos-lighting')}<h3 class="h3">Recurring production</h3><p>A monthly cadence so content keeps coming without hiring several separate roles.</p></div>
     </div>
@@ -1026,7 +1022,7 @@ ${cp.length || b2b.length ? `<section class="section">
     <p class="eyebrow">Starting points</p>
     <h2 class="h2 reveal">Where standard scopes begin.</h2>
     ${cp.length ? `<div class="cpm">
-      <h3 class="h3">Commercial property media</h3>
+      <h3 class="h3">Commercial real estate media</h3>
       <p class="cpm__kicker">Photography · Aerial · Video · Portfolio coverage</p>
       ${cpPort?.lede ? `<p class="cpm__lede">${esc(cpPort.lede)}</p>` : ''}
       <ul class="cpm__tiers" role="list">${join(cp, (c) => `<li class="cpm__tier">
@@ -1112,7 +1108,8 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   const csStart = (loc, label = 'Book a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}"${creatorExternal} data-track="creator_click" data-track-location="${loc}">${label}${creatorExternal ? '<span class="sr-only"> (opens LI Creator Studios booking in a new tab)</span>' : ''}</a>`;
   // James, Sep 28 2026: booking is through LI Creator Studios (the button still opens the verified booking flow).
   const csBookingNote = `<p class="small booking-note">Studio sessions are booked through LI Creator Studios. Choose your session and time there. Not sure which session fits? <a href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_inquiry">Ask us first</a>.</p>`;
-  const scope = (included) => `<span class="scope-tag scope-tag--${included ? 'in' : 'out'}">${included ? 'Part of a session' : 'With Recording + Editing, or by quote'}</span>`;
+  // James, Sep 29 2026 (Vercel comment): no "Part of a session" / "With Recording + Editing" tags on the formats.
+  const scope = () => '';
   // James, Sep 28 2026: no Recent Sessions section; approved photos and clips sit beside the copy they support,
   // with no captions beneath them (each keeps its alt text or accessible name).
   const csById = Object.fromEntries(media.filter((m) => m.category === 'creator-studios').map((m) => [m.id, m]));
@@ -1169,7 +1166,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <h2 class="h2 reveal" id="cs-story-h">People choose who they work with <em>before they ever call.</em></h2>
       <p>Your website lists what you do. A recorded conversation lets customers hear why you do it, what you believe and how you think, in your own words.</p>
       <ul class="cs-points"><li><strong>The person.</strong> Where you came from and why you do this work.</li><li><strong>The purpose.</strong> The standard you hold your work to.</li><li><strong>The expertise.</strong> The questions you answer every week, explained properly.</li></ul>
-      <p><a class="link-arrow" href="/creator-studios/sessions" data-track="project_click" data-track-location="creator_story">See all sessions ${arrow}</a></p>
+      <div class="actions">${csStart('creator_story', 'Book a Session')}<a class="btn btn--outline" href="#sessions" data-track="pricing_click" data-track-location="creator_story">See Pricing</a></div>
     </div>
     <div class="cs-pair__media cs-loops" role="group" aria-label="Examples of podcast shorts made with clients">${join(csLoops, ([id, label]) => `<div class="cs-loop">${ambient(id, { label })}</div>`)}</div>
   </div>

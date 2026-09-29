@@ -766,7 +766,7 @@ await check('primary-nav pages open with a silent autoplaying 16:9 hero video, p
     assert((await toggle.textContent()).includes('Play video'), `${path} control reads Play video`);
     await toggle.click();
     await p.waitForFunction((sel) => !document.querySelector(sel).paused, 'main > section:first-of-type video[data-ambient]', { timeout: 8000 });
-    assert((await first.locator('.hero-credit').textContent()).length > 10, `${path} says what is on screen`);
+    assert(!/On screen/.test(await first.innerText()), `${path}: no "On screen" credit (James, Sep 29 2026)`);
     await p.context().close();
   }
   const rm = await newPage({ width: 1280, height: 900 }, { reducedMotion: 'reduce' });
@@ -846,7 +846,7 @@ await check('commercial (James Sep 26): value prop after hero, one case study, c
   for (const c of cards) {
     await p.goto(base + c.href);
     const ids = await p.locator('main [data-id], main img').evaluateAll((els) => els.map((e) => e.dataset?.id || e.getAttribute('src')));
-    const mine = com.filter((m) => m.clientId === c.slug);
+    const mine = com.filter((m) => m.clientId === c.slug && m.gallery !== false);
     const others = com.filter((m) => m.clientId !== c.slug);
     for (const m of mine) assert(ids.some((x) => x && (x === m.id || x.includes(m.id) || (m.src && x.includes(m.src)))), `${c.slug} missing ${m.id}`);
     for (const m of others) assert(!ids.some((x) => x && (x === m.id || (m.src && x.includes(m.src)))), `${c.slug} shows other client ${m.id}`);
@@ -869,7 +869,8 @@ await check('creator studios: story, formats with scope, conversations, process,
   await p.goto(base + '/creator-studios');
   const text = await p.textContent('main');
   for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Files within 24 hours', 'Before you book']) assert(text.includes(s), s);
-  assert(await p.locator('.scope-tag--out').count() >= 2, 'separately scoped formats labelled');
+  // James, Sep 29 2026: no "Part of a session" / "With Recording + Editing" tags; the line under the formats explains editing.
+  assert(await p.locator('.scope-tag').count() === 0 && /Editing is available by quote/.test(text), 'formats untagged, editing explained once');
   // Pricing follows licreatorstudios.com/pricing; James confirmed the $249 single session on Sep 27 2026 (it had been
   // held after Codex S15-16 because he earlier said $250). The page never claims Square checkout shows these figures.
   assert(await p.locator('.plan .needs-approval').count() === 0, 'session prices approved');
@@ -903,7 +904,9 @@ await check('creator studios: story, formats with scope, conversations, process,
   const loops = await p.locator('.cs-loops video').evaluateAll((vs) => vs.map((v) => [v.muted || v.hasAttribute('muted'), v.loop, v.getAttribute('aria-label'), v.querySelector('source').getAttribute('src'), !!v.closest('figure')?.querySelector('figcaption')]));
   assert(loops.length === 3 && loops.every((l) => l[0] && l[1] && l[2] && /-loop\.mp4$/.test(l[3]) && !l[4]), 'three muted vertical loops: ' + JSON.stringify(loops));
   assert(loops.map((l) => l[3]).join() === '/v/cs-ifcu-clip-loop.mp4,/v/cs-noah-knows-short-loop.mp4,/v/cs-jm2-architecture-loop.mp4', 'loop sources');
-  assert(await p.locator('section:has(#cs-story-h) a[href="/creator-studios/sessions"]').count() === 1, 'All sessions link');
+  // James, Sep 29 2026: the story section ends with two buttons, Book a Session and See Pricing (to the sessions/pricing section).
+  const storyCtas = await p.locator('section:has(#cs-story-h) .actions a').evaluateAll((as) => as.map((a) => [a.textContent.trim(), a.getAttribute('href')]));
+  assert(storyCtas.length === 2 && /Book a Session/.test(storyCtas[0][0]) && storyCtas[1][0] === 'See Pricing' && storyCtas[1][1] === '#sessions' && (await p.locator('#sessions .plan__price').count()) > 0, 'story CTAs ' + JSON.stringify(storyCtas));
   assert(await p.locator('.cs-formats li').count() === 6 && await p.locator('.cs-formats li > figure.cs-format__img:first-child img').count() === 6, 'an image above each format');
   const reel = await p.locator('section:has(#cs-space-h) video').evaluate((v) => [v.muted || v.hasAttribute('muted'), v.controls, v.querySelector('source').getAttribute('src'), v.dataset.poster]);
   assert(reel[0] && reel[1] && reel[2] === '/v/cs-demo-reel-silent-loop.mp4' && reel[3] === '/v/cs-demo-reel-silent.webp', 'space demo reel: ' + reel.join());
@@ -1207,13 +1210,13 @@ await check('Architecture & design: story first, text and media paired, early pr
     const firstFig = await top('#approach .pair-fig');
     assert(firstFig < hero + (vp.width < 500 ? 812 * 1.5 : 720), 'first supporting photo too far down: ' + firstFig);
     assert(order[2] < (vp.width < 500 ? 812 * 5.5 : 720 * 4.5), 'gallery too far down: ' + order[2]);
-    // Pairings: on desktop the text and its photo share the row; captions exist; a project photo links to its page.
+    // Pairings: on desktop the text and its photo share the row. James, Sep 29 2026: no caption beneath these photos.
     for (const sec of ['#approach', '#why']) {
       const t = await p.locator(`${sec} .pair__text`).boundingBox(); const f = await p.locator(`${sec} .pair-fig`).boundingBox();
       if (vp.width > 1000) assert(f.x > t.x + t.width - 2 && f.y < t.y + t.height, `${sec}: media not beside its text`);
-      assert((await p.locator(`${sec} .pair-fig figcaption`).textContent()).trim().length > 5, `${sec}: caption`);
+      assert((await p.locator(`${sec} .pair-fig figcaption`).count()) === 0, `${sec}: no caption`);
+      assert(((await p.locator(`${sec} .pair-fig img`).first().getAttribute('alt')) || '').length > 5, `${sec}: alt text kept`);
     }
-    assert(/^\/architecture-design\/peterson-ramlowtan$/.test(await p.locator('#why .pair-fig figcaption a').getAttribute('href')), 'detail photo links to its project');
     // James, Sep 28 2026: a photo above Brand Story & Interviews too (the JM2 Architecture podcast frame).
     assert(await p.locator('#which-story .story-guide__fig img').count() === 2 && await p.locator('#which-story a.story-guide__film').count() === 1, 'story guide photo and film examples');
     assert(await p.locator('#how-it-works .steps li > figure.block-fig:first-child img').count() === 3, 'a still above each How it works step');
