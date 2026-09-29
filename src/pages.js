@@ -11,7 +11,7 @@ export function buildPages(ctx) {
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
   const projectBySlug = Object.fromEntries(work.projects.map((p) => [p.slug, p]));
   // Portfolio media. The About testimonial (category 'about') is used only on About, never in galleries.
-  const media = work.media.filter((m) => visible(m) && m.category !== 'about');
+  const media = work.media.filter((m) => visible(m) && m.category !== 'about' && m.gallery !== false);
   const catLabel = Object.fromEntries(work.taxonomy.category.map((c) => [c.id, c.label]));
   const svcLabel = Object.fromEntries(work.taxonomy.service.map((c) => [c.id, c.label]));
   const pkg = Object.fromEntries(pricing.packages.map((p) => [p.id, p]));
@@ -518,9 +518,9 @@ ${join(topicsUsed, (t) => `
 
   // James, Sep 28 2026: a more image-led Real Estate page. Each service block leads with an authentic frame from our
   // own work (a film's poster for film; the agent-on-camera clip's frame for "You, on camera"); floor plans get a
-  // schematic drawing because no plan image is committed yet.
+  // real Bridgehampton floor plan (address and brokerage band cropped off, Sep 29 2026).
   const reFeatureFig = (id, key) => {
-    if (key === 'floor-plan') return `<figure class="feature__img feature__img--plan" aria-hidden="true"><svg viewBox="0 0 300 200" role="presentation"><g fill="none" stroke="currentColor" stroke-width="3"><rect x="20" y="20" width="260" height="160"/><path d="M130 20v70h-40M20 110h70v70M130 130v50M190 20v90h90M190 150v30M130 90h20"/></g><g font-family="Space Mono, monospace" font-size="9" fill="currentColor" letter-spacing="1"><text x="36" y="58">LIVING</text><text x="36" y="148">KITCHEN</text><text x="206" y="62">PRIMARY</text><text x="150" y="160">DINING</text></g></svg></figure>`;
+    if (key === 'floor-plan' && !allMediaById[id]) return `<figure class="feature__img feature__img--plan" aria-hidden="true"><svg viewBox="0 0 300 200" role="presentation"><g fill="none" stroke="currentColor" stroke-width="3"><rect x="20" y="20" width="260" height="160"/><path d="M130 20v70h-40M20 110h70v70M130 130v50M190 20v90h90M190 150v30M130 90h20"/></g><g font-family="Space Mono, monospace" font-size="9" fill="currentColor" letter-spacing="1"><text x="36" y="58">LIVING</text><text x="36" y="148">KITCHEN</text><text x="206" y="62">PRIMARY</text><text x="150" y="160">DINING</text></g></svg></figure>`;
     const m = allMediaById[id];
     const src = m ? (m.type === 'video' ? m.poster : m.src) : (id === 'agent-expertise-hero' ? '/v/agent-expertise-hero.webp' : '');
     if (!src) return '';
@@ -549,10 +549,10 @@ ${join(topicsUsed, (t) => `
     </div>
     <div class="features features--media">
       ${join([
-        ['photography', 'ph-hamptons-kitchen', 'Photography', 'A complete stills set, from room flow and material detail to the exterior setting. Vertical social-ready frames are included where they suit the property.'],
+        ['photography', 're-quiogue-kitchen', 'Photography', 'A complete stills set, from room flow and material detail to the exterior setting. Vertical social-ready frames are included where they suit the property.'],
         ['video', 're-hamptons-standout', 'Horizontal and vertical film', 'Horizontal film plays on the listing page, YouTube and in your presentations. Vertical reels are made for Instagram, TikTok and Reels. We plan and shoot each format on purpose rather than cropping one into the other.'],
-        ['drone', 'ph-hampton-aerial-pool-beach', 'Drone', 'Aerials show what a ground photo cannot: the water, the land, the neighborhood and how the home sits in it.'],
-        ['floor-plan', '', 'Floor plans', 'A schematic floor plan lets buyers understand the layout before they visit, so the people who book showings arrive better prepared.'],
+        ['drone', 're-bridgehampton-aerial', 'Drone', 'Aerials show what a ground photo cannot: the water, the land, the neighborhood and how the home sits in it.'],
+        ['floor-plan', 're-floorplan', 'Floor plans', 'A schematic floor plan lets buyers understand the layout before they visit, so the people who book showings arrive better prepared.'],
         ['twilight', 'ph-oceanfront-twilight-pool', 'Twilight and day-to-night', 'For launches that deserve it, twilight stills and day-to-night film carry the presentation into the evening.'],
         ['agent', 'agent-expertise-hero', 'You, on camera', 'Optional. Listing Engine puts you on camera presenting the listing through its sale; Agent Engine turns the same shoot day into content about you. We coach you if the camera is not your favorite place.'],
       ], ([id, mid, h, t]) => `<div class="feature reveal" id="${id}">${reFeatureFig(mid, id)}<h3 class="h3">${h}</h3><p>${t}</p></div>`)}
@@ -612,7 +612,7 @@ ${fnTeaser('real-estate-media')}
     'signature': { id: 're-hamptons-upbeat', label: 'Signature example: day and twilight exteriors and a dusk aerial from a Hamptons listing film' },
     'social-media': { id: 're-east-end-listing-reel', label: 'Social Media example: an East End vertical listing reel' },
   };
-  const starterStills = ['ph-hampton-exterior', 'ph-hamptons-kitchen', 'ph-hampton-aerial-pool-beach', 'ph-hamptons-bedroom-beach'].map((id) => allMediaById[id]).filter(Boolean);
+  const starterStills = ['re-southampton-front', 're-sag-harbor-kitchen', 're-quiogue-aerial-pool', 're-southampton-bedroom'].map((id) => allMediaById[id]).filter(Boolean);
   const pkgMediaHtml = (p) => {
     const l = pkgLoops[p.id];
     if (l) return `<div class="pcard__loop">${ambient(l.id, { label: `${l.label} (muted)` })}</div>`;
@@ -629,13 +629,19 @@ ${fnTeaser('real-estate-media')}
         <a class="btn ${pkgFeatured(p) ? 'btn--solid' : 'btn--outline'} pcard__cta" href="${booking}" data-track="book_click" data-track-location="pricing_card" data-track-package="${esc(p.id)}">Book ${esc(p.name)}</a>
       </div>
     </article>`;
-  const serviceRow = (s) => `<li class="prow" data-record="${esc(s.id)}">
-      <div class="prow__text"><h3 class="prow__name">${esc(s.name)} ${needsApproval(s)}</h3>${s.detail ? `<p class="prow__detail">${esc(s.detail)}</p>` : ''}</div>
-      <div class="prow__price">${priceCell(s)}</div>
+  // James, Sep 29 2026: a small example photo beside each photo service, and one static price note under each table
+  // instead of a line under every price. Prices that do not change with square footage show just the price.
+  const svcThumb = { photography: 're-southampton-living', 'photo-floor-plan': 're-floorplan-with-photo', 'floor-plan': 're-floorplan', 'exterior-drone': 're-quiogue-aerial-pool', twilight: 'ph-hamptons-residence-twilight' };
+  const rowPrice = (rec) => { const s = resolvePrice(rec, null); return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span></p>`; };
+  const rowThumb = (s) => { const m = allMediaById[svcThumb[s.id]]; return m ? `<div class="prow__thumb">${img(m.type === 'video' ? m.poster : m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 700px) 150px, 96px' })}</div>` : ''; };
+  const serviceRow = (s) => `<li class="prow${svcThumb[s.id] ? ' prow--thumb' : ''}" data-record="${esc(s.id)}">
+      ${rowThumb(s)}<div class="prow__text"><h3 class="prow__name">${esc(s.name)} ${needsApproval(s)}</h3>${s.detail ? `<p class="prow__detail">${esc(s.detail)}</p>` : ''}</div>
+      <div class="prow__price">${rowPrice(s)}</div>
     </li>`;
+  const priceNote = '<p class="prows-note">Prices follow the size tiers in our booking portal and are confirmed at checkout. Travel fees may apply.</p>';
   const fixedRow = (f, label = 'Fixed price') => `<li class="prow prow--fixed" data-fixed="${esc(f.id)}">
       <div class="prow__text"><h3 class="prow__name">${esc(f.name)} ${needsApproval(f)}</h3>${f.detail ? `<p class="prow__detail">${esc(f.detail)}</p>` : ''}</div>
-      <div class="prow__price"><p class="pcard__price"><span class="pcard__label">${f.standalone ? 'Added to a shoot' : label}</span> <span class="pcard__amount">${formatUSD(f.amount)}</span></p><p class="pcard__hint">${f.standalone ? `${formatUSD(f.standalone)} on its own.` : 'Not affected by square footage.'}</p></div>
+      <div class="prow__price"><p class="pcard__price">${f.standalone ? '<span class="pcard__label">Added to a shoot</span> ' : ''}<span class="pcard__amount">${formatUSD(f.amount)}</span></p>${f.standalone ? `<p class="pcard__hint">${formatUSD(f.standalone)} on its own.</p>` : ''}</div>
     </li>`;
   const svc = (g) => pricing.services.filter((s) => s.group === g).filter(visible);
   const fixedG = (g) => pricing.fixed.filter((s) => s.group === g).filter(visible);
@@ -646,13 +652,14 @@ ${fnTeaser('real-estate-media')}
   const tabs = [
     { id: 'packages', label: 'Packages', html: `<div class="pcards">${join(pricing.packages.filter(visible), packageCard)}</div>
         <p class="pcards__motion">${motionToggle.replace('class="motion-toggle"', 'class="motion-toggle motion-toggle--inline"')}</p>` },
-    { id: 'photo', label: 'Photo', html: `<ul class="prows">${join(svc('photography'), serviceRow)}</ul>` },
-    { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}${join(fixedG('video'), (f) => fixedRow(f))}</ul>
-        <div class="explain"><h3 class="h3">Horizontal or vertical?</h3><p>Horizontal film is for the listing page, YouTube, email and presentations. Vertical reels are for Instagram, TikTok and Reels. Choose one, or both from the same shoot.</p></div>` },
-    { id: 'addons', label: 'Add-ons', html: `<ul class="prows">${join(fixedG('addons'), (f) => fixedRow(f))}</ul>
+    { id: 'photo', label: 'Photo', html: `<ul class="prows prows--thumbs">${join(svc('photography'), serviceRow)}</ul>${priceNote}` },
+    { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}${join(fixedG('video'), (f) => fixedRow(f))}</ul>${priceNote}
+        <div class="explain"><h3 class="h3">Horizontal or vertical?</h3><p>Horizontal film is for the listing page, YouTube, email and presentations. Vertical reels are for Instagram, TikTok and Reels. Choose one, or both from the same shoot.</p></div>
         <h3 class="h3 prows-head">Content add-ons</h3>
         <ul class="prows">${join(fixedG('engines'), (f) => fixedRow(f))}</ul>
-        <div class="explain"><p>Listing Engine and Agent Engine are captured on the same shoot day. <a href="/agent-content">How the engines work ${arrow}</a></p></div>` },
+        <div class="explain"><p>Listing Engine and Agent Engine are captured on the same shoot day. <a href="/agent-content">How the engines work ${arrow}</a></p></div>
+` },
+    { id: 'addons', label: 'Add-ons', html: `<ul class="prows">${join(fixedG('addons'), (f) => fixedRow(f))}</ul>` },
   ];
   pages['/real-estate/pricing'] = {
     overlay: true,
@@ -703,6 +710,57 @@ ${fnTeaser('real-estate-media')}
   const agentMonthly = offers.agentMonthly.filter(visible);
   const engines = pricing.fixed.filter((f) => f.group === 'engines').filter(visible);
   const agentVids = media.filter((m) => m.category === 'agent-content' && m.type === 'video');
+  // James, Sep 29 2026: right after the hero, sell why agent content matters, why filming it on the listing shoot day
+  // saves time, and how we make it easy. Persuasive, but no invented statistics or outcome guarantees.
+  const acWhyFig = (id, cls = '') => { const m = allMediaById[id]; return m ? `<figure class="ac-why__fig ${cls}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 45vw, 100vw' })}</figure>` : ''; };
+  const acWhy = () => `
+<section class="section ac-why" aria-labelledby="ac-why-h">
+  <div class="wrap">
+    <div class="split">
+      <div class="split__label"><p class="eyebrow">Why it matters</p></div>
+      <div>
+        <h2 class="h2 reveal" id="ac-why-h">Sellers are choosing a person, <em>not a sign in the yard.</em></h2>
+        <p class="lede reveal">Before a homeowner ever calls, they look you up. What they find decides whether you get the meeting. Video lets them see how you think, how you talk and how you work, so by the time you walk in they already feel they know you. Every agent can open a door. Very few show what they actually do.</p>
+      </div>
+    </div>
+    <div class="features features--3 ac-why__points">
+      <div class="feature reveal"><h3 class="h3">Show what you did for the home</h3><p>Walk viewers through this listing, or your last one: how you priced it, prepared it and put it in front of the right people. It proves your process instead of describing it.</p></div>
+      <div class="feature reveal"><h3 class="h3">Own your town</h3><p>Market reports and neighborhood videos make you the go-to voice for a town, a street or a stretch of the coast. When someone there is ready to sell, your name is the one they remember.</p></div>
+      <div class="feature reveal"><h3 class="h3">Let them meet you first</h3><p>Your background, why you got into this, what makes you different. People hire the agent they trust, and trust starts long before the listing appointment.</p></div>
+      <div class="feature reveal"><h3 class="h3">Explain how you find the buyer</h3><p>Show how your experience, your network and your marketing reach the right buyers, and why you invest in presenting a home properly rather than just listing it.</p></div>
+      <div class="feature reveal"><h3 class="h3">Show homes differently</h3><p>Sellers compare how agents present property. Film, photography and you on camera, together, show them exactly how their home would be marketed.</p></div>
+      <div class="feature reveal"><h3 class="h3">Stay visible between listings</h3><p>A steady supply of short videos keeps you in front of past clients and future sellers, so you are not starting from zero every time a new listing comes up.</p></div>
+    </div>
+  </div>
+</section>
+<section class="section section--tint ac-day" aria-labelledby="ac-day-h">
+  <div class="wrap two-col">
+    <div>
+      <p class="eyebrow">One day, everything you need</p>
+      <h2 class="h2 reveal" id="ac-day-h">Film it while we are <em>already there.</em></h2>
+      <p class="reveal">We are at the property for the listing media anyway: the crew, the lighting and the drone are set up and the home looks its best. Filming your agent content in the same visit means no second shoot to schedule, no second round of staging and no waiting. Whether the home hits the market this week or months from now, we capture everything that home can give you in a single day.</p>
+      <ul class="checks reveal">
+        <li>You presenting the property on camera</li>
+        <li>Just Listed, Under Contract and Just Sold videos, ready for each stage of the sale</li>
+        <li>A market update filmed in the neighborhood you want to be known for</li>
+        <li>Short videos about you, your background and how you work</li>
+      </ul>
+    </div>
+    <div class="two-col__media">${acWhyFig('re-lloyd-harbor-front')}</div>
+  </div>
+</section>
+<section class="section ac-easy" aria-labelledby="ac-easy-h">
+  <div class="wrap">
+    <p class="eyebrow">We make it easy</p>
+    <h2 class="h2 reveal" id="ac-easy-h">You bring what you know. <em>We handle the rest.</em></h2>
+    <div class="features features--3">
+      <div class="feature reveal"><h3 class="h3">We write the scripts</h3><p>We plan every video around your market, your listing and your goals, and write it with you so it still sounds like you.</p></div>
+      <div class="feature reveal"><h3 class="h3">We get you comfortable</h3><p>Short takes, clear direction and coaching on delivery. Most agents settle in quickly, and it shows on screen.</p></div>
+      <div class="feature reveal"><h3 class="h3">We edit and deliver</h3><p>Cut for the platforms you use and ready to post, so all that is left for you is sharing it.</p></div>
+    </div>
+    <p class="ac-easy__close reveal">You could skip it. The agents you compete with for your next listing probably won't.</p>
+  </div>
+</section>`;
   pages['/agent-content'] = {
     overlay: true,
     body: `${pageHero({
@@ -713,6 +771,7 @@ ${fnTeaser('real-estate-media')}
       // James, Sep 28 2026: open with a relevant horizontal film. The on-camera expertise clip, muted and framed 16:9.
       video: { loop: 'agent-expertise-hero', credit: 'agent-expertise' },
     })}
+${acWhy()}
 <section class="section ac-split" id="portfolio" aria-labelledby="ac-q-h">
   <div class="wrap ac-split__grid">
     <div class="ac-split__examples" aria-label="Agent content examples">
@@ -909,6 +968,13 @@ ${agentMonthly.length ? `<section class="section section--tint">
       <p class="small muted">Every architecture and design project is quoted to its scope. Coverage, deliverables, usage and licensing are set out in a written estimate.</p>
     </div>
     ${archFig(archPairIds.detail, { cls: 'pair__media pair__media--sticky' })}
+  </div>
+</section>
+
+<section class="section arch-detail" aria-labelledby="arch-detail-h">
+  <div class="wrap">
+    <div class="section-head"><div><p class="eyebrow">Design in detail</p><h2 class="h2 reveal" id="arch-detail-h">Materials, light and <em>the way a space is put together.</em></h2><p class="section-lede">From our real estate work at a Bridgehampton residence: the same eye for joinery, stone and daylight we bring to architecture and design projects.</p></div></div>
+    <div class="arch-detail__grid">${join(['re-bridgehampton-stair-detail', 're-bridgehampton-kitchen', 're-bridgehampton-facade', 're-bridgehampton-bath'], (id) => { const m = allMediaById[id]; return m ? `<figure class="arch-detail__fig">${img(m.src, { alt: m.alt, thumb: m.thumb, sizes: '(min-width: 900px) 25vw, 50vw' })}</figure>` : ''; })}</div>
   </div>
 </section>
 

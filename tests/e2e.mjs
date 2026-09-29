@@ -156,7 +156,8 @@ await check('compare: Book Now CTA to the booking portal; common inclusions show
 // ---------- Service portfolios (no Work page, James Sep 25) ----------
 await check('portfolios: every approved item appears on its own service page, once, and nowhere links to /work', async () => {
   const work = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/work.json', import.meta.url), 'utf8'));
-  const approved = work.media.filter((m) => m.rights === 'approved');
+  // Items marked gallery:false (e.g. the pricing floor-plan composite) are page art, not portfolio pieces.
+  const approved = work.media.filter((m) => m.rights === 'approved' && m.gallery !== false);
   const route = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
   const p = await newPage();
   for (const [cat, path] of Object.entries(route)) {
@@ -1119,6 +1120,42 @@ await check('monthly plans match the sheet; Home closing image keeps the house i
   await p.context().close();
 });
 
+// James, Sep 29 2026: photo rows get an example image, one static price note per table, fixed prices show just the
+// price, content add-ons live under Video; the Real Estate stills from all seven properties are used across the site.
+await check('pricing rows: photos, one static note, plain fixed prices, content add-ons under Video; new stills in use', async () => {
+  for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
+    const p = await newPage(vp);
+    await p.goto(base + '/real-estate/pricing');
+    await p.click('#tab-photo');
+    const rows = await p.locator('#panel-photo .prow').evaluateAll((es) => es.map((e) => ({ id: e.dataset.record, img: e.querySelector('.prow__thumb img')?.naturalWidth > 0, hint: !!e.querySelector('.pcard__hint') })));
+    assert(rows.length === 5 && rows.every((r) => r.img && !r.hint), 'photo rows ' + JSON.stringify(rows));
+    assert(await p.locator('#panel-photo .prows-note').count() === 1, 'one note under the photo table');
+    await p.locator('#sqft').scrollIntoViewIfNeeded(); await p.fill('#sqft', '2800'); await p.locator('#sqft').press('Tab'); await p.waitForTimeout(800);
+    const first = await p.locator('#panel-photo .prow').first().innerText();
+    assert(await p.locator('#panel-photo .pcard__hint').count() === 0 && /Price for/i.test(first), 'price updates without a per-row disclaimer: ' + first);
+    await p.click('#tab-video');
+    const fixed = await p.locator('#panel-video .prow--fixed').evaluateAll((es) => es.map((e) => e.querySelector('.prow__price').innerText.trim()));
+    assert(fixed.length >= 4 && fixed.filter((t) => !/on its own/.test(t)).every((t) => /^\$[\d,]+$/.test(t)), 'fixed video prices are just the price: ' + JSON.stringify(fixed));
+    assert(await p.locator('#panel-video [data-fixed="listing-engine"]').count() === 1 && await p.locator('#panel-addons [data-fixed="listing-engine"]').count() === 0, 'content add-ons under Video');
+    assert(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'no overflow ' + vp.width);
+    await p.context().close();
+  }
+  const p = await newPage();
+  await p.goto(base + '/real-estate');
+  assert(await p.locator('#floor-plan .feature__img img[src*="re-floorplan"]').count() === 1 && await p.locator('#floor-plan svg').count() === 0, 'real floor plan image');
+  assert(await p.locator('#rg-grid .gcard img[src*="/v/re-"]').count() >= 20, 'new stills in the Real Estate gallery');
+  await p.goto(base + '/architecture-design');
+  assert(await p.locator('.arch-detail__fig img[src*="re-bridgehampton"]').count() === 4 && /Bridgehampton residence/.test(await p.locator('.arch-detail').innerText()) && await p.locator('.arch-detail a').count() === 0, 'Bridgehampton design band, not a client project');
+  await p.goto(base + '/agent-content');
+  const t = await p.locator('.ac-why, .ac-day, .ac-easy').allInnerTexts();
+  assert(/choosing a person/i.test(t[0]) && /already there/i.test(t[1]) && /We write the scripts/.test(t[2]), 'Agent sell sections');
+  for (const path of ['/', '/real-estate', '/real-estate/pricing', '/architecture-design', '/agent-content']) {
+    const html = await (await fetch(base + path)).text();
+    assert(!/Halsey|Montauk Hwy|Brick Kiln|Old Orchard|Georgian|Walker Ave|Crane Rd|SERHANT|PS_\d{5}|DJI_/i.test(html), 'address, brokerage or filename leaked on ' + path);
+  }
+  await p.context().close();
+});
+
 // Owner corrections, Sep 27 2026: Architecture & design sells the story first, with supporting media beside the text,
 // and a segmented gallery (Home Selected Work style) from the same work.json collection.
 await check('Architecture & design: story first, text and media paired, early proof, no repeats, clear paths', async () => {
@@ -1291,7 +1328,9 @@ await check('James Sep 28: pricing four across, Most Popular, package loops; RE 
   assert(await p.locator('.page-hero video source[src="/v/agent-expertise-hero-loop.mp4"]').count() === 1, 'Agent hero film');
   assert(!/the project/i.test(await p.locator('main').innerText()), 'no "the project" link');
   const split = await p.evaluate(() => { const e = document.querySelector('.ac-split__examples').getBoundingClientRect(), q = document.querySelector('.ac-split__qa').getBoundingClientRect(); return [e.left < q.left, Math.abs(e.top - q.top) < 80, [...document.querySelectorAll('main > section')].findIndex((x) => x.classList.contains('ac-split'))]; });
-  assert(split[0] && split[1] && split[2] === 1, 'examples left, Fair questions right, directly after the hero: ' + split);
+  // James, Sep 29 2026: the "why it matters" sell sections come straight after the hero, then examples and Fair questions.
+  const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.className));
+  assert(split[0] && split[1] && /ac-why/.test(order[1]) && /ac-day/.test(order[2]) && /ac-easy/.test(order[3]) && split[2] === 4, 'sell sections after the hero, then examples left and Fair questions right: ' + split + ' ' + order.slice(0, 5).join(' | '));
   assert(await p.locator('.ac-example .vplayer').count() === 3 && await p.locator('.ac-split a[href$=".txt"], .ac-split .card__meta').count() === 0, 'inline examples without captions or transcript links beneath');
   assert(/recognize and trust/.test(await p.textContent('main')), 'monthly plans lead-in');
   await p.context().close();

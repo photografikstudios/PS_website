@@ -380,6 +380,447 @@
       "id": "testimonial-jack-richardson",
       "source": "brief folder assets/james-testimonial-photo-drone-floor-plans-video-photografik-studios.mp4",
       "_note": "James, Sep 28 2026: Jack Richardson video testimonial for About, added by James to the brief folder (3840x2160 h264 30 fps + AAC stereo, 46.93 s, 470,157,272 B, SHA-256 b5dc445dd8ae5053fab3f22e968fb7954ec0248bf2f5abfb3105e263ae62f11b). James confirmed the background music is licensed for the website and the credit is Jack Richardson. Encoded on the Cowork VM: 1280x720 libx264 CRF 23 (maxrate 3000k) + AAC 128k, metadata stripped, faststart; WebP poster at 4 s. Captions are burned in; no separate CC track yet."
+    },
+    {
+      "id": "re-southampton-front",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/002-PS_00206.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-approach",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/001-PS_00201.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-kitchen",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/012-PS_00263.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-living",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/022-PS_00323.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-bar",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/028-PS_00373.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-bath",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/038-PS_00443.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-bedroom",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/043-PS_00483.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-red-bath",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/061-PS_00023.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-pool",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/078-PS_00116.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-rear",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/079-PS_00121.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-outdoor-kitchen",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/087-PS_00166.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-southampton-aerial",
+      "image": true,
+      "drive": "1HjZsJrwGSEH8fghXPvbvpjD5gQfODsIa",
+      "source": "southampton/098-DJI_20251017124352_0041_D.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-aerial-pool",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/009-DJI_20260724095652_0042_D.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-aerial",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/010-DJI_20260724095724_0047_D.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-kitchen",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/059-PS_00229.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-great-room",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/066-PS_00264.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-living",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/070-PS_00284.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-exterior",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/080-PS_00331.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-pool",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/089-PS_00377.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-firepit",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/091-PS_00387.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-quiogue-office",
+      "image": true,
+      "drive": "1gV7hwlI5PpxXemwFSfjso2W-aU8sFlHq",
+      "source": "quiogue/015-PS_00009.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-terrace",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/217-PS_00713_1.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-exterior",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/211-PS_00723_1.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-aerial",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/215-DJI_20260313154212_0161_D_2.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-kitchen",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/218-PS_00303_1.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-dining",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/196-PS_00322_edit.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-living",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/206-PS_00483_1.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-stair",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/144-PS_00614.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-stair-detail",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/091-PS_00463.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-bath",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/104-PS_00494.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-sauna",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/074-PS_00419.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-wine",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/066-PS_00399.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-suite",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/193-PS_00568_edit.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-bridgehampton-facade",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/227-PS_00723_2.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-front",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/108-PS_00454.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-entry",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/101-PS_00419.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-lawn",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/124-PS_00349_grass_21548873_reedit_4773edf4.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-living",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/022-PS_00019.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-foyer",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/030-PS_00059.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-stair",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/084-PS_00334.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-kitchen",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/047-PS_00149.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-tub",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/077-PS_00299.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-portico",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/102-PS_00424.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-lloyd-harbor-aerial",
+      "image": true,
+      "drive": "1nOSBAUycW5vgSDm24t9IMHmoLKvKWKBM",
+      "source": "lloyd-harbor/015-DJI_20260415063051_0484_D.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-sag-harbor-pool",
+      "image": true,
+      "drive": "151rCgcrnFHPRo2P8JUigyaZyAB5yJvzs",
+      "source": "sag-harbor/55-PS_00731.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-sag-harbor-rear",
+      "image": true,
+      "drive": "151rCgcrnFHPRo2P8JUigyaZyAB5yJvzs",
+      "source": "sag-harbor/58-PS_00751.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-sag-harbor-kitchen",
+      "image": true,
+      "drive": "151rCgcrnFHPRo2P8JUigyaZyAB5yJvzs",
+      "source": "sag-harbor/14-PS_00521.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-sag-harbor-bath",
+      "image": true,
+      "drive": "151rCgcrnFHPRo2P8JUigyaZyAB5yJvzs",
+      "source": "sag-harbor/47-PS_00686.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-sag-harbor-deck",
+      "image": true,
+      "drive": "151rCgcrnFHPRo2P8JUigyaZyAB5yJvzs",
+      "source": "sag-harbor/41-PS_00656.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-sag-harbor-living",
+      "image": true,
+      "drive": "151rCgcrnFHPRo2P8JUigyaZyAB5yJvzs",
+      "source": "sag-harbor/06-PS_00481.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-water-mill-pool",
+      "image": true,
+      "drive": "1VWHgn64WA5-kSc3V1QmwG0f9JCUdG9li",
+      "source": "water-mill/67-PS_00339.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-water-mill-front",
+      "image": true,
+      "drive": "1VWHgn64WA5-kSc3V1QmwG0f9JCUdG9li",
+      "source": "water-mill/58-PS_00294.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-water-mill-living",
+      "image": true,
+      "drive": "1VWHgn64WA5-kSc3V1QmwG0f9JCUdG9li",
+      "source": "water-mill/05-PS_00024.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-water-mill-foyer",
+      "image": true,
+      "drive": "1VWHgn64WA5-kSc3V1QmwG0f9JCUdG9li",
+      "source": "water-mill/13-PS_00069.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-water-mill-kitchen",
+      "image": true,
+      "drive": "1VWHgn64WA5-kSc3V1QmwG0f9JCUdG9li",
+      "source": "water-mill/26-PS_00134.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-water-mill-porch",
+      "image": true,
+      "drive": "1VWHgn64WA5-kSc3V1QmwG0f9JCUdG9li",
+      "source": "water-mill/71-PS_00359.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-water-mill-bath",
+      "image": true,
+      "drive": "1VWHgn64WA5-kSc3V1QmwG0f9JCUdG9li",
+      "source": "water-mill/38-PS_00194.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-east-hampton-kitchen",
+      "image": true,
+      "drive": "171jB5givILQnI5OtE9p3f6DnvbSdsJ77",
+      "source": "east-hampton/2-43 Old Orchard Ln, East Hampton-29.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-east-hampton-lounge",
+      "image": true,
+      "drive": "171jB5givILQnI5OtE9p3f6DnvbSdsJ77",
+      "source": "east-hampton/3-43 Old Orchard Ln, East Hampton-3.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-east-hampton-bath",
+      "image": true,
+      "drive": "171jB5givILQnI5OtE9p3f6DnvbSdsJ77",
+      "source": "east-hampton/4-43 Old Orchard Ln, East Hampton-50.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-east-hampton-tub",
+      "image": true,
+      "drive": "171jB5givILQnI5OtE9p3f6DnvbSdsJ77",
+      "source": "east-hampton/5-43 Old Orchard Ln, East Hampton-52.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers."
+    },
+    {
+      "id": "re-floorplan",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/floorplan/001-All Floors.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers. Floor plan cropped to remove the street address, brokerage logo and disclaimer band."
+    },
+    {
+      "id": "re-floorplan-with-photo",
+      "image": true,
+      "drive": "1DTpHR_ZIXFG_D87U1YkVA1rFeJBODM7Y",
+      "source": "bridgehampton/218-PS_00303_1.jpg + floorplan/001-All Floors.jpg",
+      "_note": "James, Sep 28-29 2026: Real Estate stills from all seven property folders (staged by Codex, 726 files). Selected from contact sheets, encoded on the Cowork VM (sRGB, metadata stripped, 2000 px WebP q80 + 900 px -sm q76); visible label is the town only; checked for legible house numbers. Floor plan cropped to remove the street address, brokerage logo and disclaimer band."
     }
   ],
   "docs": [

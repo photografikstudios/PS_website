@@ -25,13 +25,13 @@ function render(sqft) {
     card?.classList.toggle('is-custom', s.kind === 'custom');
     if (s.kind === 'starting') {
       el.innerHTML = `<span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span>`;
-      hint.textContent = 'Enter square footage for your price.';
+      if (hint) hint.textContent = 'Enter square footage for your price.';
     } else if (s.kind === 'band') {
       el.innerHTML = `<span class="pcard__label">Price for ${s.band.label}</span> <span class="pcard__amount">${formatUSD(s.amount)}</span>`;
-      hint.textContent = 'Based on our booking portal\'s size tiers. Your price is confirmed at checkout; travel fees may apply.';
+      if (hint) hint.textContent = 'Based on our booking portal\'s size tiers. Your price is confirmed at checkout; travel fees may apply.';
     } else {
       el.innerHTML = `<span class="pcard__label">Over ${s.max.toLocaleString('en-US')} sq ft</span> <span class="pcard__amount"><a href="/contact?type=real-estate-large" data-track="custom_quote_click">Request a custom quote</a></span>`;
-      hint.textContent = 'We scope larger homes individually.';
+      if (hint) hint.textContent = 'We scope larger homes individually.';
     }
   }
 }

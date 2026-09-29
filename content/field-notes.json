@@ -142,7 +142,8 @@
           "h": "Floor plan: understanding the layout before the visit",
           "p": [
             "A schematic floor plan lets buyers understand the layout before they visit, so the people who book showings arrive better prepared. It is useful for most listings, and especially for larger or unusual layouts that photos alone cannot explain."
-          ]
+          ],
+          "media": "re-floorplan"
         },
         {
           "h": "How they are offered",
@@ -275,7 +276,7 @@
         "/articles/how-to-prep-a-home-for-photos"
       ],
       "hero": {
-        "media": "ph-hamptons-kitchen"
+        "media": "re-lloyd-harbor-living"
       },
       "related": {
         "service": "/real-estate",
