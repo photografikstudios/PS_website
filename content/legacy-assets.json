@@ -2,8 +2,8 @@
   "_readme": "Pinned copies of the 23 legacy stills and clips the site still references. Each must be committed under static/<path> with this exact size and SHA-256 (npm run check:legacy). Recorded Sep 26, 2026 from the review alias ps-website-rust.vercel.app (revision 442d7d5), which serves the same bytes the Vercel build copied; Replit is not a source.",
   "recordedFrom": "https://ps-website-rust.vercel.app",
   "recordedAt": "2026-09-26",
-  "count": 22,
-  "totalBytes": 12895731,
+  "count": 24,
+  "totalBytes": 12916545,
   "files": {
     "/images/photografik-2027/brand/photografik-logo.webp": {
       "bytes": 365880,
@@ -92,6 +92,18 @@
     "/media/photografik-2027/just-sold-story.mp4": {
       "bytes": 1160066,
       "sha256": "df77e6f4453d0827f6da9bcf54f186242ef56087e6e3ce9b4e9040b7a70585e3"
+    },
+    "/images/photografik-2027/brand/photografik-logo-96.webp": {
+      "bytes": 6142,
+      "sha256": "ddad61751243d4b8bf0dd18bd59c94296e788d714386cfaf4207595bc0f7171f",
+      "derivedFrom": "/images/photografik-2027/brand/photografik-logo.webp",
+      "note": "96x96 header/favicon copy made Sep 29 (Session 39) so the 366 KB original no longer loads on every page"
+    },
+    "/images/photografik-2027/brand/photografik-logo-192.webp": {
+      "bytes": 14672,
+      "sha256": "7833e05d8100bce24eccde2eade5c5ad97b1e9a1bbca6d2a8f77a169ed63962c",
+      "derivedFrom": "/images/photografik-2027/brand/photografik-logo.webp",
+      "note": "192x192 header/favicon copy made Sep 29 (Session 39) so the 366 KB original no longer loads on every page"
     }
   }
 }

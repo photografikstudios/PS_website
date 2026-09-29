@@ -181,11 +181,15 @@ await check('portfolios: every approved item appears on its own service page, on
   await p.context().close();
 });
 
-await check('portfolios: /work and old project URLs redirect to their service destination, keeping intent', async () => {
+await check('portfolios: /work and old project URLs redirect to their service destination, keeping intent without a stale ?category=', async () => {
   const cases = {
     '/work': '/#selected-work',
-    '/work?category=architecture-design': '/architecture-design?category=architecture-design#portfolio',
-    '/work?service=video&category=real-estate': '/real-estate?service=video&category=real-estate#portfolio',
+    '/work?category=architecture-design': '/architecture-design#portfolio',
+    '/work?category=commercial': '/commercial#portfolio',
+    '/work?category=creator-studios': '/creator-studios#portfolio',
+    '/work?category=unknown': '/#selected-work',
+    '/work?service=video&category=real-estate': '/real-estate?service=video#portfolio',
+    '/work?service=video&category=commercial&utm_source=x': '/commercial#portfolio',
     '/work/revivaluxe': '/commercial/revivaluxe',
     '/work/lauryn-koke-daniel-gale-sothebys': '/real-estate/lauryn-koke-daniel-gale-sothebys',
     '/work/property-tour-agent-media': '/agent-content/property-tour-agent-media',
@@ -1424,6 +1428,38 @@ await check('no street addresses in any page, caption, alt text, URL or media fi
     if (/\.(html|xml|json|txt|vtt)$/.test(f)) { const m = (await readFile(f, 'utf8')).match(addr); if (m) hits.push(`${rel}: ${m[0]}`); }
   }
   assert(hits.length === 0, hits.slice(0, 8).join(' | '));
+});
+
+// Codex, Sep 29 2026 (Session 39): Home mobile LCP, legacy /work query, Real Estate order, one package note.
+await check('LCP: small header logo, hero poster preloaded at high priority; RE portfolio before packages, no three steps; one package note', async () => {
+  for (const path of ['/', '/real-estate', '/architecture-design']) {
+    const h = await (await fetch(base + path)).text();
+    const poster = h.match(/<video class="ambient hero__video"[^>]*\bposter="([^"]+)"/)?.[1];
+    assert(poster && h.includes(`<link rel="preload" as="image" href="${poster}" fetchpriority="high">`), `${path} hero poster preload`);
+    assert(!/src="\/images\/photografik-2027\/brand\/photografik-logo\.webp"/.test(h) && !/rel="icon" href="[^"]*photografik-logo\.webp"/.test(h), `${path} still loads the 366 KB logo`);
+  }
+  const p = await newPage({ width: 390, height: 844 });
+  const logos = []; p.on('request', (r) => { if (/photografik-logo/.test(r.url())) logos.push(r.url().split('/').pop()); });
+  await p.goto(base + '/', { waitUntil: 'load' });
+  assert(logos.length && logos.every((l) => /logo-(96|192)\.webp/.test(l)), `logo requests ${logos}`);
+  await p.goto(base + '/real-estate');
+  const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((s) => s.id || s.querySelector('h2')?.textContent.trim().slice(0, 30)));
+  const iPort = order.indexOf('portfolio'), iPkg = order.findIndex((x) => /Start with the right package/.test(x || ''));
+  assert(iPort > 0 && iPkg > iPort, `RE order ${order}`);
+  const main = await p.locator('main').innerText();
+  assert(!/Three steps from first call/.test(main), 'three steps removed');
+  assert(/tell us about a larger project so we can scope it properly/.test(main), 'planning line kept in Good to know');
+  await p.goto(base + '/real-estate/pricing');
+  assert((await p.locator('#panel-packages .pcard__hint').count()) === 0, 'no per-card package hints');
+  const note = p.locator('[data-hint-for="packages"]');
+  assert((await note.count()) === 1 && /Enter square footage/.test(await note.innerText()), 'shared note default');
+  await p.fill('#sqft', '2800'); await p.waitForTimeout(400);
+  assert(/size tiers and confirmed at checkout/.test(await note.innerText()), 'shared note after size');
+  const prices = await p.locator('#panel-packages .pcard__amount').evaluateAll((es) => es.map((e) => e.textContent.trim()).sort());
+  assert(JSON.stringify(prices) === JSON.stringify(['$1,220', '$2,140', '$3,155', '$795']), `prices ${prices}`);
+  await p.fill('#sqft', '40000'); await p.waitForTimeout(400);
+  assert(/scope larger homes individually/.test(await note.innerText()), 'shared note custom');
+  await p.context().close();
 });
 
 // Screenshots for the handoff

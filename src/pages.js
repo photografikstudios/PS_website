@@ -91,21 +91,6 @@ export function buildPages(ctx) {
     <p class="lightbox__caption" id="lb-caption" data-lb-caption aria-live="polite"></p>
   </dialog>`;
 
-  const threeSteps = (dark = false) => `
-<section class="section ${dark ? 'section--ink on-dark' : ''}">
-  <div class="wrap">
-    <div class="split">
-      <div class="split__label"><p class="eyebrow">The plan</p></div>
-      <div><h2 class="h2 reveal">Three steps from first call to finished media.</h2></div>
-    </div>
-    <ol class="steps">
-      <li class="reveal"><span class="steps__n">01 / Choose</span><h3>Choose the right starting point.</h3><p>Book a standard listing package online, or tell us about the larger project so we can scope it properly.</p></li>
-      <li class="reveal"><span class="steps__n">02 / Create</span><h3>Plan and create.</h3><p>We align the scope, prepare the shoot and produce the right mix of media, on location or in our studio.</p></li>
-      <li class="reveal"><span class="steps__n">03 / Use</span><h3>Put the content to work.</h3><p>You receive polished assets made for this launch and for the conversations that follow it.</p></li>
-    </ol>
-  </div>
-</section>`;
-
   const faqBlock = (list) => {
     const items = list.filter(visible);
     if (!items.length) return '';
@@ -542,6 +527,8 @@ ${join(topicsUsed, (t) => `
   </div>
 </section>
 
+${reGallery()}
+
 <section class="section section--tint">
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Packages</p><h2 class="h2 reveal">Start with the right package.</h2></div><div class="section-head__links"><a class="link-arrow" href="#compare">Compare what's included ${arrow}</a><a class="link-arrow" href="/real-estate/pricing">Pricing by property size ${arrow}</a></div></div>
@@ -559,14 +546,11 @@ ${join(topicsUsed, (t) => `
 
 ${compareSection()}
 
-${reGallery()}
-
-${threeSteps()}
-
 <section class="section section--tint">
   <div class="wrap narrow">
     <p class="eyebrow" id="faq">Good to know</p>
     <h2 class="h2 reveal">Booking, preparation and usage.</h2>
+    <p class="section-lede re-plan">Book a standard listing package online, or tell us about a larger project so we can scope it properly. Either way, we align the scope and prepare the shoot first.</p>
     ${faqBlock(faqs['real-estate'])}
   </div>
 </section>
@@ -582,10 +566,10 @@ ${fnTeaser('real-estate-media')}
   };
 
   // ---------- PRICING ----------
-  const priceCell = (rec) => {
+  const priceCell = (rec, hint = true) => {
     const s = resolvePrice(rec, null);
     return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span></p>
-      <p class="pcard__hint" data-hint-for="${esc(rec.id)}">Enter square footage for your price.</p>`;
+      ${hint ? `<p class="pcard__hint" data-hint-for="${esc(rec.id)}">Enter square footage for your price.</p>` : ''}`;
   };
   // James, Sep 28 2026: each package card plays its own muted 25 s loop in place (like the Home tiles), chosen to match
   // what the package includes. Listing Starter has no film, so its card cycles through the kinds of stills it delivers.
@@ -606,11 +590,12 @@ ${fnTeaser('real-estate-media')}
       <div class="pcard__body">
         <h3 class="h3" id="pk-${esc(p.id)}">${esc(p.name)} ${needsApproval(p)}</h3>
         <p class="pcard__for">${esc(p.for)}</p>
-        ${priceCell(p)}
+        ${priceCell(p, false)}
         <ul class="checks">${join(includeLabels(p, pricing.features), (i) => `<li>${esc(i)}</li>`)}</ul>
         <a class="btn ${pkgFeatured(p) ? 'btn--solid' : 'btn--outline'} pcard__cta" href="${booking}" data-track="book_click" data-track-location="pricing_card" data-track-package="${esc(p.id)}">Book ${esc(p.name)}</a>
       </div>
     </article>`;
+  // Codex, Sep 29 2026 (P1): package cards share one size-tier note under the grid instead of one per card.
   // James, Sep 29 2026: a small example photo beside each photo service, and one static price note under each table
   // instead of a line under every price. Prices that do not change with square footage show just the price.
   const svcThumb = { photography: 're-southampton-living', 'photo-floor-plan': 're-floorplan-with-photo', 'floor-plan': 're-floorplan', 'exterior-drone': 're-quiogue-aerial-pool', twilight: 'ph-hamptons-residence-twilight' };
@@ -635,6 +620,7 @@ ${fnTeaser('real-estate-media')}
   };
   const tabs = [
     { id: 'packages', label: 'Packages', html: `<div class="pcards">${join(pricing.packages.filter(visible), packageCard)}</div>
+        <p class="prows-note pcards__note" data-hint-for="packages">Enter square footage for your price.</p>
         <p class="pcards__motion">${motionToggle.replace('class="motion-toggle"', 'class="motion-toggle motion-toggle--inline"')}</p>` },
     { id: 'photo', label: 'Photo', html: `<ul class="prows prows--thumbs">${join(svc('photography'), serviceRow)}</ul>${priceNote}` },
     { id: 'video', label: 'Video', html: `<ul class="prows">${join(svc('video'), serviceRow)}${join(fixedG('video'), (f) => fixedRow(f))}</ul>${priceNoteMixed}

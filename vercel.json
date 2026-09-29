@@ -249,20 +249,14 @@
     },
     {
       "source": "/work",
-      "has": [
+      "destination": "/#selected-work",
+      "permanent": false,
+      "missing": [
         {
           "type": "query",
-          "key": "category",
-          "value": "(?<cat>real-estate|agent-content|architecture-design|commercial|creator-studios)"
+          "key": "category"
         }
-      ],
-      "destination": "/:cat#portfolio",
-      "permanent": false
-    },
-    {
-      "source": "/work",
-      "destination": "/#selected-work",
-      "permanent": false
+      ]
     },
     {
       "source": "/work/lauryn-koke-daniel-gale-sothebys",
@@ -308,6 +302,18 @@
       "source": "/architecture-design/99-hedges-lane",
       "destination": "/architecture-design/yankee-barn-builders",
       "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/work",
+      "has": [
+        {
+          "type": "query",
+          "key": "category"
+        }
+      ],
+      "destination": "/api/legacy-work"
     }
   ]
 }

@@ -24,6 +24,7 @@ function matchRedirect(path, query) {
       });
       if (!ok) continue;
     }
+    if (r.missing && r.missing.some((m) => m.type === 'query' && query.has(m.key))) continue;
     let hit = false;
     if (r.source.endsWith('/:path*')) { const base = r.source.replace('/:path*', ''); hit = path === base || path.startsWith(base + '/'); } else hit = r.source === path;
     if (!hit) continue;
@@ -46,6 +47,13 @@ export function start(port = 0) {
       let raw = ''; for await (const c of req) raw += c;
       const r = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.statusCode = c; return this; }, json(o) { res.writeHead(this.statusCode, { 'Content-Type': 'application/json', ...this.headers }); res.end(JSON.stringify(o)); } };
       return handler({ method: req.method, body: raw }, r);
+    }
+    // vercel.json rewrite: /work?category=… is answered by api/legacy-work.js (a clean 307).
+    const rw = (config.rewrites || []).find((r) => r.source === (path.replace(/\/$/, '') || '/') && (r.has || []).every((h) => h.type === 'query' && url.searchParams.has(h.key)));
+    if (rw && rw.destination === '/api/legacy-work') {
+      const { default: handler } = await import(join(root, 'api/legacy-work.js'));
+      const r = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, end() { res.writeHead(this.statusCode, this.headers); res.end(); } };
+      return handler({ method: req.method, query: Object.fromEntries(url.searchParams) }, r);
     }
     const redirect = matchRedirect(path.replace(/\/$/, '') || '/', url.searchParams);
     if (redirect) { res.writeHead(redirect.permanent ? 308 : 307, { Location: redirect.destination }); return res.end(); }

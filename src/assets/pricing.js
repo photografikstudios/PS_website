@@ -34,6 +34,14 @@ function render(sqft) {
       if (hint) hint.textContent = 'We scope larger homes individually.';
     }
   }
+  // One shared note under the package cards (they all follow the same size tiers).
+  const shared = document.querySelector('[data-hint-for="packages"]');
+  const first = byId[document.querySelector('.pcards [data-price-for]')?.dataset.priceFor];
+  if (shared && first) {
+    const k = resolvePrice(first, sqft).kind;
+    shared.textContent = k === 'band' ? 'Package prices are based on our booking portal\'s size tiers and confirmed at checkout. Travel fees may apply.'
+      : k === 'custom' ? 'We scope larger homes individually.' : 'Enter square footage for your price.';
+  }
 }
 
 function announce(text) {

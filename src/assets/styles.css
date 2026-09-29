@@ -1049,3 +1049,4 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 
 .ac-steps { margin: 22px 0 0; padding-left: 1.2em; display: grid; gap: 12px; }
 .ac-why__film { max-width: 360px; margin-inline: auto; width: 100%; }
+.pcards__note { max-width: none; margin-top: 20px; text-align: left; }

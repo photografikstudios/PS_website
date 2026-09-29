@@ -29,7 +29,8 @@ ${reviewMode ? '<meta name="robots" content="noindex, nofollow">' : ''}
 <meta property="og:image" content="${esc((() => { const u = mediaUrl(seo.image || site.media.hero); return u.startsWith('/') ? site.canonicalOrigin + u : u; })())}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#212623">
-<link rel="icon" href="${esc(ctx.optimized(site.media.logo, 480))}">
+<link rel="icon" href="/images/photografik-2027/brand/photografik-logo-192.webp">
+${(() => { const m = body.match(/<video class="ambient hero__video"[^>]*\bposter="([^"]+)"/); return m ? `<link rel="preload" as="image" href="${m[1]}" fetchpriority="high">` : ''; })()}
 <link rel="preload" href="/assets/fonts/instrument-serif-400-latin-60c06664.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/dm-sans-latin-aa530716.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/styles.css?v=${ctx.version}">
@@ -41,7 +42,7 @@ ${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</stro
 <header class="site-header">
   <div class="wrap site-header__inner">
     <a class="brand" href="/" aria-label="Photografik Studios, home">
-      ${img(site.media.logo, { alt: '', widths: [480], sizes: '40px', cls: 'brand__logo', eager: true, width: 40, height: 40 })}
+      <img src="/images/photografik-2027/brand/photografik-logo-96.webp" srcset="/images/photografik-2027/brand/photografik-logo-96.webp 96w, /images/photografik-2027/brand/photografik-logo-192.webp 192w" sizes="40px" alt="" class="brand__logo" decoding="async" width="40" height="40">
       <span class="brand__name">Photografik <span>Studios</span></span>
     </a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="menu-toggle__bars" aria-hidden="true"></span><span class="menu-toggle__label">Menu</span></button>
