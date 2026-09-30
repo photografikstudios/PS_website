@@ -1480,6 +1480,7 @@ await check('copy pass: no generic marketing phrases, intent CTAs, contact makes
   const ct = await (await fetch(base + '/contact')).text();
   assert(/Send Project Brief/.test(ct) && /What do you need, and where will it be used\?/.test(ct) && /has not been sent yet/.test(ct), 'Contact submit, intake question, unsent state');
   const js = await (await fetch(base + '/assets/contact.js')).text(); assert(/'Send Project Brief'/.test(js) && !/Send inquiry/.test(js), 'contact.js resets to Send Project Brief');
+  assert(/<title>Send a Project Brief \| Photografik Studios<\/title>/.test(ct) && /aria-label="Book a shoot or send a project brief"/.test(home) && !/start a project/i.test(home + ct), 'Contact title and Home booking label match Send a Project Brief');
   const ac = await (await fetch(base + '/agent-content')).text();
   assert(/A lighter monthly cadence for agents/.test(ac) && /A larger monthly production session/.test(ac), 'Agent plan taglines');
 });

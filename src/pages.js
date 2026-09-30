@@ -154,7 +154,7 @@ export function buildPages(ctx) {
   ${motionToggle}
 </section>
 
-<section class="quick on-dark" aria-label="Book or start a project">
+<section class="quick on-dark" aria-label="Book a shoot or send a project brief">
   <div class="wrap quick__grid">
     <article class="quick__tile reveal">
       <div class="quick__media quick__media--listings"><img src="/v/home-listings-twilight.webp" srcset="/v/home-listings-twilight-sm.webp 900w, /v/home-listings-twilight.webp 2000w" sizes="(min-width: 700px) 50vw, 100vw" alt="White Westhampton residence at dusk with its windows lit" loading="lazy" decoding="async"></div>
@@ -206,10 +206,10 @@ export function buildPages(ctx) {
     <div class="section-head"><div><p class="eyebrow">Who we work with</p><h2 class="h2 reveal" id="paths-h">Different briefs. <em>One standard.</em></h2></div></div>
     <div class="paths paths--4">
       ${join([
-        { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photography, film, drone, floor plans, twilight and agent-led content built around the way the listing will actually be marketed.', go: 'Explore Real Estate' },
-        { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for builders, architects and designers who need finished work documented with the same care that went into creating it.', go: 'Explore Architecture &amp; Design' },
-        { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Project-based and recurring production for businesses that need professional media without building an internal production team.', go: 'Explore Commercial' },
-        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews, educational content and recurring on-camera production.', go: 'Explore Creator Studios' },
+        { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, film, drone, twilight, floor plans and agent content, planned for each listing.', go: 'Explore Real Estate' },
+        { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film of finished work for builders, architects and designers.', go: 'Explore Architecture &amp; Design' },
+        { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Project-based and recurring production, without building an in-house team.', go: 'Explore Commercial' },
+        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews and educational content.', go: 'Explore Creator Studios' },
       ], (c) => `
       <a class="path reveal" href="${c.href}">
         <span class="path__img">${ambient(c.vid)}</span>
