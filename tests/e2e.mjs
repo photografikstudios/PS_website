@@ -1465,6 +1465,25 @@ await check('LCP: small header logo, hero poster preloaded at high priority; RE 
   await p.context().close();
 });
 
+// James's copy-only pass, Sep 29 2026: no template marketing phrases; intent-specific CTAs; no response-time promise.
+await check('copy pass: no generic marketing phrases, intent CTAs, contact makes no timing promise', async () => {
+  const banned = /boost your|affordable and effective|elevate your|stand out|inspiring videos|stunning|captivating|scroll-stopping|next level|game-changing|one-stop|Ready when you are|Learn more|Send inquiry|Discuss a Partnership|one business day|>\s*Start a Project\s*(→\s*)?</i;
+  const hits = [];
+  for (const path of ['/', '/real-estate', '/real-estate/pricing', '/agent-content', '/architecture-design', '/commercial', '/agency-partnerships', '/creator-studios', '/about', '/contact', '/field-notes']) {
+    const h = await (await fetch(base + path)).text(); const m = h.replace(/<script[\s\S]*?<\/script>/g, '').match(banned); if (m) hits.push(`${path}: ${m[0]}`);
+  }
+  assert(hits.length === 0, hits.join(' | '));
+  const home = await (await fetch(base + '/')).text();
+  for (const t of ['Different briefs.', 'Explore Real Estate', 'Explore Creator Studios', 'Price a Listing', 'Send a Project Brief', 'Choose a package, then adjust the coverage']) assert(home.includes(t), 'Home: ' + t);
+  const ag = await (await fetch(base + '/agency-partnerships')).text();
+  assert(/Add production capacity/.test(ag) && (ag.match(/Send an Agency Brief/g) || []).length >= 2 && /Client-facing[\s\S]*Behind the scenes[\s\S]*Collaborative[\s\S]*White-label/.test(ag), 'Agency hero, CTAs and four models');
+  const ct = await (await fetch(base + '/contact')).text();
+  assert(/Send Project Brief/.test(ct) && /What do you need, and where will it be used\?/.test(ct) && /has not been sent yet/.test(ct), 'Contact submit, intake question, unsent state');
+  const js = await (await fetch(base + '/assets/contact.js')).text(); assert(/'Send Project Brief'/.test(js) && !/Send inquiry/.test(js), 'contact.js resets to Send Project Brief');
+  const ac = await (await fetch(base + '/agent-content')).text();
+  assert(/A lighter monthly cadence for agents/.test(ac) && /A larger monthly production session/.test(ac), 'Agent plan taglines');
+});
+
 // Screenshots for the handoff
 for (const [name, path, vp] of [['desktop-pricing', '/real-estate/pricing?sqft=3200', { width: 1440, height: 1100 }], ['mobile-pricing', '/real-estate/pricing?sqft=5501', { width: 390, height: 1400 }], ['desktop-work', '/real-estate#portfolio', { width: 1440, height: 1100 }], ['mobile-work', '/commercial#portfolio', { width: 390, height: 1400 }]]) {
   const p = await newPage(vp);

@@ -77,7 +77,7 @@ form.addEventListener('submit', async (e) => {
     const res = await fetch('/api/inquiry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
     delivered = res.ok;
   } catch { delivered = false; }
-  btn.disabled = false; btn.textContent = 'Send inquiry';
+  btn.disabled = false; btn.textContent = 'Send Project Brief';
   if (delivered) {
     form.hidden = true;
     const done = document.getElementById('form-done');

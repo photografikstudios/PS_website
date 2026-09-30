@@ -4,7 +4,7 @@
     {
       "id": "agent-video-starter",
       "name": "Video Starter",
-      "tagline": "Boost your exposure with our Video Starter package. Affordable and effective!",
+      "tagline": "A lighter monthly cadence for agents who want to stay visible between listings. Batch a focused set of short-form videos in one planned session.",
       "monthly": 999,
       "contract": 899,
       "scope": [
@@ -20,7 +20,7 @@
     {
       "id": "agent-video-accelerator",
       "name": "Video Accelerator",
-      "tagline": "Elevate your marketing with our Video Accelerator package. Stand out with inspiring videos.",
+      "tagline": "A larger monthly production session for agents who want a deeper bank of educational, market and brand content to publish throughout the month.",
       "monthly": 1799,
       "contract": 1699,
       "scope": [
@@ -38,7 +38,7 @@
     {
       "id": "agent-video-pro",
       "name": "Video Pro",
-      "tagline": "Unleash your real estate potential with our Video Pro package. Our full service team creates stunning property showcases, agent introductions, and provides expert insights.",
+      "tagline": "The fullest monthly production for agents who want property showcases, agent introductions and market insight planned and produced by one team.",
       "monthly": 2099,
       "contract": 1999,
       "scope": [
@@ -64,7 +64,7 @@
     {
       "id": "b2b-video-starter",
       "name": "Video Starter",
-      "tagline": "Boost your business's exposure with our Video Starter package. Affordable and effective!",
+      "tagline": "A repeatable monthly production block for businesses that need a steady stream of short-form content without planning a new shoot from scratch every few weeks.",
       "monthly": 1499,
       "contract": 1399,
       "scope": [
@@ -80,7 +80,7 @@
     {
       "id": "b2b-video-accelerator",
       "name": "Video Accelerator",
-      "tagline": "Build momentum for your brand with our Video Accelerator package. Create compelling content that drives engagement and establishes your expertise in the marketplace.",
+      "tagline": "A deeper recurring production schedule for businesses that need enough content to support ongoing campaigns, social channels and regular communication throughout the month.",
       "monthly": 2699,
       "contract": 2499,
       "scope": [
@@ -98,7 +98,7 @@
     {
       "id": "b2b-video-pro",
       "name": "Video Pro + Management",
-      "tagline": "Elevate your brand's presence with our Video Pro package. Our full-service team produces high-impact content that positions your business as an industry leader, from thought leadership videos to product showcases and executive messaging.",
+      "tagline": "Full-service monthly production for businesses that want thought leadership, product showcases and executive messaging planned and produced by one team.",
       "monthly": 2999,
       "contract": 2699,
       "scope": [

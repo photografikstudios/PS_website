@@ -68,7 +68,7 @@ ${body}
     <div>
       <p class="eyebrow">Ready to book?</p>
       <p><a class="btn btn--rust" href="${booking}" data-track="book_click" data-track-location="footer">Book a Shoot</a></p>
-      <p><a class="link-arrow" href="/contact">Start a Project</a></p>
+      <p><a class="link-arrow" href="/contact">Send a Project Brief</a></p>
       <ul class="site-footer__social">${join(site.social, (s) => `<li><a href="${s.href}" rel="noopener">${esc(s.label)}</a></li>`)}</ul>
     </div>
   </div>

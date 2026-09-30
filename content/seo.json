@@ -2,7 +2,7 @@
   "_readme": "Page titles and meta descriptions by route. Keep titles under ~60 characters and descriptions under ~155.",
   "/": {
     "title": "Photografik Studios | Real Estate, Architecture & Brand Media",
-    "description": "Photo, video, drone and content production for Long Island agents, builders, designers and businesses who want their work to stand out."
+    "description": "Photo, video, drone and content production for Long Island agents, builders, designers and businesses, planned around where the work will be used."
   },
   "/real-estate": {
     "title": "Real Estate Photography & Video | Hamptons & Long Island",

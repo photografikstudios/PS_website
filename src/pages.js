@@ -98,15 +98,16 @@ export function buildPages(ctx) {
   };
 
   // James, Sep 29 2026: keep the whole house in frame (roofline included) at every width.
-  const splitCta = (title = 'Ready when you are.', image = '/images/photografik-2027/curated/home-estate-exterior.webp', pos = '52% 30%') => `
+  // James's copy-only pass, Sep 29 2026: Home's closing prices a listing; every closing sends a project brief.
+  const splitCta = (title = 'Bring us the property, <em>the project or the brief.</em>', image = '/images/photografik-2027/curated/home-estate-exterior.webp', pos = '52% 30%', home = false) => `
 <section class="closing on-dark">
   <div class="closing__media" style="--pos:${pos}">${img(image, { alt: '', sizes: '100vw' })}</div>
   <div class="wrap closing__inner">
     <p class="eyebrow">Next step</p>
     <h2 class="h2 reveal">${title}</h2>
     <div class="split-cta__grid">
-      <div class="reveal"><p class="eyebrow">Listing media</p><p>Choose a package and a date in our booking portal. Most listings book in a few minutes.</p>${bookBtn('final_cta', 'Book a Shoot', 'btn btn--rust')}</div>
-      <div class="reveal"><p class="eyebrow">Architecture, commercial, agency, custom</p><p>Tell us about the project. We will come back with a plan and an estimate.</p><a class="btn btn--ghost" href="/contact" data-track="project_click" data-track-location="final_cta">Start a Project</a></div>
+      <div class="reveal"><p class="eyebrow">Listing media</p>${home ? `<p>Standard listing media can be priced and booked online.</p><a class="btn btn--rust" href="/real-estate/pricing" data-track="pricing_click" data-track-location="final_cta">Price a Listing</a>` : `<p>Choose a package and a date in our booking portal. Most listings book in a few minutes.</p>${bookBtn('final_cta', 'Book a Shoot', 'btn btn--rust')}`}</div>
+      <div class="reveal"><p class="eyebrow">Architecture, commercial, agency, custom</p><p>${home ? 'Architecture, commercial, agency and custom production starts with a conversation about what needs to be created and where it needs to work.' : 'Tell us about the project. We will come back with a plan and an estimate.'}</p><a class="btn btn--ghost" href="/contact" data-track="project_click" data-track-location="final_cta">Send a Project Brief</a></div>
     </div>
   </div>
 </section>`;
@@ -145,7 +146,7 @@ export function buildPages(ctx) {
     <div class="hero__foot">
       <div>
         <p class="lede">Listing campaigns, architecture and brand production for agents, builders and businesses across the Hamptons, the North Fork and Long Island.</p>
-        <div class="actions">${bookBtn('home_hero', 'Book a Shoot', 'btn btn--rust')}<a class="link-arrow" href="/contact" data-track="project_click" data-track-location="home_hero">Start a Project →</a></div>
+        <div class="actions">${bookBtn('home_hero', 'Book a Shoot', 'btn btn--rust')}<a class="link-arrow" href="/contact" data-track="project_click" data-track-location="home_hero">Send a Project Brief →</a></div>
       </div>
       <p class="hero__meta">East End · Hamptons · North Fork<br>Suffolk · Nassau · NYC</p>
     </div>
@@ -170,7 +171,7 @@ export function buildPages(ctx) {
         <p class="eyebrow eyebrow--rust">For your brand</p>
         <h2 class="quick__title">Brand &amp; Business Media</h2>
         <p>Brand films, project stories and monthly content for builders, designers and local businesses.</p>
-        <div class="actions"><a class="btn btn--rust" href="/contact" data-track="project_click" data-track-location="home_quick">Start a Project</a><a class="btn btn--glass" href="/commercial">Learn more</a></div>
+        <div class="actions"><a class="btn btn--rust" href="/contact" data-track="project_click" data-track-location="home_quick">Send a Project Brief</a><a class="btn btn--glass" href="/commercial">Explore Commercial</a></div>
       </div>
     </article>
   </div>
@@ -193,7 +194,7 @@ export function buildPages(ctx) {
         ${m.type === 'video' ? playIcon : ''}
       </button>`)}
     </div>
-    <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">start a project</a>.</p>
+    <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">send us a project brief</a>.</p>
     <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/real-estate?type=video#portfolio" data-track="gallery_view_more">View more</a></div>
   </div>
   ${lightboxDialog()}
@@ -205,10 +206,10 @@ export function buildPages(ctx) {
     <div class="section-head"><div><p class="eyebrow">Who we work with</p><h2 class="h2 reveal" id="paths-h">Different briefs. <em>One standard.</em></h2></div></div>
     <div class="paths paths--4">
       ${join([
-        { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, horizontal and vertical film, drone, twilight and floor plans.', go: 'Real estate' },
-        { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for architects, designers and builders, planned around your portfolio.', go: 'Architecture & design' },
-        { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Brand films, process stories and monthly content, for you or through your agency.', go: 'Commercial' },
-        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'Multi-camera podcast and content sessions in our Bohemia studio.', go: 'LI Creator Studios' },
+        { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photography, film, drone, floor plans, twilight and agent-led content built around the way the listing will actually be marketed.', go: 'Explore Real Estate' },
+        { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film for builders, architects and designers who need finished work documented with the same care that went into creating it.', go: 'Explore Architecture &amp; Design' },
+        { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Project-based and recurring production for businesses that need professional media without building an internal production team.', go: 'Explore Commercial' },
+        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews, educational content and recurring on-camera production.', go: 'Explore Creator Studios' },
       ], (c) => `
       <a class="path reveal" href="${c.href}">
         <span class="path__img">${ambient(c.vid)}</span>
@@ -234,7 +235,7 @@ export function buildPages(ctx) {
   <div class="wrap">
     <div class="split">
       <div class="split__label"><p class="eyebrow">Listing packages</p></div>
-      <div><h2 class="h2 reveal" id="pkg-h">A starting point for <em>the way you market.</em></h2><p class="lede reveal">Four packages, shot and edited to the same standard. Enter the home's size on the pricing page to see your price.</p></div>
+      <div><h2 class="h2 reveal" id="pkg-h">A starting point for <em>the way you market.</em></h2><p class="lede reveal">Choose a package, then adjust the coverage around the property, the campaign and the way you plan to market it.</p></div>
     </div>
     <ul class="home-pkgs__list" role="list">
       ${join(pricing.packages.filter(visible), (p) => `<li class="home-pkgs__item${pkgFeatured(p) ? ' is-featured' : ''}"><span class="home-pkgs__name">${esc(p.name)}${pkgFeatured(p) ? ` <span class="home-pkgs__tag">${esc(pkgTag(p))}</span>` : ''}</span><span class="home-pkgs__for">${esc(p.for)}</span><span class="home-pkgs__price">Starting at <strong>${starting(p)}</strong> ${needsApproval(p)}</span></li>`)}
@@ -243,7 +244,7 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-${splitCta('Bring us the property, <em>the project or the brief.</em>')}`,
+${splitCta(undefined, undefined, undefined, true)}`,
   };
 
   // ---------- FIELD NOTES ----------
@@ -281,15 +282,15 @@ ${splitCta('Bring us the property, <em>the project or the brief.</em>')}`,
   if (fnVisible.length) {
     const topicsUsed = fn.topics.filter((t) => fnVisible.some((a) => a.topic === t.id));
     pages['/field-notes'] = {
-      seo: { title: 'Field Notes | Answers for agents, builders and brands | Photografik', description: 'Practical answers about listing photography, video, drone and brand production from the Photografik Studios team.' },
+      seo: { title: 'Field Notes | Practical answers before the shoot | Photografik', description: 'Short guides on what to book, how to prepare, where the finished media will be used and what is worth adding, from the Photografik Studios team.' },
       overlay: true,
       body: `${(() => {
         // James, Sep 25 2026: Field Notes may open with a rights-approved house photograph (exception to the video-opener rule).
         const heroPhoto = allMediaById[fn.heroMedia || 'ph-oceanfront-twilight-pool'];
         return pageHero({
           eyebrow: 'Field Notes',
-          title: 'Straight answers <em>from the shoot.</em>',
-          lede: 'Questions agents, builders and brands ask us before they book, answered from how we actually plan and produce the work.',
+          title: 'Practical answers <em>before the shoot.</em>',
+          lede: 'Short guides built around the questions we hear most often: what to book, how to prepare, where the finished media will be used and what is actually worth adding.',
           image: heroPhoto && heroPhoto.rights === 'approved' ? heroPhoto.src : undefined,
           imageAlt: heroPhoto?.alt || '',
         });
@@ -362,7 +363,7 @@ ${join(topicsUsed, (t) => `
     <aside class="fn-next">
       <p class="eyebrow">Next step</p>
       <p class="fn-next__t">${esc(a.cta?.lead || 'Ready to plan the media for your next listing?')}</p>
-      <div class="actions"><a class="btn btn--solid" href="${esc(a.cta?.href || '/contact')}" data-track="field_notes_cta" data-track-location="${esc(a.slug)}">${esc(a.cta?.label || 'Start a Project')}</a>${bookBtn('field_notes', 'Book a Shoot', 'link-arrow')}</div>
+      <div class="actions"><a class="btn btn--solid" href="${esc(a.cta?.href || '/contact')}" data-track="field_notes_cta" data-track-location="${esc(a.slug)}">${esc(a.cta?.label || 'Send a Project Brief')}</a>${bookBtn('field_notes', 'Book a Shoot', 'link-arrow')}</div>
     </aside>
     ${related.length ? `<section class="fn-related" aria-labelledby="fn-rel"><h2 class="h3" id="fn-rel">More Field Notes</h2><div class="fn-grid fn-grid--2">${join(related, fnCard)}</div></section>` : ''}
   </div>
@@ -846,7 +847,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       eyebrow: 'Architecture & design',
       title: 'Your work, presented with <em>the care it was built with.</em>',
       lede: 'Project photography and film for builders, architects, interior designers and specialty trades. We plan coverage around how the work will be used, then define deliverables and licensing before the shoot.',
-      cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Start a Project</a>`,
+      cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Plan the Next Project</a>`,
       video: { loop: 'arch-yankee-barn-film', film: 'arch-yankee-barn-film' },
     })}
 <section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
@@ -942,10 +943,10 @@ ${agentMonthly.length ? `<section class="section section--tint">
       <li class="reveal">${mediaFig('ph-peterson-game-room')}<span class="steps__n">02 / Plan</span><h3>Get a recommendation.</h3><p>We suggest the story and coverage, then send a plan and a written estimate with deliverables and licensing.</p></li>
       <li class="reveal">${mediaFig('ph-kerry-delrose-pool')}<span class="steps__n">03 / Produce</span><h3>We shoot and deliver.</h3><p>Photography and film on site, one agreed review round, then files in the formats each use needs.</p></li>
     </ol>
-    <p class="arch-path__cta"><a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_path">Start a Project</a></p>
+    <p class="arch-path__cta"><a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_path">Plan the Next Project</a></p>
   </div>
 </section>
-${bleedCta({ title: 'Finished something worth showing?', text: 'Share the project, location and timing. We will come back with a plan and an estimate.', cta: '<a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_final">Start a Project</a>', image: allMediaById['ph-barba-waterfront']?.src || '/v/ph-barba-waterfront.webp', alt: '' })}`,
+${bleedCta({ title: 'Finished something worth showing?', text: 'Share the project, location and timing. We will come back with a plan and an estimate.', cta: '<a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_final">Plan the Next Project</a>', image: allMediaById['ph-barba-waterfront']?.src || '/v/ph-barba-waterfront.webp', alt: '' })}`,
   };
 
   // ---------- COMMERCIAL ----------
@@ -972,7 +973,7 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
       eyebrow: 'Commercial production',
       title: 'Consistent content, <em>without building an in-house team.</em>',
       lede: 'Brand photography, film, testimonials, podcasts and short-form content for healthcare, legal, hospitality, automotive and corporate teams. One partner for planning, production, editing and delivery.',
-      cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Start a Project</a>`,
+      cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Plan a Production</a>`,
       video: { loop: 'biz-rachel-lynch-pools', film: 'biz-rachel-lynch-pools' },
     })}
 <section class="section" aria-labelledby="com-value-h">
@@ -1020,7 +1021,7 @@ ${caseStudy ? `<section class="section section--ink on-dark" id="case-study" ari
 ${cp.length || b2b.length ? `<section class="section">
   <div class="wrap">
     <p class="eyebrow">Starting points</p>
-    <h2 class="h2 reveal">Where standard scopes begin.</h2>
+    <h2 class="h2 reveal">Commercial property media <em>and ongoing content.</em></h2>
     ${cp.length ? `<div class="cpm">
       <h3 class="h3">Commercial real estate media</h3>
       <p class="cpm__kicker">Photography · Aerial · Video · Portfolio coverage</p>
@@ -1036,7 +1037,7 @@ ${cp.length || b2b.length ? `<section class="section">
       ${cpPort ? `<h4 class="cpm__sub">Portfolio pricing</h4><p class="small">${esc(cpPort.intro)}</p><ul class="prows prows--compact cpm__portfolio">${join(cpPort.tiers, ([n, r]) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(n)}</p></div><div class="prow__price">${approvedPrice(cpPort, `<strong>${esc(r)}</strong>`)}</div></li>`)}</ul><p class="small muted">${esc(cpPort.fine)}</p>${cpPort.custom ? `<p class="cpm__custom"><strong>Need a custom scope?</strong> ${esc(cpPort.custom)}</p>` : ''}` : ''}
     </div>` : ''}
     ${b2b.length ? `<div class="cpm__monthly">
-      <h3 class="h3">Monthly business content</h3>
+      <h3 class="h3">Ongoing business content</h3>
       <p class="cpm__lede">Social video and photography every month for your business, planned, filmed and edited by one team.</p>
       <div class="plans">${join(b2b, monthlyPlan)}</div>
       ${monthlyExtras()}
@@ -1052,11 +1053,11 @@ ${cp.length || b2b.length ? `<section class="section">
     </div>
     <div>
       <p>Crew, studio or on-location production, filming, editing and project management for your clients. Client-facing, behind the scenes, collaborative or white-label, with roles and approvals agreed before we start.</p>
-      <div class="actions"><a class="btn btn--ink" href="/agency-partnerships" data-track="partnership_click" data-track-location="com_agency">Agency partnerships</a><a class="link-arrow" href="/contact?type=agency" data-track="partnership_click" data-track-location="com_agency">Discuss a Partnership ${arrow}</a></div>
+      <div class="actions"><a class="btn btn--ink" href="/agency-partnerships" data-track="partnership_click" data-track-location="com_agency">Agency partnerships</a><a class="link-arrow" href="/contact?type=agency" data-track="partnership_click" data-track-location="com_agency">Send an Agency Brief ${arrow}</a></div>
     </div>
   </div>
 </section>
-${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the fastest way to scope a campaign or a recurring program.', cta: '<a class="btn btn--gold" href="/contact?type=commercial" data-track="project_click" data-track-location="com_final">Start a Project</a>', image: allMediaById['ph-rachel-lynch-infinity']?.src || '/v/ph-rachel-lynch-infinity.webp' })}`,
+${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the fastest way to scope a campaign or a recurring program.', cta: '<a class="btn btn--gold" href="/contact?type=commercial" data-track="project_click" data-track-location="com_final">Plan a Production</a>', image: allMediaById['ph-rachel-lynch-infinity']?.src || '/v/ph-rachel-lynch-infinity.webp' })}`,
   };
 
   // ---------- AGENCY ----------
@@ -1064,9 +1065,9 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     overlay: true,
     body: `${pageHero({
       eyebrow: 'Agency partnerships',
-      title: 'Production capacity <em>you can stand behind.</em>',
-      lede: 'Crew, studio or on-location production, filming, editing, post-production and project management for advertising and marketing agencies. Client-facing or white-label, with roles agreed up front.',
-      cta: `<a class="btn btn--solid" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_hero">Discuss a Partnership</a>`,
+      title: 'Add production capacity <em>without adding payroll.</em>',
+      lede: 'Bring Photografik into projects that need photography, video, drone, studio production or post-production. We can work directly with the client, alongside your team or behind your agency brand.',
+      cta: `<a class="btn btn--solid" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_hero">Send an Agency Brief</a>`,
       image: '/images/photografik-2027/curated/home-path-on-location.webp', imageAlt: 'Camera operator filming outdoors on location',
     })}
 <section class="section">
@@ -1094,7 +1095,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
     <h2 class="h2 reveal">Bring us your next brief.</h2>
-    <a class="btn btn--gold" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_final">Discuss a Partnership</a>
+    <a class="btn btn--gold" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_final">Send an Agency Brief</a>
   </div>
 </section>`,
   };
@@ -1270,7 +1271,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const isCom = p.category === 'commercial';
     const related = isCom ? [] : media.filter((m) => m.project !== p.slug && m.category === p.category).slice(0, 3);
     const isRE = p.category === 'real-estate';
-    const cta = isRE ? bookBtn('project_detail') : `<a class="btn btn--solid" href="/contact?type=${esc(p.category)}" data-track="project_click" data-track-location="project_detail">Start a Project</a>`;
+    const cta = isRE ? bookBtn('project_detail') : `<a class="btn btn--solid" href="/contact?type=${esc(p.category)}" data-track="project_click" data-track-location="project_detail">${p.category === 'commercial' ? 'Plan a Production' : p.category === 'architecture-design' ? 'Plan the Next Project' : 'Send a Project Brief'}</a>`;
     const rep = p.hero ? null : repOf(pm);
     const heroHtml = p.hero ? img(p.hero, { alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
     const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
@@ -1334,7 +1335,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       eyebrow: 'About',
       title: 'Quality over volume. <em>On purpose.</em>',
       lede: 'Photografik Studios is a boutique visual media company on Long Island. We work with the agents, builders, designers, agencies and businesses who believe presentation affects results.',
-      cta: `<a class="btn btn--solid" href="/contact" data-track="project_click" data-track-location="about_hero">Start a Project</a>`,
+      cta: `<a class="btn btn--solid" href="/contact" data-track="project_click" data-track-location="about_hero">Send a Project Brief</a>`,
     })}
 <section class="section">
   <div class="wrap">
@@ -1351,6 +1352,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     <div>
       <p class="eyebrow">The team</p>
       <h2 class="h2 reveal">Led by James Calandrino.</h2>
+      <p>Photografik was built around a quality-first approach to real estate and commercial media. What began with James behind the camera has grown into a production team built around the same expectations for composition, consistency, communication and delivery.</p>
       <p>James directs the creative work, leads client relationships and shoots video. Our team covers photography, drone and floor plans, including weekend shoots, and a client experience lead keeps every booking moving.</p>
     </div>
     <div>
@@ -1372,9 +1374,9 @@ ${splitCta('Let us help with the next one.')}`,
     body: `
 <section class="page-hero page-hero--compact on-dark">
   <div class="wrap page-hero__inner">
-    <p class="eyebrow">Start a project</p>
-    <h1 class="display">Tell us what you are making.</h1>
-    <p class="lede">For architecture, commercial, agency, content and custom work. A few details help us come back with a useful plan. Booking a standard listing? <a href="${booking}" data-track="book_click" data-track-location="contact_intro">Book a Shoot directly</a>.</p>
+    <p class="eyebrow">Project brief</p>
+    <h1 class="display">Tell us the brief, <em>and we'll turn it into a plan.</em></h1>
+    <p class="lede">Use this for architecture, commercial, agency, content and custom production. Tell us what needs to be created, where it will be used and when you need it. We'll follow up with scope, timing and a clear next step. Booking a standard listing? <a href="${booking}" data-track="book_click" data-track-location="contact_intro">Book a Shoot directly</a>.</p>
   </div>
 </section>
 <section class="section">
@@ -1414,15 +1416,15 @@ ${splitCta('Let us help with the next one.')}`,
         <div class="hp" aria-hidden="true"><label for="i-website">Leave this empty</label><input id="i-website" name="website" tabindex="-1" autocomplete="off"></div>
       </div>
       <p class="form__error" id="form-error" role="alert" hidden></p>
-      <button class="btn btn--solid" type="submit">Send inquiry</button>
-      <p class="small muted">We use these details only to respond to your inquiry. Prefer email? Write to <a href="mailto:${site.email}">${site.email}</a> or call <a href="${site.phoneHref}">${site.phone}</a>.</p>
+      <button class="btn btn--solid" type="submit">Send Project Brief</button>
+      <p class="small muted">A member of the Photografik team will review the brief and follow up about scope, timing and next steps. We use these details only for that. Prefer email? Write to <a href="mailto:${site.email}">${site.email}</a> or call <a href="${site.phoneHref}">${site.phone}</a>.</p>
     </form>
     <div class="form-done" id="form-done" hidden tabindex="-1">
       <h2 class="h2">Thank you. We have your details.</h2>
-      <p>We will reply within one business day with next steps.</p>
+      <p>A member of the Photografik team will review the brief and follow up about scope, timing and next steps.</p>
     </div>
     <div class="form-done" id="form-fallback" hidden tabindex="-1">
-      <h2 class="h2">Your inquiry has not been sent yet.</h2>
+      <h2 class="h2">Your brief has not been sent yet.</h2>
       <p>We could not deliver it from this page, so we prepared an email to ${site.email} with everything you entered. Open it in your email app and press send, or copy the details into any email.</p>
       <div class="actions"><a class="btn btn--solid" id="fallback-mailto" href="mailto:${site.email}">Open in my email app</a><button type="button" class="btn btn--outline" id="fallback-copy">Copy details</button></div>
       <p class="small muted" id="fallback-status" role="status" aria-live="polite"></p>
