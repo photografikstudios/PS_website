@@ -1096,3 +1096,21 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
   .legal__table td { display: block; border: 0; padding: 6px 12px; } .legal__table td::before { content: attr(data-label); display: block; font: 400 11px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
   .legal__table td:first-child { font-weight: 600; }
 }
+
+/* ---------- Oct 1 2026 (James): no lone half-width text beside unexplained empty space ---------- */
+/* Intros and notes that sit with a full-width card grid span that grid instead of stopping halfway. */
+.cpm__lede, .cpm__how, .cpm__custom, .story-guide__note, .plan__foot, .section-lede--span { max-width: none; }
+@media (min-width: 900px) {
+  /* Commercial multi-property offer: one full-width band, copy on the left and the brief button on the right. */
+  .cpm__multi { max-width: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: clamp(32px, 5vw, 80px); align-items: center; border-block: 1px solid var(--line); padding-block: 22px 26px; }
+  .cpm__multi > .cpm__sub, .cpm__multi > p:not(:last-child) { grid-column: 1; }
+  .cpm__multi > p:last-child { grid-column: 2; grid-row: 1 / span 2; margin: 0; }
+  .cpm__multi .btn { margin-top: 0; }
+  /* Closing bands with no photo behind them: heading on the left, the line and the buttons on the right. */
+  .cta-band:not(.closing__inner) { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); column-gap: clamp(40px, 6vw, 96px); align-items: end; }
+  .cta-band:not(.closing__inner) > .h2 { grid-column: 1; grid-row: 1 / span 2; margin: 0; }
+  .cta-band:not(.closing__inner) > :not(.h2) { grid-column: 2; justify-self: start; }
+  .cta-band:not(.closing__inner) > p { margin: 0 0 24px; max-width: none; }
+  /* Four reviews read as two even rows rather than three plus one alone. */
+  .reviews__list:has(> li:nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

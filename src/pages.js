@@ -766,7 +766,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
   <div class="wrap">
     <p class="eyebrow">Monthly content plans</p>
     <h2 class="h2 reveal">Stay visible between listings.</h2>
-    <p class="section-lede">Sellers choose agents they recognize and trust. Regular video lets them see your point of view and how you work before they ever call. A monthly plan gives you a steady supply of social content built around your goals, so you are not starting from a blank page each week.</p>
+    <p class="section-lede section-lede--span">Sellers choose agents they recognize and trust. Regular video lets them see your point of view and how you work before they ever call. A monthly plan gives you a steady supply of social content built around your goals, so you are not starting from a blank page each week.</p>
     <div class="plans">${join(agentMonthly, monthlyPlan)}</div>
     ${monthlyExtras()}
   </div>
@@ -1433,7 +1433,7 @@ ${splitCta('Let us help with the next one.')}`,
       <div class="form__grid">
         <div class="field"><label for="i-name">Your name <span aria-hidden="true">*</span></label><input id="i-name" name="name" autocomplete="name" required></div>
         <div class="field"><label for="i-email">Email <span aria-hidden="true">*</span></label><input id="i-email" name="email" type="email" autocomplete="email" required></div>
-        <div class="field"><label for="i-type">Project type <span aria-hidden="true">*</span></label>
+        <div class="field field--full"><label for="i-type">Project type <span aria-hidden="true">*</span></label>
           <select id="i-type" name="type" required>
             <option value="">Choose one</option>
             <option value="architecture-design">Architecture or interior design</option>
