@@ -1,0 +1,142 @@
+{
+  "_readme": "Website legal pages. Source of truth: Photografik_Studios_Website_Terms_and_Licensing.docx (James, Sep 30 2026; effective September 30, 2026). The text must be copied from that document verbatim in substance (formatting for web readability only; no rewriting, summarising or older terms). Order follows OWNER_LEGAL_HIERARCHY_2026-09-30.md: Photografik / general policies first, then a clearly labelled Creator Studios, Podcast & Studio supplement; sections are numbered continuously. Each section's 'blocks' are filled from the document: {type:'p',text} | {type:'ul'|'ol',items} | {type:'h3',text} | {type:'table',head:[...],rows:[[...]]}; inline **bold** and [links](/path) allowed. 'ready' may be set true only when every section is filled from the document and the source checksum is recorded. Until then production builds are blocked and review builds show the page structure with a dev-only placeholder.",
+  "source": {
+    "file": "Photografik_Studios_Website_Terms_and_Licensing.docx",
+    "status": "not received",
+    "sha256": null,
+    "receivedFrom": null,
+    "_note": "Referenced by James's Wednesday brief (item 18) but not attached. Not found in the shared brief folder, the connected Mac folders, the session uploads or James's Google Drive (searched Sep 30 2026)."
+  },
+  "effectiveDate": "2026-09-30",
+  "ready": false,
+  "acceptance": {
+    "text": "By booking services, approving an estimate, paying an invoice or deposit, or accessing delivered media, you agree to Photografik Studios' Terms & Conditions and Licensing & Usage Rights Policy.",
+    "_source": "James, OWNER_WEDNESDAY_IMPLEMENTATION_2026-09-30.md item 23 (verbatim)"
+  },
+  "pages": {
+    "licensing": {
+      "route": "/licensing",
+      "title": "Licensing & Usage Rights Policy",
+      "seoDescription": "How Photografik Studios licenses photography, film and other media: copyright, license activation, real estate, homeowner, architect, business and creator usage.",
+      "groups": [
+        {
+          "id": "general",
+          "label": "Photografik Studios / General Policies",
+          "sections": [
+            {
+              "title": "Core Copyright and Ownership Rule",
+              "blocks": []
+            },
+            {
+              "title": "Definitions",
+              "blocks": []
+            },
+            {
+              "title": "Final Deliverables vs. Source Materials",
+              "blocks": []
+            },
+            {
+              "title": "General License Rules",
+              "blocks": []
+            },
+            {
+              "title": "Real Estate Agent & Brokerage License",
+              "blocks": []
+            },
+            {
+              "title": "Homeowner Property-Marketing Licenses",
+              "blocks": []
+            },
+            {
+              "title": "Commercial Real Estate",
+              "blocks": []
+            },
+            {
+              "title": "Architects, Builders, Designers, Contractors & Project Vendors",
+              "blocks": []
+            },
+            {
+              "title": "Business & Brand Clients",
+              "blocks": []
+            },
+            {
+              "title": "Company Right to License Media to Other Project Participants",
+              "blocks": []
+            },
+            {
+              "title": "Exclusivity, Confidentiality & Embargoes",
+              "blocks": []
+            },
+            {
+              "title": "Portfolio and Promotional Use by the Company",
+              "blocks": []
+            },
+            {
+              "title": "Third-Party Music, Stock, Fonts & Other Licensed Assets",
+              "blocks": []
+            },
+            {
+              "title": "Unauthorized Use",
+              "blocks": []
+            },
+            {
+              "title": "No Implied Waiver",
+              "blocks": []
+            }
+          ]
+        },
+        {
+          "id": "creator",
+          "label": "Creator Studios / Podcast & Studio Policies",
+          "heading": "Creator Studios, Podcast & Studio Licensing",
+          "sections": [
+            {
+              "title": "Podcast, Studio & Creator Content",
+              "blocks": []
+            }
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "route": "/terms",
+      "title": "Terms & Conditions",
+      "seoDescription": "Photografik Studios Terms & Conditions for bookings, estimates, payment, cancellations, delivery, revisions and use of the website, with Creator Studios supplemental terms.",
+      "groups": [
+        {
+          "id": "general",
+          "label": "Photografik Studios / General Policies",
+          "sections": [],
+          "_note": "The general Terms (about 25 or 26 sections) are listed in the document's own order when it arrives; payment, cancellations, limitation of liability, indemnification, copyright, confidentiality, file retention, electronic acceptance, force majeure, no guarantee of marketing results and governing law stay here, not in the Creator supplement."
+        },
+        {
+          "id": "creator",
+          "label": "Creator Studios / Podcast & Studio Policies",
+          "heading": "Creator Studios, Podcast & Studio Terms",
+          "sections": [
+            {
+              "title": "Session Time and Overtime",
+              "blocks": []
+            },
+            {
+              "title": "Conduct and Safety",
+              "blocks": []
+            },
+            {
+              "title": "Equipment and Property Damage",
+              "blocks": []
+            },
+            {
+              "title": "Technical and Platform Limitations",
+              "blocks": []
+            },
+            {
+              "title": "Client Content Responsibility",
+              "blocks": []
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

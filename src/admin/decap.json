@@ -1,0 +1,6 @@
+{
+  "_readme": "Decap CMS bundle loaded by /admin from unpkg, pinned by version and Subresource Integrity (sha384 of dist/decap-cms.js). Update both together.",
+  "version": "3.16.3",
+  "integrity": "sha384-A/Gdn928CNLufmnGWGs9RM4Q9o8bSNLeJERqBFrBjwzL7FRpoLT3MPF8Tl0+Wd2p",
+  "_verified": "Version and sha384 computed from https://unpkg.com/decap-cms@3.16.3/dist/decap-cms.js (5,167,389 bytes) in a Vercel Sandbox on Sep 30 2026; the editor loaded with this integrity value."
+}

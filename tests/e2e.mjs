@@ -659,8 +659,8 @@ await check('Field Notes: nav, index, article answer-first with truthful schema'
   assert((await p.textContent('h1')).length > 5, 'index h1');
   const cards = await p.locator('.fn-card').count();
   assert(cards === 3, `cards ${cards}`);
-  // James approved the Field Notes section layout (Sep 28 2026); each article's text still needs its own review.
-  assert(await p.locator('.fn-card .needs-approval').count() === 3, 'drafts tagged in review');
+  // James, Sep 30 2026: the three Day 1 articles are approved; no draft or review labels remain.
+  assert(await p.locator('main .needs-approval, main .fn-draft').count() === 0 && !/draft for review/i.test(await p.locator('main').innerText()), 'no draft tags');
   await p.click('.fn-card__title a >> nth=0');
   await p.waitForURL(/\/field-notes\/.+/);
   const h1 = (await p.textContent('h1')).trim();
@@ -670,7 +670,8 @@ await check('Field Notes: nav, index, article answer-first with truthful schema'
   const post = ld.find((x) => x['@type'] === 'BlogPosting');
   const crumbs = ld.find((x) => x['@type'] === 'BreadcrumbList');
   assert(post && post.headline === h1, 'BlogPosting headline matches h1');
-  assert(!post.datePublished, 'no invented publish date on a draft');
+  assert(post.datePublished === '2026-09-30' && (await p.getAttribute('meta[property="article:published_time"]', 'content')) === '2026-09-30', 'publish date');
+  assert(await p.locator('main .fn-draft, main .needs-approval').count() === 0, 'no draft banner');
   assert((await p.textContent('.fn-byline')).includes(post.author.name), 'author matches byline');
   assert(crumbs.itemListElement.length === 2, 'breadcrumb');
   assert((await p.getAttribute('link[rel=canonical]', 'href')).endsWith(new URL(p.url()).pathname), 'canonical');
@@ -690,7 +691,8 @@ await check('Field Notes: phone reading, keyboard TOC, inline video, sitemap exc
   const fontSize = await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.fn-body p')).fontSize));
   assert(fontSize >= 16, `body ${fontSize}px`);
   const sm = await (await fetch(base + '/sitemap.xml')).text();
-  assert(!sm.includes('/field-notes/'), 'drafts not in sitemap');
+  for (const slug of ['listing-video-horizontal-or-vertical', 'twilight-drone-floor-plans', 'how-to-prepare-a-home-for-listing-photos']) assert(sm.includes(`/field-notes/${slug}<`), 'published article in sitemap: ' + slug);
+  assert(!sm.includes('/admin'), 'editor not in sitemap');
   await p.goto(base + '/real-estate');
   assert(await p.locator('.fn-teaser .fn-card').count() >= 2, 'teaser on Real Estate');
   await p.context().close();
@@ -868,7 +870,7 @@ await check('creator studios: story, formats with scope, conversations, process,
   const p = await newPage();
   await p.goto(base + '/creator-studios');
   const text = await p.textContent('main');
-  for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Files within 24 hours', 'Before you book']) assert(text.includes(s), s);
+  for (const s of ['behind the business', 'Short-form clips', 'Long-form episodes', 'Multi-camera', 'reason to connect', 'cannot promise leads', 'Your live cut within 24 hours', 'Before you book']) assert(text.includes(s), s);
   // James, Sep 29 2026: no "Part of a session" / "With Recording + Editing" tags; the line under the formats explains editing.
   assert(await p.locator('.scope-tag').count() === 0 && /Editing is available by quote/.test(text), 'formats untagged, editing explained once');
   // Pricing follows licreatorstudios.com/pricing; James confirmed the $249 single session on Sep 27 2026 (it had been
@@ -876,13 +878,17 @@ await check('creator studios: story, formats with scope, conversations, process,
   assert(await p.locator('.plan .needs-approval').count() === 0, 'session prices approved');
   const prices = (await p.locator('.plan__price').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim());
   // James, Sep 28 2026: "Starting at" before every price; general studio content starts at $499 for a 2-hour minimum.
-  assert(prices.length === 3 && /^Starting at \$249$/.test(prices[0]) && /^Starting at \$499 for a 2-hour minimum$/.test(prices[1]) && /^Starting at \$999 per month$/.test(prices[2]), 'session prices shown: ' + prices.join('|'));
-  // James, Sep 27: recorded live session within 24 hours; editing about 5 to 7 days. One promise in both places.
-  assert(!/next day|immediately|72 hours/i.test(text) && (text.match(/within 24 hours/g) || []).length >= 2 && (text.match(/5 to 7 days/g) || []).length >= 2, 'single delivery promise');
+  assert(prices.length === 2 && /^Starting at \$249$/.test(prices[0]) && /^Starting at \$499 for a 2-hour minimum$/.test(prices[1]), 'session prices shown: ' + prices.join('|'));
+  // James, Sep 30 (Wednesday pass, item 5): live-cut file within 24 hours; most edited episodes and clips in approximately 7–10 days.
+  assert(!/next day|immediately|72 hours|5[–-]7|5 to 7|within 7 days/i.test(text) && (text.match(/within 24 hours/g) || []).length >= 2 && (text.match(/approximately 7–10 days/g) || []).length >= 2, 'single delivery promise');
   assert(await p.locator('#faq .needs-approval').count() === 0, 'delivery and cancellation confirmed by James');
   const plans = (await p.locator('.plan').allTextContents()).join(' ');
-  for (const t of ['Up to 90 minutes', 'Engineer included', 'Camera operator', 'Two 90-minute sessions per month', 'Up to 10 social media clips', 'start-up package']) assert(plans.includes(t), 'plan detail: ' + t);
-  assert(await p.locator('[data-session="recording-editing"] a[href^="/contact?type=creator-studios"]').count() === 1, 'Recording + Editing goes to an inquiry');
+  for (const t of ['Up to 90 minutes', 'Engineer included', 'Camera operator']) assert(plans.includes(t), 'plan detail: ' + t);
+  // James, Sep 30 (Wednesday pass, item 4): the third option is a scoped Monthly Content inquiry with no price or fixed deliverables.
+  const mc = p.locator('[data-session="monthly-content"]');
+  assert(await mc.locator('a[href^="/contact?type=creator-studios"]').count() === 1 && /Ask About Monthly Content/i.test(await mc.locator('a').innerText()), 'Monthly Content goes to an inquiry');
+  const mcText = await mc.innerText();
+  assert(/Monthly Content/i.test(mcText) && /repeatable recording or content schedule/.test(mcText) && !/\$|per month|sessions per month|clips|thumbnails/i.test(mcText) && await mc.locator('.plan__price, .plan__list').count() === 0, 'no price or fixed deliverables: ' + mcText);
   const faqs = await p.locator('#faq details.faq__item').count();
   assert(faqs === 8 && /48 hours’ notice for a full refund/.test(text), 'FAQ with cancellation policy: ' + faqs);
   // Square is the booking destination; the page must not claim Square shows these prices or carries a selection over.
@@ -1097,8 +1103,10 @@ await check('Commercial: property media prices, add-ons and portfolio rates; Rev
     assert(JSON.stringify(tiers) === JSON.stringify([['Storefront or single tenant', '$550'], ['Small commercial', '$750'], ['Mid-size commercial', '$950'], ['Large or multi-building', '$1,250+']]), 'tiers ' + JSON.stringify(tiers));
     const add = await p.locator('.cpm__addons li').evaluateAll((es) => es.map((e) => e.querySelector('.cpm__addprice').textContent.trim()));
     assert(JSON.stringify(add) === JSON.stringify(['+$300', '+$400', '$850+', '$150+ per image']), 'add-ons ' + add);
-    const port = await p.locator('.cpm__portfolio .prow__price').allTextContents();
-    assert(JSON.stringify(port.map((t) => t.trim())) === JSON.stringify(['Standard rate', '10% preferred rate', '15% preferred rate', 'Custom portfolio agreement']), 'portfolio ' + port);
+    // James, Sep 30 (Wednesday pass, item 6): no public portfolio or volume discounts; multi-property work goes to a brief.
+    assert(await p.locator('.cpm__portfolio').count() === 0 && !/preferred rate|portfolio pricing|portfolio agreement|properties a year|discount/i.test(await p.locator('main').innerText()), 'no portfolio discounts');
+    const multi = await p.locator('.cpm__multi').innerText();
+    assert(/Multi-property work/i.test(multi) && multi.includes('Have multiple locations or properties? Send us the scope and expected schedule.') && await p.locator('.cpm__multi a[href="/contact?type=commercial"]').count() === 1, 'multi-property inquiry');
     assert(await p.locator('.cpm .needs-approval, .cpm .price-pending').count() === 0, 'approved commercial prices shown without review tags');
     const cpmText = await p.locator('.cpm').innerText();
     for (const line of ['Professional media built to help owners, operators and brokers market spaces, showcase improvements, support leasing efforts and present commercial assets at their best.', 'FAA Part 107 certified pilot; subject to airspace and site restrictions.', 'Helps prospects visualize vacant or unfinished commercial spaces.', 'complex multi-property assignments can be tailored to the asset and its marketing objective.', 'Pricing effective 2026. Travel, extensive staging, specialty retouching, permits and third-party licensing may be additional.']) assert(cpmText.includes(line), 'price sheet line missing: ' + line);
@@ -1483,6 +1491,52 @@ await check('copy pass: no generic marketing phrases, intent CTAs, contact makes
   assert(/<title>Send a Project Brief \| Photografik Studios<\/title>/.test(ct) && /aria-label="Book a shoot or send a project brief"/.test(home) && !/start a project/i.test(home + ct), 'Contact title and Home booking label match Send a Project Brief');
   const ac = await (await fetch(base + '/agent-content')).text();
   assert(/A lighter monthly cadence for agents/.test(ac) && /A larger monthly production session/.test(ac), 'Agent plan taglines');
+});
+
+// James, Sep 30 2026 (Wednesday pass, items 18–23 + legal hierarchy): /terms and /licensing structure; text only from the supplied document.
+await check('legal pages: Photografik policies first, Creator supplement last, effective date, cross-links, footer acceptance, phone layout', async () => {
+  const legal = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/legal.json', import.meta.url), 'utf8'));
+  for (const [path, title, other] of [['/licensing', 'Licensing & Usage Rights Policy', '/terms'], ['/terms', 'Terms & Conditions', '/licensing']]) {
+    for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {
+      const p = await newPage(vp);
+      const r = await p.goto(base + path);
+      assert(r.status() === 200, path + ' loads');
+      assert((await p.textContent('h1')).trim() === title, path + ' h1');
+      assert((await p.locator('.legal__date').innerText()).includes('Effective Date: September 30, 2026'), path + ' effective date');
+      assert(await p.locator(`.legal__cross a[href="${other}"]`).count() === 1, path + ' cross-link');
+      const groups = await p.locator('.legal__toc-h').allTextContents();
+      assert(JSON.stringify(groups) === JSON.stringify(['Photografik Studios / General Policies', 'Creator Studios / Podcast & Studio Policies']), path + ' toc order ' + groups);
+      const bodyOrder = await p.evaluate(() => { const b = document.querySelector('.legal__body'); const sup = b.querySelector('.legal__supplement'); return !sup.nextElementSibling; });
+      assert(bodyOrder, path + ' Creator supplement is last');
+      const nums = await p.locator('.legal__n').allTextContents();
+      assert(nums.every((n, i) => n === `${i + 1}.`), path + ' continuous numbering ' + nums.join(''));
+      if (!legal.ready) {
+        assert(await p.locator('.legal__body p:not(.legal__pending):not(.eyebrow)').count() === 0, path + ' no legal text before the source document');
+        assert(await p.locator('meta[name=robots][content*=noindex]').count() === 1, path + ' review noindex');
+      }
+      assert(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path + ' no overflow at ' + vp.width);
+      await p.context().close();
+    }
+  }
+  const p = await newPage();
+  for (const path of ['/', '/creator-studios', '/field-notes', '/contact']) {
+    await p.goto(base + path);
+    const f = p.locator('.site-footer__legal');
+    assert((await f.textContent()).startsWith('By booking services, approving an estimate, paying an invoice or deposit, or accessing delivered media, you agree to Photografik Studios'), path + ' acceptance text');
+    assert(await f.locator('a[href="/terms"]').textContent() === 'Terms & Conditions' && await f.locator('a[href="/licensing"]').textContent() === 'Licensing & Usage Rights Policy', path + ' footer links');
+  }
+  await p.context().close();
+});
+
+await check('Field Notes editor: /admin is noindex, pinned and Git-backed; drafts are off by default', async () => {
+  const html = await (await fetch(base + '/admin')).text();
+  assert(/noindex/.test(html) && /unpkg\.com\/decap-cms@\d+\.\d+\.\d+\/dist\/decap-cms\.js" integrity="sha384-[A-Za-z0-9+/=]+"/.test(html), 'pinned Decap with SRI');
+  const cfg = await (await fetch(base + '/admin/config.js')).text();
+  const conf = JSON.parse(cfg.match(/PHOTOGRAFIK_CMS_CONFIG = (\{.*\});/)[1]);
+  assert(conf.backend.name === 'github' && conf.backend.auth_endpoint === 'api/cms-auth' && conf.collections[0].folder === 'content/field-notes', 'git backend');
+  assert(conf.collections[0].fields.find((x) => x.name === 'published').default === false, 'drafts by default');
+  const robots = await (await fetch(base + '/robots.txt')).text();
+  assert(/Disallow: \//.test(robots), 'robots');
 });
 
 // Screenshots for the handoff

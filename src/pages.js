@@ -1,4 +1,6 @@
 import { esc, join } from './lib/html.js';
+import { renderArticle, bodyRefs, inline as inlineMd } from './lib/markdown.js';
+import { numberSections } from './lib/legal-core.js';
 import { formatUSD, resolvePrice, inclusion, includeLabels, tierLabel, findTier } from './lib/pricing-core.js';
 import { facts, editorialOrder, TYPE_FILTERS, optionCounts, segmentsOf } from './lib/gallery-core.js';
 
@@ -248,20 +250,16 @@ ${splitCta(undefined, undefined, undefined, true)}`,
   };
 
   // ---------- FIELD NOTES ----------
-  // One structured collection (content/field-notes.json). Review builds render draft/review pieces with a
-  // Draft tag; production renders only published, approved pieces. 'source-needed' entries never render.
+  // One Git-backed collection: content/field-notes/<slug>.md (JSON front matter + Markdown), edited through /admin.
+  // Only published articles reach the index, related links, teasers and sitemap. Production builds do not
+  // generate draft pages at all (404); review builds render a draft at its URL with a Draft banner for proofreading.
   const fn = ctx.fieldNotes;
-  const fnTopic = Object.fromEntries(fn.topics.map((t) => [t.id, t.label]));
-  const fnVisible = fn.articles.filter((a) => (a.status === 'published' && a.approvedBy) || (reviewMode && ['draft', 'review'].includes(a.status)));
+  const fnCat = Object.fromEntries(fn.categories.map((c) => [c.id, c.label]));
+  const fnPublished = fn.articles.filter((a) => a.published === true);
+  const fnPages = fn.articles.filter((a) => a.published === true || reviewMode);
   const mediaById = Object.fromEntries(work.media.map((m) => [m.id, m]));
   const fnDate = (d) => (d ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '');
-  const draftTag = (a) => (a.status === 'published' ? '' : `<span class="needs-approval" title="Awaiting editorial review before publishing">Draft for review</span>`);
-  const fnHeroImg = (a, opts = {}) => {
-    const m = a.hero?.media ? mediaById[a.hero.media] : null;
-    if (!m) return '';
-    const src = m.type === 'video' ? m.poster : (m.src);
-    return img(src, { alt: m.type === 'video' ? '' : (m.alt || m.title), sizes: opts.sizes || '(min-width: 900px) 33vw, 100vw', eager: !!opts.eager });
-  };
+  const fnHeroImg = (a, opts = {}) => (a.hero ? img(a.hero, { alt: opts.decorative ? '' : a.heroAlt, sizes: opts.sizes || '(min-width: 900px) 33vw, 100vw', eager: !!opts.eager }) : '');
   const fnMedia = (id) => {
     const m = mediaById[id];
     if (!m) return '';
@@ -269,21 +267,24 @@ ${splitCta(undefined, undefined, undefined, true)}`,
       ? `<figure class="fn-figure fn-figure--${esc(m.orientation)}">${videoPlayer(m, { sizes: '(min-width: 900px) 720px, 100vw' })}<figcaption>${esc(m.title)}${m.location ? `, ${esc(m.location)}` : ''}</figcaption></figure>`
       : `<figure class="fn-figure">${img(m.src, { alt: m.alt || m.title, sizes: '(min-width: 900px) 720px, 100vw' })}<figcaption>${esc(m.title)}</figcaption></figure>`;
   };
-  const sectionId = (h) => h.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const fnCard = (a) => `<article class="fn-card">
-      <a class="fn-card__media" href="/field-notes/${esc(a.slug)}" tabindex="-1" aria-hidden="true">${fnHeroImg(a)}</a>
+  const fnImage = (b) => `<figure class="fn-figure">${img(b.src, { alt: b.alt, sizes: '(min-width: 900px) 720px, 100vw' })}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`;
+  const fnCard = (a) => `<article class="fn-card" data-category="${esc(a.category)}">
+      <a class="fn-card__media" href="/field-notes/${esc(a.slug)}" tabindex="-1" aria-hidden="true">${fnHeroImg(a, { decorative: true })}</a>
       <div class="fn-card__body">
-        <p class="fn-card__meta">${esc(fnTopic[a.topic] || '')}${a.datePublished ? ` · ${esc(fnDate(a.datePublished))}` : ''} ${draftTag(a)}</p>
+        <p class="fn-card__meta">${esc(fnCat[a.category] || '')}${a.datePublished ? ` · ${esc(fnDate(a.datePublished))}` : ''}</p>
         <h3 class="fn-card__title"><a href="/field-notes/${esc(a.slug)}">${esc(a.title)}</a></h3>
         <p class="fn-card__summary">${esc(a.summary)}</p>
       </div>
     </article>`;
 
-  if (fnVisible.length) {
-    const topicsUsed = fn.topics.filter((t) => fnVisible.some((a) => a.topic === t.id));
+  if (fnPublished.length || (reviewMode && fnPages.length)) {
+    // Category filters appear only when at least two categories have published articles.
+    const catsUsed = fn.categories.filter((c) => fnPublished.some((a) => a.category === c.id));
+    const filters = catsUsed.length >= 2;
     pages['/field-notes'] = {
       seo: { title: 'Field Notes | Practical answers before the shoot | Photografik', description: 'Short guides on what to book, how to prepare, where the finished media will be used and what is worth adding, from the Photografik Studios team.' },
       overlay: true,
+      scripts: filters ? ['field-notes.js'] : undefined,
       body: `${(() => {
         // James, Sep 25 2026: Field Notes may open with a rights-approved house photograph (exception to the video-opener rule).
         const heroPhoto = allMediaById[fn.heroMedia || 'ph-oceanfront-twilight-pool'];
@@ -295,13 +296,13 @@ ${splitCta(undefined, undefined, undefined, true)}`,
           imageAlt: heroPhoto?.alt || '',
         });
       })()}
-${join(topicsUsed, (t) => `
-<section class="section fn-topic" aria-labelledby="fn-t-${t.id}">
+<section class="section fn-topic" aria-labelledby="fn-latest-h">
   <div class="wrap">
-    <h2 class="h3 fn-topic__h" id="fn-t-${t.id}">${esc(t.label)}</h2>
-    <div class="fn-grid">${join(fnVisible.filter((a) => a.topic === t.id), fnCard)}</div>
+    <h2 class="h3 fn-topic__h" id="fn-latest-h">Latest Field Notes</h2>
+    ${filters ? `<div class="fn-filters" role="group" aria-label="Show Field Notes by category"><button type="button" class="fn-filter" aria-pressed="true" data-fn-filter="">All</button>${join(catsUsed, (c) => `<button type="button" class="fn-filter" aria-pressed="false" data-fn-filter="${esc(c.id)}">${esc(c.label)}</button>`)}</div>` : ''}
+    ${fnPublished.length ? `<div class="fn-grid" data-fn-grid>${join(fnPublished, fnCard)}</div>` : '<p class="muted">No published Field Notes yet. Drafts are listed only in the editor.</p>'}
   </div>
-</section>`)}
+</section>
 <section class="section section--tint">
   <div class="wrap cta-band cta-band--light">
     <h2 class="h2">Have a question we have not answered?</h2>
@@ -312,54 +313,57 @@ ${join(topicsUsed, (t) => `
       jsonLd: {
         '@context': 'https://schema.org', '@type': 'Blog', name: 'Field Notes', url: `${site.canonicalOrigin}/field-notes`,
         publisher: { '@type': 'Organization', name: site.name },
+        blogPost: fnPublished.map((a) => ({ '@type': 'BlogPosting', headline: a.title, url: `${site.canonicalOrigin}/field-notes/${a.slug}`, datePublished: a.datePublished })),
       },
     };
+  }
 
-    for (const a of fnVisible) {
-      const url = `${site.canonicalOrigin}/field-notes/${a.slug}`;
-      const heroM = a.hero?.media ? mediaById[a.hero.media] : null;
-      const heroSrc = heroM ? (heroM.type === 'video' ? heroM.poster : heroM.src) : site.media.hero;
-      const absImg = (p) => { const u = ctx.mediaUrl(p); return u.startsWith('/') ? site.canonicalOrigin + u : u; };
-      const toc = a.sections.length >= 4;
-      const related = fnVisible.filter((x) => x.slug !== a.slug && x.topic === a.topic).slice(0, 2);
-      pages[`/field-notes/${a.slug}`] = {
-        seo: { title: a.seo?.title || `${a.title} | Photografik`, description: a.seo?.description || a.summary, image: heroSrc },
-        ogType: 'article',
-        jsonLd: [
-          Object.fromEntries(Object.entries({
-            '@context': 'https://schema.org', '@type': 'BlogPosting', headline: a.title, description: a.summary,
-            image: [absImg(heroSrc)], author: { '@type': a.author?.name === site.name ? 'Organization' : 'Person', name: a.author?.name || site.name },
-            publisher: { '@type': 'Organization', name: site.name, logo: { '@type': 'ImageObject', url: absImg(site.media.logo) } },
-            datePublished: a.datePublished || undefined, dateModified: a.dateModified || a.datePublished || undefined,
-            mainEntityOfPage: url,
-          }).filter(([, v]) => v !== undefined)),
-          {
-            '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Field Notes', item: `${site.canonicalOrigin}/field-notes` },
-              { '@type': 'ListItem', position: 2, name: a.title, item: url },
-            ],
-          },
-        ],
-        body: `
+  for (const a of fnPages) {
+    const url = `${site.canonicalOrigin}/field-notes/${a.slug}`;
+    const absImg = (p) => { const u = ctx.mediaUrl(p); return u.startsWith('/') ? site.canonicalOrigin + u : u; };
+    const social = a.seo?.image || a.hero || site.media.hero;
+    const rendered = renderArticle(a.body, { media: fnMedia, image: fnImage });
+    const refs = bodyRefs(a.body);
+    // Skip the hero figure when the same picture already appears in the article body.
+    const heroInBody = refs.images.includes(a.hero) || refs.media.some((id) => { const m = mediaById[id]; return m && (m.src === a.hero || m.poster === a.hero); });
+    const toc = rendered.toc.length >= 4;
+    const related = fnPublished.filter((x) => x.slug !== a.slug && x.category === a.category).slice(0, 2);
+    const draft = !a.published;
+    pages[`/field-notes/${a.slug}`] = {
+      seo: { title: a.seo?.title || `${a.title} | Photografik`, description: a.seo?.description || a.summary, image: social },
+      ogType: 'article',
+      articleDates: { published: a.datePublished, modified: a.dateModified || a.datePublished },
+      jsonLd: [
+        Object.fromEntries(Object.entries({
+          '@context': 'https://schema.org', '@type': 'BlogPosting', headline: a.title, description: a.seo?.description || a.summary,
+          image: [absImg(social)], author: { '@type': a.author?.name === site.name ? 'Organization' : 'Person', name: a.author?.name || site.name },
+          publisher: { '@type': 'Organization', name: site.name, logo: { '@type': 'ImageObject', url: absImg(site.media.logo) } },
+          datePublished: a.datePublished || undefined, dateModified: a.dateModified || a.datePublished || undefined,
+          articleSection: fnCat[a.category] || undefined,
+          mainEntityOfPage: url,
+        }).filter(([, v]) => v !== undefined)),
+        {
+          '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Field Notes', item: `${site.canonicalOrigin}/field-notes` },
+            { '@type': 'ListItem', position: 2, name: a.title, item: url },
+          ],
+        },
+      ],
+      body: `
 <article class="fn-article">
   <header class="section fn-article__head">
     <div class="wrap fn-narrow">
-      <nav class="fn-crumbs" aria-label="Breadcrumb"><a href="/field-notes">Field Notes</a> <span aria-hidden="true">/</span> <span>${esc(fnTopic[a.topic] || '')}</span></nav>
+      ${draft ? `<p class="fn-draft" role="note"><strong>Draft, not published.</strong> Only review builds show this page. It is not in the Field Notes list, the sitemap or search engines, and the live site returns 404 until it is published.</p>` : ''}
+      <nav class="fn-crumbs" aria-label="Breadcrumb"><a href="/field-notes">Field Notes</a> <span aria-hidden="true">/</span> <span>${esc(fnCat[a.category] || '')}</span></nav>
       <h1 class="display fn-article__title">${esc(a.title)}</h1>
-      <p class="fn-byline">By ${esc(a.author?.name || site.name)}${a.datePublished ? ` · <time datetime="${esc(a.datePublished)}">${esc(fnDate(a.datePublished))}</time>` : ''}${a.dateModified && a.dateModified !== a.datePublished ? ` · Updated <time datetime="${esc(a.dateModified)}">${esc(fnDate(a.dateModified))}</time>` : ''} ${draftTag(a)}</p>
-      <p class="fn-answer">${esc(a.answer)}</p>
+      <p class="fn-byline">By ${esc(a.author?.name || site.name)}${a.datePublished ? ` · <time datetime="${esc(a.datePublished)}">${esc(fnDate(a.datePublished))}</time>` : ''}${a.dateModified && a.dateModified !== a.datePublished ? ` · Updated <time datetime="${esc(a.dateModified)}">${esc(fnDate(a.dateModified))}</time>` : ''}</p>
+      <p class="fn-answer">${esc(a.answer || a.summary)}</p>
     </div>
   </header>
+  ${a.hero && !heroInBody ? `<div class="wrap fn-narrow"><figure class="fn-figure fn-hero">${fnHeroImg(a, { eager: true, sizes: '(min-width: 900px) 720px, 100vw' })}</figure></div>` : ''}
   <div class="wrap fn-narrow fn-body">
-    ${toc ? `<nav class="fn-toc" aria-label="In this article"><p class="fn-toc__h">In this article</p><ol>${join(a.sections, (s) => `<li><a href="#${sectionId(s.h)}">${esc(s.h)}</a></li>`)}</ol></nav>` : ''}
-    ${join(a.sections, (s) => `
-    <section class="fn-section" aria-labelledby="${sectionId(s.h)}">
-      <h2 class="h3" id="${sectionId(s.h)}">${esc(s.h)}</h2>
-      ${join(s.p || [], (t) => `<p>${esc(t)}</p>`)}
-      ${s.list ? `<ul class="fn-list">${join(s.list, (t) => `<li>${esc(t)}</li>`)}</ul>` : ''}
-      ${s.note ? `<p class="fn-note">${esc(s.note)}</p>` : ''}
-      ${s.media ? fnMedia(s.media) : ''}
-    </section>`)}
+    ${toc ? `<nav class="fn-toc" aria-label="In this article"><p class="fn-toc__h">In this article</p><ol>${join(rendered.toc, (t) => `<li><a href="#${t.id}">${inlineMd(t.text)}</a></li>`)}</ol></nav>` : ''}
+    ${rendered.html}
     <aside class="fn-next">
       <p class="eyebrow">Next step</p>
       <p class="fn-next__t">${esc(a.cta?.lead || 'Ready to plan the media for your next listing?')}</p>
@@ -368,11 +372,10 @@ ${join(topicsUsed, (t) => `
     ${related.length ? `<section class="fn-related" aria-labelledby="fn-rel"><h2 class="h3" id="fn-rel">More Field Notes</h2><div class="fn-grid fn-grid--2">${join(related, fnCard)}</div></section>` : ''}
   </div>
 </article>`,
-      };
-    }
+    };
   }
-  const fnTeaser = (topic) => {
-    const list = fnVisible.filter((a) => a.topic === topic).slice(0, 3);
+  const fnTeaser = (category) => {
+    const list = fnPublished.filter((a) => a.category === category).slice(0, 3);
     if (!list.length) return '';
     return `
 <section class="section fn-teaser" aria-labelledby="fn-teaser-h">
@@ -554,7 +557,7 @@ ${compareSection()}
     ${faqBlock(faqs['real-estate'])}
   </div>
 </section>
-${fnTeaser('real-estate-media')}
+${fnTeaser('real-estate')}
 
 <section class="section section--brand on-dark">
   <div class="wrap cta-band">
@@ -667,7 +670,7 @@ ${fnTeaser('real-estate-media')}
     </div>
 
     <div class="pricing-notes">
-      <p><strong>About these prices.</strong> These are calculated from the size tiers in our booking portal, HD Photo Hub, and are confirmed there at checkout. ${needsApproval({ approval: pricing.releaseApproved ? 'approved' : 'pending' }, 'Size bands mirror HD Photo Hub as confirmed by James on Sep 25; a full price and inclusion comparison is still required before launch')} They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
+      <p><strong>About these prices.</strong> These are calculated from the size tiers in our booking portal, HD Photo Hub, and are confirmed there at checkout. ${needsApproval({ approval: pricing.releaseApproved ? 'approved' : 'pending' }, 'Dev-only: prices, tiers and inclusions approved by James (Sep 30). Vye is independently checking the square-footage tiers against HD Photo Hub before launch.')} They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
       <p>Homes over ${pricing.maxSqft.toLocaleString('en-US')} square feet: <a href="/contact?type=real-estate-large">request a custom quote</a>.</p>
       <p>You will confirm property size, package and date in our booking portal, HD Photo Hub. ${bookBtn('pricing_notes', 'Go to booking', 'link-arrow')}</p>
     </div>
@@ -1034,7 +1037,7 @@ ${cp.length || b2b.length ? `<section class="section">
       </li>`)}</ul>
       <p class="small muted cpm__how">The level is set by the overall production scope: the number of buildings and spaces, interior and exterior coverage, complexity and time on site, not square footage alone. The square footage ranges above are general guidelines.</p>
       ${cpAdd.length ? `<h4 class="cpm__sub">Popular add-ons</h4><ul class="cpm__addons" role="list">${join(cpAdd, (a) => `<li><p class="cpm__name">${esc(a.name)} ${needsApproval(a)}</p><p class="cpm__addprice">${approvedPrice(a, esc(a.price))}</p><p class="small muted">${esc(a.detail)}</p></li>`)}</ul>` : ''}
-      ${cpPort ? `<h4 class="cpm__sub">Portfolio pricing</h4><p class="small">${esc(cpPort.intro)}</p><ul class="prows prows--compact cpm__portfolio">${join(cpPort.tiers, ([n, r]) => `<li class="prow"><div class="prow__text"><p class="prow__name">${esc(n)}</p></div><div class="prow__price">${approvedPrice(cpPort, `<strong>${esc(r)}</strong>`)}</div></li>`)}</ul><p class="small muted">${esc(cpPort.fine)}</p>${cpPort.custom ? `<p class="cpm__custom"><strong>Need a custom scope?</strong> ${esc(cpPort.custom)}</p>` : ''}` : ''}
+      ${cpPort ? `<div class="cpm__multi"><h4 class="cpm__sub" id="cpm-multi-h">${esc(cpPort.heading)}</h4><p>${esc(cpPort.text)}</p><p><a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_multi_property">${esc(cpPort.ctaLabel)}</a></p></div><p class="small muted">${esc(cpPort.fine)}</p>${cpPort.custom ? `<p class="cpm__custom"><strong>Need a custom scope?</strong> ${esc(cpPort.custom)}</p>` : ''}` : ''}
     </div>` : ''}
     ${b2b.length ? `<div class="cpm__monthly">
       <h3 class="h3">Ongoing business content</h3>
@@ -1105,7 +1108,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   const creatorHref = site.destinations.creatorBooking.href;
   const creatorInquiry = site.destinations.creatorInquiry?.href || '/contact?type=creator-studios';
   const creatorExternal = /^https?:/.test(creatorHref) ? ' target="_blank" rel="noopener"' : '';
-  const csFrom = sessions.filter(isApproved).reduce((lo, x) => (lo && lo < x.amount ? lo : x.amount), 0);
+  const csFrom = sessions.filter((x) => isApproved(x) && typeof x.amount === 'number').reduce((lo, x) => (lo && lo < x.amount ? lo : x.amount), 0);
   const csStart = (loc, label = 'Book a Studio Session', cls = 'btn btn--solid') => `<a class="${cls}" href="${creatorHref}"${creatorExternal} data-track="creator_click" data-track-location="${loc}">${label}${creatorExternal ? '<span class="sr-only"> (opens LI Creator Studios booking in a new tab)</span>' : ''}</a>`;
   // James, Sep 28 2026: booking is through LI Creator Studios (the button still opens the verified booking flow).
   const csBookingNote = `<p class="small booking-note">Studio sessions are booked through LI Creator Studios. Choose your session and time there. Not sure which session fits? <a href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_inquiry">Ask us first</a>.</p>`;
@@ -1129,11 +1132,11 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const alt = m.type === 'video' ? 'Frame from a vertical podcast clip with word-by-word captions' : (m.alt || m.title);
     return `<figure class="cs-format__img">${img(src, { alt, thumb: m.thumb, sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
   };
-  const csSessionPhoto = { 'podcast-session': 'cs-ph-island-federal', 'content-session': 'cs-ph-solo-couch', 'recording-editing': 'cs-ph-cc-ep20' };
+  const csSessionPhoto = { 'podcast-session': 'cs-ph-island-federal', 'content-session': 'cs-ph-solo-couch', 'monthly-content': 'cs-ph-cc-ep20' };
   // James, Sep 26 2026: How it works and FAQ follow licreatorstudios.com/how-it-works.
   const csFaq = [
     ['Can I come solo, or with fewer than four guests?', 'Yes. We adjust the setup to suit any number of guests.'],
-    ['How quickly do I receive my files?', 'Your recorded live session is sent within 24 hours. If we edit for you, including social media clips, allow about 5 to 7 days.'],
+    ['How quickly do I receive my files?', 'The live-edit podcast (your live-cut file) is available within 24 hours. If we edit for you, most edited episodes and accompanying clips are delivered within approximately 7–10 days.'],
     ['Why would I need further editing?', 'The live cut satisfies most people. Additional editing is there when you want the episode as polished as possible.'],
     ['Will I receive every audio and video file separately?', 'Typically, no. We can record every camera and microphone separately for more in-depth editing; to receive the isolated files, bring a Samsung T5 or T7 SSD for us to record to. Contact us for details.'],
     ['Can I livestream from the studio?', 'Yes. We have fast internet and can stream to any platform.'],
@@ -1147,7 +1150,6 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   const csCtaParts = [
     csBy['podcast-session'] && `Single studio sessions start at ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes.`,
     csBy['content-session'] && `General studio content starts at ${formatUSD(csBy['content-session'].amount)} for a 2-hour minimum.`,
-    csBy['recording-editing'] && `Recording + Editing starts at ${formatUSD(csBy['recording-editing'].amount)} a month.`,
   ].filter(Boolean);
   const csCtaLine = csCtaParts.length ? csCtaParts.join(' ') : 'Tell us who you want to reach and what you want to talk about.';
   pages['/creator-studios'] = {
@@ -1180,11 +1182,11 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     <div class="cs-sessions cs-sessions--${sessions.length}">${join(sessions, (s) => `<div class="plan plan--media reveal" data-session="${esc(s.id)}">
       ${csFig(csSessionPhoto[s.id] || 'cs-ph-solo-couch')}
       <h3 class="h3">${esc(s.name)} ${needsApproval(s, s.reviewNote)}</h3>
-      <p class="plan__price">${approvedPrice(s, `<span class="plan__from">Starting at</span> <strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`, 'Price being confirmed')}</p>
+      ${s.priced === false ? `<p class="plan__q">${esc(s.question || '')}</p>` : `<p class="plan__price">${approvedPrice(s, `<span class="plan__from">Starting at</span> <strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`, 'Price being confirmed')}</p>`}
       <p>${esc(s.detail)}</p>
       ${s.includes?.length ? `<ul class="plan__list">${join(s.includes, (x) => `<li>${esc(x)}</li>`)}</ul>` : ''}
       ${s.extra ? `<p class="small muted">${esc(s.extra)}</p>` : ''}
-      <div class="plan__cta">${s.booking === 'inquiry' ? `<a class="link-arrow" href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_plan_${esc(s.id)}">Ask about ${esc(s.name)} ${arrow}</a>` : csStart(`creator_plan_${s.id}`, 'Book this session', 'btn btn--solid')}</div></div>`)}</div>
+      <div class="plan__cta">${s.booking === 'inquiry' ? `<a class="${s.priced === false ? 'btn btn--solid' : 'link-arrow'}" href="${creatorInquiry}" data-track="creator_click" data-track-location="creator_plan_${esc(s.id)}">${esc(s.ctaLabel || `Ask about ${s.name}`)}${s.priced === false ? '' : ` ${arrow}`}</a>` : csStart(`creator_plan_${s.id}`, 'Book this session', 'btn btn--solid')}</div></div>`)}</div>
     ${csBookingNote}
   </div>
 </section>
@@ -1214,7 +1216,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <li>${csFormatFig('short')}<h3>Short-form clips and reels</h3><p>Vertical clips for social, scoped with you.</p>${scope(false)}</li>
       <li>${csFormatFig('planned')}<h3>Planned for your channels</h3><p>Topics, a publishing plan and distribution.</p>${scope(false)}</li>
     </ul>
-    <p class="aside-line">A single session includes the live-cut file. Editing is available by quote, or every month with Recording + Editing.</p>
+    <p class="aside-line">A single session includes the live-cut file. Editing is available by quote, or as part of a monthly content schedule.</p>
   </div>
 </section>
 
@@ -1239,7 +1241,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     <ol class="steps steps--4">
       <li class="reveal"><span class="steps__n">01 / Book</span><h3>Choose your studio and a time.</h3><p>Pick your set, then a date and time that work for you. For longer sessions, contact us.</p></li>
       <li class="reveal"><span class="steps__n">02 / Record</span><h3>Sit back and record.</h3><p>We handle the equipment while you focus on the conversation.</p></li>
-      <li class="reveal"><span class="steps__n">03 / Receive</span><h3>Files within 24 hours.</h3><p>Your recorded live session is sent within 24 hours. Edited episodes and clips take about 5 to 7 days.</p></li>
+      <li class="reveal"><span class="steps__n">03 / Receive</span><h3>Your live cut within 24 hours.</h3><p>The live-edit podcast (your live-cut file) is available within 24 hours. Most edited episodes and accompanying clips are delivered within approximately 7–10 days.</p></li>
       <li class="reveal"><span class="steps__n">04 / Partner</span><h3>Keep going with us.</h3><p>Add services, improved rates and more end-to-end support when you record regularly.</p></li>
     </ol>
   </div>
@@ -1359,13 +1361,65 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <p class="eyebrow">Where we work</p>
       <p>${esc(site.serviceArea)}</p>
       <p class="eyebrow">Usage and licensing ${needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</p>
-      <p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.</p>
+      <p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p>
     </div>
   </div>
 </section>
 ${aboutReviews}
 ${splitCta('Let us help with the next one.')}`,
   };
+
+  // ---------- LEGAL: /terms and /licensing ----------
+  // Text comes only from Photografik_Studios_Website_Terms_and_Licensing.docx (content/legal.json). Photografik's
+  // general policies come first; Creator Studios provisions follow as a labelled supplement of the same document.
+  const legal = ctx.legal;
+  if (legal && (legal.ready || reviewMode)) {
+    const eff = new Date(legal.effectiveDate + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+    const pending = (what) => `<p class="legal__pending"><span class="needs-approval">Awaiting source text</span> ${esc(what)}</p>`;
+    const block = (b) => {
+      if (b.type === 'p') return `<p>${inlineMd(b.text)}</p>`;
+      if (b.type === 'h3') return `<h4 class="legal__sub">${inlineMd(b.text)}</h4>`;
+      if (b.type === 'ul' || b.type === 'ol') return `<${b.type}>${join(b.items, (t) => `<li>${inlineMd(t)}</li>`)}</${b.type}>`;
+      if (b.type === 'table') return `<div class="legal__table" role="region" aria-label="${esc(b.caption || 'Table')}" tabindex="0"><table>${b.caption ? `<caption>${esc(b.caption)}</caption>` : ''}<thead><tr>${join(b.head, (c) => `<th scope="col">${inlineMd(c)}</th>`)}</tr></thead><tbody>${join(b.rows, (r) => `<tr>${join(r, (c) => `<td>${inlineMd(c)}</td>`)}</tr>`)}</tbody></table></div>`;
+      return '';
+    };
+    const other = { '/terms': ['/licensing', 'Licensing & Usage Rights Policy'], '/licensing': ['/terms', 'Terms & Conditions'] };
+    for (const page of Object.values(legal.pages)) {
+      const groups = numberSections(page);
+      const secHtml = (s, tag) => `<section class="legal__sec" id="${s.id}" aria-labelledby="${s.id}-h">
+        <${tag} class="${tag === 'h2' ? 'h3' : 'h4'} legal__h" id="${s.id}-h"><span class="legal__n">${s.n}.</span> ${esc(s.title)}</${tag}>
+        ${s.blocks?.length ? join(s.blocks, block) : pending('This section will be copied from the supplied legal document.')}
+      </section>`;
+      const [xHref, xLabel] = other[page.route] || [];
+      pages[page.route] = {
+        seo: { title: `${page.title} | Photografik Studios`, description: page.seoDescription },
+        body: `
+<section class="section legal">
+  <div class="wrap legal__wrap">
+    <header class="legal__head">
+      <p class="eyebrow">Legal</p>
+      <h1 class="display legal__title">${esc(page.title)}</h1>
+      <p class="legal__date"><strong>Effective Date: ${esc(eff)}</strong></p>
+      ${xHref ? `<p class="legal__cross">Read this together with our <a href="${xHref}">${esc(xLabel)}</a>.</p>` : ''}
+      ${legal.ready ? '' : `<p class="legal__pending"><span class="needs-approval">Review build only</span> The page structure is ready; the text will be copied from ${esc(legal.source.file)} when it is supplied. This page is not published.</p>`}
+    </header>
+    <nav class="legal__toc" aria-label="Contents">
+      ${join(groups, (g) => `<p class="legal__toc-h">${esc(g.label)}</p>${g.sections.length ? `<ol class="legal__toc-list">${join(g.sections, (s) => `<li value="${s.n}"><a href="#${s.id}">${esc(s.title)}</a></li>`)}</ol>` : `<p class="small muted">Listed in the document's order when the text is added.</p>`}`)}
+    </nav>
+    <div class="legal__body">
+      ${join(groups, (g) => g.id === 'general'
+        ? (g.sections.length ? join(g.sections, (s) => secHtml(s, 'h2')) : pending('The general Photografik Studios sections will appear here in the order of the supplied document.'))
+        : `<div class="legal__supplement" id="${esc(g.id)}">
+        <p class="eyebrow">${esc(g.label)}</p>
+        <h2 class="h2 legal__group-h">${esc(g.heading || g.label)}</h2>
+        ${join(g.sections, (s) => secHtml(s, 'h3'))}
+      </div>`)}
+    </div>
+  </div>
+</section>`,
+      };
+    }
+  }
 
   // ---------- CONTACT ----------
   pages['/contact'] = {

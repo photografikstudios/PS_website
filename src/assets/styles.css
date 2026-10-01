@@ -316,6 +316,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .plans--2 { grid-template-columns: repeat(2, minmax(0, 480px)); }
 .plan { border-top: 1px solid var(--charcoal); padding-top: 28px; }
 .plan__tag { color: var(--muted); margin: 0 0 22px; }
+.plan__q { margin: 0; font: 400 22px/1.3 var(--serif); }
 .plan__price { margin: 0; font: 400 11px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; } .plan__price strong { font: 400 44px/1 var(--serif); letter-spacing: -0.01em; text-transform: none; }
 .plan__alt { font-size: 14px; color: var(--muted); margin: 8px 0 22px; }
 @media (max-width: 900px) { .plans, .plans--2 { grid-template-columns: 1fr; } }
@@ -721,6 +722,12 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .fn-list li { margin: 8px 0; }
 .fn-note { font-size: 15px !important; color: var(--muted); }
 .fn-figure { margin: 28px 0 0; }
+.fn-hero { margin: 0 0 8px; }
+.fn-draft { margin: 0 0 18px; padding: 10px 14px; border: 1px dashed var(--muted); border-radius: 6px; font-size: 14px; background: rgba(212, 175, 55, .12); }
+.fn-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; }
+.fn-filter { font: 400 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 10px 14px; min-height: 44px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: inherit; cursor: pointer; }
+.fn-filter[aria-pressed="true"] { background: var(--charcoal); color: var(--ivory); border-color: var(--charcoal); }
+.fn-section h3.h4 { margin: 22px 0 6px; font-size: 19px; }
 .fn-figure img { width: 100%; height: auto; border-radius: 6px; display: block; }
 .fn-figure figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; }
 .fn-figure--vertical { max-width: 360px; }
@@ -985,8 +992,8 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .cpm__addons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
 .cpm__addons p { margin: 0 0 4px; }
 .cpm__addprice { font-weight: 600; }
-.cpm__portfolio { max-width: 720px; margin-left: 0; margin-right: auto; }
-.cpm__portfolio .prow__name, .cpm__portfolio .prow__price strong { font-size: 18px; }
+.cpm__multi { max-width: 720px; margin-top: 28px; }
+.cpm__multi p { margin: 8px 0 0; } .cpm__multi .btn { margin-top: 10px; }
 .cpm__monthly { margin-top: clamp(30px, 4vw, 48px); }
 @media (max-width: 1000px) { .cpm__tiers, .cpm__addons { grid-template-columns: repeat(2, minmax(0, 1fr)); } .cpm__tier:nth-child(3) { border-left: 0; } .cpm__tier:nth-child(n+3) { border-top: 1px solid var(--line, rgba(0,0,0,.18)); } }
 @media (max-width: 620px) { .cpm__tiers, .cpm__addons { grid-template-columns: 1fr; } .cpm__tier + .cpm__tier { border-left: 0; border-top: 1px solid var(--line, rgba(0,0,0,.18)); } }
@@ -1057,3 +1064,24 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .com-value .lede { max-width: 62ch; }
 /* Best value badge: to the right only when the card is wide enough; otherwise above the plan name. */
 @media (max-width: 1279px) { .plan--best .plan__badge { position: static; margin: 0 0 12px; } }
+
+/* Legal pages (/terms, /licensing): conventional reading layout. */
+.legal { padding-top: clamp(40px, 7vw, 88px); }
+.legal__wrap { max-width: 1120px; display: grid; gap: 32px 56px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1000px) { .legal__wrap { grid-template-columns: 280px minmax(0, 72ch); } .legal__head { grid-column: 1 / -1; } .legal__toc { position: sticky; top: 96px; align-self: start; max-height: calc(100vh - 120px); overflow: auto; } }
+.legal__title { margin: 6px 0 12px; font-size: clamp(36px, 5vw, 56px); }
+.legal__date { margin: 0 0 6px; }
+.legal__cross, .legal__pending { margin: 6px 0 0; overflow-wrap: anywhere; }
+.legal__body, .legal__toc { overflow-wrap: break-word; }
+.legal__toc { font-size: 15px; border-top: 1px solid var(--line); padding-top: 14px; }
+.legal__toc-h { margin: 14px 0 6px; font: 400 11px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.legal__toc-list { margin: 0; padding-left: 1.6em; } .legal__toc-list li { margin: 4px 0; } .legal__toc a { text-decoration: none; } .legal__toc a:hover { text-decoration: underline; }
+.legal__body { font-size: 17px; line-height: 1.7; max-width: 72ch; }
+.legal__sec { padding: 8px 0 18px; scroll-margin-top: 96px; }
+.legal__h { margin: 24px 0 8px; } .legal__n { font-variant-numeric: tabular-nums; margin-right: .25em; }
+.legal__sub { margin: 18px 0 6px; font-size: 17px; }
+.legal__body ul, .legal__body ol { padding-left: 1.4em; } .legal__body li { margin: 4px 0; }
+.legal__supplement { margin-top: 40px; padding-top: 28px; border-top: 2px solid var(--line); }
+.legal__group-h { font-size: clamp(26px, 3.4vw, 34px); margin: 4px 0 8px; }
+.legal__table { overflow-x: auto; margin: 14px 0; } .legal__table table { border-collapse: collapse; min-width: 480px; width: 100%; font-size: 15px; } .legal__table th, .legal__table td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.site-footer__legal { margin: 6px 0 0; font-size: 13px; max-width: 90ch; }

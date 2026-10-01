@@ -7,9 +7,12 @@ import { existsSync } from 'node:fs';
 import { createContext } from './lib/html.js';
 import { validatePricing } from './lib/pricing-core.js';
 import { validateMedia } from './lib/gallery-core.js';
-import { validateFieldNotes, legacyLaunchBlockers } from './lib/field-notes-core.js';
+import { checkFieldNotes, legacyLaunchBlockers } from './lib/field-notes-core.js';
+import { loadFieldNotes, makeFileExists } from './lib/field-notes-load.js';
 import { layout } from './layout.js';
 import { buildPages } from './pages.js';
+import { cmsConfig } from './lib/cms-config.js';
+import { validateLegal } from './lib/legal-core.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -30,10 +33,16 @@ const siteMode = process.env.SITE_MODE || (vercelEnv === 'production' ? 'product
 const reviewMode = siteMode !== 'production';
 const onVercel = !!process.env.VERCEL && process.env.LOCAL_IMAGES !== '1';
 
-const [site, pricing, work, offers, faqs, seo, fieldNotes, legacyArticles, testimonials] = await Promise.all(
-  ['site.json', 'pricing.json', 'work.json', 'offers.json', 'faqs.json', 'seo.json', 'field-notes.json', 'legacy-articles.json', 'testimonials.json'].map(readJSON),
+const [site, pricing, work, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal] = await Promise.all(
+  ['site.json', 'pricing.json', 'work.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json'].map(readJSON),
 );
-const fnErrors = validateFieldNotes(fieldNotes, legacyArticles, work);
+const legalErrors = validateLegal(legal);
+if (legalErrors.length) { console.error('Legal page errors:\n - ' + legalErrors.join('\n - ')); process.exit(1); }
+// Field Notes: one Markdown file per article (content/field-notes/*.md), edited through /admin.
+const { fieldNotes, parseErrors } = await loadFieldNotes(root);
+const fnCheck = checkFieldNotes(fieldNotes, legacyArticles, work, { fileExists: makeFileExists(root, new Set(Object.keys(mediaAssets.files || {}))) });
+for (const w of fnCheck.warnings) console.warn(`Field Notes draft note: ${w}`);
+const fnErrors = [...parseErrors, ...fnCheck.errors];
 if (fnErrors.length) { console.error('Field Notes errors:\n - ' + fnErrors.join('\n - ')); process.exit(1); }
 
 const errors = validatePricing(pricing);
@@ -55,7 +64,11 @@ const visible = (r) => reviewMode || (isApproved(r) && r.published !== false);
 if (!reviewMode) {
   const pending = pricing.packages.filter((r) => !isApproved(r)).map((r) => r.name);
   if (pricing.releaseApproved !== true) {
-    console.error('Production build blocked: content/pricing.json "releaseApproved" is not true. The HD Photo Hub reconciliation needs sign-off first.');
+    console.error('Production build blocked: content/pricing.json "releaseApproved" is not true. James approved the prices, tiers and inclusions on Sep 30; Vye’s square-footage verification against HD Photo Hub must be recorded first.');
+    process.exit(1);
+  }
+  if (legal.ready !== true) {
+    console.error('Production build blocked: content/legal.json is not ready. /terms and /licensing need the complete text of Photografik_Studios_Website_Terms_and_Licensing.docx (effective September 30, 2026).');
     process.exit(1);
   }
   const blockers = legacyLaunchBlockers(fieldNotes, legacyArticles);
@@ -76,7 +89,7 @@ if (!reviewMode) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.
 if (!pages['/field-notes']) {
@@ -96,7 +109,7 @@ const orgLd = {
 const routes = [];
 for (const [route, page] of Object.entries(pages)) {
   const pageSeo = page.seo || seo[route] || seo['/'];
-  const html = layout(ctx, { route, body: page.body, seo: pageSeo, scripts: page.scripts, dark: page.dark, overlay: page.overlay, ogType: page.ogType, jsonLd: route === '/' ? orgLd : page.jsonLd || null });
+  const html = layout(ctx, { route, body: page.body, seo: pageSeo, scripts: page.scripts, dark: page.dark, overlay: page.overlay, ogType: page.ogType, articleDates: page.articleDates, jsonLd: route === '/' ? orgLd : page.jsonLd || null });
   const file = route === '/' ? 'index.html' : `${route.slice(1)}.html`;
   await mkdir(dirname(join(out, file)), { recursive: true });
   await writeFile(join(out, file), html);
@@ -119,15 +132,32 @@ for (const f of await readdir(join(out, 'assets'))) {
   if (next !== js) await writeFile(fp, next);
 }
 
+// Field Notes editor (/admin): Decap CMS, Git-backed. Commits go to the branch this deployment was built from.
+{
+  const decap = JSON.parse(await readFile(join(root, 'src/admin/decap.json'), 'utf8'));
+  const branch = process.env.CMS_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || 'redesign/2027-preview';
+  const repo = process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}` : 'photografikstudios/PS_website';
+  const { config, library, categories } = cmsConfig({ site, fieldNotes, work, branch, repo });
+  const safe = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
+  await mkdir(join(out, 'admin'), { recursive: true });
+  const adminHtml = (await readFile(join(root, 'src/admin/index.html'), 'utf8'))
+    .replaceAll('__DECAP_VERSION__', decap.version).replaceAll('__DECAP_SRI__', decap.integrity).replaceAll('__VERSION__', version);
+  await writeFile(join(out, 'admin/index.html'), adminHtml);
+  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\n`);
+  await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
+  await cp(join(root, 'src/admin/preview.css'), join(out, 'admin/preview.css'));
+}
+
 // robots + sitemap (canonical production URLs only; review builds disallow crawling)
 await writeFile(join(out, 'robots.txt'), reviewMode
   ? 'User-agent: *\nDisallow: /\n'
-  : `User-agent: *\nAllow: /\n\nSitemap: ${site.canonicalOrigin}/sitemap.xml\n`);
-const publishedNote = (r) => fieldNotes.articles.some((a) => `/field-notes/${a.slug}` === r && a.status === 'published' && a.approvedBy);
+  : `User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ${site.canonicalOrigin}/sitemap.xml\n`);
+const publishedNote = (r) => fieldNotes.articles.some((a) => `/field-notes/${a.slug}` === r && a.published === true);
 const projectRoutes = new Map(work.projects.map((p) => [p.path, p]));
 const sitemapRoutes = routes.filter((r) => (!projectRoutes.has(r) || isApproved(projectRoutes.get(r)))
   && (!r.startsWith('/field-notes/') || publishedNote(r))
-  && (r !== '/field-notes' || fieldNotes.articles.some((a) => a.status === 'published' && a.approvedBy)));
+  && (r !== '/field-notes' || fieldNotes.articles.some((a) => a.published === true))
+  && !r.startsWith('/admin'));
 await writeFile(join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapRoutes.map((r) => `  <url><loc>${site.canonicalOrigin}${r === '/' ? '/' : r}</loc></url>`).join('\n')}\n</urlset>\n`);
 
 console.log(`Built ${routes.length + 1} pages in ${reviewMode ? 'REVIEW' : 'PRODUCTION'} mode${onVercel ? ' (Vercel image optimization on)' : ''}.`);

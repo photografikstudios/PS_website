@@ -168,7 +168,7 @@
       ],
       "booking": "square",
       "approval": "approved",
-      "note": "James, Sep 27 2026 (answering Codex S15-16): the single 90-minute session is $249, matching licreatorstudios.com/pricing. The public Square listing shows 'Price Varies'; the site makes no claim that Square checkout shows this figure. Source: Long Island Creator Studios pricing page (licreatorstudios.com/pricing)."
+      "note": "James, Sep 27 2026 (answering Codex S15-16): the single 90-minute session is $249, matching licreatorstudios.com/pricing. The public Square listing shows 'Price Varies'; the site makes no claim that Square checkout shows this figure. Source: Long Island Creator Studios pricing page (licreatorstudios.com/pricing). | James, Sep 30 2026 (Wednesday pass, item 3): first two Creator offers and prices approved as configured."
     },
     {
       "id": "content-session",
@@ -186,26 +186,18 @@
       ],
       "booking": "square",
       "approval": "approved",
-      "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing. | James, Sep 28 2026 page review: display \"Starting at $499 for a 2-hour minimum\"; this supersedes the older $250-per-hour wording. The Square booking destination is not claimed to match (see handoff)."
+      "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing. | James, Sep 28 2026 page review: display \"Starting at $499 for a 2-hour minimum\"; this supersedes the older $250-per-hour wording. The Square booking destination is not claimed to match (see handoff). | James, Sep 30 2026 (Wednesday pass, item 3): first two Creator offers and prices approved as configured."
     },
     {
-      "id": "recording-editing",
-      "name": "Recording + editing",
-      "amount": 999,
-      "priceLabel": "$999",
-      "unit": "per month",
-      "detail": "Two 90-minute sessions a month, edited and ready to post.",
-      "includes": [
-        "Two 90-minute sessions per month",
-        "Engineer included",
-        "Up to 10 social media clips",
-        "Custom thumbnails",
-        "Basic intro and outro"
-      ],
-      "extra": "Optional start-up package: an in-studio photoshoot, an announcement video and social post, a custom podcast intro and outro, and a one-on-one coaching and strategy meeting.",
+      "id": "monthly-content",
+      "name": "Monthly Content",
+      "question": "Need a repeatable recording or content schedule?",
+      "detail": "Monthly options are available for businesses and creators who want to record consistently. We'll build the cadence around how often you want to film, what you're creating and how much editing belongs in the workflow.",
+      "ctaLabel": "Ask About Monthly Content",
       "booking": "inquiry",
+      "priced": false,
       "approval": "approved",
-      "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing."
+      "note": "James, Wednesday implementation pass (OWNER_WEDNESDAY_IMPLEMENTATION_2026-09-30.md, item 4): the third Creator option shows no fixed price and no fixed monthly deliverables; it routes to a scoped inquiry. Replaces the former $999/month Recording + editing card."
     }
   ],
   "commercialAddOns": [
@@ -239,29 +231,14 @@
     }
   ],
   "commercialPortfolio": {
-    "intro": "For owners, operators, developers and broker teams with recurring property needs. Discounts apply to standard commercial photography.",
-    "tiers": [
-      [
-        "1 to 4 properties a year",
-        "Standard rate"
-      ],
-      [
-        "5 to 9 properties a year",
-        "10% preferred rate"
-      ],
-      [
-        "10 to 19 properties a year",
-        "15% preferred rate"
-      ],
-      [
-        "20+ properties a year",
-        "Custom portfolio agreement"
-      ]
-    ],
-    "approval": "approved",
-    "fine": "Pricing effective 2026. Travel, extensive staging, specialty retouching, permits and third-party licensing may be additional.",
+    "heading": "Multi-property work",
+    "text": "Have multiple locations or properties? Send us the scope and expected schedule. We'll build pricing around the actual production requirements and confirmed volume.",
+    "ctaLabel": "Send Project Brief",
     "custom": "Large developments, hospitality, construction progress, acquisition documentation and complex multi-property assignments can be tailored to the asset and its marketing objective.",
-    "lede": "Professional media built to help owners, operators and brokers market spaces, showcase improvements, support leasing efforts and present commercial assets at their best."
+    "fine": "Pricing effective 2026. Travel, extensive staging, specialty retouching, permits and third-party licensing may be additional.",
+    "lede": "Professional media built to help owners, operators and brokers market spaces, showcase improvements, support leasing efforts and present commercial assets at their best.",
+    "approval": "approved",
+    "_note": "James, Sep 30 2026 (Wednesday pass, item 6): no public portfolio or volume discounts. Confirmed volume may justify custom pricing after a brief; promised volume does not earn a public discount. The former 1–4 / 5–9 / 10–19 / 20+ discount tiers are removed."
   },
   "_commercialSource": "James, Sep 28 2026: Commercial Property Media price sheet (sent in chat), approved for the site. Pricing release for production still follows pricing.json releaseApproved.",
   "monthlyFootnote": "*Each package includes a guaranteed on site shoot duration. Final deliverables and raw footage output are estimated based on that shoot time and the creative requirements discussed. Additional deliverables or extended footage needs may incur added costs.",

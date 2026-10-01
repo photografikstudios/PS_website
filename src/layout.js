@@ -1,6 +1,6 @@
 import { esc, attrs, join } from './lib/html.js';
 
-export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = false, overlay = false, ogType = 'website' }) {
+export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = false, overlay = false, ogType = 'website', articleDates = null }) {
   const { site, reviewMode, img, mediaUrl } = ctx;
   const canonical = site.canonicalOrigin + (route === '/' ? '/' : route);
   const booking = site.destinations.booking.href;
@@ -22,6 +22,7 @@ export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = fal
 <link rel="canonical" href="${esc(canonical)}">
 ${reviewMode ? '<meta name="robots" content="noindex, nofollow">' : ''}
 <meta property="og:type" content="${esc(ogType)}">
+${articleDates?.published ? `<meta property="article:published_time" content="${esc(articleDates.published)}">` : ''}${articleDates?.modified ? `\n<meta property="article:modified_time" content="${esc(articleDates.modified)}">` : ''}
 <meta property="og:site_name" content="Photografik Studios">
 <meta property="og:title" content="${esc(seo.title)}">
 <meta property="og:description" content="${esc(seo.description)}">
@@ -38,7 +39,7 @@ ${join([].concat(jsonLd || []), (j) => `<script type="application/ld+json">${JSO
 </head>
 <body class="${[dark ? 'page--dark' : '', overlay ? 'has-overlay' : '', reviewMode ? 'has-review-bar' : ''].join(' ').trim()}">
 <a class="skip" href="#main">Skip to content</a>
-${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</strong> · Pricing pending sign-off<span class="review-bar__long">. Not the approved public site: policies and items tagged <span class="needs-approval">Needs approval</span> are also awaiting sign-off</span>.</div>` : ''}
+${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</strong> · Not live<span class="review-bar__long">. Real estate square-footage tiers are with Vye for an accuracy check; items tagged <span class="needs-approval">Needs approval</span> are still awaiting sign-off</span>.</div>` : ''}
 <header class="site-header">
   <div class="wrap site-header__inner">
     <a class="brand" href="/" aria-label="Photografik Studios, home">
@@ -72,7 +73,7 @@ ${body}
       <ul class="site-footer__social">${join(site.social, (s) => `<li><a href="${s.href}" rel="noopener">${esc(s.label)}</a></li>`)}</ul>
     </div>
   </div>
-  <div class="wrap site-footer__base"><p>© ${new Date().getFullYear()} Photografik Studios Inc.</p></div>
+  <div class="wrap site-footer__base"><p>© ${new Date().getFullYear()} Photografik Studios Inc.</p>${ctx.legal && (ctx.legal.ready || reviewMode) ? `<p class="site-footer__legal">${esc(ctx.legal.acceptance.text).replace('Terms &amp; Conditions', '<a href="/terms">Terms &amp; Conditions</a>').replace('Licensing &amp; Usage Rights Policy', '<a href="/licensing">Licensing &amp; Usage Rights Policy</a>')}</p>` : ''}</div>
 </footer>
 <script type="module" src="/assets/site.js?v=${ctx.version}"></script>
 ${join(scripts, (s) => `<script type="module" src="/assets/${s}?v=${ctx.version}"></script>`)}

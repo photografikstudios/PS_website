@@ -1046,7 +1046,7 @@
     }
   ],
   "releaseApproved": false,
-  "_release": "Prices mirror HD Photo Hub (James: HDPH is the authority). Sep 25 2026: James confirmed the 17,501 to 20,501 package bands, the Luxury 12,501 tier and the final 25,000/25,500 configuration are correct as configured in HDPH; they are mirrored exactly and must not be adjusted by assumption. Keep releaseApproved false until every website price and inclusion has been compared to HDPH and signed off; production builds fail while false.",
+  "_release": "Prices mirror HD Photo Hub (James: HDPH is the authority). Sep 25 2026: James confirmed the 17,501 to 20,501 package bands, the Luxury 12,501 tier and the final 25,000/25,500 configuration are correct as configured in HDPH; they are mirrored exactly and must not be adjusted by assumption. Keep releaseApproved false until every website price and inclusion has been compared to HDPH and signed off; production builds fail while false. | James, Sep 30 2026 (Wednesday pass, items 1, 2, 25): Real Estate prices, package structure, contents and square-footage logic are approved as configured; no creative or owner sign-off remains. Vye is independently verifying the square-footage tiers; releaseApproved stays false only for that check (dev-only; never shown on production). Change numbers only if Vye finds a discrepancy.",
   "features": {
     "_readme": "Inclusion vocabulary. Package cards and the Compare tool both render from each record's 'features', so the two cannot drift. Values: true = included; a string = included with that note. Only list what HD Photo Hub confirms.",
     "interior": "Interior photography",
@@ -1210,5 +1210,12 @@
         ]
       }
     ]
+  },
+  "vyeVerification": {
+    "status": "pending",
+    "scope": "Independent accuracy check of every package, service and add-on price across the square-footage tiers against HD Photo Hub.",
+    "requestedBy": "James, Sep 30 2026",
+    "result": null,
+    "_readme": "Dev-only tracking. Set status to 'verified' with the date and any discrepancies after Vye's check; then James or Codex may set releaseApproved true."
   }
 }

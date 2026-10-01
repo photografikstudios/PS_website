@@ -59,7 +59,8 @@ export function start(port = 0) {
     if (redirect) { res.writeHead(redirect.permanent ? 308 : 307, { Location: redirect.destination }); return res.end(); }
     const file = (path.endsWith('.html') ? null : await tryFile(join(dist, path)))
       || (path === '/' && await tryFile(join(dist, 'index.html')))
-      || await tryFile(join(dist, path.replace(/\/$/, '') + '.html'));
+      || await tryFile(join(dist, path.replace(/\/$/, '') + '.html'))
+      || (path !== '/' && await tryFile(join(dist, path.replace(/\/$/, ''), 'index.html'))); // directory index, e.g. /admin
     if (!file) { res.writeHead(404, { 'Content-Type': types['.html'] }); return res.end(await readFile(join(dist, '404.html'))); }
     res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream' });
     res.end(await readFile(file));
