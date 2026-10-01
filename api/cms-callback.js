@@ -1,4 +1,4 @@
-// Vercel Function: GET /api/cms-callback — finishes GitHub sign-in for the Field Notes editor.
+// Vercel Function: GET /api/cms-callback — finishes GitHub sign-in for the site dashboard (/admin).
 // Checks the state cookie, exchanges the code for a token server-side, and hands the token only to the
 // /admin window on this same site (Decap CMS's "authorization:github:success" message). Nothing is logged.
 const js = (v) => JSON.stringify(v).replace(/</g, '\\u003c');

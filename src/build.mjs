@@ -151,7 +151,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   if (next !== js) await writeFile(fp, next);
 }
 
-// Field Notes editor (/admin): Decap CMS, Git-backed. Commits go to the branch this deployment was built from.
+// Site dashboard (/admin): Decap CMS, Git-backed. Commits go to the branch this deployment was built from.
 {
   const decap = JSON.parse(await readFile(join(root, 'src/admin/decap.json'), 'utf8'));
   const branch = process.env.CMS_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || 'redesign/2027-preview';

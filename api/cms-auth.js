@@ -1,4 +1,4 @@
-// Vercel Function: GET /api/cms-auth — starts GitHub sign-in for the Field Notes editor (/admin, Decap CMS).
+// Vercel Function: GET /api/cms-auth — starts GitHub sign-in for the site dashboard (/admin, Decap CMS).
 // Needs a GitHub OAuth App owned by Photografik (not created by this code) with its callback set to
 // https://<site>/api/cms-callback, and two server-side environment variables:
 //   CMS_GITHUB_CLIENT_ID, CMS_GITHUB_CLIENT_SECRET
@@ -11,7 +11,7 @@ export default function handler(req, res) {
   if (!clientId || !process.env.CMS_GITHUB_CLIENT_SECRET) {
     res.statusCode = 503;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    return res.end('The Field Notes editor sign-in is not configured yet (CMS_GITHUB_CLIENT_ID / CMS_GITHUB_CLIENT_SECRET).');
+    return res.end('The site dashboard sign-in is not set up yet (CMS_GITHUB_CLIENT_ID / CMS_GITHUB_CLIENT_SECRET).');
   }
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   const state = randomBytes(24).toString('hex');
