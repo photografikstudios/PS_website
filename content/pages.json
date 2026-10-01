@@ -1,0 +1,55 @@
+{
+  "_readme": "Page headings and intro text edited in /admin (Page text). Plain text only: the site adds the italic highlight to “Highlighted ending”. Calls to action, prices, booking links and page layout are not here on purpose (separate review path).",
+  "pages": {
+    "/": {
+      "eyebrow": "Photography · Film · Drone · Content",
+      "title": "Media that markets the property,",
+      "titleEm": "and the professional behind it.",
+      "lede": "Listing campaigns, architecture and brand production for agents, builders and businesses across the Hamptons, the North Fork and Long Island."
+    },
+    "/real-estate": {
+      "eyebrow": "Real estate media",
+      "title": "Listing media that shows sellers",
+      "titleEm": "how you work.",
+      "lede": "Photography, cinematic video, vertical reels, drone and floor plans for Long Island, the Hamptons and the North Fork. The property sets the production plan. Your standard stays the same at every price point."
+    },
+    "/agent-content": {
+      "eyebrow": "Agent content",
+      "title": "People hire agents they",
+      "titleEm": "already feel they know.",
+      "lede": "Listing media shows how you market a property. Agent content shows the person behind the marketing. We help you turn real listings and real expertise into video you can use consistently."
+    },
+    "/architecture-design": {
+      "eyebrow": "Architecture & design",
+      "title": "Your work, presented with",
+      "titleEm": "the care it was built with.",
+      "lede": "Project photography and film for builders, architects, interior designers and specialty trades. We plan coverage around how the work will be used, then define deliverables and licensing before the shoot."
+    },
+    "/commercial": {
+      "eyebrow": "Commercial production",
+      "title": "Consistent content,",
+      "titleEm": "without building an in-house team.",
+      "lede": "Brand photography, film, testimonials, podcasts and short-form content for healthcare, legal, hospitality, automotive and corporate teams. One partner for planning, production, editing and delivery."
+    },
+    "/agency-partnerships": {
+      "eyebrow": "Agency partnerships",
+      "title": "Add production capacity",
+      "titleEm": "without adding payroll.",
+      "lede": "Bring Photografik into projects that need photography, video, drone, studio production or post-production. We can work directly with the client, alongside your team or behind your agency brand.",
+      "image": "/images/photografik-2027/curated/home-path-on-location.webp",
+      "imageAlt": "Camera operator filming outdoors on location"
+    },
+    "/creator-studios": {
+      "eyebrow": "LI Creator Studios · Bohemia, NY",
+      "title": "Show people",
+      "titleEm": "who is behind the business.",
+      "lede": "Podcasts, interviews and on-camera content for business owners, agents, founders and experts, recorded with a team that helps you sound like yourself."
+    },
+    "/about": {
+      "eyebrow": "About",
+      "title": "Quality over volume.",
+      "titleEm": "On purpose.",
+      "lede": "Photografik Studios is a boutique visual media company on Long Island. We work with the agents, builders, designers, agencies and businesses who believe presentation affects results."
+    }
+  }
+}

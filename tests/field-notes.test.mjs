@@ -84,11 +84,12 @@ test('CMS config: Git-backed, own sign-in endpoint, drafts off by default, uploa
   assert.equal(config.backend.name, 'github');
   assert.equal(config.backend.branch, 'redesign/2027-preview');
   assert.equal(config.backend.auth_endpoint, 'api/cms-auth');
-  const c = config.collections[0];
+  const c = config.collections.find((x) => x.name === 'field-notes');
   assert.equal(c.folder, 'content/field-notes');
   assert.equal(c.format, 'json-frontmatter');
   assert.equal(c.fields.find((f) => f.name === 'published').default, false);
-  assert.equal(config.media_folder, 'static/images/field-notes');
+  assert.equal(c.media_folder, '/static/images/field-notes');
+  assert.equal(c.public_folder, '/images/field-notes');
   assert.deepEqual(categories.map((x) => x.label), ['Real Estate', 'Architecture & Design', 'Commercial', 'Agent Content', 'Production / Behind the Scenes']);
   for (const name of ['title', 'slug', 'date', 'category', 'excerpt', 'hero', 'heroAlt', 'body', 'published', 'seoTitle', 'seoDescription', 'ogImage', 'author', 'featured', 'relatedService', 'cta', 'updated']) assert.ok(c.fields.some((f) => f.name === name), name);
 });

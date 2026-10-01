@@ -3,7 +3,7 @@
 import { readFile, writeFile, mkdir, rm, cp, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createContext } from './lib/html.js';
 import { validatePricing } from './lib/pricing-core.js';
 import { validateMedia } from './lib/gallery-core.js';
@@ -13,7 +13,9 @@ import { layout } from './layout.js';
 import { buildPages } from './pages.js';
 import { cmsConfig } from './lib/cms-config.js';
 import { validateLegal } from './lib/legal-core.js';
-import { loadWork } from './lib/work-load.js';
+import { loadWork, staticFile } from './lib/work-load.js';
+import { checkContent } from './lib/content-check.js';
+import { imageSize } from './lib/image-size.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -23,19 +25,23 @@ if (candidateBuild && (process.env.VERCEL || process.env.CI || process.env.VERCE
   console.error('Refusing to build: INCLUDE_RIGHTS_PENDING=1 is set in a Vercel/CI environment. Rights-pending media never enter a deployable build.');
   process.exit(1);
 }
-const out = join(root, candidateBuild ? 'dist-candidates' : 'dist');
+// Local check of what production would publish (tests only): production visibility rules, launch blockers reported
+// but not enforced, written to dist-prodcheck/. Refused on Vercel/CI so it can never produce a deployable build.
+const prodCheck = process.env.PRODUCTION_VISIBILITY_CHECK === '1';
+if (prodCheck && (process.env.VERCEL || process.env.CI || process.env.VERCEL_ENV)) { console.error('Refusing PRODUCTION_VISIBILITY_CHECK on Vercel/CI.'); process.exit(1); }
+const out = join(root, candidateBuild ? 'dist-candidates' : prodCheck ? 'dist-prodcheck' : 'dist');
 const readJSON = async (f) => JSON.parse(await readFile(join(root, 'content', f), 'utf8'));
 
 // Review mode shows items awaiting approval with a visible marker and sets noindex.
 // Production (VERCEL_ENV=production or SITE_MODE=production) hides them and fails the build
 // if a required record is not approved, so unapproved prices can never go live by accident.
 const vercelEnv = process.env.VERCEL_ENV || '';
-const siteMode = process.env.SITE_MODE || (vercelEnv === 'production' ? 'production' : 'review');
+const siteMode = prodCheck ? 'production' : process.env.SITE_MODE || (vercelEnv === 'production' ? 'production' : 'review');
 const reviewMode = siteMode !== 'production';
 const onVercel = !!process.env.VERCEL && process.env.LOCAL_IMAGES !== '1';
 
-const [site, pricing, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal] = await Promise.all(
-  ['site.json', 'pricing.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json'].map(readJSON),
+const [site, pricing, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal, pageText, faqsPolicy] = await Promise.all(
+  ['site.json', 'pricing.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json', 'pages.json', 'faqs-policy.json'].map(readJSON),
 );
 // Portfolio: one file per project and per photo/film (content/projects, content/media), edited through /admin.
 const work = await loadWork(root);
@@ -49,6 +55,14 @@ const fnCheck = checkFieldNotes(fieldNotes, legacyArticles, work, { fileExists: 
 for (const w of fnCheck.warnings) console.warn(`Field Notes draft note: ${w}`);
 const fnErrors = [...parseErrors, ...fnCheck.errors];
 if (fnErrors.length) { console.error('Field Notes errors:\n - ' + fnErrors.join('\n - ')); process.exit(1); }
+// Dashboard content (projects, photos and films, page text, testimonials, FAQs): published records are strict.
+const fileExists = makeFileExists(root, new Set(Object.keys(mediaAssets.files || {})));
+const imageInfo = (p) => { const f = staticFile(root, p); return f && existsSync(f) ? imageSize(readFileSync(f)) : null; };
+const contentCheck = checkContent({ work, fileExists, imageInfo, pageText, testimonials, faqs });
+for (const w of contentCheck.warnings) console.warn(`Content note: ${w}`);
+if (contentCheck.errors.length) { console.error('Content errors (fix them in /admin; the live site keeps the previous version until then):\n - ' + contentCheck.errors.join('\n - ')); process.exit(1); }
+// FAQs: the editable answers (content/faqs.json, /admin) first, then the policy answers kept on the review path.
+for (const [page, list] of Object.entries(faqsPolicy)) if (Array.isArray(list)) faqs[page] = [...(faqs[page] || []), ...list];
 
 const errors = validatePricing(pricing);
 if (errors.length) { console.error('Pricing table errors:\n - ' + errors.join('\n - ')); process.exit(1); }
@@ -66,7 +80,7 @@ const isApproved = (r) => (r.approval ?? r.rights ?? 'approved') === 'approved';
 // Media also needs published !== false: new Drive additions stay out of production until checked.
 const visible = (r) => reviewMode || (isApproved(r) && r.published !== false);
 
-if (!reviewMode) {
+if (!reviewMode && !prodCheck) {
   const pending = pricing.packages.filter((r) => !isApproved(r)).map((r) => r.name);
   if (pricing.releaseApproved !== true) {
     console.error('Production build blocked: content/pricing.json "releaseApproved" is not true. James approved the prices, tiers and inclusions on Sep 30; Vye’s square-footage verification against HD Photo Hub must be recorded first.');
@@ -94,7 +108,7 @@ if (!reviewMode) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.
 if (!pages['/field-notes']) {
@@ -142,13 +156,13 @@ for (const f of await readdir(join(out, 'assets'))) {
   const decap = JSON.parse(await readFile(join(root, 'src/admin/decap.json'), 'utf8'));
   const branch = process.env.CMS_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || 'redesign/2027-preview';
   const repo = process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}` : 'photografikstudios/PS_website';
-  const { config, library, categories } = cmsConfig({ site, fieldNotes, work, branch, repo });
+  const { config, library, categories } = cmsConfig({ site, fieldNotes, work, branch, repo, testimonials });
   const safe = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
   await mkdir(join(out, 'admin'), { recursive: true });
   const adminHtml = (await readFile(join(root, 'src/admin/index.html'), 'utf8'))
     .replaceAll('__DECAP_VERSION__', decap.version).replaceAll('__DECAP_SRI__', decap.integrity).replaceAll('__VERSION__', version);
   await writeFile(join(out, 'admin/index.html'), adminHtml);
-  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\n`);
+  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
   await cp(join(root, 'src/admin/preview.css'), join(out, 'admin/preview.css'));
 }
@@ -158,8 +172,10 @@ await writeFile(join(out, 'robots.txt'), reviewMode
   ? 'User-agent: *\nDisallow: /\n'
   : `User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ${site.canonicalOrigin}/sitemap.xml\n`);
 const publishedNote = (r) => fieldNotes.articles.some((a) => `/field-notes/${a.slug}` === r && a.published === true);
-const projectRoutes = new Map(work.projects.map((p) => [p.path, p]));
-const sitemapRoutes = routes.filter((r) => (!projectRoutes.has(r) || isApproved(projectRoutes.get(r)))
+const serviceRoutes = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
+const projectRoutes = new Map(work.projects.map((p) => [p.path || `${serviceRoutes[p.category]}/${p.slug}`, p]));
+// Draft projects (Published off in /admin) never enter the sitemap, even in review builds.
+const sitemapRoutes = routes.filter((r) => (!projectRoutes.has(r) || (isApproved(projectRoutes.get(r)) && projectRoutes.get(r).published !== false))
   && (!r.startsWith('/field-notes/') || publishedNote(r))
   && (r !== '/field-notes' || fieldNotes.articles.some((a) => a.published === true))
   && !r.startsWith('/admin'));

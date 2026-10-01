@@ -1562,13 +1562,30 @@ await check('legal pages: Photografik policies first, Creator supplement last, e
   await p.context().close();
 });
 
-await check('Field Notes editor: /admin is noindex, pinned and Git-backed; drafts are off by default', async () => {
+await check('Dashboard content model: all 13 original project URLs load with their hero, title and photos; page text renders from content/pages.json', async () => {
+  const work = await loadWorkRecords();
+  for (const pr of work.projects) {
+    const r = await fetch(base + pr.path);
+    const html = await r.text();
+    assert(r.status === 200 && html.includes(`<h1 class="display">${pr.title.replace(/&/g, '&amp;').replace(/'/g, '&#39;')}</h1>`), `${pr.path} loads with its title`);
+    assert(!/Draft, not published/.test(html), `${pr.path} has no draft note`);
+  }
+  const pt = JSON.parse(await readFile(new URL('../content/pages.json', import.meta.url), 'utf8')).pages;
+  for (const [route, t] of Object.entries(pt)) {
+    const html = await (await fetch(base + route)).text();
+    assert(html.includes(t.titleEm) && html.includes(t.lede.slice(0, 60)), `${route} hero text`);
+  }
+});
+
+await check('Site dashboard: /admin is noindex, pinned and Git-backed; seven sections; drafts are off by default', async () => {
   const html = await (await fetch(base + '/admin')).text();
   assert(/noindex/.test(html) && /unpkg\.com\/decap-cms@\d+\.\d+\.\d+\/dist\/decap-cms\.js" integrity="sha384-[A-Za-z0-9+/=]+"/.test(html), 'pinned Decap with SRI');
   const cfg = await (await fetch(base + '/admin/config.js')).text();
   const conf = JSON.parse(cfg.match(/PHOTOGRAFIK_CMS_CONFIG = (\{.*\});/)[1]);
-  assert(conf.backend.name === 'github' && conf.backend.auth_endpoint === 'api/cms-auth' && conf.collections[0].folder === 'content/field-notes', 'git backend');
-  assert(conf.collections[0].fields.find((x) => x.name === 'published').default === false, 'drafts by default');
+  const col = (n) => conf.collections.find((c) => c.name === n);
+  assert(conf.backend.name === 'github' && conf.backend.auth_endpoint === 'api/cms-auth' && col('field-notes').folder === 'content/field-notes', 'git backend');
+  assert(conf.collections.map((c) => c.name).join() === 'projects,photos,films,page-text,testimonials,faqs,field-notes', 'sections');
+  for (const n of ['field-notes', 'projects', 'photos']) assert(col(n).fields.find((x) => x.name === 'published').default === false, `${n}: drafts by default`);
   const robots = await (await fetch(base + '/robots.txt')).text();
   assert(/Disallow: \//.test(robots), 'robots');
 });

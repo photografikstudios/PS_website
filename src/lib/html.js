@@ -10,6 +10,11 @@ export const attrs = (o) => Object.entries(o)
 
 export const join = (arr, fn) => arr.map(fn).join('');
 
+// Focal point chosen in /admin for a cropped photo: which part stays in frame when a card crops it.
+const FOCAL = { top: '50% 15%', 'upper-third': '50% 30%', bottom: '50% 85%', left: '20% 50%', right: '80% 50%' };
+export const focalPosition = (f) => FOCAL[f] || null;
+export const focalAttr = (f) => (FOCAL[f] ? ` style="object-position: ${FOCAL[f]}"` : '');
+
 export function createContext({ site, reviewMode, onVercel }) {
   const isLocal = (p) => typeof p === 'string' && p.startsWith('/v/');
   const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) || isLocal(p) ? p : site.media.base + p);
@@ -23,13 +28,13 @@ export function createContext({ site, reviewMode, onVercel }) {
   };
   const srcset = (p, widths = WIDTHS) => (onVercel && !isLocal(p) ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
 
-  function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height, thumb } = {}) {
+  function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height, thumb, focal } = {}) {
     // Build-encoded stills (/v/<id>.webp, 2000px) ship a 900px <id>-sm.webp; let phones pick the small one.
     const local = isLocal(p) && thumb;
     return `<img ${attrs({
       src: local ? thumb : optimized(p, 1080), srcset: local ? `${thumb} 900w, ${p} 2000w` : srcset(p, widths), sizes: local || (onVercel && !isLocal(p)) ? sizes : null, alt,
       class: cls || null, loading: eager ? 'eager' : 'lazy', decoding: 'async',
-      fetchpriority: eager ? 'high' : null, width, height,
+      fetchpriority: eager ? 'high' : null, width, height, style: focalPosition(focal) ? `object-position: ${focalPosition(focal)}` : null,
     })}>`;
   }
 

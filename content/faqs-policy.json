@@ -1,0 +1,17 @@
+{
+  "_readme": "FAQ answers that state a policy (rescheduling and cancellation, sharing and licensing). Not editable in /admin: they must agree with /terms and /licensing, so changes go through the review path. They are shown after the editable FAQs in content/faqs.json.",
+  "real-estate": [
+    {
+      "q": "What if I need to reschedule?",
+      "a": "You can reschedule in the booking portal up to 24 hours before the appointment. Inside 24 hours, email or call us. Weather rescheduling is free when conditions would undermine the visuals. A same-day cancellation for a non-weather reason carries a $150 fee.",
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): \"on the real estate page the good to know section is approved\""
+    },
+    {
+      "q": "Can I share the media with the homeowner or another agent?",
+      "a": "Listing media is licensed to you for marketing that listing. Sharing with a homeowner, another agent, a builder, a publication or anyone else needs our knowledge and, where it applies, a separate license. Just ask and we will sort it out.",
+      "approval": "approved",
+      "approvedBy": "James, Sep 28 2026 (chat): \"on the real estate page the good to know section is approved\""
+    }
+  ]
+}

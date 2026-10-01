@@ -1,3 +1,9 @@
 /* Preview pane only: the site styles expect a page wrapper. */
 body { background: #f4f2eb; }
 .fn-body h2 { font-size: 26px; margin-top: 32px; }
+.dash-warn { margin: 0 0 18px; padding: 10px 14px 10px 30px; border: 1px solid #b54a2a; border-radius: 6px; color: #7a2a12; background: #fbeee8; font-size: 14px; }
+.dash-fig { margin: 18px 0 0; }
+.dash-fig img { width: 100%; max-height: 420px; object-fit: cover; display: block; }
+.dash-fig figcaption { font-size: 13px; color: #555; margin-top: 6px; }
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.dash-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }

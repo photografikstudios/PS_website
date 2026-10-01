@@ -1,4 +1,4 @@
-import { esc, join } from './lib/html.js';
+import { esc, join, focalAttr } from './lib/html.js';
 import { renderArticle, bodyRefs, inline as inlineMd } from './lib/markdown.js';
 import { numberSections } from './lib/legal-core.js';
 import { formatUSD, resolvePrice, inclusion, includeLabels, tierLabel, findTier } from './lib/pricing-core.js';
@@ -7,7 +7,7 @@ import { facts, editorialOrder, TYPE_FILTERS, optionCounts, segmentsOf } from '.
 const arrow = '<span aria-hidden="true">→</span>';
 
 export function buildPages(ctx) {
-  const { site, pricing, work, offers, faqs, testimonials, img, videoPlayer, needsApproval, visible, ambient, reviewMode } = ctx;
+  const { site, pricing, work, offers, faqs, testimonials, pageText, img, videoPlayer, needsApproval, visible, ambient, reviewMode } = ctx;
   const booking = site.destinations.booking.href;
   const bookBtn = (loc, label = 'Book a Shoot', cls = 'btn btn--solid') =>
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
@@ -34,6 +34,11 @@ export function buildPages(ctx) {
       <p class="plan__price">${approvedPrice(o, `<strong>${formatUSD(o.monthly)}</strong>/month`)}</p>${isApproved(o) ? `<p class="plan__alt">${formatUSD(o.contract)}/month with a 1-year contract signed</p>` : ''}
       <ul class="checks">${join(o.scope, (x) => `<li>${esc(x)}</li>`)}</ul></div>`;
   const monthlyExtras = () => `${visible(offers.socialManagementFrom) ? `<p class="aside-line"><strong>Frequently added:</strong> social media management${isApproved(offers.socialManagementFrom) ? ` starting at ${formatUSD(offers.socialManagementFrom.amount)}/month` : ' as a monthly add-on'}. ${needsApproval(offers.socialManagementFrom)}</p>` : ''}${offers.monthlyFootnote ? `<p class="small muted plan__foot">${esc(offers.monthlyFootnote)}</p>` : ''}`;
+  // Page text edited in /admin (content/pages.json): plain text only; the highlighted ending is set in italics.
+  const heroText = (route) => {
+    const t = pageText.pages[route];
+    return { eyebrow: t.eyebrow, title: `${esc(t.title)}${t.titleEm ? ` <em>${esc(t.titleEm)}</em>` : ''}`, lede: esc(t.lede) };
+  };
   const projectPath = (p) => p.path || `${serviceRoute[p.category]}/${p.slug}`;
   const mmss = (d) => `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
   // Hero video: the page's relevant 16:9 footage autoplays silently in its frame (muted, playsinline, poster first).
@@ -62,7 +67,7 @@ export function buildPages(ctx) {
     const href = project && visible(project) ? projectPath(project) : null;
     const frame = m.type === 'video'
       ? videoPlayer(m, { sizes })
-      : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
+      : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { focal: m.focal, alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
     const meta = showMeta ? `<div class="card__meta">
         <p class="card__title">${href ? `<a href="${href}">${esc(m.title)}</a>` : esc(m.title)}</p>
         <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}${m.type === 'video' && m.dialogue !== false && !m.captions ? ` ${needsApproval({ approval: 'pending' }, m.dialogue ? 'Captions and transcript needed before launch' : 'Check whether this film has speech; captions needed if it does')}` : ''}${m.type === 'video' && m.captions && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? ` ${needsApproval({ approval: 'pending' }, 'Captions are a machine-transcribed draft; James to proofread names and wording before launch')}` : ''}</p>
@@ -143,11 +148,11 @@ export function buildPages(ctx) {
 <section class="hero hero--video" data-hero-source="re-hamptons-beachfront">
   <div class="hero__media">${ambient('re-hamptons-beachfront', { eager: true, cls: 'hero__video' })}</div>
   <div class="wrap hero__inner">
-    <p class="eyebrow">Photography · Film · Drone · Content</p>
-    <h1 class="display display--xl">Media that markets the property, <em>and the professional behind it.</em></h1>
+    <p class="eyebrow">${esc(heroText('/').eyebrow)}</p>
+    <h1 class="display display--xl">${heroText('/').title}</h1>
     <div class="hero__foot">
       <div>
-        <p class="lede">Listing campaigns, architecture and brand production for agents, builders and businesses across the Hamptons, the North Fork and Long Island.</p>
+        <p class="lede">${heroText('/').lede}</p>
         <div class="actions">${bookBtn('home_hero', 'Book a Shoot', 'btn btn--rust')}<a class="link-arrow" href="/contact" data-track="project_click" data-track-location="home_hero">Send a Project Brief →</a></div>
       </div>
       <p class="hero__meta">East End · Hamptons · North Fork<br>Suffolk · Nassau · NYC</p>
@@ -192,7 +197,7 @@ export function buildPages(ctx) {
     </div>
     <div class="showcase__grid" id="sw-grid">
       ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${i >= homeLimit ? ' hidden' : ''}>
-        <img src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async">
+        <img src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${m.type === 'video' ? playIcon : ''}
       </button>`)}
     </div>
@@ -458,7 +463,7 @@ ${splitCta(undefined, undefined, undefined, true)}`,
   const typeCounts = optionCounts(reFacts, { pkg: '' }, 'type', TYPE_FILTERS.map((t) => t.id));
   const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}"${i >= reBatch ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}">
-        <img src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
+        <img src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${m.type === 'video' ? playIcon : ''}
       </button>
     </article>`;
@@ -501,9 +506,7 @@ ${splitCta(undefined, undefined, undefined, true)}`,
     overlay: true,
     scripts: ['compare.js', 're-gallery.js'],
     body: `${pageHero({
-      eyebrow: 'Real estate media',
-      title: 'Listing media that shows sellers <em>how you work.</em>',
-      lede: 'Photography, cinematic video, vertical reels, drone and floor plans for Long Island, the Hamptons and the North Fork. The property sets the production plan. Your standard stays the same at every price point.',
+      ...heroText('/real-estate'),
       cta: `${bookBtn('re_hero')}<a class="link-arrow" href="/real-estate/pricing">See pricing ${arrow}</a>`,
       video: { loop: 're-hamptons-calm', film: 're-hamptons-calm' },
     })}
@@ -723,9 +726,7 @@ ${fnTeaser('real-estate')}
   pages['/agent-content'] = {
     overlay: true,
     body: `${pageHero({
-      eyebrow: 'Agent content',
-      title: 'People hire agents they <em>already feel they know.</em>',
-      lede: 'Listing media shows how you market a property. Agent content shows the person behind the marketing. We help you turn real listings and real expertise into video you can use consistently.',
+      ...heroText('/agent-content'),
       cta: `<a class="btn btn--solid" href="/contact?type=agent-content" data-track="retainer_click" data-track-location="agent_hero">Plan My Content</a>`,
       // James, Sep 28 2026: open with a relevant horizontal film. The on-camera expertise clip, muted and framed 16:9.
       video: { loop: 'agent-expertise-hero', credit: 'agent-expertise' },
@@ -794,7 +795,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const silentLoopLabel = { 'revivaluxe-silent': 'RevivaLuxe brand film, no sound: a provider with a client, a skin treatment and the clinic interior' };
   const silentLoop = (id) => `<div class="silent-loop">${ambient(id, { cls: 'silent-loop__video', label: silentLoopLabel[id] || 'Silent film excerpt' })}${motionToggle}</div>`;
   const withLoop = (p, still) => (p.silentLoop ? `<div class="media-pair">${still}${silentLoop(p.silentLoop)}</div>` : still);
-  const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
+  const repFrame = (m, sizes) => (m.type === 'video' ? videoPlayer(m, { sizes }) : `<div class="still still--${m.orientation}">${img(m.src, { focal: m.focal, alt: m.alt || m.title, thumb: m.thumb, sizes })}</div>`);
   const archMedia = media.filter((m) => m.category === 'architecture-design');
   const archById = Object.fromEntries(archMedia.map((m) => [m.id, m]));
   // James, Sep 27 2026: explanation and evidence sit together. Each supporting image is used once on this page;
@@ -838,7 +839,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     // Photo-only variants start hidden so no project appears twice before the script runs.
     return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${views ? ` data-views="${esc(views.join(' '))}"` : ''}${views && !views.includes('') ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${kind === 'video' ? 'Play' : 'View'} ${esc(pr ? (pr.client || pr.title) : m.title)}">
-        <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async">
+        <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${kind === 'video' ? playIcon : ''}
       </button>
     </article>`;
@@ -847,9 +848,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     overlay: true,
     scripts: ['re-gallery.js'],
     body: `${pageHero({
-      eyebrow: 'Architecture & design',
-      title: 'Your work, presented with <em>the care it was built with.</em>',
-      lede: 'Project photography and film for builders, architects, interior designers and specialty trades. We plan coverage around how the work will be used, then define deliverables and licensing before the shoot.',
+      ...heroText('/architecture-design'),
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Plan the Next Project</a>`,
       video: { loop: 'arch-yankee-barn-film', film: 'arch-yankee-barn-film' },
     })}
@@ -973,9 +972,7 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
   pages['/commercial'] = {
     overlay: true,
     body: `${pageHero({
-      eyebrow: 'Commercial production',
-      title: 'Consistent content, <em>without building an in-house team.</em>',
-      lede: 'Brand photography, film, testimonials, podcasts and short-form content for healthcare, legal, hospitality, automotive and corporate teams. One partner for planning, production, editing and delivery.',
+      ...heroText('/commercial'),
       cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Plan a Production</a>`,
       video: { loop: 'biz-rachel-lynch-pools', film: 'biz-rachel-lynch-pools' },
     })}
@@ -1067,11 +1064,9 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   pages['/agency-partnerships'] = {
     overlay: true,
     body: `${pageHero({
-      eyebrow: 'Agency partnerships',
-      title: 'Add production capacity <em>without adding payroll.</em>',
-      lede: 'Bring Photografik into projects that need photography, video, drone, studio production or post-production. We can work directly with the client, alongside your team or behind your agency brand.',
+      ...heroText('/agency-partnerships'),
       cta: `<a class="btn btn--solid" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_hero">Send an Agency Brief</a>`,
-      image: '/images/photografik-2027/curated/home-path-on-location.webp', imageAlt: 'Camera operator filming outdoors on location',
+      image: pageText.pages['/agency-partnerships'].image, imageAlt: pageText.pages['/agency-partnerships'].imageAlt,
     })}
 <section class="section">
   <div class="wrap">
@@ -1156,9 +1151,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     overlay: true,
     seo: { title: 'LI Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
     body: `${pageHero({
-      eyebrow: 'LI Creator Studios · Bohemia, NY',
-      title: 'Show people <em>who is behind the business.</em>',
-      lede: 'Podcasts, interviews and on-camera content for business owners, agents, founders and experts, recorded with a team that helps you sound like yourself.',
+      ...heroText('/creator-studios'),
       cta: `${csStart('creator_hero')}<a class="link-arrow" href="#sessions">${csFrom ? `Sessions starting at ${formatUSD(csFrom)}` : 'Studio sessions'} ${arrow}</a>`,
       video: { loop: 'cs-demo-reel', film: 'cs-demo-reel' },
     })}
@@ -1275,7 +1268,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const isRE = p.category === 'real-estate';
     const cta = isRE ? bookBtn('project_detail') : `<a class="btn btn--solid" href="/contact?type=${esc(p.category)}" data-track="project_click" data-track-location="project_detail">${p.category === 'commercial' ? 'Plan a Production' : p.category === 'architecture-design' ? 'Plan the Next Project' : 'Send a Project Brief'}</a>`;
     const rep = p.hero ? null : repOf(pm);
-    const heroHtml = p.hero ? img(p.hero, { alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
+    const heroHtml = p.hero ? img(p.hero, { focal: p.heroFocal, alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
     const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
     const services = isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : (p.services || []).join(', ');
     const goal = isCom ? (p.blurbApproved && p.goal ? esc(p.goal) : blurb(p.goal, 'Project goal')) : '';
@@ -1287,7 +1280,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   <header class="section project__head">
     <div class="wrap project__grid project__grid--${p.heroOrientation}">
       <div class="project__intro">
-        <p class="eyebrow"><a href="${serviceRoute[p.category]}${isCom ? '#portfolio' : ''}">${esc(catLabel[p.category])}</a>${p.location ? ` · ${esc(p.location)}` : ''}</p>
+        ${reviewMode && p.published === false ? `<p class="fn-draft" role="note"><strong>Draft, not published.</strong> Only review builds show this project. It is not in the sitemap, and the live site leaves it out of every gallery and returns 404 here until Published is switched on in /admin.</p>\n        ` : ''}<p class="eyebrow"><a href="${serviceRoute[p.category]}${isCom ? '#portfolio' : ''}">${esc(catLabel[p.category])}</a>${p.location ? ` · ${esc(p.location)}` : ''}</p>
         <h1 class="display">${esc(p.title)}</h1>
         ${lede ? `<p class="lede">${lede}</p>` : ''}
         <dl class="project__facts">${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}<div><dt>${isCom ? 'Delivered' : 'Services'}</dt><dd>${esc(services)}</dd></div>${goal ? `<div><dt>Goal</dt><dd>${goal}</dd></div>` : ''}${p.location ? `<div><dt>Location</dt><dd>${esc(p.location)}</dd></div>` : ''}</dl>
@@ -1334,9 +1327,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   pages['/about'] = {
     overlay: true,
     body: `${pageHero({
-      eyebrow: 'About',
-      title: 'Quality over volume. <em>On purpose.</em>',
-      lede: 'Photografik Studios is a boutique visual media company on Long Island. We work with the agents, builders, designers, agencies and businesses who believe presentation affects results.',
+      ...heroText('/about'),
       cta: `<a class="btn btn--solid" href="/contact" data-track="project_click" data-track-location="about_hero">Send a Project Brief</a>`,
     })}
 <section class="section">
