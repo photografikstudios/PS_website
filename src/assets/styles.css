@@ -1088,7 +1088,7 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .legal__supplement { margin-top: 40px; padding-top: 28px; border-top: 2px solid var(--line); }
 .legal__group-h { font-size: clamp(26px, 3.4vw, 34px); margin: 4px 0 8px; }
 .legal__table { overflow-x: auto; margin: 14px 0; } .legal__table table { border-collapse: collapse; min-width: 480px; width: 100%; font-size: 15px; } .legal__table th, .legal__table td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
-.site-footer__legal { margin: 6px 0 0; font-size: 13px; max-width: 90ch; }
+.site-footer__legal { margin: 6px 0 0; font-size: 13px; max-width: none; }
 .site-footer__legal a { text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 620px) {
   .legal__table table { min-width: 0; } .legal__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
