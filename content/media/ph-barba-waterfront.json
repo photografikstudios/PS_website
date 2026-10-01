@@ -1,0 +1,25 @@
+{
+  "id": "ph-barba-waterfront",
+  "type": "image",
+  "project": "barba-architectural",
+  "title": "Barba Architectural, waterfront residence",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/v/ph-barba-waterfront.webp",
+  "thumb": "/v/ph-barba-waterfront-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Shingled waterfront residence with a private dock",
+  "location": "Westhampton Beach",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
+  "order": 460
+}

@@ -1,0 +1,29 @@
+{
+  "id": "biz-eestairs-gramercy",
+  "type": "video",
+  "project": "eestairs",
+  "title": "EEStairs: Gramercy staircase",
+  "service": [
+    "video"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/biz-eestairs-gramercy.mp4",
+  "poster": "/v/biz-eestairs-gramercy.webp",
+  "duration": 67,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": null,
+  "location": "New York City",
+  "client": "EEStairs",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "eestairs",
+  "order": 170
+}

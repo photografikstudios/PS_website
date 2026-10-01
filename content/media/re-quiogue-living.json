@@ -1,0 +1,25 @@
+{
+  "id": "re-quiogue-living",
+  "type": "image",
+  "project": null,
+  "title": "Open living and dining space with a floating stair in Quiogue",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-quiogue-living.webp",
+  "thumb": "/v/re-quiogue-living-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Open living and dining space with a floating stair in Quiogue",
+  "location": "Quiogue",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 820
+}

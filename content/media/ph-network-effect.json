@@ -1,0 +1,25 @@
+{
+  "id": "ph-network-effect",
+  "type": "image",
+  "project": "creator-studios",
+  "title": "The Network Effect podcast",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "orientation": "horizontal",
+  "src": "/v/ph-network-effect.webp",
+  "thumb": "/v/ph-network-effect-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "The Network Effect podcast",
+  "location": "Bohemia",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 550
+}

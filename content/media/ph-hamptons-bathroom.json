@@ -1,0 +1,24 @@
+{
+  "id": "ph-hamptons-bathroom",
+  "type": "image",
+  "project": null,
+  "title": "Primary bath",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/ph-hamptons-bathroom.webp",
+  "thumb": "/v/ph-hamptons-bathroom-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Primary bath",
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 390
+}

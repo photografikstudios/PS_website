@@ -1,0 +1,29 @@
+{
+  "id": "re-hamptons-standout",
+  "type": "video",
+  "project": null,
+  "title": "Standout listing film",
+  "service": [
+    "video",
+    "drone"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-hamptons-standout.mp4",
+  "poster": "/v/re-hamptons-standout.webp",
+  "duration": 98,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": true,
+  "rights": "approved",
+  "alt": null,
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 80
+}

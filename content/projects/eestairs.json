@@ -1,0 +1,20 @@
+{
+  "slug": "eestairs",
+  "title": "EEStairs",
+  "shortTitle": "EEStairs",
+  "client": "EEStairs",
+  "category": "commercial",
+  "location": "New York City",
+  "services": null,
+  "summary": null,
+  "story": null,
+  "goal": null,
+  "blurbApproved": false,
+  "hero": null,
+  "heroAlt": null,
+  "rights": "approved",
+  "heroOrientation": "horizontal",
+  "path": "/commercial/eestairs",
+  "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James.",
+  "order": 100
+}

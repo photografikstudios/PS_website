@@ -1,0 +1,20 @@
+{
+  "id": "agent-lead",
+  "type": "image",
+  "project": "property-tour-agent-media",
+  "title": "Property Tour & Agent Media",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/images/photografik-2027/curated/agent-card.webp",
+  "alt": "Open-plan kitchen and living space from a Lloyd Harbor property shoot",
+  "featured": false,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 270
+}

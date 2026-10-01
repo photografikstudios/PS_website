@@ -1,0 +1,20 @@
+{
+  "id": "lauryn-interior",
+  "type": "image",
+  "project": "lauryn-koke-daniel-gale-sothebys",
+  "title": "Lloyd Harbor interior",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/images/photografik-2027/curated/lauryn-gallery.webp",
+  "alt": "Bright double-height foyer with a staircase in the Lloyd Harbor listing",
+  "featured": false,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 300
+}

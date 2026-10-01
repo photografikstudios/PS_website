@@ -1,0 +1,29 @@
+{
+  "id": "arch-yankee-barn-film",
+  "type": "video",
+  "project": "yankee-barn-builders",
+  "title": "Yankee Barn Builders film",
+  "service": [
+    "video"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/v/arch-yankee-barn-film.mp4",
+  "poster": "/v/arch-yankee-barn-film.webp",
+  "duration": 104,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": true,
+  "rights": "approved",
+  "alt": "Designer, architect and builder film of an Amagansett home by Yankee Barn Builders",
+  "location": "Amagansett",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
+  "order": 40
+}

@@ -1,0 +1,20 @@
+{
+  "slug": "rachel-lynch-pools",
+  "title": "Rachel Lynch Pools",
+  "shortTitle": "Rachel Lynch Pools",
+  "client": "Rachel Lynch Pools",
+  "category": "commercial",
+  "location": "The Hamptons",
+  "services": null,
+  "summary": null,
+  "story": null,
+  "goal": null,
+  "blurbApproved": false,
+  "hero": null,
+  "heroAlt": null,
+  "rights": "approved",
+  "heroOrientation": "horizontal",
+  "path": "/commercial/rachel-lynch-pools",
+  "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James.",
+  "order": 80
+}

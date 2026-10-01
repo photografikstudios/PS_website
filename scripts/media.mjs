@@ -16,6 +16,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { loadWork } from '../src/lib/work-load.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -35,7 +36,7 @@ if (process.env.SKIP_MEDIA === '1') { console.log('media: skipped (SKIP_MEDIA=1)
 
 const { items: allItems } = JSON.parse(await readFile(join(root, 'content/media-sources.json'), 'utf8'));
 // Rights gate (mirrors src/build.mjs): never encode or publish files for media whose rights James has not confirmed.
-const workRecords = JSON.parse(await readFile(join(root, 'content/work.json'), 'utf8')).media;
+const workRecords = (await loadWork(root)).media;
 const pendingIds = new Set(workRecords.filter((m) => m.rights !== 'approved').map((m) => m.id));
 const items = candidateBuild ? allItems : allItems.filter((it) => !pendingIds.has(it.id));
 if (allItems.length !== items.length) console.log(`media: rights gate skipped ${allItems.length - items.length} pending item(s)`);

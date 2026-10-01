@@ -1,0 +1,30 @@
+{
+  "id": "revivaluxe-film",
+  "type": "video",
+  "project": "revivaluxe",
+  "title": "RevivaLuxe brand story",
+  "service": [
+    "video"
+  ],
+  "category": "commercial",
+  "orientation": "vertical",
+  "src": "/media/photografik-2027/commercial-revivaluxe.mp4",
+  "poster": "/images/photografik-2027/curated/revivaluxe-card.webp",
+  "duration": 33,
+  "dialogue": true,
+  "captions": "/captions/revivaluxe-film.vtt",
+  "transcript": "/captions/revivaluxe-film.txt",
+  "featured": true,
+  "rights": "withheld",
+  "alt": null,
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "revivaluxe",
+  "client": "RevivaLuxe",
+  "captionsNote": "Sep 26 (large-v3 pass, no VAD): the soundtrack is a hip-hop song with vocals running the full 33 s, not dialogue or narration. The lyrics include explicit language. Captions describe the music rather than reproducing lyrics. James to confirm (1) the description is enough, (2) the track is licensed for commercial web use, (3) explicit lyrics are acceptable on a client showcase.",
+  "captionsStatus": "machine-draft",
+  "_rightsNote": "James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed. Withheld from every build until the film has licensed music or a silent/re-scored version is approved. (Lyrics themselves were acceptable.)",
+  "order": 20
+}

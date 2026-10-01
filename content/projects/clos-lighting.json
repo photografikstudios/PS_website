@@ -1,0 +1,20 @@
+{
+  "slug": "clos-lighting",
+  "title": "CLOS Lighting",
+  "shortTitle": "CLOS Lighting",
+  "client": "CLOS Lighting",
+  "category": "commercial",
+  "location": "Long Island",
+  "services": null,
+  "summary": null,
+  "story": null,
+  "goal": null,
+  "blurbApproved": false,
+  "hero": null,
+  "heroAlt": null,
+  "rights": "approved",
+  "heroOrientation": "horizontal",
+  "path": "/commercial/clos-lighting",
+  "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James.",
+  "order": 120
+}

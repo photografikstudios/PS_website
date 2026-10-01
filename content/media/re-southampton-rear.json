@@ -1,0 +1,25 @@
+{
+  "id": "re-southampton-rear",
+  "type": "image",
+  "project": null,
+  "title": "Rear of a Southampton home across the lawn",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-southampton-rear.webp",
+  "thumb": "/v/re-southampton-rear-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Rear of a Southampton home across the lawn",
+  "location": "Southampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 750
+}

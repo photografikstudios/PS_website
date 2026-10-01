@@ -1,0 +1,25 @@
+{
+  "id": "ph-yankee-barn-great-room",
+  "type": "image",
+  "project": "yankee-barn-builders",
+  "title": "Yankee Barn Builders, great room",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "vertical",
+  "src": "/v/ph-yankee-barn-great-room.webp",
+  "thumb": "/v/ph-yankee-barn-great-room-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Great room with exposed timber trusses and a teal sectional in an Amagansett home by Yankee Barn Builders",
+  "location": "Amagansett",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
+  "order": 410
+}

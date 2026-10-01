@@ -1,0 +1,25 @@
+{
+  "id": "ph-hamptons-residence-twilight",
+  "type": "image",
+  "project": null,
+  "title": "Hamptons residence at twilight",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/ph-hamptons-residence-twilight.webp",
+  "thumb": "/v/ph-hamptons-residence-twilight-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Hamptons residence and lawn at twilight",
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street names or addresses; \"Dartmouth\" removed as a probable street name.",
+  "order": 330
+}

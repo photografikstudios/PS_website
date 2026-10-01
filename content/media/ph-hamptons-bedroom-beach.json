@@ -1,0 +1,24 @@
+{
+  "id": "ph-hamptons-bedroom-beach",
+  "type": "image",
+  "project": null,
+  "title": "Primary bedroom with beach view",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/ph-hamptons-bedroom-beach.webp",
+  "thumb": "/v/ph-hamptons-bedroom-beach-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Primary bedroom with beach view",
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 370
+}

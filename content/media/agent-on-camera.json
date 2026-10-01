@@ -1,0 +1,26 @@
+{
+  "id": "agent-on-camera",
+  "type": "video",
+  "project": "property-tour-agent-media",
+  "title": "Agent on camera: waterfront tour",
+  "service": [
+    "video"
+  ],
+  "category": "agent-content",
+  "orientation": "vertical",
+  "src": "/media/photografik-2027/agent-property-tour.mp4",
+  "poster": null,
+  "duration": 15,
+  "dialogue": true,
+  "captions": "/captions/agent-on-camera.vtt",
+  "transcript": "/captions/agent-on-camera.txt",
+  "featured": false,
+  "rights": "approved",
+  "posterTime": 3,
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "captionsStatus": "machine-draft",
+  "order": 180
+}

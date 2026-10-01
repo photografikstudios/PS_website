@@ -4,8 +4,10 @@
 // (node scripts/ingest.mjs tag <id> --packages ... --year ...).
 // Usage: node scripts/tag-queue.mjs > TAGGING_QUEUE.md
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { loadWork } from '../src/lib/work-load.js';
 
-const work = JSON.parse(await readFile(new URL('../content/work.json', import.meta.url)));
+const work = await loadWork(fileURLToPath(new URL('..', import.meta.url)));
 const pricing = JSON.parse(await readFile(new URL('../content/pricing.json', import.meta.url)));
 const pk = pricing.packages;
 
@@ -24,7 +26,7 @@ const rows = work.media.filter((m) => m.category === 'real-estate');
 const out = [];
 out.push('# Real estate media: package and year tagging queue');
 out.push('');
-out.push(`Generated from content/work.json (${rows.length} real estate records). Nothing here is a tag yet.`);
+out.push(`Generated from content/media (${rows.length} real estate records). Nothing here is a tag yet.`);
 out.push('"Consistent with" lists every package whose HD Photo Hub inclusions cover what the piece shows. It narrows the question; it does not answer it. Please confirm the package actually booked (or "none/à la carte") and the shoot year for each, then run the command shown.');
 out.push('');
 out.push('| # | Record | What it shows | Consistent with | Current tag | Year | Confirm with |');

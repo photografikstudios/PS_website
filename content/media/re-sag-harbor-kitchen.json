@@ -1,0 +1,25 @@
+{
+  "id": "re-sag-harbor-kitchen",
+  "type": "image",
+  "project": null,
+  "title": "Kitchen with a marble island and oak cabinetry in Sag Harbor",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-sag-harbor-kitchen.webp",
+  "thumb": "/v/re-sag-harbor-kitchen-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Kitchen with a marble island and oak cabinetry in Sag Harbor",
+  "location": "Sag Harbor",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 1120
+}

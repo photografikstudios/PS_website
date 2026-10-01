@@ -1,0 +1,25 @@
+{
+  "id": "re-sag-harbor-rear",
+  "type": "image",
+  "project": null,
+  "title": "Pool beside a shingled gable in Sag Harbor",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-sag-harbor-rear.webp",
+  "thumb": "/v/re-sag-harbor-rear-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Pool beside a shingled gable in Sag Harbor",
+  "location": "Sag Harbor",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 1110
+}

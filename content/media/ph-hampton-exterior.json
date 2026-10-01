@@ -1,0 +1,24 @@
+{
+  "id": "ph-hampton-exterior",
+  "type": "image",
+  "project": null,
+  "title": "Shingle-style exterior",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/ph-hampton-exterior.webp",
+  "thumb": "/v/ph-hampton-exterior-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Shingle-style exterior",
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 400
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ph-bpe-steel",
+  "type": "image",
+  "project": "bpe-ironworks",
+  "title": "BPE Ironworks: steel installation",
+  "service": [
+    "photography"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/ph-bpe-steel.webp",
+  "thumb": "/v/ph-bpe-steel-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "BPE Ironworks: steel installation",
+  "location": "Southampton",
+  "client": "BPE Ironworks",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "bpe-ironworks",
+  "order": 510
+}

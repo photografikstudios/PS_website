@@ -1,0 +1,27 @@
+{
+  "id": "ph-bpe-torch-cut",
+  "type": "image",
+  "project": "bpe-ironworks",
+  "title": "BPE Ironworks: torch cutting a steel beam",
+  "service": [
+    "photography"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/ph-bpe-torch-cut.webp",
+  "thumb": "/v/ph-bpe-torch-cut-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "An ironworker's torch cuts a red steel beam, throwing a shower of sparks",
+  "location": "Southampton",
+  "client": "BPE Ironworks",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "bpe-ironworks",
+  "gallery": false,
+  "_rights": "Frame from the approved BPE Ironworks film (same rights).",
+  "order": 520
+}

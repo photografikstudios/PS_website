@@ -1,0 +1,25 @@
+{
+  "id": "re-water-mill-porch",
+  "type": "image",
+  "project": null,
+  "title": "Covered porch with garden seating in Water Mill",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-water-mill-porch.webp",
+  "thumb": "/v/re-water-mill-porch-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Covered porch with garden seating in Water Mill",
+  "location": "Water Mill",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 1210
+}

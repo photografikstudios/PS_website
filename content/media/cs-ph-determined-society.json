@@ -1,0 +1,27 @@
+{
+  "id": "cs-ph-determined-society",
+  "type": "image",
+  "project": "creator-studios",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "title": "The Determined Society, after the episode",
+  "orientation": "horizontal",
+  "src": "/v/cs-ph-determined-society.webp",
+  "thumb": "/v/cs-ph-determined-society-sm.webp",
+  "alt": "Host and guest standing together on The Determined Society podcast set",
+  "location": null,
+  "client": "The Determined Society",
+  "_sourceFile": "Podcast Action Photos/Shawn French - Trevor Bauer BTS-36.jpg",
+  "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set.",
+  "order": 610
+}

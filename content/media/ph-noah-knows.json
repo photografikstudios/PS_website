@@ -1,0 +1,26 @@
+{
+  "id": "ph-noah-knows",
+  "type": "image",
+  "project": "creator-studios",
+  "title": "Noah Knows podcast, episode 10",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "orientation": "horizontal",
+  "src": "/v/ph-noah-knows.webp",
+  "thumb": "/v/ph-noah-knows-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Noah Knows podcast, episode 10",
+  "location": null,
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_locationNote": "Same Episode 10 kitchen-island shoot as the Home brand tile; not verified as the Bohemia studio (Codex/James, Sep 24).",
+  "order": 540
+}

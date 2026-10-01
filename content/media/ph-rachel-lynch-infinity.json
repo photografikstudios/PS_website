@@ -1,0 +1,25 @@
+{
+  "id": "ph-rachel-lynch-infinity",
+  "type": "image",
+  "project": "rachel-lynch-pools",
+  "title": "Rachel Lynch Pools: modern infinity pool",
+  "service": [
+    "photography"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/ph-rachel-lynch-infinity.webp",
+  "thumb": "/v/ph-rachel-lynch-infinity-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Rachel Lynch Pools: modern infinity pool",
+  "location": "Long Island",
+  "client": "Rachel Lynch Pools",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "rachel-lynch-pools",
+  "order": 470
+}

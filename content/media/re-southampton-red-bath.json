@@ -1,0 +1,25 @@
+{
+  "id": "re-southampton-red-bath",
+  "type": "image",
+  "project": null,
+  "title": "Bathroom with glossy red tile and a freestanding tub in a Southampton home",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-southampton-red-bath.webp",
+  "thumb": "/v/re-southampton-red-bath-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Bathroom with glossy red tile and a freestanding tub in a Southampton home",
+  "location": "Southampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 730
+}

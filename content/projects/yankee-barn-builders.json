@@ -1,0 +1,26 @@
+{
+  "slug": "yankee-barn-builders",
+  "title": "Yankee Barn Builders",
+  "shortTitle": "Yankee Barn Builders",
+  "client": "Yankee Barn Builders",
+  "category": "architecture-design",
+  "location": "Amagansett",
+  "services": [
+    "Project photography",
+    "Architecture film"
+  ],
+  "summary": "Project photography and an architecture film of an Amagansett home by Yankee Barn Builders.",
+  "story": "Coverage planned around the builder's portfolio: the full exterior form, the way the house sits on its site and the material details that show the quality of the build.",
+  "hero": "/images/photografik-2027/curated/yankee-hero.webp",
+  "heroAlt": "Vaulted great room with exposed timber trusses, Amagansett",
+  "rights": "approved",
+  "rightsNote": "Approved for display Sept 23 2026. Film, great room and exterior (formerly listed separately) merged Sep 27 2026.",
+  "heroOrientation": "vertical",
+  "path": "/architecture-design/yankee-barn-builders",
+  "segments": [
+    "builder"
+  ],
+  "segmentSource": "James, Sep 27 2026: Yankee Barn Builders is the builder; the former 99 Hedges film and photos are the same client and house (merged).",
+  "_renamed": "Was \"Yankee Home Builders\" (/architecture-design/yankee-home-builders); James, Sep 27 2026. Old URL and /architecture-design/99-hedges-lane redirect here.",
+  "order": 30
+}

@@ -1,0 +1,27 @@
+{
+  "id": "cs-ph-solo-couch",
+  "type": "image",
+  "project": "creator-studios",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "title": "Solo on-camera session",
+  "orientation": "vertical",
+  "src": "/v/cs-ph-solo-couch.webp",
+  "thumb": "/v/cs-ph-solo-couch-sm.webp",
+  "alt": "Speaker talking to camera from a white sofa, with a microphone on a boom arm",
+  "location": null,
+  "client": null,
+  "_sourceFile": "Podcast Action Photos/Amanda - White Couch Solo-4.jpg",
+  "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set.",
+  "order": 620
+}

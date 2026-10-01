@@ -1,0 +1,26 @@
+{
+  "id": "ph-torella-aerial",
+  "type": "image",
+  "project": "torella-pools",
+  "title": "Torella Pools: waterfront backyard",
+  "service": [
+    "photography",
+    "drone"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/ph-torella-aerial.webp",
+  "thumb": "/v/ph-torella-aerial-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Torella Pools: waterfront backyard",
+  "location": "Long Island",
+  "client": "Torella Pools",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "torella-pools",
+  "order": 480
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ph-revivaluxe-treatment",
+  "type": "image",
+  "project": "revivaluxe",
+  "title": "RevivaLuxe treatment room",
+  "service": [
+    "photography"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/ph-revivaluxe-treatment.webp",
+  "thumb": "/v/ph-revivaluxe-treatment-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "RevivaLuxe treatment room",
+  "location": "Long Island",
+  "client": "RevivaLuxe",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "revivaluxe",
+  "order": 490
+}

@@ -1,0 +1,30 @@
+{
+  "id": "re-east-end-listing-reel",
+  "type": "video",
+  "project": null,
+  "title": "East End listing reel",
+  "service": [
+    "video",
+    "drone"
+  ],
+  "category": "real-estate",
+  "orientation": "vertical",
+  "src": "/v/re-east-end-listing-reel.mp4",
+  "poster": "/v/re-east-end-listing-reel.webp",
+  "duration": 83,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": null,
+  "location": null,
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
+  "order": 150
+}

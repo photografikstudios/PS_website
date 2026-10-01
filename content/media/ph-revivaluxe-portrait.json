@@ -1,0 +1,25 @@
+{
+  "id": "ph-revivaluxe-portrait",
+  "type": "image",
+  "project": "revivaluxe",
+  "title": "RevivaLuxe team portrait",
+  "service": [
+    "photography"
+  ],
+  "category": "commercial",
+  "orientation": "vertical",
+  "src": "/v/ph-revivaluxe-portrait.webp",
+  "thumb": "/v/ph-revivaluxe-portrait-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "RevivaLuxe team portrait",
+  "location": "Long Island",
+  "client": "RevivaLuxe",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "revivaluxe",
+  "order": 500
+}

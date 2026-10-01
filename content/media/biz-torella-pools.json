@@ -1,0 +1,29 @@
+{
+  "id": "biz-torella-pools",
+  "type": "video",
+  "project": "torella-pools",
+  "title": "Torella Pools showcase",
+  "service": [
+    "video"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/biz-torella-pools.mp4",
+  "poster": "/v/biz-torella-pools.webp",
+  "duration": 49,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": true,
+  "rights": "approved",
+  "alt": null,
+  "location": "Long Island",
+  "client": "Torella Pools",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "torella-pools",
+  "order": 60
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ph-kerry-delrose-pool",
+  "type": "image",
+  "project": "kerry-delrose",
+  "title": "Kerry Delrose, pool terrace",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/v/ph-kerry-delrose-pool.webp",
+  "thumb": "/v/ph-kerry-delrose-pool-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Pool terrace with white umbrellas overlooking the ocean",
+  "location": "Southampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
+  "order": 450
+}

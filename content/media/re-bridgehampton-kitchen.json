@@ -1,0 +1,25 @@
+{
+  "id": "re-bridgehampton-kitchen",
+  "type": "image",
+  "project": null,
+  "title": "Kitchen with a bold marble island and floor-to-ceiling glass in Bridgehampton",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-bridgehampton-kitchen.webp",
+  "thumb": "/v/re-bridgehampton-kitchen-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Kitchen with a bold marble island and floor-to-ceiling glass in Bridgehampton",
+  "location": "Bridgehampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 5,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 900
+}

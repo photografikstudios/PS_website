@@ -1,0 +1,27 @@
+{
+  "id": "cs-ph-hedgestone-switch",
+  "type": "image",
+  "project": "creator-studios",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "title": "Hedgestone podcast recording",
+  "orientation": "horizontal",
+  "src": "/v/cs-ph-hedgestone-switch.webp",
+  "thumb": "/v/cs-ph-hedgestone-switch-sm.webp",
+  "alt": "Host and guest at microphones while their camera angles show on the switching monitors in the foreground",
+  "location": null,
+  "client": "Hedgestone",
+  "_sourceFile": "Podcast Action Photos/Hedgestone - 8.25 BTS-10.jpg",
+  "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set.",
+  "order": 590
+}

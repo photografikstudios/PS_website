@@ -1,0 +1,25 @@
+{
+  "id": "re-southampton-aerial",
+  "type": "image",
+  "project": null,
+  "title": "Aerial of a Southampton home, pool and garden",
+  "service": [
+    "drone"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-southampton-aerial.webp",
+  "thumb": "/v/re-southampton-aerial-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Aerial of a Southampton home, pool and garden",
+  "location": "Southampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 770
+}

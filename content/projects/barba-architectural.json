@@ -1,0 +1,22 @@
+{
+  "slug": "barba-architectural",
+  "title": "Barba Architectural",
+  "shortTitle": "Barba Architectural",
+  "client": "Barba Architectural",
+  "category": "architecture-design",
+  "location": "Westhampton Beach",
+  "services": [
+    "Project photography"
+  ],
+  "summary": "Project photography for Barba Architectural.",
+  "story": null,
+  "rights": "approved",
+  "rightsNote": "Photo already approved for display; client named by James, Sep 27 2026.",
+  "heroOrientation": "horizontal",
+  "path": "/architecture-design/barba-architectural",
+  "segments": [
+    "architect"
+  ],
+  "segmentSource": "James, Sep 27 2026: this project is for the architect Barba Architectural.",
+  "order": 60
+}

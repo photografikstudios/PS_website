@@ -1,0 +1,27 @@
+{
+  "slug": "peterson-ramlowtan",
+  "title": "Peterson & Ramlowtan",
+  "shortTitle": "Peterson & Ramlowtan",
+  "client": "Peterson & Ramlowtan",
+  "category": "architecture-design",
+  "location": "East Hampton",
+  "services": [
+    "Architecture",
+    "Interiors",
+    "Exteriors"
+  ],
+  "summary": "Architecture, interior and exterior photography documenting a finished residence.",
+  "story": "A finished residence photographed the way its architects and builders think about it: light, proportion and how each space leads to the next.",
+  "hero": "/images/photografik-2027/curated/peterson-hero.webp",
+  "heroAlt": "Walnut kitchen in an East Hampton residence by Peterson & Ramlowtan",
+  "rights": "approved",
+  "rightsNote": "Approved for display Sept 23 2026.",
+  "heroOrientation": "horizontal",
+  "path": "/architecture-design/peterson-ramlowtan",
+  "segments": [
+    "architect",
+    "builder"
+  ],
+  "segmentSource": "James, Sep 27 2026: Peterson & Ramlowtan are architects and builders in one.",
+  "order": 40
+}

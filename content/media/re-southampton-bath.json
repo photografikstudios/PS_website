@@ -1,0 +1,25 @@
+{
+  "id": "re-southampton-bath",
+  "type": "image",
+  "project": null,
+  "title": "Primary bath with a freestanding tub and double vanity in a Southampton home",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-southampton-bath.webp",
+  "thumb": "/v/re-southampton-bath-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Primary bath with a freestanding tub and double vanity in a Southampton home",
+  "location": "Southampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 710
+}

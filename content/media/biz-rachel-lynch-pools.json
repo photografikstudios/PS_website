@@ -1,0 +1,29 @@
+{
+  "id": "biz-rachel-lynch-pools",
+  "type": "video",
+  "project": "rachel-lynch-pools",
+  "title": "Rachel Lynch Pools showcase",
+  "service": [
+    "video"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/biz-rachel-lynch-pools.mp4",
+  "poster": "/v/biz-rachel-lynch-pools.webp",
+  "duration": 114,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": null,
+  "location": "The Hamptons",
+  "client": "Rachel Lynch Pools",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "rachel-lynch-pools",
+  "order": 100
+}

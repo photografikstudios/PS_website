@@ -1,0 +1,25 @@
+{
+  "id": "ph-hampton-aerial-pool-beach",
+  "type": "image",
+  "project": null,
+  "title": "Oceanfront estate from the air",
+  "service": [
+    "photography",
+    "drone"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/ph-hampton-aerial-pool-beach.webp",
+  "thumb": "/v/ph-hampton-aerial-pool-beach-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Oceanfront estate from the air",
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 340
+}

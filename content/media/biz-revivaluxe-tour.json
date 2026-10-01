@@ -1,0 +1,30 @@
+{
+  "id": "biz-revivaluxe-tour",
+  "type": "video",
+  "project": "revivaluxe",
+  "title": "RevivaLuxe clinic tour",
+  "service": [
+    "video"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/biz-revivaluxe-tour.mp4",
+  "poster": "/v/biz-revivaluxe-tour.webp",
+  "duration": 75,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": false,
+  "rights": "withheld",
+  "alt": null,
+  "location": "Long Island",
+  "client": "RevivaLuxe",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "revivaluxe",
+  "_rightsNote": "James, Sep 26 2026: the RevivaLuxe soundtrack is not licensed. Withheld from every build until the film has licensed music or a silent/re-scored version is approved. (Lyrics themselves were acceptable.)",
+  "order": 140
+}

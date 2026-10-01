@@ -1,0 +1,26 @@
+{
+  "id": "re-floorplan-with-photo",
+  "type": "image",
+  "project": null,
+  "title": "Kitchen photograph with the home's floor plan inset",
+  "service": [
+    "floor-plan"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-floorplan-with-photo.webp",
+  "thumb": "/v/re-floorplan-with-photo-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Kitchen photograph with the home's floor plan inset",
+  "location": "Bridgehampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "gallery": false,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 1280
+}

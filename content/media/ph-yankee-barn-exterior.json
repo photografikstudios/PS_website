@@ -1,0 +1,25 @@
+{
+  "id": "ph-yankee-barn-exterior",
+  "type": "image",
+  "project": "yankee-barn-builders",
+  "title": "Yankee Barn Builders, exterior",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/v/ph-yankee-barn-exterior.webp",
+  "thumb": "/v/ph-yankee-barn-exterior-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Shingled house and red barn beside the driveway of an Amagansett home by Yankee Barn Builders",
+  "location": "Amagansett",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
+  "order": 420
+}

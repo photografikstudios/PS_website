@@ -1,0 +1,21 @@
+{
+  "id": "creator-still",
+  "type": "image",
+  "project": "creator-studios",
+  "title": "Creator Studios interview",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "orientation": "vertical",
+  "src": "/images/photografik-2027/curated/creator-project-card.webp",
+  "alt": "Guest speaking into a microphone during a Creator Studios podcast recording",
+  "featured": false,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 290
+}

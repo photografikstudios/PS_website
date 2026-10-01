@@ -1,0 +1,25 @@
+{
+  "id": "ph-clos-lighting",
+  "type": "image",
+  "project": "clos-lighting",
+  "title": "CLOS Lighting: landscape lighting",
+  "service": [
+    "photography"
+  ],
+  "category": "commercial",
+  "orientation": "horizontal",
+  "src": "/v/ph-clos-lighting.webp",
+  "thumb": "/v/ph-clos-lighting-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "CLOS Lighting: landscape lighting",
+  "location": "Long Island",
+  "client": "CLOS Lighting",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "clos-lighting",
+  "order": 530
+}

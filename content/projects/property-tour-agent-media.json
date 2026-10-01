@@ -1,0 +1,23 @@
+{
+  "slug": "property-tour-agent-media",
+  "title": "Property Tour & Agent Media",
+  "shortTitle": "Property tour & agent media",
+  "client": null,
+  "category": "agent-content",
+  "location": "Lloyd Harbor",
+  "services": [
+    "Photography",
+    "Teaser",
+    "Agent on camera",
+    "Film"
+  ],
+  "summary": "Property photography and an agent-facing video package captured in one coordinated production day.",
+  "story": "One production day, two jobs: complete property media for the listing and on-camera pieces the agent can keep using long after the sale.",
+  "hero": "/images/photografik-2027/curated/agent-hero.webp",
+  "heroAlt": "Modern farmhouse exterior at dusk, Lloyd Harbor",
+  "rights": "approved",
+  "rightsNote": "Approved for display Sept 23 2026.",
+  "heroOrientation": "horizontal",
+  "path": "/agent-content/property-tour-agent-media",
+  "order": 20
+}

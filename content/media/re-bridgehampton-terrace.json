@@ -1,0 +1,25 @@
+{
+  "id": "re-bridgehampton-terrace",
+  "type": "image",
+  "project": null,
+  "title": "Covered terrace looking out to the pool in Bridgehampton",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-bridgehampton-terrace.webp",
+  "thumb": "/v/re-bridgehampton-terrace-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Covered terrace looking out to the pool in Bridgehampton",
+  "location": "Bridgehampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 5,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 870
+}

@@ -13,6 +13,7 @@ import { layout } from './layout.js';
 import { buildPages } from './pages.js';
 import { cmsConfig } from './lib/cms-config.js';
 import { validateLegal } from './lib/legal-core.js';
+import { loadWork } from './lib/work-load.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -33,9 +34,13 @@ const siteMode = process.env.SITE_MODE || (vercelEnv === 'production' ? 'product
 const reviewMode = siteMode !== 'production';
 const onVercel = !!process.env.VERCEL && process.env.LOCAL_IMAGES !== '1';
 
-const [site, pricing, work, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal] = await Promise.all(
-  ['site.json', 'pricing.json', 'work.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json'].map(readJSON),
+const [site, pricing, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal] = await Promise.all(
+  ['site.json', 'pricing.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json'].map(readJSON),
 );
+// Portfolio: one file per project and per photo/film (content/projects, content/media), edited through /admin.
+const work = await loadWork(root);
+if (work.loadErrors.length) { console.error('Portfolio file errors:\n - ' + work.loadErrors.join('\n - ')); process.exit(1); }
+delete work.loadErrors;
 const legalErrors = validateLegal(legal);
 if (legalErrors.length) { console.error('Legal page errors:\n - ' + legalErrors.join('\n - ')); process.exit(1); }
 // Field Notes: one Markdown file per article (content/field-notes/*.md), edited through /admin.

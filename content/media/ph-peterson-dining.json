@@ -1,0 +1,25 @@
+{
+  "id": "ph-peterson-dining",
+  "type": "image",
+  "project": "peterson-ramlowtan",
+  "title": "Peterson & Ramlowtan, dining room",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/v/ph-peterson-dining.webp",
+  "thumb": "/v/ph-peterson-dining-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Dining room seen through an arched opening, with a mural wall and a blue sofa",
+  "location": "East Hampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
+  "order": 440
+}

@@ -1,0 +1,29 @@
+{
+  "id": "re-hampton-luxury-home",
+  "type": "video",
+  "project": null,
+  "title": "Hamptons luxury home film",
+  "service": [
+    "video",
+    "drone"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-hampton-luxury-home.mp4",
+  "poster": "/v/re-hampton-luxury-home.webp",
+  "duration": 132,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": null,
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 260
+}

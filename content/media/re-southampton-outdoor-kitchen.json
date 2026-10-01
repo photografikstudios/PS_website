@@ -1,0 +1,25 @@
+{
+  "id": "re-southampton-outdoor-kitchen",
+  "type": "image",
+  "project": null,
+  "title": "Covered terrace with an outdoor kitchen in Southampton",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-southampton-outdoor-kitchen.webp",
+  "thumb": "/v/re-southampton-outdoor-kitchen-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Covered terrace with an outdoor kitchen in Southampton",
+  "location": "Southampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 760
+}

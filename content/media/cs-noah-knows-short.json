@@ -1,0 +1,33 @@
+{
+  "id": "cs-noah-knows-short",
+  "type": "video",
+  "project": "creator-studios",
+  "title": "Noah Knows podcast",
+  "service": [
+    "video",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "orientation": "vertical",
+  "src": "/v/cs-noah-knows-short.mp4",
+  "poster": "/v/cs-noah-knows-short.webp",
+  "duration": 86,
+  "dialogue": true,
+  "captions": "/captions/cs-noah-knows-short.vtt",
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": null,
+  "location": null,
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_locationNote": "Frames show the same kitchen-island set as the Episode 10 stills; the Drive notes say LI Creator Studios, but the location is not verified. Label withheld until James confirms.",
+  "captionsStatus": "machine-draft",
+  "openCaptions": true,
+  "_openCaptionsNote": "Sep 26: the clip has animated word-by-word captions burned in (seen at 0:03, 0:05, 0:26 in the review player). The WebVTT track is offered through the player CC control but not shown by default, so text is not doubled. James to confirm the burned-in words cover all speech.",
+  "order": 200
+}

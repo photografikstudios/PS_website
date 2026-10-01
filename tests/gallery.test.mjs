@@ -1,9 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { loadWork } from '../src/lib/work-load.js';
 import { facts, matches, editorialOrder, optionCounts, validateMedia } from '../src/lib/gallery-core.js';
 
-const work = JSON.parse(await readFile(new URL('../content/work.json', import.meta.url)));
+const work = await loadWork(fileURLToPath(new URL('..', import.meta.url)));
 const pricing = JSON.parse(await readFile(new URL('../content/pricing.json', import.meta.url)));
 const pk = pricing.packages.map((p) => p.id);
 

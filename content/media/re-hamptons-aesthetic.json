@@ -1,0 +1,29 @@
+{
+  "id": "re-hamptons-aesthetic",
+  "type": "video",
+  "project": null,
+  "title": "Hamptons estate film",
+  "service": [
+    "video",
+    "drone"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-hamptons-aesthetic.mp4",
+  "poster": "/v/re-hamptons-aesthetic.webp",
+  "duration": 131,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": null,
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 160
+}

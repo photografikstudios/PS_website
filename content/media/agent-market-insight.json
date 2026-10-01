@@ -1,0 +1,25 @@
+{
+  "id": "agent-market-insight",
+  "type": "video",
+  "project": null,
+  "title": "Agent Engine: market insight",
+  "service": [
+    "video"
+  ],
+  "category": "agent-content",
+  "orientation": "vertical",
+  "src": "/media/photografik-2027/just-sold-story.mp4",
+  "poster": null,
+  "duration": 15,
+  "dialogue": true,
+  "captions": "burned-in",
+  "transcript": "/captions/agent-market-insight.txt",
+  "featured": true,
+  "rights": "approved",
+  "posterTime": 1.5,
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 50
+}

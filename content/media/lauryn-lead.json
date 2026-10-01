@@ -1,0 +1,20 @@
+{
+  "id": "lauryn-lead",
+  "type": "image",
+  "project": "lauryn-koke-daniel-gale-sothebys",
+  "title": "Lauryn Koke, Daniel Gale Sotheby's",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/images/photografik-2027/curated/lauryn-card.webp",
+  "alt": "White colonial home in Lloyd Harbor at dusk, lights on",
+  "featured": true,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 30
+}

@@ -1,0 +1,25 @@
+{
+  "id": "re-bridgehampton-exterior",
+  "type": "image",
+  "project": null,
+  "title": "Shingle and stone modern home on a wooded Bridgehampton lot",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-bridgehampton-exterior.webp",
+  "thumb": "/v/re-bridgehampton-exterior-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Shingle and stone modern home on a wooded Bridgehampton lot",
+  "location": "Bridgehampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 880
+}

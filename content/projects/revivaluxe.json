@@ -1,0 +1,32 @@
+{
+  "slug": "revivaluxe",
+  "title": "RevivaLuxe",
+  "shortTitle": "RevivaLuxe",
+  "client": "RevivaLuxe",
+  "category": "commercial",
+  "location": "Long Island",
+  "services": [
+    "Brand photography"
+  ],
+  "summary": "Launch media for a new medical-aesthetics storefront: team headshots, photos of the space, service film and the owner on camera.",
+  "story": "We photographed team headshots and the new space, filmed the team performing their med spa services, caught action shots during treatments and recorded the owner on camera talking about what they do. RevivaLuxe had everything it needed to hit the ground running with its new location.",
+  "hero": "/images/photografik-2027/curated/revivaluxe-hero.webp",
+  "heroAlt": "RevivaLuxe founder in the practice reception area",
+  "rights": "approved",
+  "rightsNote": "Approved for display Sept 23 2026.",
+  "heroOrientation": "vertical",
+  "path": "/commercial/revivaluxe",
+  "goal": "Open RevivaLuxe’s new storefront with a full set of media, ready to launch on day one.",
+  "blurbApproved": true,
+  "_blurb": "James, Sep 28 2026 (chat): goal and scope given by James; wording written from his description.",
+  "_films": "Sep 28 2026: James approved silent visual use of the 33 s brand film. Only the silent export /v/revivaluxe-silent-loop.mp4 (audio stream physically removed) is shown, as a muted loop in the Commercial case study and on this project page. The audio-bearing revivaluxe-film and the 75 s biz-revivaluxe-tour stay withheld. Delivered and approach text come from James (Sep 28 chat); only the silent loop is shown.",
+  "silentLoop": "revivaluxe-silent",
+  "delivered": [
+    "Team headshots",
+    "Photos of the space",
+    "Service film",
+    "Owner on camera",
+    "Action shots"
+  ],
+  "order": 70
+}

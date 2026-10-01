@@ -1,0 +1,20 @@
+{
+  "id": "peterson-lead",
+  "type": "image",
+  "project": "peterson-ramlowtan",
+  "title": "Peterson & Ramlowtan",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/images/photografik-2027/curated/peterson-card.webp",
+  "alt": "Galley bar with walnut cabinetry in an East Hampton residence",
+  "featured": false,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 130
+}

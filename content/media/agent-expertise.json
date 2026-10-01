@@ -1,0 +1,25 @@
+{
+  "id": "agent-expertise",
+  "type": "video",
+  "project": null,
+  "title": "Agent Engine: on-camera expertise",
+  "service": [
+    "video"
+  ],
+  "category": "agent-content",
+  "orientation": "vertical",
+  "src": "/media/photografik-2027/jb-andreassi.mp4",
+  "poster": null,
+  "duration": 32,
+  "dialogue": true,
+  "captions": "burned-in",
+  "transcript": "/captions/agent-expertise.txt",
+  "featured": false,
+  "rights": "approved",
+  "posterTime": 3,
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 110
+}

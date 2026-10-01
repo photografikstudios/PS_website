@@ -1,0 +1,22 @@
+{
+  "slug": "creator-studios",
+  "title": "Creator Studios Sessions",
+  "shortTitle": "Creator Studios sessions",
+  "client": null,
+  "category": "creator-studios",
+  "location": "Bohemia",
+  "services": [
+    "Podcast",
+    "Interview",
+    "Social cutdowns"
+  ],
+  "summary": "Podcast and interview production in Creator Studios, with long-form and short-form edits.",
+  "story": "Multi-camera podcast and interview sessions in our Bohemia studio, with hands-on direction on ideas, pacing and delivery.",
+  "hero": "/images/photografik-2027/curated/creator-project-hero.webp",
+  "heroAlt": "Podcast guest recording on set at Creator Studios, Bohemia",
+  "rights": "approved",
+  "rightsNote": "Approved for display Sept 23 2026.",
+  "heroOrientation": "vertical",
+  "path": "/creator-studios/sessions",
+  "order": 130
+}

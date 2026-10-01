@@ -1,0 +1,20 @@
+{
+  "id": "yankee-lead",
+  "type": "image",
+  "project": "yankee-barn-builders",
+  "title": "Yankee Barn Builders",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/images/photografik-2027/curated/yankee-card.webp",
+  "alt": "Great room with tall windows in an Amagansett home by Yankee Barn Builders",
+  "featured": true,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 70
+}

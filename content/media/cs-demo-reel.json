@@ -1,0 +1,31 @@
+{
+  "id": "cs-demo-reel",
+  "type": "video",
+  "project": "creator-studios",
+  "title": "Creator Studios demo reel",
+  "service": [
+    "video",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "orientation": "horizontal",
+  "src": "/v/cs-demo-reel.mp4",
+  "poster": "/v/cs-demo-reel.webp",
+  "duration": null,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": "Creator Studios demo reel: podcast and on-camera sessions recorded in the studio",
+  "location": "Bohemia",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 10,
+  "_approval": "James supplied this reel as the Creator Studios opener, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md).",
+  "_note": "James, Sep 26 2026: music only, no speech; no dialogue captions needed. Temporary selection; Creator reels will be replaced later.",
+  "order": 240
+}

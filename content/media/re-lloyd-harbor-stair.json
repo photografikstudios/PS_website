@@ -1,0 +1,25 @@
+{
+  "id": "re-lloyd-harbor-stair",
+  "type": "image",
+  "project": null,
+  "title": "Curved staircase and arched window in Lloyd Harbor",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-lloyd-harbor-stair.webp",
+  "thumb": "/v/re-lloyd-harbor-stair-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Curved staircase and arched window in Lloyd Harbor",
+  "location": "Lloyd Harbor",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 1050
+}

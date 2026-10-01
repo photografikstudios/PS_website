@@ -1,0 +1,27 @@
+{
+  "id": "cs-ph-dan-dan-conversation",
+  "type": "image",
+  "project": "creator-studios",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "title": "Dan Dan podcast conversation",
+  "orientation": "horizontal",
+  "src": "/v/cs-ph-dan-dan-conversation.webp",
+  "thumb": "/v/cs-ph-dan-dan-conversation-sm.webp",
+  "alt": "Host and guest mid-conversation in armchairs beside the Dan Dan podcast sign",
+  "location": null,
+  "client": "Dan Dan",
+  "_sourceFile": "Podcast Action Photos/Dan Dan July Podcast Action Shots-75.jpg",
+  "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set.",
+  "order": 640
+}

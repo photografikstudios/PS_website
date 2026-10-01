@@ -1,0 +1,22 @@
+{
+  "id": "revivaluxe-still",
+  "type": "image",
+  "project": "revivaluxe",
+  "title": "RevivaLuxe brand photography",
+  "service": [
+    "photography"
+  ],
+  "category": "commercial",
+  "orientation": "vertical",
+  "src": "/images/photografik-2027/curated/revivaluxe-gallery.webp",
+  "alt": "RevivaLuxe client holding a hand mirror during a consultation",
+  "featured": false,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "clientId": "revivaluxe",
+  "client": "RevivaLuxe",
+  "order": 280
+}

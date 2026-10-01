@@ -1,0 +1,27 @@
+{
+  "id": "cs-ph-cc-onsite",
+  "type": "image",
+  "project": "creator-studios",
+  "service": [
+    "photography",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "title": "Champagne Confidential, episode 19, recorded on site",
+  "orientation": "horizontal",
+  "src": "/v/cs-ph-cc-onsite.webp",
+  "thumb": "/v/cs-ph-cc-onsite-sm.webp",
+  "alt": "Wide behind-the-scenes view of an outdoor podcast set at a vineyard, with cameras, lights and the hosts at a table",
+  "location": "On location",
+  "client": "Champagne Confidential",
+  "_sourceFile": "Podcast Action Photos/CC - EP 19 - On Site - BTS-11.jpg",
+  "_approval": "James approved all eight Podcast Action Photos selections for publication, Sep 25 2026 (OWNER_DECISIONS_2026-09-25_LATE.md). IDs verified against the prior gated set.",
+  "order": 570
+}

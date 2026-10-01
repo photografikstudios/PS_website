@@ -1,0 +1,24 @@
+{
+  "id": "ph-hamptons-kitchen",
+  "type": "image",
+  "project": null,
+  "title": "Black and white kitchen",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/ph-hamptons-kitchen.webp",
+  "thumb": "/v/ph-hamptons-kitchen-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Black and white kitchen",
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 360
+}

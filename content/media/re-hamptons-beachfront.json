@@ -1,0 +1,29 @@
+{
+  "id": "re-hamptons-beachfront",
+  "type": "video",
+  "project": null,
+  "title": "Beachfront estate film",
+  "service": [
+    "video",
+    "drone"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-hamptons-beachfront.mp4",
+  "poster": "/v/re-hamptons-beachfront.webp",
+  "duration": 54,
+  "dialogue": false,
+  "captions": null,
+  "transcript": null,
+  "featured": true,
+  "rights": "approved",
+  "alt": null,
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 10
+}

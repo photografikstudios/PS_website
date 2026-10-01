@@ -1,0 +1,20 @@
+{
+  "id": "peterson-detail",
+  "type": "image",
+  "project": "peterson-ramlowtan",
+  "title": "Peterson & Ramlowtan detail",
+  "service": [
+    "photography"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/images/photografik-2027/curated/peterson-gallery.webp",
+  "alt": "Brass faucet and marble backsplash detail, East Hampton residence",
+  "featured": false,
+  "rights": "approved",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 310
+}

@@ -1,0 +1,32 @@
+{
+  "id": "cs-jm2-architecture",
+  "type": "video",
+  "project": "creator-studios",
+  "title": "JM2 Architecture on the podcast",
+  "service": [
+    "video",
+    "studio"
+  ],
+  "category": "creator-studios",
+  "orientation": "vertical",
+  "src": "/v/cs-jm2-architecture.mp4",
+  "poster": "/v/cs-jm2-architecture.webp",
+  "duration": 87,
+  "dialogue": true,
+  "captions": "/captions/cs-jm2-architecture.vtt",
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "alt": null,
+  "location": "Bohemia",
+  "client": "JM2 Architecture",
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "captionsStatus": "machine-draft",
+  "openCaptions": true,
+  "_openCaptionsNote": "Sep 26: the clip has animated word-by-word captions burned in (seen at 0:03, 0:05, 0:26 in the review player). The WebVTT track is offered through the player CC control but not shown by default, so text is not doubled. James to confirm the burned-in words cover all speech.",
+  "order": 90
+}

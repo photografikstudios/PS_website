@@ -1,0 +1,24 @@
+{
+  "id": "ph-hamptons-infinity-pool",
+  "type": "image",
+  "project": null,
+  "title": "Infinity pool and garden",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/ph-hamptons-infinity-pool.webp",
+  "thumb": "/v/ph-hamptons-infinity-pool-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Infinity pool and garden",
+  "location": "The Hamptons",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 350
+}

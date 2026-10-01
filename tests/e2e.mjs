@@ -3,6 +3,8 @@
 import { chromium } from 'playwright';
 import { readFile, mkdir } from 'node:fs/promises';
 import { start } from './serve.mjs';
+import { loadWork } from '../src/lib/work-load.js';
+const loadWorkRecords = () => loadWork(new URL('..', import.meta.url).pathname);
 
 const fixture = await readFile(new URL('./fixtures/vertical.webm', import.meta.url));
 const server = await start(0);
@@ -155,7 +157,7 @@ await check('compare: Book Now CTA to the booking portal; common inclusions show
 
 // ---------- Service portfolios (no Work page, James Sep 25) ----------
 await check('portfolios: every approved item appears on its own service page, once, and nowhere links to /work', async () => {
-  const work = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/work.json', import.meta.url), 'utf8'));
+  const work = await loadWorkRecords();
   // Items marked gallery:false (e.g. the pricing floor-plan composite) are page art, not portfolio pieces.
   const approved = work.media.filter((m) => m.rights === 'approved' && m.gallery !== false);
   const route = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
@@ -822,7 +824,7 @@ await check('home quick tiles use the two owner-selected stills (not video poste
 });
 
 await check('commercial (James Sep 26): value prop after hero, one case study, compact grid of one card per project, dedicated single-client project pages', async () => {
-  const work = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/work.json', import.meta.url), 'utf8'));
+  const work = await loadWorkRecords();
   const com = work.media.filter((m) => m.category === 'commercial' && m.rights === 'approved');
   const clients = [...new Set(com.map((m) => m.clientId))];
   const p = await newPage();
@@ -1244,7 +1246,7 @@ await check('Architecture & design: story first, text and media paired, early pr
 });
 
 await check('Architecture & design gallery: segment and media filters, counts, reset, empty state, inline film, project links', async () => {
-  const work = JSON.parse(await readFile(new URL('../content/work.json', import.meta.url), 'utf8'));
+  const work = await loadWorkRecords();
   const p = await newPage();
   await p.goto(base + '/architecture-design');
   const shown = () => p.locator('#ag-grid .gcard:not([hidden])').count();

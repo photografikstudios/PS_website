@@ -1,5 +1,5 @@
 // Media ingest: add, tag, check and publish Google Drive footage without copying records.
-// One canonical record per piece lives in content/work.json "media"; its Drive source lives in
+// One canonical record per piece lives in content/media/<id>.json; its Drive source lives in
 // content/media-sources.json under the same id. Nothing is published automatically.
 //
 //   node scripts/ingest.mjs candidates links.txt        list Drive files in a pasted list that are not ingested yet
@@ -18,9 +18,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadWork } from '../src/lib/work-load.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const files = { work: join(root, 'content/work.json'), sources: join(root, 'content/media-sources.json'), pricing: join(root, 'content/pricing.json') };
+const files = { sources: join(root, 'content/media-sources.json'), pricing: join(root, 'content/pricing.json') };
 const load = async (f) => JSON.parse(await readFile(f, 'utf8'));
 const save = (f, d) => writeFile(f, JSON.stringify(d, null, 2) + '\n');
 
@@ -34,7 +35,9 @@ const die = (msg) => { console.error(msg); process.exit(1); };
 /** Accepts a bare id or any Drive URL form (file/d/<id>/view, open?id=, uc?id=). */
 const driveId = (s) => (String(s).match(/\/d\/([\w-]{20,})/) || String(s).match(/[?&]id=([\w-]{20,})/) || String(s).match(/^([\w-]{20,})$/) || [])[1];
 
-const work = await load(files.work);
+const work = await loadWork(root);
+// One file per record: content/media/<id>.json (the same files the /admin dashboard edits).
+const saveRecord = (m) => save(join(root, 'content/media', `${m.id}.json`), m);
 const sources = await load(files.sources);
 const pricing = await load(files.pricing);
 const packageIds = pricing.packages.map((p) => p.id);
@@ -102,9 +105,10 @@ switch (cmd) {
       featured: false, rights: 'pending', alt: opt('alt') || null, location: opt('location') || null, client: null, source: 'drive',
       published: false, packageIds: parsePackages(opt('packages')) || [], capturedYear: parseYear(opt('year')) ?? null, sortPriority: Number(opt('priority') || 0),
     };
+    rec.order = Math.max(0, ...work.media.map((m) => m.order || 0)) + 10;
     work.media.push(rec);
     await save(files.sources, sources);
-    await save(files.work, work);
+    await saveRecord(rec);
     console.log(`Added "${id}" as UNPUBLISHED. Deploy a preview to encode it, then check it there.`);
     console.log('The build reports the true orientation in /v/manifest.json; update --orientation with tag if it is vertical.');
     break;
@@ -117,7 +121,7 @@ switch (cmd) {
     if (yr !== undefined) m.capturedYear = yr;
     if (opt('priority') !== undefined) m.sortPriority = Number(opt('priority'));
     for (const k of ['title', 'alt', 'location', 'orientation']) if (opt(k) !== undefined) m[k] = opt(k);
-    await save(files.work, work);
+    await saveRecord(m);
     console.log(`Updated ${m.id}: packages [${m.packageIds.join(', ')}], year ${m.capturedYear ?? 'unknown'}, priority ${m.sortPriority}.`);
     break;
   }
@@ -136,14 +140,14 @@ switch (cmd) {
     const n = needs(m);
     if (n.hard.length) die(`Not published. ${m.id} needs: ${n.hard.join(', ')}.${m.rights !== 'approved' ? ' Add --rights-approved once James confirms usage rights.' : ''}`);
     m.published = true;
-    await save(files.work, work);
+    await saveRecord(m);
     console.log(`Published ${m.id}.${n.soft.length ? ` Note: ${n.soft.join(', ')}.` : ''}`);
     break;
   }
   case 'unpublish': {
     const m = byId(pos[0]);
     m.published = false;
-    await save(files.work, work);
+    await saveRecord(m);
     console.log(`Unpublished ${m.id}.`);
     break;
   }

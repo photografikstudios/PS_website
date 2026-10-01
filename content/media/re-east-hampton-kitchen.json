@@ -1,0 +1,25 @@
+{
+  "id": "re-east-hampton-kitchen",
+  "type": "image",
+  "project": null,
+  "title": "Kitchen with a marble island and globe pendants in East Hampton",
+  "service": [
+    "photography"
+  ],
+  "category": "real-estate",
+  "orientation": "horizontal",
+  "src": "/v/re-east-hampton-kitchen.webp",
+  "thumb": "/v/re-east-hampton-kitchen-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "Kitchen with a marble island and globe pendants in East Hampton",
+  "location": "East Hampton",
+  "client": null,
+  "source": "drive",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "James, Sep 28 2026: all photos in the Real Estate Drive folder are his; use town names only (no street, number, agent or brokerage).",
+  "order": 1230
+}
