@@ -69,6 +69,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
   if (testimonials) {
     for (const r of testimonials.reviews || []) {
       if (!r.name || !r.quote) errors.push(`Testimonial ${r.name || '(no name)'}: name and quote are required`);
+      if (r.excerpt && r.quote && !isVerbatimExcerpt(r.excerpt, r.quote)) errors.push(`Testimonial ${r.name}: the Home short version must use the quote's own words, in order, with “…” for any gap`);
       if (r.featured !== undefined && r.featured !== null && r.featured !== '' && !Number.isInteger(Number(r.featured))) errors.push(`Testimonial ${r.name}: “Show on About page, position” must be a whole number`);
     }
   }
@@ -79,4 +80,17 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
     }
   }
   return { errors, warnings };
+}
+
+/** True when every “…”-separated piece of the excerpt appears in the quote, in order (a verbatim shortening). */
+export function isVerbatimExcerpt(excerpt, quote) {
+  const parts = String(excerpt).split(/\s*(?:…|\.\.\.)\s*/).map((s) => s.trim()).filter(Boolean);
+  if (!parts.length) return false;
+  let at = 0;
+  for (const part of parts) {
+    const i = quote.indexOf(part, at);
+    if (i < 0) return false;
+    at = i + part.length;
+  }
+  return true;
 }

@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadWork, expandProjectPhotos, slugify } from '../src/lib/work-load.js';
-import { checkContent, looksLikeAddress } from '../src/lib/content-check.js';
+import { checkContent, looksLikeAddress, isVerbatimExcerpt } from '../src/lib/content-check.js';
 import { cmsConfig } from '../src/lib/cms-config.js';
 import { imageSize } from '../src/lib/image-size.js';
 import { loadFieldNotes, makeFileExists } from '../src/lib/field-notes-load.js';
@@ -129,4 +129,14 @@ test('a draft project with photos: preview shows it with a Draft note; productio
   assert.ok(!/Draft, not published/.test(live) && /Great room with timber trusses/.test(live));
   assert.ok(/architecture-design\/shelter-island-house/.test(await rf(join(tmp, 'dist-prodcheck/sitemap.xml'), 'utf8')));
   assert.ok(/shelter-island-house/.test(await rf(join(tmp, 'dist-prodcheck/architecture-design.html'), 'utf8')), 'appears in the A&D gallery');
+});
+
+test('Home review excerpt is a verbatim shortening of the full quote, and Home links to About reviews', async () => {
+  const t = JSON.parse(await readFile(join(root, 'content/testimonials.json'), 'utf8'));
+  for (const r of t.reviews.filter((x) => x.excerpt)) assert.ok(isVerbatimExcerpt(r.excerpt, r.quote), r.name);
+  assert.equal(isVerbatimExcerpt('His response is fantastic.', 'His response and turn-around time is fantastic.'), false);
+  const bad = checkContent({ work: { projects: [], media: [] }, fileExists: () => true, testimonials: { reviews: [{ name: 'A', quote: 'One two three.', excerpt: 'One … four.' }] } });
+  assert.ok(bad.errors.some((e) => /short version/.test(e)));
+  const home = await readFile(join(root, 'src/pages.js'), 'utf8');
+  assert.match(home, /href="\/about#reviews"[^>]*>More reviews →<\/a>/);
 });

@@ -140,6 +140,7 @@ export function buildPages(ctx) {
   const homeLimit = site.galleries?.home?.limit || 9;
   const insight = media.find((x) => x.id === 'agent-market-insight');
   // Codex/James Sep 29 2026: one approved written review on Home; the rest and Jack's film stay on About.
+  // Oct 1 2026: Home shows the review's verbatim excerpt (with an ellipsis) when it has one; About keeps the full quote.
   const homeQuote = (testimonials?.reviews || []).find((r) => r.approval === 'approved' && r.name === 'Kimberly Cammarata');
   pages['/'] = {
     overlay: true,
@@ -233,8 +234,8 @@ export function buildPages(ctx) {
       <p class="eyebrow">In our clients' words</p>
       <h2 class="h2 reveal" id="proof-h">Trusted with the work <em>behind the brand.</em></h2>
     </div>
-    ${homeQuote ? `<figure class="review review--lead reveal home-proof__quote"><blockquote><p>${esc(homeQuote.quote)}</p></blockquote><figcaption><span class="review__name">${esc(homeQuote.name)}</span>${homeQuote.org ? `<span class="review__org">${esc(homeQuote.org)}</span>` : ''}</figcaption></figure>` : ''}
-    <p class="home-proof__more"><a class="link-arrow" href="/about#reviews" data-track="reviews_click" data-track-location="home_proof">More reviews, and a video testimonial →</a></p>
+    ${homeQuote ? `<figure class="review review--lead reveal home-proof__quote"><blockquote><p>${esc(homeQuote.excerpt || homeQuote.quote)}</p></blockquote><figcaption><span class="review__name">${esc(homeQuote.name)}</span>${homeQuote.org ? `<span class="review__org">${esc(homeQuote.org)}</span>` : ''}</figcaption></figure>` : ''}
+    <p class="home-proof__more"><a class="link-arrow" href="/about#reviews" data-track="reviews_click" data-track-location="home_proof">More reviews →</a></p>
   </div>
 </section>
 
