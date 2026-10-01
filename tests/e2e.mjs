@@ -1493,6 +1493,27 @@ await check('copy pass: no generic marketing phrases, intent CTAs, contact makes
   assert(/A lighter monthly cadence for agents/.test(ac) && /A larger monthly production session/.test(ac), 'Agent plan taglines');
 });
 
+// James, Sep 30 2026 (OWNER_HOME_GALLERY_SIZE): same curated pieces and third row, smaller tiles; phones get a two-column grid.
+await check('home Selected Work: compact tiles, three rows kept, two columns on phones, touch and keyboard reach every card', async () => {
+  for (const [w, h, cols, rows, maxGrid] of [[1280, 900, 3, 3, 640], [768, 1024, 3, 3, 460], [430, 932, 2, 3, 480], [390, 844, 2, 3, 440], [375, 812, 2, 3, 420], [320, 640, 2, 3, 360]]) {
+    const p = await newPage({ width: w, height: h }, w < 700 ? { hasTouch: true, isMobile: true } : {});
+    await p.goto(base + '/');
+    const g = await p.evaluate(() => { const cards = [...document.querySelectorAll('#sw-grid .sw-card')].filter((c) => !c.hidden); const r = cards.map((c) => c.getBoundingClientRect()); return { n: cards.length, cols: new Set(r.map((x) => Math.round(x.left))).size, rows: new Set(r.map((x) => Math.round(x.top))).size, grid: document.getElementById('sw-grid').getBoundingClientRect().height, minSide: Math.min(...r.map((x) => Math.min(x.width, x.height))), over: document.documentElement.scrollWidth > innerWidth + 1 }; });
+    assert(g.cols === cols && g.rows === rows && g.n === cols * rows, `${w}: ${g.cols} cols ${g.rows} rows ${g.n} cards`);
+    assert(g.grid <= maxGrid && g.minSide >= 44 && !g.over, `${w}: grid ${Math.round(g.grid)}px, smallest side ${Math.round(g.minSide)}px`);
+    if (w < 700) {
+      const last = p.locator('#sw-grid .sw-card:not([hidden])').last(); await last.scrollIntoViewIfNeeded(); await last.tap();
+      await p.locator('#lightbox[open]').waitFor({ timeout: 5000 });
+      await p.keyboard.press('Escape');
+    } else {
+      await p.focus('#sw-grid .sw-card:not([hidden]) >> nth=8');
+      assert(await p.evaluate(() => getComputedStyle(document.activeElement).outlineStyle !== 'none'), 'visible focus on the ninth card');
+    }
+    assert(await p.locator('#sw-more').isVisible() && await p.locator('#sw-kind').isVisible() && await p.locator('#sw-cat').isVisible(), 'filters and View more stay');
+    await p.context().close();
+  }
+});
+
 // James, Sep 30 2026 (Wednesday pass, items 18–23 + legal hierarchy): /terms and /licensing structure; text only from the supplied document.
 await check('legal pages: Photografik policies first, Creator supplement last, effective date, cross-links, footer acceptance, phone layout', async () => {
   const legal = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/legal.json', import.meta.url), 'utf8'));
