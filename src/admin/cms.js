@@ -91,6 +91,17 @@
   });
   CMS.registerPreviewTemplate('photos', PhotoPreview);
 
+  // Phones: Decap's editor has an 800 px minimum width, so a phone zooms the whole page out. Below 800 px the
+  // side-by-side preview is hidden (the Vercel preview link is the real check) and the form takes the full width.
+  var phoneCss = document.createElement('style');
+  phoneCss.textContent = '@media (max-width: 799px) {' +
+    '[class*="-EditorContainer"], [class*="-ToolbarContainer"] { min-width: 0 !important; }' +
+    '.SplitPane > .Pane2, .SplitPane > .Resizer { display: none !important; }' +
+    '.SplitPane > .Pane1 { width: 100% !important; flex: 1 1 auto !important; }' +
+    '[class*="-ToolbarContainer"] { overflow-x: auto; }' +
+    '}';
+  document.head.appendChild(phoneCss);
+
   // Decap's toolbar says "Publish" for what is really "save to the review copy". On this site "Published" is the
   // switch on each item, so the toolbar words are changed to Save to keep the two ideas apart for the owner.
   CMS.registerLocale('ps', { editor: { editorToolbar: {

@@ -63,7 +63,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'heroAlt', label: 'Main image description (alt text)', widget: 'string', required: false, hint: hint.alt },
     { name: 'heroFocal', label: 'Main image focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
     { name: 'heroOrientation', label: 'Main image shape', widget: 'select', required: false, default: 'auto', options: ORIENT },
-    { name: 'photos', label: 'Photos', label_singular: 'photo', widget: 'list', required: false, collapsed: true, summary: '{{fields.alt}}', hint: 'Add each photo with its description. Drag to reorder. Photos already on the site for this project are in the Photos section.', fields: [
+    { name: 'photos', label: 'Photos', label_singular: 'photo', widget: 'list', required: false, default: [], collapsed: true, summary: '{{fields.alt}}', hint: 'Add each photo with its description. Drag to reorder. Photos already on the site for this project are in the Photos section.', fields: [
       { name: 'image', label: 'Photo', widget: 'image', choose_url: false, ...upload, hint: imageHint },
       { name: 'alt', label: 'Description (alt text)', widget: 'string', hint: hint.alt },
       { name: 'focal', label: 'Focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
