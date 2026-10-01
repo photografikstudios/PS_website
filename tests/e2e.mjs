@@ -1544,6 +1544,8 @@ await check('legal pages: Photografik policies first, Creator supplement last, e
     await p.goto(base + path);
     const f = p.locator('.site-footer__legal');
     assert((await f.textContent()).startsWith('By booking services, approving an estimate, paying an invoice or deposit, or accessing delivered media, you agree to Photografik Studios'), path + ' acceptance text');
+    // Session 46 axe finding: links inside the acceptance sentence must not rely on colour alone (WCAG 1.4.1).
+    assert(await f.locator('a').evaluateAll((es) => es.every((e) => getComputedStyle(e).textDecorationLine.includes('underline'))), path + ' footer legal links underlined');
     assert(await f.locator('a[href="/terms"]').textContent() === 'Terms & Conditions' && await f.locator('a[href="/licensing"]').textContent() === 'Licensing & Usage Rights Policy', path + ' footer links');
   }
   await p.context().close();

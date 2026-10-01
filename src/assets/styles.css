@@ -106,7 +106,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .brand__logo { width: 38px; height: 38px; border-radius: 50%; }
 .brand__name { font: 500 16px/1 var(--sans); letter-spacing: .01em; }
-.brand__name span { font-weight: 400; opacity: .6; }
+.brand__name span { font-weight: 400; opacity: .72; }
 .nav { display: flex; align-items: center; gap: 36px; }
 .nav__list { list-style: none; display: flex; gap: 28px; margin: 0; padding: 0; }
 .nav__item { position: relative; }
@@ -1088,3 +1088,4 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .legal__group-h { font-size: clamp(26px, 3.4vw, 34px); margin: 4px 0 8px; }
 .legal__table { overflow-x: auto; margin: 14px 0; } .legal__table table { border-collapse: collapse; min-width: 480px; width: 100%; font-size: 15px; } .legal__table th, .legal__table td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
 .site-footer__legal { margin: 6px 0 0; font-size: 13px; max-width: 90ch; }
+.site-footer__legal a { text-decoration: underline; text-underline-offset: 2px; }
