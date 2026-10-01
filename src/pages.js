@@ -1360,7 +1360,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     <div>
       <p class="eyebrow">Where we work</p>
       <p>${esc(site.serviceArea)}</p>
-      <p class="eyebrow">Usage and licensing ${needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</p>
+      <p class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</p>
       <p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p>
     </div>
   </div>
@@ -1380,7 +1380,7 @@ ${splitCta('Let us help with the next one.')}`,
       if (b.type === 'p') return `<p>${inlineMd(b.text)}</p>`;
       if (b.type === 'h3') return `<h4 class="legal__sub">${inlineMd(b.text)}</h4>`;
       if (b.type === 'ul' || b.type === 'ol') return `<${b.type}>${join(b.items, (t) => `<li>${inlineMd(t)}</li>`)}</${b.type}>`;
-      if (b.type === 'table') return `<div class="legal__table" role="region" aria-label="${esc(b.caption || 'Table')}" tabindex="0"><table>${b.caption ? `<caption>${esc(b.caption)}</caption>` : ''}<thead><tr>${join(b.head, (c) => `<th scope="col">${inlineMd(c)}</th>`)}</tr></thead><tbody>${join(b.rows, (r) => `<tr>${join(r, (c) => `<td>${inlineMd(c)}</td>`)}</tr>`)}</tbody></table></div>`;
+      if (b.type === 'table') return `<div class="legal__table" role="region" aria-label="${esc(b.caption || 'Table')}" tabindex="0"><table>${b.caption ? `<caption>${esc(b.caption)}</caption>` : ''}<thead><tr>${join(b.head, (c) => `<th scope="col">${inlineMd(c)}</th>`)}</tr></thead><tbody>${join(b.rows, (r) => `<tr>${join(r, (c, i) => `<td data-label="${esc(b.head[i] || '')}">${inlineMd(c)}</td>`)}</tr>`)}</tbody></table></div>`;
       return '';
     };
     const other = { '/terms': ['/licensing', 'Licensing & Usage Rights Policy'], '/licensing': ['/terms', 'Terms & Conditions'] };
@@ -1407,6 +1407,7 @@ ${splitCta('Let us help with the next one.')}`,
       ${join(groups, (g) => `<p class="legal__toc-h">${esc(g.label)}</p>${g.sections.length ? `<ol class="legal__toc-list">${join(g.sections, (s) => `<li value="${s.n}"><a href="#${s.id}">${esc(s.title)}</a></li>`)}</ol>` : `<p class="small muted">Listed in the document's order when the text is added.</p>`}`)}
     </nav>
     <div class="legal__body">
+      ${page.intro?.length ? `<div class="legal__intro">${join(page.intro, block)}</div>` : ''}
       ${join(groups, (g) => g.id === 'general'
         ? (g.sections.length ? join(g.sections, (s) => secHtml(s, 'h2')) : pending('The general Photografik Studios sections will appear here in the order of the supplied document.'))
         : `<div class="legal__supplement" id="${esc(g.id)}">

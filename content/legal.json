@@ -2,16 +2,16 @@
   "_readme": "Website legal pages. Source of truth: Photografik_Studios_Website_Terms_and_Licensing.docx (James, Sep 30 2026; effective September 30, 2026). The text must be copied from that document verbatim in substance (formatting for web readability only; no rewriting, summarising or older terms). Order follows OWNER_LEGAL_HIERARCHY_2026-09-30.md: Photografik / general policies first, then a clearly labelled Creator Studios, Podcast & Studio supplement; sections are numbered continuously. Each section's 'blocks' are filled from the document: {type:'p',text} | {type:'ul'|'ol',items} | {type:'h3',text} | {type:'table',head:[...],rows:[[...]]}; inline **bold** and [links](/path) allowed. 'ready' may be set true only when every section is filled from the document and the source checksum is recorded. Until then production builds are blocked and review builds show the page structure with a dev-only placeholder.",
   "source": {
     "file": "Photografik_Studios_Website_Terms_and_Licensing.docx",
-    "status": "not received",
-    "sha256": null,
-    "receivedFrom": null,
-    "_note": "Referenced by James's Wednesday brief (item 18) but not attached. Not found in the shared brief folder, the connected Mac folders, the session uploads or James's Google Drive (searched Sep 30 2026)."
+    "status": "received",
+    "sha256": "f96e664ccce5b18c7209e3de8f1618b2b5c0b00fe973f65a47857c6f5b5641b8",
+    "receivedFrom": "James, uploaded in the Claude session on Sep 30 2026 (Session 47)",
+    "_note": "Text copied verbatim (whitespace trimmed; bold kept; RAW/Markdown characters escaped). Order changed only as OWNER_LEGAL_HIERARCHY_2026-09-30.md directs: Licensing section 10 (Podcast, Studio & Creator Content) and Terms section 15 (Podcast, Studio and Content Production Rules) moved to a labelled Creator supplement at the end; the remaining sections renumbered continuously. docNumber records each section's number in the source document."
   },
   "effectiveDate": "2026-09-30",
-  "ready": false,
+  "ready": true,
   "acceptance": {
-    "text": "By booking services, approving an estimate, paying an invoice or deposit, or accessing delivered media, you agree to Photografik Studios' Terms & Conditions and Licensing & Usage Rights Policy.",
-    "_source": "James, OWNER_WEDNESDAY_IMPLEMENTATION_2026-09-30.md item 23 (verbatim)"
+    "text": "By booking services, approving an estimate, paying an invoice or deposit, or accessing delivered media, you agree to Photografik Studios’ Terms & Conditions and Licensing & Usage Rights Policy.",
+    "_source": "Supplied document, Appendix A (verbatim)"
   },
   "pages": {
     "licensing": {
@@ -24,64 +24,329 @@
           "label": "Photografik Studios / General Policies",
           "sections": [
             {
+              "docNumber": 1,
               "title": "Core Copyright and Ownership Rule",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Unless a separate written agreement signed by an authorized representative of the Company expressly transfers copyright, the Company retains all copyrights and ownership rights in the media it creates. Payment for production purchases the commissioned services and the specific usage license granted for that Project; it does not purchase copyright ownership."
+                },
+                {
+                  "type": "p",
+                  "text": "No work will be considered “work made for hire” unless the Company expressly agrees to that designation in a separately signed written agreement."
+                },
+                {
+                  "type": "p",
+                  "text": "Licensing rights become effective only after the applicable invoice is paid in full. If payment is reversed, disputed, charged back, or otherwise not completed, any unpaid license may be suspended or revoked to the extent permitted by law."
+                }
+              ]
             },
             {
+              "docNumber": 2,
               "title": "Definitions",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "**Client:** the person or entity that books, approves, pays for, or otherwise commissions the Project."
+                },
+                {
+                  "type": "p",
+                  "text": "**Project:** the specific property, business, production, campaign, episode, event, or assignment identified in the booking or proposal."
+                },
+                {
+                  "type": "p",
+                  "text": "**Final Deliverables:** the edited photographs, finished videos, podcast exports, clips, graphics, and other files specifically identified for delivery."
+                },
+                {
+                  "type": "p",
+                  "text": "**Source Materials:** RAW photographs, unedited video, unused footage, camera originals, audio stems, project files, editing timelines, layered files, templates, LUTs, presets, graphics source files, alternate takes, and other working materials."
+                },
+                {
+                  "type": "p",
+                  "text": "**Authorized Representative:** an agent, brokerage, property manager, employee, contractor, platform, or other party whose use is expressly permitted under the applicable license."
+                }
+              ]
             },
             {
+              "docNumber": 3,
               "title": "Final Deliverables vs. Source Materials",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Only Final Deliverables identified in the applicable order are included. Source Materials are excluded unless separately purchased or licensed in writing."
+                },
+                {
+                  "type": "p",
+                  "text": "Even where a copyright buyout is purchased, Source Materials, third-party music, stock assets, fonts, templates, software, and other third-party components are excluded unless the agreement specifically identifies them as included."
+                }
+              ]
             },
             {
+              "docNumber": 4,
               "title": "General License Rules",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "ul",
+                  "items": [
+                    "All licenses are limited to the uses expressly stated in the applicable license, proposal, estimate, invoice, or written agreement. Rights not expressly granted are reserved by the Company.",
+                    "Unless the Company expressly grants exclusivity, every license is non-exclusive.",
+                    "A license may not be sold, sublicensed, assigned, transferred, or expanded to a third party except as expressly permitted by the applicable license.",
+                    "Reasonable technical formatting such as resizing, compression, cropping for platform dimensions, captioning, and addition of ordinary listing contact information is permitted when it does not materially alter the work or misrepresent the Company’s authorship.",
+                    "Substantive re-editing, filters that materially change the visual treatment, removal of embedded copyright metadata, creation of derivative commercial works, resale, stock-library submission, template resale, tokenization/NFT use, dataset inclusion, or use to train or fine-tune artificial-intelligence models is prohibited unless separately licensed in writing.",
+                    "Credit to Photografik Studios does not replace the need for a valid license."
+                  ]
+                }
+              ]
             },
             {
+              "docNumber": 5,
               "title": "Real Estate Agent & Brokerage License",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "When a real estate agent, team, or brokerage commissions the Project, the default license is issued to the commissioning real estate client and does not automatically transfer to the property owner or other parties."
+                },
+                {
+                  "type": "h3",
+                  "text": "Included Use"
+                },
+                {
+                  "type": "ul",
+                  "items": [
+                    "MLS and ordinary MLS syndication for the specific listing.",
+                    "Approved property listing portals and property-specific websites.",
+                    "The commissioning agent/team’s website and social channels.",
+                    "The commissioning brokerage’s channels when used specifically to market that listing.",
+                    "Email marketing, brochures, flyers, open-house marketing, and property-specific digital advertising.",
+                    "Sold, leased, or portfolio use by the commissioning agent/team after the transaction closes or representation ends, provided the media is not used to imply current representation."
+                  ]
+                },
+                {
+                  "type": "h3",
+                  "text": "Not Automatically Included"
+                },
+                {
+                  "type": "ul",
+                  "items": [
+                    "The homeowner or property owner.",
+                    "A replacement listing agent or competing brokerage.",
+                    "Architects, builders, interior designers, stagers, landscapers, contractors, pool companies, cabinet companies, furniture companies, manufacturers, or other project vendors.",
+                    "Property managers, developers, landlords, tenants, publications, advertisers, marketing agencies, or unrelated businesses."
+                  ]
+                },
+                {
+                  "type": "p",
+                  "text": "If representation changes, the Company may issue a new license directly to a verified new agent or brokerage. While the original commissioning agent still has active representation, the Company may require confirmation from the property owner before licensing the same active-listing media to another real estate representative."
+                }
+              ]
             },
             {
+              "docNumber": 6,
               "title": "Homeowner Property-Marketing Licenses",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "When a homeowner or property owner commissions the Project directly, the following license levels may be offered. Pricing is stated in the applicable estimate, invoice, or proposal and may change over time."
+                },
+                {
+                  "type": "table",
+                  "head": [
+                    "License Level",
+                    "What It Covers",
+                    "Key Exclusions"
+                  ],
+                  "rows": [
+                    [
+                      "Owner + One Representative",
+                      "Rental marketing by the owner plus one named agent or brokerage.",
+                      "Additional representatives; sale marketing; transfer to a new owner; unrelated commercial use."
+                    ],
+                    [
+                      "Open Rental Marketing",
+                      "Owner rental use plus multiple rental agents, brokerages, property managers, rental platforms, and future rental representation.",
+                      "Future sale/relisting unless separately upgraded; transfer to a new owner."
+                    ],
+                    [
+                      "Perpetual Property Marketing",
+                      "Open Rental rights plus future sale, re-listing, and long-term property marketing by authorized representatives for the same owner and property.",
+                      "Copyright ownership; Source Materials; transfer to a future property owner unless specifically stated."
+                    ],
+                    [
+                      "Copyright Buyout",
+                      "Copyright in the specifically identified Final Deliverables is transferred under a separate signed assignment.",
+                      "RAW/source files and third-party assets unless expressly included."
+                    ]
+                  ]
+                },
+                {
+                  "type": "h3",
+                  "text": "Upgrades"
+                },
+                {
+                  "type": "p",
+                  "text": "A homeowner may request a broader license after delivery. Any broader use must wait until the upgrade is approved and paid. Unless a written proposal states otherwise, upgrades are priced at the Company’s then-current applicable upgrade rate."
+                },
+                {
+                  "type": "h3",
+                  "text": "Transfer to a Future Owner"
+                },
+                {
+                  "type": "p",
+                  "text": "A property-marketing license is personal to the commissioning owner and the specific property. A later purchaser of the property does not automatically inherit the prior owner’s license unless the Company expressly grants a transferable license in writing."
+                }
+              ]
             },
             {
+              "docNumber": 7,
               "title": "Commercial Real Estate",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "A commercial real-estate brokerage or agent commissioning property media receives a Commercial Property Marketing License limited to the specific property and campaign. It may include listing and leasing platforms, offering memoranda, property websites, email campaigns, presentations, brochures, social media, and property-specific advertising as stated in the proposal."
+                },
+                {
+                  "type": "p",
+                  "text": "The commissioning brokerage’s license does not automatically extend to the property owner, landlord, asset manager, developer, tenant, investor, replacement brokerage, architect, contractor, or other project participant. An owner or developer that wants the media to remain usable across brokerage changes should purchase an Owner/Developer Property License."
+                }
+              ]
             },
             {
+              "docNumber": 8,
               "title": "Architects, Builders, Designers, Contractors & Project Vendors",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Unless the proposal states otherwise, an architect, builder, interior designer, contractor, stager, landscape professional, or similar project participant receives a Project Portfolio License for the commissioning entity’s own promotion of its work on that specific Project."
+                },
+                {
+                  "type": "h3",
+                  "text": "Typical Included Use"
+                },
+                {
+                  "type": "ul",
+                  "items": [
+                    "Company website and portfolio.",
+                    "Organic social media.",
+                    "Proposals, pitches, credentials decks, and printed portfolio materials.",
+                    "Award submissions and project-specific PR/editorial submissions.",
+                    "Trade and editorial submissions relating to the Client’s work on the Project."
+                  ]
+                },
+                {
+                  "type": "h3",
+                  "text": "Separate Licensing Required"
+                },
+                {
+                  "type": "ul",
+                  "items": [
+                    "Paid national or regional advertising campaigns unless specifically included.",
+                    "Product packaging, catalogs, manufacturer advertising, retail/POS, franchise/distributor use, or broad product marketing.",
+                    "Use by another architect, builder, designer, vendor, manufacturer, contractor, or project participant.",
+                    "Real-estate listing use or marketing by an agent/brokerage.",
+                    "Resale, stock-library use, sublicensing, or transfer to a third party."
+                  ]
+                },
+                {
+                  "type": "p",
+                  "text": "Hiring the Company does not give the commissioning Client the right to distribute the Company’s media to every participant on the Project. Each separate business or commercial user must hold its own license unless a multi-party license was expressly included in the original proposal."
+                }
+              ]
             },
             {
+              "docNumber": 9,
               "title": "Business & Brand Clients",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Unless a proposal states otherwise, a business or brand receives an Owned Media Brand License limited to the Final Deliverables and uses stated in the proposal. Typical included use may include the Client’s own website, organic social media, email marketing, sales presentations, PR, and internal communications."
+                },
+                {
+                  "type": "p",
+                  "text": "Paid media campaigns, television, streaming/OTT, out-of-home, national advertising, product packaging, retail/POS, franchise or distributor use, third-party co-branding, resale, broad manufacturer use, or sublicensing require express written inclusion or a separate commercial license."
+                }
+              ]
             },
             {
+              "docNumber": 11,
               "title": "Company Right to License Media to Other Project Participants",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Unless the Client purchases an Exclusive Use, No Third-Party Licensing, or Confidentiality restriction in writing before production, the Company retains the right to offer and issue separate non-exclusive licenses in Final Deliverables or alternate media from the Project to verified parties having a legitimate connection to the property, project, business, or subject. Such parties may include property owners, architects, builders, interior designers, contractors, vendors, manufacturers, publications, property managers, and authorized real-estate representatives."
+                },
+                {
+                  "type": "p",
+                  "text": "The Company is not required to obtain the commissioning Client’s additional approval for each such license, share licensing revenue with the Client, or credit third-party license fees against the Client’s production fee, provided the use is otherwise lawful and consistent with any documented confidentiality, embargo, or property-owner restriction accepted by the Company."
+                },
+                {
+                  "type": "p",
+                  "text": "For private residences or sensitive locations, the Company may require verification of the third party’s connection to the Project or property before granting a license."
+                }
+              ]
             },
             {
+              "docNumber": 12,
               "title": "Exclusivity, Confidentiality & Embargoes",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Standard production is non-exclusive and is not confidential unless agreed in writing before production. A Client requiring an NDA, embargo, no-portfolio restriction, no-third-party licensing restriction, exclusivity, or other confidentiality limitation must request and obtain that restriction in writing before the shoot or recording session."
+                },
+                {
+                  "type": "p",
+                  "text": "Because exclusivity and confidentiality may restrict the Company’s portfolio and licensing opportunities, they may require an additional fee."
+                }
+              ]
             },
             {
+              "docNumber": 13,
               "title": "Portfolio and Promotional Use by the Company",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Unless a written restriction applies, the Company may display completed work in its portfolio, website, social media, advertising, presentations, educational materials, competitions, case studies, reels, and other promotional channels. For property media, the Company may delay public posting until the property or Project is publicly marketed when reasonably appropriate."
+                }
+              ]
             },
             {
+              "docNumber": 14,
               "title": "Third-Party Music, Stock, Fonts & Other Licensed Assets",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Certain Final Deliverables may contain music, stock footage, fonts, graphics, templates, or other third-party assets licensed by the Company. The Client’s rights in those components are limited to the use of the completed Final Deliverable as licensed. The Client may not extract, resell, separately distribute, or reuse those third-party components outside the completed Deliverable."
+                }
+              ]
             },
             {
+              "docNumber": 15,
               "title": "Unauthorized Use",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "ul",
+                  "items": [
+                    "Receiving a file from a homeowner, agent, brokerage, vendor, contractor, or other person does not create a license.",
+                    "The fact that media appears on MLS, Zillow, a website, social media, or another public platform does not place the media in the public domain.",
+                    "Tagging or crediting the Company does not cure unauthorized commercial use.",
+                    "Removing a watermark, metadata, logo, or attribution does not create usage rights.",
+                    "Native social-media sharing or reposting tools may be permitted when they preserve the original post and attribution, but downloading and re-uploading media as a user’s own commercial marketing content requires a license."
+                  ]
+                },
+                {
+                  "type": "p",
+                  "text": "For unauthorized use, the Company may demand removal, issue platform or copyright takedown notices, invoice the unauthorized user at the Company’s then-current licensing or enforcement rate, and pursue other remedies available by law. Payment of an infringement invoice does not automatically create a retroactive or future license unless the Company expressly says so in writing."
+                }
+              ]
             },
             {
+              "docNumber": 16,
               "title": "No Implied Waiver",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "A failure by the Company to enforce a licensing restriction in one instance does not waive the restriction in any other instance. Informal permission, silence, prior course of dealing, or failure to immediately object does not expand a license."
+                }
+              ]
             }
           ]
         },
@@ -91,10 +356,30 @@
           "heading": "Creator Studios, Podcast & Studio Licensing",
           "sections": [
             {
+              "docNumber": 10,
               "title": "Podcast, Studio & Creator Content",
-              "blocks": []
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "For podcast and creator productions, the Client retains ownership of the Client’s pre-existing trademarks, show name, scripts, logos, and other materials supplied by the Client. Unless otherwise agreed, the Company retains ownership of the production recordings and Source Materials it creates, including camera originals, isolated audio, editing timelines, production templates, and working files."
+                },
+                {
+                  "type": "p",
+                  "text": "After payment in full, the Client receives a perpetual license to publish, host, distribute, syndicate, monetize, promote, and advertise the finished episodes and clips delivered under the Project. The license permits ordinary platform sublicensing that is technically required by services such as YouTube, Spotify, Apple Podcasts, and similar distribution platforms."
+                },
+                {
+                  "type": "p",
+                  "text": "The Client remains responsible for guest releases, rights in supplied music and media, trademarks, statements, claims, regulated-industry disclosures, and any third-party materials the Client directs the Company to include."
+                }
+              ]
             }
           ]
+        }
+      ],
+      "intro": [
+        {
+          "type": "p",
+          "text": "This Licensing & Usage Rights Policy applies to photography, video, drone media, audio, podcast recordings, graphics, edits, and other creative work produced by Photografik Studios Inc. and Creator Studios LLC (collectively, the “Company”). It is incorporated into the Company’s Terms & Conditions and into each applicable estimate, invoice, proposal, booking confirmation, or signed agreement."
         }
       ]
     },
@@ -106,8 +391,422 @@
         {
           "id": "general",
           "label": "Photografik Studios / General Policies",
-          "sections": [],
-          "_note": "The general Terms (about 25 or 26 sections) are listed in the document's own order when it arrives; payment, cancellations, limitation of liability, indemnification, copyright, confidentiality, file retention, electronic acceptance, force majeure, no guarantee of marketing results and governing law stay here, not in the Creator supplement."
+          "sections": [
+            {
+              "docNumber": 1,
+              "title": "Contract Documents and Order of Control",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Client’s agreement may consist of multiple documents. If terms conflict, the following order controls: (1) a separately signed custom agreement or statement of work; (2) a specific signed licensing or production addendum; (3) the accepted proposal, estimate, invoice, or booking confirmation; (4) the Company’s Licensing & Usage Rights Policy; and (5) these Terms."
+                },
+                {
+                  "type": "p",
+                  "text": "Informal phone conversations, texts, creative discussions, mood boards, or general emails do not modify the agreement unless an authorized Company representative expressly confirms the modification in writing."
+                }
+              ]
+            },
+            {
+              "docNumber": 2,
+              "title": "Booking and Scope",
+              "blocks": [
+                {
+                  "type": "h3",
+                  "text": "2.1 Booking Confirmation"
+                },
+                {
+                  "type": "p",
+                  "text": "A booking is confirmed when the Company provides written confirmation and any required deposit, retainer, or payment has been received. The Company may decline, cancel, or reschedule services for safety concerns, scheduling conflicts, operational limitations, weather, prior nonpayment, abusive conduct, or other reasonable business circumstances."
+                },
+                {
+                  "type": "h3",
+                  "text": "2.2 Scope of Services"
+                },
+                {
+                  "type": "p",
+                  "text": "Services are limited to the scope stated in the accepted estimate, invoice, proposal, booking confirmation, or service package. Requests outside that scope are additional services and may require additional time, fees, licensing, or a separate production date."
+                },
+                {
+                  "type": "h3",
+                  "text": "2.3 Estimates and Deliverable Counts"
+                },
+                {
+                  "type": "p",
+                  "text": "Any stated image count, video length, runtime, shoot duration, or delivery estimate is approximate unless expressly guaranteed in writing. The Company may curate the strongest Final Deliverables rather than provide every captured frame, room, angle, take, or recording."
+                }
+              ]
+            },
+            {
+              "docNumber": 3,
+              "title": "Client Authority, Property Access and Permissions",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Client represents that it has authority to commission the Project and to grant the Company access to the property, location, people, trademarks, materials, and subject matter involved. The Client is responsible for obtaining property-owner approval, location permissions, access codes, parking arrangements, building permissions, talent/guest releases, and any other approvals reasonably required for production."
+                },
+                {
+                  "type": "p",
+                  "text": "The Company is not responsible for delays caused by inaccessible properties, occupants, building restrictions, HOA rules, locked areas, elevators, pets, neighboring activity, construction, unavailable utilities, security restrictions, or other access limitations."
+                }
+              ]
+            },
+            {
+              "docNumber": 4,
+              "title": "Property and Location Preparation",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Client is responsible for ensuring that the property or production location is fully prepared before the scheduled start time, including cleaning, staging, decluttering, landscaping, lighting preparation, securing pets, moving vehicles, and removing personal or confidential items that should not appear on camera."
+                },
+                {
+                  "type": "p",
+                  "text": "The Company is not responsible for cleaning, organizing, decorating, landscaping, home staging, moving heavy furniture, moving vehicles, removing hazardous items, or physically altering the property unless specifically included in writing. Company staff may make minor adjustments at their discretion but are not obligated to do so."
+                }
+              ]
+            },
+            {
+              "docNumber": 5,
+              "title": "On-Site Decision Maker and Creative Discretion",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "If the Client or a designated representative is present during production, that person is deemed authorized to approve reasonable on-site creative and scope decisions on the Client’s behalf. If no authorized representative is present, the Client authorizes the Company to use its professional judgment regarding coverage, framing, composition, lighting, lens choice, camera movement, shot order, sound, editing style, and other creative decisions."
+                },
+                {
+                  "type": "p",
+                  "text": "Differences in personal taste, creative preference, or comparison to work produced for a different property, business, or client do not by themselves constitute defective performance."
+                }
+              ]
+            },
+            {
+              "docNumber": 6,
+              "title": "Production Time, Delays and Overtime",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Booked production time begins at the scheduled start time. Client-caused delays, waiting for access, cleaning, staging, occupants, contractors, pets, vehicles, talent, wardrobe, products, approvals, or other readiness issues count against the reserved session time."
+                },
+                {
+                  "type": "p",
+                  "text": "If delays or additional requests require the Company to remain beyond the booked time, overtime or additional production fees may apply at the Company’s then-current rate. The Company may end the session at the scheduled completion time if later commitments or operational limitations prevent an extension."
+                }
+              ]
+            },
+            {
+              "docNumber": 7,
+              "title": "Cancellations and Rescheduling",
+              "blocks": [
+                {
+                  "type": "h3",
+                  "text": "7.1 Client-Initiated Changes"
+                },
+                {
+                  "type": "ul",
+                  "items": [
+                    "More than 48 hours before the scheduled start: one reschedule may be permitted without a rescheduling fee, subject to availability. Any non-refundable third-party costs remain payable.",
+                    "Between 24 and 48 hours before the scheduled start: the Company may charge up to 50% of the scheduled production fee, retain the deposit, or apply a rescheduling fee.",
+                    "Less than 24 hours before the scheduled start, same-day cancellation, no-show, denied access, or a location that is materially unprepared: the Company may charge up to 100% of the scheduled production fee plus non-refundable third-party costs.",
+                    "Custom productions, studio blocks, travel assignments, projects involving hired crew/talent, or projects requiring third-party rentals may have stricter cancellation terms stated in the proposal."
+                  ]
+                },
+                {
+                  "type": "h3",
+                  "text": "7.2 Company-Initiated Changes"
+                },
+                {
+                  "type": "p",
+                  "text": "The Company may modify, delay, reschedule, or cancel production when reasonably necessary due to safety, weather, equipment failure, illness, travel disruption, legal restrictions, airspace restrictions, force majeure, or operational circumstances. The Company will use reasonable efforts to reschedule affected services."
+                }
+              ]
+            },
+            {
+              "docNumber": 8,
+              "title": "Weather, Exterior Conditions and Drone Operations",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Company determines whether weather or site conditions are safe and commercially reasonable for production. Ordinary clouds, seasonal conditions, neighboring structures, landscaping conditions, reflections, exterior obstructions, or other aesthetic conditions do not automatically require a free reshoot or cancellation."
+                },
+                {
+                  "type": "p",
+                  "text": "Drone services are subject to FAA rules, temporary flight restrictions, airport proximity, weather, wind, visibility, lighting, property constraints, privacy, surrounding obstructions, and safe operating conditions. The Company does not guarantee that every requested drone angle or flight can be legally or safely captured."
+                },
+                {
+                  "type": "p",
+                  "text": "If a package includes drone coverage and drone operations are not possible, the Company may reschedule the drone portion, substitute other coverage, issue an appropriate service credit, or apply another remedy stated in the applicable proposal. Inability to fly a drone does not automatically cancel the remainder of the Project."
+                }
+              ]
+            },
+            {
+              "docNumber": 9,
+              "title": "Visual Conditions, Digital Alterations and Advertising Accuracy",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Certain conditions may not be fully correctable during production or editing, including weather, construction, neighboring structures, landscaping, reflections, occupancy, window views, ambient noise, seasonal conditions, and lighting limitations."
+                },
+                {
+                  "type": "p",
+                  "text": "Where included, Deliverables may contain virtual staging, sky replacement, object removal, lawn enhancement, image cleanup, virtual renovation concepts, AI-assisted editing, or other digital modifications. Such modifications are for marketing or illustrative purposes and may not reflect actual conditions, dimensions, finishes, furniture placement, landscaping, views, or future outcomes."
+                },
+                {
+                  "type": "p",
+                  "text": "The Client remains responsible for MLS rules, fair-housing compliance, advertising disclosures, factual property representations, regulated-industry claims, and any legally required disclosures."
+                }
+              ]
+            },
+            {
+              "docNumber": 10,
+              "title": "Delivery",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Delivery timelines are estimates unless expressly guaranteed. Timelines may be affected by workload, weather, holidays, technical issues, Client delays, third-party approvals, revisions, project complexity, or requested scope changes."
+                },
+                {
+                  "type": "p",
+                  "text": "“Delivery” occurs when the Company notifies the Client that the applicable Final Deliverables are complete and available for review, access, or download, even if the Client has not yet downloaded, published, or used them."
+                }
+              ]
+            },
+            {
+              "docNumber": 11,
+              "title": "Revisions, Corrections and Reshoots",
+              "blocks": [
+                {
+                  "type": "h3",
+                  "text": "11.1 Included Revisions"
+                },
+                {
+                  "type": "p",
+                  "text": "Only revisions specifically stated in the package or proposal are included. Unless otherwise stated, revision requests must be submitted within five (5) business days after delivery and must be provided as one consolidated list. Requests submitted later may be treated as additional editing services."
+                },
+                {
+                  "type": "h3",
+                  "text": "11.2 What Is Not an Included Revision"
+                },
+                {
+                  "type": "ul",
+                  "items": [
+                    "A new creative direction or concept after production.",
+                    "New music direction after an approved or delivered edit when the original selection complied with the agreed brief.",
+                    "Additional rooms, locations, products, talent, interviews, or footage not captured during the original scope.",
+                    "Changes in weather, landscaping, staging, decor, construction, furnishings, cleanliness, occupancy, or property condition after the shoot.",
+                    "A different aspect ratio, alternate edit, additional cut, new graphics package, new voiceover, or expanded runtime not included in the original scope.",
+                    "A return visit or reshoot requested for aesthetic preference rather than a verified technical failure by the Company."
+                  ]
+                },
+                {
+                  "type": "h3",
+                  "text": "11.3 Technical Failure"
+                },
+                {
+                  "type": "p",
+                  "text": "If a material technical failure attributable to the Company prevents delivery of an agreed service, the Company’s obligation is limited, at its option, to reasonable correction, a replacement session, a service credit, or refund of the affected service fee. A reshoot is not an included revision unless the Company determines it is necessary to correct a material technical failure."
+                }
+              ]
+            },
+            {
+              "docNumber": 12,
+              "title": "Payment Terms",
+              "blocks": [
+                {
+                  "type": "h3",
+                  "text": "12.1 Due Date"
+                },
+                {
+                  "type": "p",
+                  "text": "Payment is due according to the due date stated on the applicable invoice or proposal. If no due date is stated, payment is due upon receipt. Approved brokerage, commercial, or recurring relationships may operate on separate written terms."
+                },
+                {
+                  "type": "h3",
+                  "text": "12.2 Payment Is Not Contingent on Satisfaction or Results"
+                },
+                {
+                  "type": "p",
+                  "text": "Once the Company performs the agreed production services and completes the applicable Deliverables, payment is owed regardless of whether the Client ultimately uses the media or achieves a particular sale, rental, booking, publication, marketing result, audience response, or business outcome. Payment is not contingent on subjective satisfaction, approval by a third party, or the Client being completely satisfied with every creative choice."
+                },
+                {
+                  "type": "p",
+                  "text": "The Company will perform any included revisions and reasonable corrections described in the agreement, but the Client may not withhold undisputed payment for completed production services while requesting revisions or awaiting internal approval."
+                },
+                {
+                  "type": "h3",
+                  "text": "12.3 Deposits and Retainers"
+                },
+                {
+                  "type": "p",
+                  "text": "Deposits, retainers, booking fees, and payments made to reserve production time are non-refundable unless the Company expressly states otherwise in writing. Where permitted, the Company may apply an existing deposit to a timely rescheduled date at its discretion."
+                },
+                {
+                  "type": "h3",
+                  "text": "12.4 Late Payments"
+                },
+                {
+                  "type": "p",
+                  "text": "If an undisputed invoice remains unpaid more than fourteen (14) calendar days after its due date, the Company may suspend future bookings, disable or withhold download access, suspend unpaid licenses, pause ongoing work, and pursue collection. Past-due balances may accrue a late charge of 1.5% per month or the maximum amount permitted by law, whichever is less."
+                },
+                {
+                  "type": "p",
+                  "text": "The Client remains responsible for reasonable collection costs, court costs, and other recovery expenses to the extent permitted by law."
+                },
+                {
+                  "type": "h3",
+                  "text": "12.5 Stored Payment Methods"
+                },
+                {
+                  "type": "p",
+                  "text": "If the Client has separately authorized the Company or its payment processor to maintain and charge a payment method on file, the Company may charge undisputed balances that remain unpaid more than fourteen (14) calendar days after the due date, as well as contractually authorized late-cancellation fees, overtime, damages, recurring charges, or approved additional services. A website acceptance alone is not intended to replace any separate payment-method authorization required by the Company or payment processor."
+                },
+                {
+                  "type": "h3",
+                  "text": "12.6 Chargebacks"
+                },
+                {
+                  "type": "p",
+                  "text": "A payment dispute or chargeback does not eliminate an otherwise valid payment obligation. The Client agrees to contact the Company in good faith regarding a billing concern before initiating a chargeback. The Company may suspend licenses and services while a chargeback or payment reversal remains unresolved."
+                }
+              ]
+            },
+            {
+              "docNumber": 13,
+              "title": "Licensing and Copyright",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "All copyright ownership, permitted uses, prohibited uses, third-party licensing, homeowner license levels, commercial licenses, portfolio rights, exclusivity, and related media-rights issues are governed by the Company’s separate Licensing & Usage Rights Policy, which is incorporated into these Terms."
+                }
+              ]
+            },
+            {
+              "docNumber": 14,
+              "title": "File Access, Archiving and Retention",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Client is responsible for downloading and backing up Final Deliverables after delivery. The Company does not guarantee indefinite storage, gallery availability, or archival retention."
+                },
+                {
+                  "type": "p",
+                  "text": "Unless a proposal states otherwise, the Company may retain finished projects for up to twelve (12) months as a courtesy but may delete files sooner for operational, privacy, storage, or technical reasons. Source Materials may be deleted at any time after final delivery unless archival storage was expressly purchased. Retrieval of archived files may be subject to a fee."
+                }
+              ]
+            },
+            {
+              "docNumber": 16,
+              "title": "Third-Party Services and Vendors",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Company may use employees, independent contractors, editors, photographers, videographers, drone pilots, rental vendors, studios, software, hosting platforms, delivery services, and other third parties to perform or support the Project. The Company remains responsible for the services it has agreed to provide but is not liable for failures of third-party platforms or services outside the Company’s reasonable control."
+                }
+              ]
+            },
+            {
+              "docNumber": 17,
+              "title": "Confidentiality and Sensitive Projects",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Standard production is not confidential unless the Company agrees in writing. Clients requiring an NDA, embargo, no-portfolio restriction, exclusivity, restricted address disclosure, no-third-party licensing, or other special confidentiality must request it before production. Additional fees may apply where a restriction limits the Company’s normal promotional or licensing rights."
+                }
+              ]
+            },
+            {
+              "docNumber": 18,
+              "title": "Limitation of Liability",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "To the maximum extent permitted by applicable law, the Company’s total liability arising from any claim relating to a Project, service, studio session, or Deliverable will not exceed the amount actually paid by the Client for the specific service giving rise to the claim."
+                },
+                {
+                  "type": "p",
+                  "text": "The Company will not be liable for indirect, incidental, consequential, special, exemplary, punitive, or speculative damages, including lost profits, lost commissions, lost rental income, lost business, lost opportunities, reputational harm, business interruption, platform outages, algorithm changes, third-party conduct, or downstream use of Deliverables."
+                }
+              ]
+            },
+            {
+              "docNumber": 19,
+              "title": "Client Indemnification",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "To the extent permitted by law, the Client agrees to defend, indemnify, and hold harmless the Company and its owners, employees, and contractors from third-party claims, losses, liabilities, or expenses arising from the Client’s supplied materials, inaccurate or unlawful marketing claims, lack of property or talent permissions, misuse of Deliverables, infringement in materials supplied by the Client, guest conduct, Client instructions, or the Client’s violation of these Terms or the Licensing & Usage Rights Policy."
+                }
+              ]
+            },
+            {
+              "docNumber": 20,
+              "title": "Force Majeure",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Company is not responsible for delay or failure caused by circumstances beyond its reasonable control, including severe weather, fire, flood, natural disaster, public emergency, epidemic, government order, utility failure, transportation disruption, labor disruption, internet or platform outage, airspace restriction, equipment theft, or other force-majeure event. The Company may reschedule or reasonably modify performance when such circumstances occur."
+                }
+              ]
+            },
+            {
+              "docNumber": 21,
+              "title": "No Guarantee of Business or Marketing Results",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Company provides creative and production services. It does not guarantee property sales, rentals, booking volume, audience growth, lead generation, social-media reach, publication, awards, revenue, search ranking, advertising performance, or any other business or marketing outcome."
+                }
+              ]
+            },
+            {
+              "docNumber": 22,
+              "title": "Electronic Acceptance",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "Digital signatures, online bookings, estimate approvals, invoice approvals, deposit or payment submission, emailed confirmations, text confirmations, checkbox acceptance, studio entry after booking, and access to delivered files may constitute electronic acceptance of these Terms to the extent permitted by law."
+                }
+              ]
+            },
+            {
+              "docNumber": 23,
+              "title": "Governing Law and Venue",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "These Terms and any related dispute are governed by the laws of the State of New York, without regard to conflict-of-law principles. Unless the parties agree otherwise in writing, any legal action shall be brought in a state or federal court having jurisdiction in Suffolk County, New York, and the parties consent to that venue and jurisdiction."
+                }
+              ]
+            },
+            {
+              "docNumber": 24,
+              "title": "Severability and Waiver",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "If any provision of these Terms is held unenforceable, the remaining provisions will remain in effect to the fullest extent permitted by law. A failure by the Company to enforce a provision in one instance does not waive that provision or the right to enforce it later."
+                }
+              ]
+            },
+            {
+              "docNumber": 25,
+              "title": "Assignment",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "The Client may not assign or transfer its agreement, booking, license, or rights without the Company’s prior written consent. The Company may assign its rights and obligations to an affiliated entity, successor, purchaser, or reorganized business entity."
+                }
+              ]
+            },
+            {
+              "docNumber": 26,
+              "title": "Entire Agreement",
+              "blocks": [
+                {
+                  "type": "p",
+                  "text": "These Terms, the Licensing & Usage Rights Policy, and the applicable accepted proposal, estimate, invoice, booking confirmation, or signed agreement constitute the complete agreement between the Company and the Client regarding the Project and supersede prior inconsistent discussions or understandings regarding the same subject matter."
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "creator",
@@ -115,28 +814,137 @@
           "heading": "Creator Studios, Podcast & Studio Terms",
           "sections": [
             {
-              "title": "Session Time and Overtime",
-              "blocks": []
-            },
-            {
-              "title": "Conduct and Safety",
-              "blocks": []
-            },
-            {
-              "title": "Equipment and Property Damage",
-              "blocks": []
-            },
-            {
-              "title": "Technical and Platform Limitations",
-              "blocks": []
-            },
-            {
-              "title": "Client Content Responsibility",
-              "blocks": []
+              "docNumber": 15,
+              "title": "Podcast, Studio and Content Production Rules",
+              "blocks": [
+                {
+                  "type": "h3",
+                  "text": "26.1 Session Time and Overtime"
+                },
+                {
+                  "type": "p",
+                  "text": "Studio and podcast bookings begin and end at the reserved times. Client setup, guest delays, wardrobe, makeup, rehearsals, technical changes requested by the Client, and late arrivals count against the reserved time. Overtime is subject to availability and additional fees."
+                },
+                {
+                  "type": "h3",
+                  "text": "26.2 Conduct and Safety"
+                },
+                {
+                  "type": "p",
+                  "text": "Clients and guests must behave professionally and follow Company safety instructions. The Company may stop or terminate a session involving illegal activity, harassment, threats, abusive conduct, unsafe behavior, excessive intoxication, smoking or vaping where prohibited, unauthorized handling of equipment, or conduct that risks injury or damage. A session terminated for Client or guest misconduct remains billable."
+                },
+                {
+                  "type": "h3",
+                  "text": "26.3 Equipment and Property Damage"
+                },
+                {
+                  "type": "p",
+                  "text": "The Client is responsible for damage caused by the Client or the Client’s guests through negligence, misuse, intentional conduct, unauthorized equipment handling, spills, or failure to follow staff instructions."
+                },
+                {
+                  "type": "h3",
+                  "text": "26.4 Technical and Platform Limitations"
+                },
+                {
+                  "type": "p",
+                  "text": "The Company uses commercially reasonable efforts to provide professional recording quality but does not guarantee uninterrupted internet, livestream platforms, remote-call software, third-party hosting, or complete elimination of technical issues outside the Company’s reasonable control."
+                },
+                {
+                  "type": "h3",
+                  "text": "26.5 Client Content Responsibility"
+                },
+                {
+                  "type": "p",
+                  "text": "The Client is responsible for guest releases, music and media permissions, statements, claims, disclosures, trademarks, regulated-industry compliance, advertising claims, and legal rights in materials or instructions supplied by the Client. The Company does not independently verify factual statements made by the Client or guests."
+                }
+              ]
             }
           ]
         }
+      ],
+      "intro": [
+        {
+          "type": "p",
+          "text": "These Terms & Conditions (“Terms”) govern all services provided by Photografik Studios Inc. and Creator Studios LLC (collectively, the “Company”). By scheduling services, approving an estimate, signing a proposal, paying an invoice or deposit, accessing or downloading delivered media, entering a studio, or otherwise engaging Company services, the client (“Client”) agrees to these Terms."
+        },
+        {
+          "type": "p",
+          "text": "These Terms apply to photography, videography, drone, editing, podcast, studio rental, social media, licensing, content production, and related services unless superseded by a separately signed written agreement."
+        }
       ]
     }
+  },
+  "appendix": {
+    "_readme": "Implementation language from the supplied document (Appendix). Not rendered on the site; Appendix A is the footer acceptance line. The booking checkbox, stored-card authorization, invoice/proposal footers and license notes belong in HD Photo Hub, Square and invoices (owner action).",
+    "items": [
+      {
+        "style": "Heading 2",
+        "text": "A. Recommended Website Footer / Booking Acceptance"
+      },
+      {
+        "style": "Normal",
+        "text": "By booking services, approving an estimate, paying an invoice or deposit, or accessing delivered media, you agree to Photografik Studios’ Terms & Conditions and Licensing & Usage Rights Policy."
+      },
+      {
+        "style": "Heading 2",
+        "text": "B. Recommended Booking Checkbox"
+      },
+      {
+        "style": "Normal",
+        "text": "I have read and agree to Photografik Studios’ Terms & Conditions and Licensing & Usage Rights Policy, and I understand that production fees are owed for completed services and are not contingent on subjective satisfaction or marketing results."
+      },
+      {
+        "style": "Heading 2",
+        "text": "C. Recommended Stored-Card Authorization Checkbox"
+      },
+      {
+        "style": "Normal",
+        "text": "I authorize Photografik Studios and its payment processor to securely maintain the payment method I provide and to charge undisputed invoice balances that remain unpaid more than 14 calendar days after the due date, together with contractually authorized cancellation fees, overtime, damages, recurring charges, or approved additional services."
+      },
+      {
+        "style": "Heading 2",
+        "text": "D. Recommended Proposal / Invoice Footer"
+      },
+      {
+        "style": "Normal",
+        "text": "This order is subject to Photografik Studios’ Terms & Conditions and Licensing & Usage Rights Policy. Copyright remains with Photografik Studios unless a separate signed copyright assignment states otherwise. Usage rights activate only after payment in full."
+      },
+      {
+        "style": "Heading 2",
+        "text": "E. Recommended Homeowner License Labels for Estimates"
+      },
+      {
+        "style": "List Bullet",
+        "text": "Owner + One Representative - homeowner property marketing plus one named agent or brokerage."
+      },
+      {
+        "style": "List Bullet",
+        "text": "Open Rental Marketing - homeowner rental marketing plus multiple authorized rental representatives and property managers."
+      },
+      {
+        "style": "List Bullet",
+        "text": "Perpetual Property Marketing - long-term rental and sale marketing for the same property by the commissioning owner and authorized representatives."
+      },
+      {
+        "style": "List Bullet",
+        "text": "Copyright Buyout - separate signed assignment of copyright in the specifically identified Final Deliverables."
+      },
+      {
+        "style": "Heading 2",
+        "text": "F. Recommended Real Estate Invoice License Note"
+      },
+      {
+        "style": "Normal",
+        "text": "License issued to the commissioning agent/team/brokerage for marketing the specific property under the applicable listing relationship. Rights do not automatically transfer to the homeowner, replacement agent, designer, builder, contractor, property manager, publication, manufacturer, or other third party."
+      },
+      {
+        "style": "Heading 2",
+        "text": "G. Recommended Architect / Builder / Designer Invoice License Note"
+      },
+      {
+        "style": "Normal",
+        "text": "Project Portfolio License issued to the commissioning business for its own website, portfolio, organic social media, proposals, awards, and project-specific PR/editorial submissions. Use by other project participants, manufacturers, vendors, advertisers, or real-estate representatives requires separate licensing unless expressly included."
+      }
+    ]
   }
 }

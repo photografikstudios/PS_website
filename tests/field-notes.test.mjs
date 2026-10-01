@@ -102,7 +102,16 @@ test('legal pages: Photografik general policies first, Creator supplement last, 
   }
   assert.equal(legal.pages.licensing.groups[0].sections.length, 15);
   if (!legal.ready) for (const page of Object.values(legal.pages)) for (const g of page.groups) for (const s of g.sections) assert.equal(s.blocks.length, 0, `${s.title} has text before the source document arrived`);
-  assert.ok(validateLegal({ ...legal, ready: true }).length > 0, 'ready cannot be set without the text and checksum');
+  const emptied = structuredClone(legal); emptied.ready = true; emptied.source.sha256 = null; emptied.pages.terms.groups[0].sections[0].blocks = [];
+  assert.ok(validateLegal(emptied).length >= 2, 'ready is refused without the checksum or with an empty section');
+  if (legal.ready) {
+    assert.equal(legal.source.sha256, 'f96e664ccce5b18c7209e3de8f1618b2b5c0b00fe973f65a47857c6f5b5641b8');
+    // James's hierarchy: the Creator provisions are the source's Licensing 10 and Terms 15, moved last.
+    assert.deepEqual(legal.pages.licensing.groups[1].sections.map((x) => x.docNumber), [10]);
+    assert.deepEqual(legal.pages.terms.groups[1].sections.map((x) => x.docNumber), [15]);
+    assert.equal(legal.pages.terms.groups[0].sections.length, 25);
+    assert.ok(legal.pages.terms.groups[0].sections.every((x) => !/podcast|studio/i.test(x.title)), 'general Terms carry no Creator-only section');
+  }
 });
 
 test('every legacy article URL has exactly one redirect, matching the inventory', () => {

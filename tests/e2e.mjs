@@ -1534,6 +1534,15 @@ await check('legal pages: Photografik policies first, Creator supplement last, e
       if (!legal.ready) {
         assert(await p.locator('.legal__body p:not(.legal__pending):not(.eyebrow)').count() === 0, path + ' no legal text before the source document');
         assert(await p.locator('meta[name=robots][content*=noindex]').count() === 1, path + ' review noindex');
+      } else if (vp.width === 1280) {
+        // Every paragraph, list item, table cell and heading of the supplied document appears on the page, word for word.
+        const page = Object.values(legal.pages).find((x) => x.route === path);
+        const plain = (t) => t.replace(/\*\*/g, '').replace(/\\(.)/g, '$1');
+        const want = [...(page.intro || []).map((b) => plain(b.text))];
+        for (const g of page.groups) for (const s of g.sections) { want.push(s.title); for (const b of s.blocks) { if (b.text) want.push(plain(b.text)); if (b.items) want.push(...b.items.map(plain)); if (b.head) want.push(...b.head, ...b.rows.flat()); } }
+        const text = (await p.locator('.legal__body').textContent()).replace(/\s+/g, ' ');
+        const missing = want.filter((w) => !text.includes(w.replace(/\s+/g, ' ')));
+        assert(missing.length === 0 && await p.locator('.legal__pending').count() === 0, path + ' verbatim text missing: ' + missing.slice(0, 2).join(' | '));
       }
       assert(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path + ' no overflow at ' + vp.width);
       await p.context().close();

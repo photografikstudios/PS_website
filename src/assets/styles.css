@@ -1081,6 +1081,7 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .legal__toc-list { margin: 0; padding-left: 1.6em; } .legal__toc-list li { margin: 4px 0; } .legal__toc a { text-decoration: none; } .legal__toc a:hover { text-decoration: underline; }
 .legal__body { font-size: 17px; line-height: 1.7; max-width: 72ch; }
 .legal__sec { padding: 8px 0 18px; scroll-margin-top: 96px; }
+.legal__intro { margin-bottom: 8px; }
 .legal__h { margin: 24px 0 8px; } .legal__n { font-variant-numeric: tabular-nums; margin-right: .25em; }
 .legal__sub { margin: 18px 0 6px; font-size: 17px; }
 .legal__body ul, .legal__body ol { padding-left: 1.4em; } .legal__body li { margin: 4px 0; }
@@ -1089,3 +1090,9 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .legal__table { overflow-x: auto; margin: 14px 0; } .legal__table table { border-collapse: collapse; min-width: 480px; width: 100%; font-size: 15px; } .legal__table th, .legal__table td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
 .site-footer__legal { margin: 6px 0 0; font-size: 13px; max-width: 90ch; }
 .site-footer__legal a { text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 620px) {
+  .legal__table table { min-width: 0; } .legal__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .legal__table tr { display: block; border: 1px solid var(--line); border-radius: 6px; margin: 0 0 12px; padding: 4px 0; }
+  .legal__table td { display: block; border: 0; padding: 6px 12px; } .legal__table td::before { content: attr(data-label); display: block; font: 400 11px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .legal__table td:first-child { font-weight: 600; }
+}
