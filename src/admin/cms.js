@@ -91,5 +91,12 @@
   });
   CMS.registerPreviewTemplate('photos', PhotoPreview);
 
+  // Decap's toolbar says "Publish" for what is really "save to the review copy". On this site "Published" is the
+  // switch on each item, so the toolbar words are changed to Save to keep the two ideas apart for the owner.
+  CMS.registerLocale('ps', { editor: { editorToolbar: {
+    publish: 'Save', published: 'Saved', publishing: 'Saving…', publishNow: 'Save now',
+    publishAndCreateNew: 'Save and create new', publishAndDuplicate: 'Save and duplicate',
+  } } });
+  config.locale = 'ps';
   CMS.init({ config: config });
 })();
