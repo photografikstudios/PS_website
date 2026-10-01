@@ -1104,7 +1104,7 @@ await check('Commercial: property media prices, add-ons and portfolio rates; Rev
     const tiers = await p.locator('.cpm__tier').evaluateAll((es) => es.map((e) => [e.querySelector('.cpm__name').textContent.trim(), e.querySelector('.cpm__price').textContent.trim()]));
     assert(JSON.stringify(tiers) === JSON.stringify([['Storefront or single tenant', '$550'], ['Small commercial', '$750'], ['Mid-size commercial', '$950'], ['Large or multi-building', '$1,250+']]), 'tiers ' + JSON.stringify(tiers));
     const add = await p.locator('.cpm__addons li').evaluateAll((es) => es.map((e) => e.querySelector('.cpm__addprice').textContent.trim()));
-    assert(JSON.stringify(add) === JSON.stringify(['+$300', '+$400', '$850+', '$150+ per image']), 'add-ons ' + add);
+    assert(JSON.stringify(add) === JSON.stringify(['+$300', '+$500', '$850+', '$150+ per image']), 'add-ons ' + add);
     // James, Sep 30 (Wednesday pass, item 6): no public portfolio or volume discounts; multi-property work goes to a brief.
     assert(await p.locator('.cpm__portfolio').count() === 0 && !/preferred rate|portfolio pricing|portfolio agreement|properties a year|discount/i.test(await p.locator('main').innerText()), 'no portfolio discounts');
     const multi = await p.locator('.cpm__multi').innerText();
