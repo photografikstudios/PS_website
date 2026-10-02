@@ -48,6 +48,9 @@ export function start(port = 0) {
       const r = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.statusCode = c; return this; }, json(o) { res.writeHead(this.statusCode, { 'Content-Type': 'application/json', ...this.headers }); res.end(JSON.stringify(o)); } };
       return handler({ method: req.method, body: raw }, r);
     }
+    const redirect = matchRedirect(path.replace(/\/$/, '') || '/', url.searchParams);
+    if (redirect) { res.writeHead(redirect.permanent ? 308 : 307, { Location: redirect.destination }); return res.end(); }
+    // Vercel order: redirects first, then rewrites.
     // vercel.json rewrite: /work?category=… is answered by api/legacy-work.js (a clean 307).
     const rw = (config.rewrites || []).find((r) => r.source === (path.replace(/\/$/, '') || '/') && (r.has || []).every((h) => h.type === 'query' && url.searchParams.has(h.key)));
     if (rw && rw.destination === '/api/legacy-work') {
@@ -55,8 +58,6 @@ export function start(port = 0) {
       const r = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, end() { res.writeHead(this.statusCode, this.headers); res.end(); } };
       return handler({ method: req.method, query: Object.fromEntries(url.searchParams) }, r);
     }
-    const redirect = matchRedirect(path.replace(/\/$/, '') || '/', url.searchParams);
-    if (redirect) { res.writeHead(redirect.permanent ? 308 : 307, { Location: redirect.destination }); return res.end(); }
     const file = (path.endsWith('.html') ? null : await tryFile(join(dist, path)))
       || (path === '/' && await tryFile(join(dist, 'index.html')))
       || await tryFile(join(dist, path.replace(/\/$/, '') + '.html'))

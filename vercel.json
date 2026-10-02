@@ -291,7 +291,13 @@
     {
       "source": "/work/:path*",
       "destination": "/#selected-work",
-      "permanent": false
+      "permanent": false,
+      "missing": [
+        {
+          "type": "query",
+          "key": "category"
+        }
+      ]
     },
     {
       "source": "/architecture-design/yankee-home-builders",

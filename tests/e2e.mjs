@@ -186,9 +186,12 @@ await check('portfolios: every approved item appears on its own service page, on
 await check('portfolios: /work and old project URLs redirect to their service destination, keeping intent without a stale ?category=', async () => {
   const cases = {
     '/work': '/#selected-work',
+    '/work?category=real-estate': '/real-estate#portfolio',
+    '/work?category=agent-content': '/agent-content#portfolio',
+    '/work?category=Architecture-Design': '/architecture-design#portfolio',
     '/work?category=architecture-design': '/architecture-design#portfolio',
     '/work?category=commercial': '/commercial#portfolio',
-    '/work?category=creator-studios': '/creator-studios#portfolio',
+    '/work?category=creator-studios': '/creator-studios',
     '/work?category=unknown': '/#selected-work',
     '/work?service=video&category=real-estate': '/real-estate?service=video#portfolio',
     '/work?service=video&category=commercial&utm_source=x': '/commercial#portfolio',
@@ -205,6 +208,9 @@ await check('portfolios: /work and old project URLs redirect to their service de
     assert([307, 308].includes(r.status) && r.headers.get('location') === to, `${from} -> ${r.status} ${r.headers.get('location')}`);
     const final = await fetch(base + to.split('#')[0]);
     assert(final.status === 200, `${to} ${final.status}`);
+    // the anchor a legacy link lands on must exist on the page
+    const anchor = to.split('#')[1];
+    if (anchor) assert((await final.text()).includes(`id="${anchor}"`), `${to} has no #${anchor}`);
   }
   const p = await newPage();
   await p.goto(base + '/work?service=video&category=real-estate');

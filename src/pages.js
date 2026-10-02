@@ -1291,7 +1291,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     </div>
   </header>
   ${(rest => rest.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(rest, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : '')(rep ? pm.filter((m) => m !== rep) : pm)}
-  ${related.length ? `<section class="section"><div class="wrap"><div class="section-head"><h2 class="h2 reveal">Related work</h2><a class="link-arrow" href="${serviceRoute[p.category]}#portfolio">More ${esc(catLabel[p.category])} ${arrow}</a></div><div class="justified">${join(related, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
+  ${related.length ? `<section class="section"><div class="wrap"><div class="section-head"><h2 class="h2 reveal">Related work</h2><a class="link-arrow" href="${serviceRoute[p.category]}${p.category === 'creator-studios' ? '' : '#portfolio'}">More ${esc(catLabel[p.category])} ${arrow}</a></div><div class="justified">${join(related, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
   ${isCom ? `<section class="section"><div class="wrap cta-band cta-band--light"><h2 class="h2">Planning something similar?</h2><p>Tell us about the business, the audience and where the media will be used.</p><div class="actions">${cta}<a class="link-arrow" href="/commercial#portfolio">More client projects ${arrow}</a></div></div></section>` : ''}
 </article>`,
     };
