@@ -138,6 +138,13 @@ for (const [route, page] of Object.entries(pages)) {
 // Committed media (owner-supplied stills, and legacy assets once committed) are served at the same path.
 if (existsSync(join(root, 'static'))) await cp(join(root, 'static'), out, { recursive: true });
 
+// Every hero's phone still (src/lib/html.js heroPhoneStill) must be committed, or phones would show no still.
+{ const missing = new Set();
+  for (const f of (await readdir(out, { recursive: true })).filter((f) => f.endsWith('.html'))) {
+    for (const m of (await readFile(join(out, f), 'utf8')).matchAll(/srcset="(\/images\/hero\/[\w-]+-phone\.webp)"/g)) if (!existsSync(join(out, m[1]))) missing.add(m[1]);
+  }
+  if (missing.size) { console.error(`Missing hero phone stills (commit them under static/): ${[...missing].join(', ')}`); process.exit(1); } }
+
 // Assets
 await cp(join(root, 'src/assets'), join(out, 'assets'), { recursive: true });
 await cp(join(root, 'src/lib/pricing-core.js'), join(out, 'assets/pricing-core.js'));

@@ -15,6 +15,11 @@ const FOCAL = { top: '50% 15%', 'upper-third': '50% 30%', bottom: '50% 85%', lef
 export const focalPosition = (f) => FOCAL[f] || null;
 export const focalAttr = (f) => (FOCAL[f] ? ` style="object-position: ${FOCAL[f]}"` : '');
 
+// Portrait phones: hero films are cropped by object-fit: cover to well under 640 of their 1280 px width (hero aspect
+// stays below 0.89 when the viewport is narrower than 3:5, even with 78svh heroes and browser toolbars showing).
+export const HERO_STILL_MEDIA = '(max-width: 700px) and (max-aspect-ratio: 3/5)';
+export const heroPhoneStill = (id) => `/images/hero/${esc(id)}-phone.webp`;
+
 export function createContext({ site, reviewMode, onVercel }) {
   const isLocal = (p) => typeof p === 'string' && p.startsWith('/v/');
   const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) || isLocal(p) ? p : site.media.base + p);
@@ -68,7 +73,11 @@ export function createContext({ site, reviewMode, onVercel }) {
    *  Decorative by default (aria-hidden); pass a label when the loop is an example the visitor should know about. */
   function ambient(id, { cls = '', eager = false, label = '' } = {}) {
     const poster = `/v/${esc(id)}.webp`;
-    return `<video class="ambient ${cls}" data-ambient muted loop playsinline preload="none" ${eager ? `poster="${poster}"` : `data-poster="${poster}"`} ${label ? `aria-label="${esc(label)}"` : 'aria-hidden="true"'} tabindex="-1" disableremoteplayback>
+    // Hero (eager): the still is a <picture> under the video instead of a poster attribute, so portrait phones load a
+    // 640x720 centre crop (what object-fit: cover shows there anyway) rather than the full 1280x720 frame.
+    // Same pixels on screen, about half the bytes on the LCP path (Session 53, mobile LCP).
+    const still = eager ? `<picture class="hero-still"><source media="${HERO_STILL_MEDIA}" srcset="${heroPhoneStill(id)}" width="640" height="720"><img src="${poster}" alt="" width="1280" height="720" fetchpriority="high"></picture>` : '';
+    return `${still}<video class="ambient ${cls}" data-ambient muted loop playsinline preload="none" ${eager ? `data-still="${poster}"` : `data-poster="${poster}"`} ${label ? `aria-label="${esc(label)}"` : 'aria-hidden="true"'} tabindex="-1" disableremoteplayback>
     <source src="/v/${esc(id)}-loop.mp4" type="video/mp4"></video>`;
   }
 

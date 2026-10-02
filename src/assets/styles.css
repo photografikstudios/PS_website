@@ -516,6 +516,9 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 /* ---------- Ambient video (hero + tiles) ---------- */
 .ambient { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--charcoal); }
 .hero__media .ambient { position: absolute; inset: 0; }
+/* Hero still sits under the film; the film is transparent until its first frame paints, so the still shows through. */
+.hero-still, .hero-still img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero__media .ambient.hero__video, .page-hero__media .ambient.hero__video { background: transparent; }
 .js .hero__media .ambient { animation: settle 2.8s var(--ease) both; }
 .motion-toggle { position: absolute; right: clamp(16px, 3vw, 40px); bottom: clamp(16px, 3vw, 36px); z-index: 3; display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 8px 14px; border: 1px solid rgba(244,242,235,.4); background: rgba(21,24,22,.35); color: var(--ivory); font: 400 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(6px); }
 .motion-toggle:hover { background: rgba(21,24,22,.6); }

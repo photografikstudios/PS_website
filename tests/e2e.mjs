@@ -761,7 +761,9 @@ await check('primary-nav pages open with a silent autoplaying 16:9 hero video, p
     assert(await first.getAttribute('data-hero-source') === id, `${path} hero source`);
     const v = first.locator('video[data-ambient]');
     assert(await v.count() === 1, `${path} ambient`);
-    assert(await v.getAttribute('poster') === `/v/${id}.webp`, `${path} poster`);
+    // Session 53: the still is a <picture> under the film (phones get a 640x720 centre crop), not a poster attribute.
+    assert(!(await v.getAttribute('poster')) && await v.getAttribute('data-still') === `/v/${id}.webp`, `${path} film carries no poster`);
+    assert(await first.locator(`.hero-still img[src="/v/${id}.webp"]`).count() === 1 && await first.locator(`.hero-still source[srcset="/images/hero/${id}-phone.webp"]`).count() === 1, `${path} hero still picture`);
     assert(await v.evaluate((el) => el.muted && el.hasAttribute('muted')), `${path} muted`);
     assert(await first.locator('[data-motion-toggle]').count() === 1, `${path} pause control`);
     assert(await p.getByText('Watch the film').count() === 0, `${path} has no Watch the film prompt`);
@@ -789,7 +791,9 @@ await check('primary-nav pages open with a silent autoplaying 16:9 hero video, p
   await bl.goto(base + '/real-estate');
   await bl.waitForTimeout(500);
   const blHero = bl.locator('main > section').first();
-  assert(await blHero.locator('video[data-ambient]').evaluate((el) => el.paused && !!el.poster), 'autoplay blocked: poster still frame');
+  assert(await blHero.locator('video[data-ambient]').evaluate((el) => el.paused), 'autoplay blocked: film paused');
+  assert(await blHero.locator('.hero-still img').evaluate((im) => im.complete && im.naturalWidth > 0 && getComputedStyle(im).visibility !== 'hidden' && im.getBoundingClientRect().height > 300), 'autoplay blocked: still frame shows under the film');
+  assert(await blHero.locator('video[data-ambient]').evaluate((el) => getComputedStyle(el).backgroundColor === 'rgba(0, 0, 0, 0)'), 'autoplay blocked: film is transparent over the still');
   assert((await blHero.locator('[data-motion-toggle]').textContent()).includes('Play video'), 'autoplay blocked: control offers Play');
   assert(await blHero.locator('h1').isVisible(), 'autoplay blocked: headline readable');
   await bl.context().close();
@@ -1392,7 +1396,7 @@ await check('James Sep 28: pricing four across, Most Popular, package loops; RE 
   await ph.goto(base + '/', { waitUntil: 'load' });
   await ph.waitForTimeout(600);
   const served = (await (await fetch(base + '/')).text()).match(/<video class="ambient hero__video"[^>]*>/)[0];
-  const hero = await ph.evaluate(() => { const v = document.querySelector('.hero__video'); return [window.__heroPlayBeforeLoad, v.preload, !!v.getAttribute('poster')]; });
+  const hero = await ph.evaluate(() => { const v = document.querySelector('.hero__video'); const im = document.querySelector('.hero-still img'); return [window.__heroPlayBeforeLoad, v.preload, im.currentSrc.endsWith('/images/hero/re-hamptons-beachfront-phone.webp')]; });
   assert(/preload="none"/.test(served) && hero[0] === false && hero[1] === 'auto' && hero[2], 'phone hero deferred until load, then started: ' + hero + ' ' + served);
   await ph.context().close();
 });
@@ -1453,14 +1457,23 @@ await check('no street addresses in any page, caption, alt text, URL or media fi
 await check('LCP: small header logo, hero poster preloaded at high priority; RE portfolio before packages, no three steps; one package note', async () => {
   for (const path of ['/', '/real-estate', '/architecture-design']) {
     const h = await (await fetch(base + path)).text();
-    const poster = h.match(/<video class="ambient hero__video"[^>]*\bposter="([^"]+)"/)?.[1];
-    assert(poster && h.includes(`<link rel="preload" as="image" href="${poster}" fetchpriority="high">`), `${path} hero poster preload`);
+    // Session 53: phones preload the 640x720 centre crop, everything else the full frame; never both.
+    const m = h.match(/<picture class="hero-still"><source media="([^"]+)" srcset="([^"]+)"[^>]*><img src="([^"]+)"[^>]*fetchpriority="high"/);
+    assert(m && h.includes(`<link rel="preload" as="image" href="${m[2]}" media="${m[1]}" fetchpriority="high">`) && h.includes(`<link rel="preload" as="image" href="${m[3]}" media="not all and ${m[1]}" fetchpriority="high">`), `${path} hero still preloads`);
     assert(!/src="\/images\/photografik-2027\/brand\/photografik-logo\.webp"/.test(h) && !/rel="icon" href="[^"]*photografik-logo\.webp"/.test(h), `${path} still loads the 366 KB logo`);
   }
   const p = await newPage({ width: 390, height: 844 });
   const logos = []; p.on('request', (r) => { if (/photografik-logo/.test(r.url())) logos.push(r.url().split('/').pop()); });
   await p.goto(base + '/', { waitUntil: 'load' });
   assert(logos.length && logos.every((l) => /logo-(96|192)\.webp/.test(l)), `logo requests ${logos}`);
+  // Session 53: a portrait phone fetches only the hero's phone still before load; a desktop only the full frame.
+  for (const [vp, want, not] of [[{ width: 390, height: 844 }, '/images/hero/re-hamptons-beachfront-phone.webp', '/v/re-hamptons-beachfront.webp'], [{ width: 1280, height: 900 }, '/v/re-hamptons-beachfront.webp', '/images/hero/re-hamptons-beachfront-phone.webp']]) {
+    const q = await newPage(vp); const got = []; let loaded = false;
+    q.on('request', (r) => { if (!loaded) got.push(new URL(r.url()).pathname); });
+    await q.goto(base + '/', { waitUntil: 'load' }); loaded = true;
+    assert(got.includes(want) && !got.includes(not), `${vp.width}px hero still requests before load: ${got.filter((u) => /hero|beachfront/.test(u))}`);
+    await q.context().close();
+  }
   await p.goto(base + '/real-estate');
   const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((s) => s.id || s.querySelector('h2')?.textContent.trim().slice(0, 30)));
   const iPort = order.indexOf('portfolio'), iPkg = order.findIndex((x) => /Start with the right package/.test(x || ''));
