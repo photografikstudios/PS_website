@@ -1,0 +1,33 @@
+{
+  "segments": [
+    "architect"
+  ],
+  "photos": [
+    {
+      "focal": "center",
+      "orientation": "auto",
+      "image": "/images/projects/4-ps_00374.jpg",
+      "alt": "test test"
+    }
+  ],
+  "sortPriority": 0,
+  "summary": "This is a test",
+  "heroFocal": "center",
+  "client": "Test Test",
+  "published": true,
+  "heroAlt": "This is a test of a test",
+  "blurbApproved": false,
+  "goal": "The goal of this project is to test the site",
+  "story": "A story test, this is a test of the test",
+  "location": "Southampton",
+  "heroOrientation": "auto",
+  "rights": "approved",
+  "title": "Test",
+  "hero": "/images/projects/5-ps_00519.jpg",
+  "shortTitle": "This is a test for the upload",
+  "services": [
+    "Photography",
+    "Video"
+  ],
+  "category": "architecture-design"
+}
