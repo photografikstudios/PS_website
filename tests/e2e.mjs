@@ -1172,6 +1172,8 @@ await check('pricing rows: photos, one static note, plain fixed prices, content 
     const p = await newPage(vp);
     await p.goto(base + '/real-estate/pricing');
     await p.click('#tab-photo');
+    // The row thumbnails are lazy: give them up to 5 s to arrive after the tab opens (the check itself is unchanged).
+    await p.waitForFunction(() => [...document.querySelectorAll('#panel-photo .prow__thumb img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 5000 }).catch(() => {});
     const rows = await p.locator('#panel-photo .prow').evaluateAll((es) => es.map((e) => ({ id: e.dataset.record, img: e.querySelector('.prow__thumb img')?.naturalWidth > 0, hint: !!e.querySelector('.pcard__hint') })));
     assert(rows.length === 5 && rows.every((r) => r.img && !r.hint), 'photo rows ' + JSON.stringify(rows));
     assert(await p.locator('#panel-photo .prows-note').count() === 1, 'one note under the photo table');
@@ -1630,6 +1632,35 @@ await check('Site dashboard: /admin is noindex, pinned and Git-backed; seven sec
   for (const n of ['field-notes', 'projects', 'photos']) assert(col(n).fields.find((x) => x.name === 'published').default === false, `${n}: drafts by default`);
   const robots = await (await fetch(base + '/robots.txt')).text();
   assert(/Disallow: \//.test(robots), 'robots');
+});
+
+// Codex, Session 56 review: the dashboard reads what the build did; the Test project is marked review-only.
+await check('Dashboard status: /admin/status.json lists held projects and review-only tests; Test page says review-only', async () => {
+  const r = await fetch(base + '/admin/status.json');
+  const st = await r.json();
+  assert(r.status === 200 && Array.isArray(st.held) && st.mode === 'review', 'status file');
+  assert(st.held.length === 0, 'nothing held: ' + JSON.stringify(st.held));
+  assert(JSON.stringify(st.reviewOnly) === JSON.stringify([{ slug: 'test', title: 'Test' }]), 'Test is review-only');
+  const html = await (await fetch(base + '/architecture-design/test')).text();
+  assert(/Review-only test project\./.test(html) && !/Not published yet/.test(html), 'Test page note');
+  assert(!/PS_\d{5}/i.test(html), 'no camera file names on the Test page');
+  const sm = await (await fetch(base + '/sitemap.xml')).text();
+  assert(!sm.includes('/architecture-design/test<'), 'review-only project not in the sitemap');
+  const cms = await (await fetch(base + '/admin/cms.js')).text();
+  assert(/registerWidget\('pgk-publish'/.test(cms) && /status\.json/.test(cms) && /isValid/.test(cms), 'dashboard reads the status and checks before saving');
+  // James, Oct 2: every photo needs a preview in the back end. Each Photos record has a thumbnail the site serves.
+  const cfg = await (await fetch(base + '/admin/config.js')).text();
+  const th = JSON.parse(cfg.match(/PHOTOGRAFIK_THUMBS = (\{.*?\});\n/)[1]);
+  const work = await loadWorkRecords();
+  const photoIds = work.media.filter((m) => !m.fromProject && m.type === 'image').map((m) => m.id);
+  assert(photoIds.length > 100 && photoIds.every((id) => th.photos[id]), 'a thumbnail for every Photos record');
+  assert(work.projects.every((pr) => th.projects[pr.slug]), 'a thumbnail for every project');
+  const urls = [...new Set([...Object.values(th.photos), ...Object.values(th.projects), ...Object.values(th.films), ...th.pick.map((x) => x.thumb)])];
+  const bad = [];
+  for (const u of urls) { const res = await fetch(base + u); if (res.status !== 200 || !/^image\//.test(res.headers.get('content-type') || '')) bad.push(`${res.status} ${u}`); }
+  assert(bad.length === 0, 'thumbnails served: ' + bad.slice(0, 5).join(', '));
+  assert(!th.pick.some((x) => /\/test-/.test(x.src)), 'review-only Test photos are not offered in the picker');
+  assert(/addEventListener\('hashchange'/.test(cms) && /location\.reload\(\)/.test(cms), 'a jump between two open entries reloads instead of saving into the wrong file');
 });
 
 // Screenshots for the handoff

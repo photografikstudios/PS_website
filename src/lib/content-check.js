@@ -4,6 +4,9 @@
 // Messages are written for the owner, not for developers.
 
 const STREET = /\b\d{1,6}[\s_-]+(?:[a-z]+[\s_-]+){0,3}(?:lane|ln|road|rd|street|st|avenue|ave|drive|dr|court|ct|way|place|pl|boulevard|blvd|highway|hwy|path|trail|terrace|circle|cir)\b/i;
+// Camera and phone file names (PS_00314, DJI_0042, IMG_1234, DSC01234, _MG_5678…) must never reach the public site.
+const CAMERA = /(?:^|[^a-z0-9])(?:ps|dji|img|dsc[fn]?|_?mg|mvi|gopr|pxl|gh0?\d)[_-]?\d{4,}/i;
+export const looksLikeCameraName = (path) => typeof path === 'string' && CAMERA.test('/' + path.split('/').pop().replace(/\.[a-z0-9]+$/i, ''));
 export const looksLikeAddress = (s) => typeof s === 'string' && (STREET.test(s.replace(/\.[a-z0-9]+$/i, '')) || /^\s*\d{1,6}\s+\S/.test(s));
 
 export function checkContent({ work, fileExists, imageInfo = () => null, pageText = null, testimonials = null, faqs = null }) {
@@ -30,6 +33,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
       if (!p.heroAlt) say(live, `${who}: describe the hero image (alt text)`);
       if (!fileExists(p.hero)) say(live, `${who}: the hero image ${p.hero} is missing`);
       if (looksLikeAddress(p.hero.split('/').pop())) say(live, `${who}: the hero image file name looks like a street address. Rename the file and upload it again`);
+      if (looksLikeCameraName(p.hero)) say(live, `${who}: the main image still has its camera file name (${p.hero.split('/').pop()}). Choose it again with Replace photo so the dashboard renames it`);
     }
     const own = work.media.filter((m) => m.project === p.slug);
     if (!p.hero && !own.length) say(live, `${who}: add a hero image or at least one photo`);
@@ -38,6 +42,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
       if (!ph || !ph.image) { say(live, `${label}: choose an image`); continue; }
       if (!ph.alt) say(live, `${label}: describe the photo (alt text)`);
       if (looksLikeAddress(ph.image.split('/').pop())) say(live, `${label}: the file name looks like a street address. Rename the file and upload it again`);
+      if (looksLikeCameraName(ph.image)) say(live, `${label}: still has its camera file name (${ph.image.split('/').pop()}). Remove it and add it again so the dashboard renames it`);
       if (!fileExists(ph.image)) { say(live, `${label}: ${ph.image} is missing`); continue; }
       const size = imageInfo(ph.image);
       if (size && size.width < 1200 && size.height < 1200) say(live, `${label}: the image is only ${size.width}×${size.height} px. Upload one at least 1,600 px on the long side`);
@@ -52,6 +57,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
     if (m.project && !projectSlugs.has(m.project)) say(live, `“${m.title || m.id}”: its project “${m.project}” does not exist`);
     if (m.type === 'image' && m.src && m.src.startsWith('/images/') && !fileExists(m.src)) say(live, `Photo “${m.title || m.id}”: ${m.src} is missing`);
     if (looksLikeAddress(m.location)) say(live, `“${m.title || m.id}”: “Town or area” looks like a street address`);
+    if (m.type === 'image' && looksLikeCameraName(m.src)) say(live, `Photo “${m.title || m.id}”: still has its camera file name (${String(m.src).split('/').pop()}). Replace the photo so the dashboard renames it`);
   }
 
   if (pageText) {
@@ -80,6 +86,37 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
     }
   }
   return { errors, warnings };
+}
+
+/**
+ * Projects created in the dashboard (no fixed path) that are switched to Published but fail a check are held back as
+ * drafts, with the reasons kept for the project page and the dashboard status (/admin/status.json), instead of
+ * stopping the whole site from updating. The original projects (fixed path) are never held: their errors still fail
+ * the build. Returns [{ slug, title, reasons }]; mutates the held projects and their own photos.
+ */
+export function holdDashboardProjects(work, errors) {
+  const held = [];
+  for (const p of work.projects) {
+    if (p.path || p.published === false) continue;
+    const tag = `Project “${p.title || p.slug}”`;
+    const mine = errors.filter((e) => e === tag || e.startsWith(tag + ':') || e.startsWith(tag + ','));
+    if (!mine.length) continue;
+    p.published = false;
+    p._held = mine.map((e) => e.slice(tag.length).replace(/^[,:]\s*/, ''));
+    for (const m of work.media) if (m.project === p.slug && m.fromProject) m.published = false;
+    held.push({ slug: p.slug, title: p.title || p.slug, reasons: p._held });
+  }
+  return held;
+}
+
+/** Review-only test projects (reviewOnly: true) never exist in a production build, whatever Published says. */
+export function applyReviewOnly(work, reviewMode) {
+  const list = work.projects.filter((p) => p.reviewOnly === true);
+  if (!reviewMode) for (const p of list) {
+    p.published = false;
+    for (const m of work.media) if (m.project === p.slug) m.published = false;
+  }
+  return list.map((p) => ({ slug: p.slug, title: p.title || p.slug }));
 }
 
 /** True when every “…”-separated piece of the excerpt appears in the quote, in order (a verbatim shortening). */

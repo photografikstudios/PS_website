@@ -189,9 +189,11 @@
       var self = this; var arr = toArr(this.props.value); var id = this.props.forID;
       return h('div', { className: 'pgk-gallery', id: id },
         h('div', { className: 'pgk-gallery__bar' },
-          h('button', { type: 'button', className: 'pgk-btn', onClick: this.pick, disabled: this.state.busy }, this.state.busy ? 'Adding photos…' : arr.length ? 'Add more photos' : 'Add photos'),
+          h('button', { type: 'button', className: 'pgk-btn', onClick: this.pick, disabled: this.state.busy }, this.state.busy ? 'Adding photos…' : arr.length ? 'Upload more photos' : 'Upload photos'),
+          h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: true }); } }, 'Choose from site photos'),
           h('span', { className: 'pgk-gallery__count' }, arr.length ? arr.length + (arr.length === 1 ? ' photo' : ' photos') + '. The first one leads.' : 'Choose several at once: hold Shift or Command.'),
           h('input', { type: 'file', multiple: true, accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose photos' })),
+        this.state.picking ? h(Picker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { self.props.onChange(toArr(self.props.value).concat(list.map(function (x) { return { image: x.src, alt: x.alt || '', focal: 'center', orientation: 'auto' }; }))); self.setState({ picking: false }); } }) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
         h('ol', { className: 'pgk-gallery__list' }, arr.map(function (ph, i) {
           var sz = self.state.sizes[ph.image];
@@ -225,12 +227,199 @@
         h(Thumb, { src: thumbFor(v, this.props.getAsset, this.props.field), path: v }),
         h('div', { className: 'pgk-gallery__bar' },
           h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.input.click(); }, disabled: this.state.busy }, this.state.busy ? 'Adding…' : v ? 'Replace photo' : 'Choose photo'),
+          h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: true }); } }, 'Choose from site photos'),
           v ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.props.onChange(''); } }, 'Remove') : null,
           h('input', { type: 'file', accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose a photo' })),
+        this.state.picking ? h(Picker, { multiple: false, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { if (list[0]) self.props.onChange(list[0].src); self.setState({ picking: false }); } }) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null);
     },
   });
   CMS.registerWidget('pgk-photo', PhotoControl);
+
+  // ---------- Never save one entry into another's file (found in the Oct 3 2026 walk) ----------
+  // Going straight from one open entry to another (browser back/forward, a typed or bookmarked address) without
+  // passing through a list left Decap 3.16 holding the first entry: Save then wrote the second form into the first
+  // entry's file (reproduced: a Photos record overwritten by a project). Any direct entry-to-entry jump now reloads the
+  // dashboard so the new entry opens clean. Decap keeps a local backup of unsaved changes and offers to restore them.
+  var entryKey = function (h) { var m = String(h || '').match(/^#\/collections\/([^/?]+)\/(entries\/[^/?]+|new)/); return m ? m[1] + '/' + m[2] : null; };
+  var openEntry = entryKey(location.hash);
+  window.addEventListener('hashchange', function () {
+    var k = entryKey(location.hash);
+    // Only between two saved entries; a new entry becoming saved (new → entries/<name>) is Decap's own step.
+    if (k && openEntry && k !== openEntry && /\/entries\//.test(k) && /\/entries\//.test(openEntry)) { location.reload(); return; }
+    openEntry = k;
+  });
+
+  // ---------- Thumbnails on the collection lists (James, Oct 2 2026) ----------
+  // Decap's list cards are text only. Each card links to its entry, so we add the photo the site itself serves for
+  // that entry (built into config.js as PHOTOGRAFIK_THUMBS), or the local preview of a photo picked in this session.
+  var siteThumbs = window.PHOTOGRAFIK_THUMBS || { photos: {}, films: {}, projects: {}, pick: [] };
+  function cardThumb(col, slug) {
+    var m = siteThumbs[col] || {};
+    return m[slug] || null;
+  }
+  function decorateCards() {
+    var links = document.querySelectorAll('a[href*="/collections/"][href*="/entries/"]');
+    for (var i = 0; i < links.length; i++) {
+      var a = links[i];
+      var mm = a.getAttribute('href').match(/collections\/([^/]+)\/entries\/([^/?#]+)/);
+      if (!mm || !siteThumbs[mm[1]]) continue;
+      var want = cardThumb(mm[1], decodeURIComponent(mm[2]));
+      var have = a.querySelector('img.pgk-card-thumb, .pgk-card-thumb--none');
+      if (have && have.getAttribute('data-for') === mm[2]) continue;
+      if (have) have.remove();
+      var el;
+      if (want) { el = document.createElement('img'); el.src = want; el.alt = ''; el.loading = 'lazy'; el.className = 'pgk-card-thumb'; el.onerror = function () { this.className = 'pgk-card-thumb pgk-card-thumb--broken'; this.removeAttribute('src'); }; }
+      else { el = document.createElement('div'); el.className = 'pgk-card-thumb--none'; el.textContent = mm[1] === 'films' ? 'No still image for this film yet' : 'New: preview after the next site update'; }
+      el.setAttribute('data-for', mm[2]);
+      var host = a.firstElementChild || a; host.insertBefore(el, host.firstChild);
+    }
+  }
+  var cardTimer = null;
+  new MutationObserver(function () { clearTimeout(cardTimer); cardTimer = setTimeout(decorateCards, 60); }).observe(document.documentElement, { childList: true, subtree: true });
+
+  // ---------- Picker: choose photos that are already on the site ----------
+  // For adding existing site photos to a project or article without uploading them again. Multi-select in galleries.
+  var Picker = createClass({
+    getInitialState: function () { return { q: '', chosen: {} }; },
+    componentDidMount: function () { var self = this; this.onKey = function (e) { if (e.key === 'Escape') self.props.onClose(); }; document.addEventListener('keydown', this.onKey); if (this.search) this.search.focus(); },
+    componentWillUnmount: function () { document.removeEventListener('keydown', this.onKey); },
+    toggle: function (src) { var c = Object.assign({}, this.state.chosen); if (c[src]) delete c[src]; else { if (!this.props.multiple) c = {}; c[src] = true; } this.setState({ chosen: c }); },
+    render: function () {
+      var self = this; var q = this.state.q.toLowerCase();
+      var items = siteThumbs.pick.filter(function (x) { return !q || (x.label + ' ' + x.alt + ' ' + x.cat).toLowerCase().indexOf(q) >= 0; });
+      var n = Object.keys(this.state.chosen).length;
+      return h('div', { className: 'pgk-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choose photos already on the site' },
+        h('div', { className: 'pgk-modal__box' },
+          h('div', { className: 'pgk-modal__head' },
+            h('input', { type: 'search', placeholder: 'Search the site’s photos', value: this.state.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search photos' }),
+            h('button', { type: 'button', className: 'pgk-btn', disabled: !n, onClick: function () { self.props.onPick(siteThumbs.pick.filter(function (x) { return self.state.chosen[x.src]; })); } }, n ? 'Add ' + n + (n === 1 ? ' photo' : ' photos') : 'Choose photos'),
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.props.onClose }, 'Cancel')),
+          h('ul', { className: 'pgk-modal__grid' }, items.map(function (x) {
+            var on = !!self.state.chosen[x.src];
+            return h('li', { key: x.src },
+              h('button', { type: 'button', className: 'pgk-pick' + (on ? ' is-on' : ''), 'aria-pressed': on, onClick: function () { self.toggle(x.src); }, title: x.label },
+                h('img', { src: x.thumb, alt: x.alt || x.label, loading: 'lazy' }), h('span', {}, x.label)));
+          }))));
+    },
+  });
+
+  // ---------- Published switch that says what the site actually did (Oct 3 2026) ----------
+  // The build writes /admin/status.json: which dashboard projects it held back as drafts (and why) and which are
+  // review-only tests. The switch shows that next to itself, a bar at the bottom of every dashboard page lists held
+  // items, and Save is refused while Published is on and something the site needs is missing, so a failed publish can
+  // never look like a successful one.
+  var siteStatus = { data: null, at: 0, subs: [] };
+  var CAMERA = /(?:^|[^a-z0-9])(?:ps|dji|img|dsc[fn]?|_?mg|mvi|gopr|pxl|gh0?\d)[_-]?\d{4,}/i;
+  var cameraName = function (path) { return !!path && CAMERA.test('/' + String(path).split('/').pop().replace(/\.[a-z0-9]+$/i, '')); };
+  var shortSha = function (s) { return s ? String(s).slice(0, 7) : 'local'; };
+  var when = function (iso) { try { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return iso; } };
+  function loadStatus() {
+    return fetch('/admin/status.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d) { siteStatus.data = d; siteStatus.at = Date.now(); siteStatus.subs.forEach(function (f) { f(); }); renderBar(); } })
+      .catch(function () { /* the status line simply stays unknown */ });
+  }
+  var bar = document.createElement('div'); bar.className = 'pgk-statusbar'; bar.setAttribute('role', 'status'); bar.hidden = true;
+  document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(bar); });
+  if (document.body) document.body.appendChild(bar);
+  function renderBar() {
+    var d = siteStatus.data; if (!d) return;
+    var parts = [];
+    (d.held || []).forEach(function (x) { parts.push('<p class="pgk-statusbar__held"><strong>Not on the site: ' + esc(x.title) + '.</strong> Published is on, but the last build held it back as a draft because: ' + esc(x.reasons.join('; ')) + '. Open the project, fix this and Save.</p>'); });
+    (d.reviewOnly || []).forEach(function (x) { parts.push('<p><strong>' + esc(x.title) + '</strong> is a review-only test project: it shows on the review site with a note and is never built for the live site.</p>'); });
+    bar.innerHTML = parts.join('') + (parts.length ? '<p class="pgk-statusbar__meta">From the review build ' + esc(shortSha(d.commit)) + ', ' + esc(when(d.builtAt)) + '. A save takes about two minutes to appear.</p>' : '');
+    bar.hidden = !parts.length;
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  loadStatus(); setInterval(loadStatus, 60000);
+
+  // What a project needs before Published can be saved as on (the same rules the build applies to dashboard projects).
+  function publishProblems(data) {
+    var g = function (k) { var v = data && data.get ? data.get(k) : null; return v && v.toJS ? v.toJS() : v; };
+    var out = [];
+    // The original projects (fixed path) keep their photos in the Photos section and some deliberately wait for client
+    // wording, exactly as the build allows; only projects made in the dashboard need every text and a picture here.
+    var original = !!g('path');
+    if (!g('title')) out.push('add a project name');
+    if (!g('category')) out.push('choose the service');
+    if (!original && !g('summary')) out.push('add a short description');
+    if (!original && !g('story')) out.push('add the story / goal paragraph');
+    var photos = (g('photos') || []).filter(function (x) { return x && x.image; });
+    var hero = g('hero');
+    if (!original && !hero && !photos.length) out.push('add a main image or at least one photo');
+    if (hero && !g('heroAlt')) out.push('describe the main image (alt text)');
+    if (cameraName(hero)) out.push('choose the main image again so it is renamed');
+    photos.forEach(function (x, i) {
+      if (!x.alt) out.push('describe photo ' + (i + 1));
+      if (cameraName(x.image)) out.push('add photo ' + (i + 1) + ' again so it is renamed');
+    });
+    return out;
+  }
+  var PublishControl = createClass({
+    componentDidMount: function () { var self = this; this.sub = function () { self.forceUpdate(); }; siteStatus.subs.push(this.sub); },
+    componentWillUnmount: function () { var self = this; siteStatus.subs = siteStatus.subs.filter(function (f) { return f !== self.sub; }); },
+    isValid: function () {
+      if (this.props.value !== true || !this.props.entry || (this.props.collection && this.props.collection.get('name')) !== 'projects') return true;
+      var probs = publishProblems(this.props.entry.get('data'));
+      return probs.length ? { error: { type: 'custom', message: 'Published is on, but the site would hold this project back. Before saving: ' + probs.join('; ') + '. Or switch Published off to save it as a draft.' } } : true;
+    },
+    render: function () {
+      var self = this; var on = this.props.value === true; var d = siteStatus.data;
+      var slug = this.props.entry && this.props.entry.get('slug');
+      var held = d && slug ? (d.held || []).filter(function (x) { return x.slug === slug; })[0] : null;
+      var test = d && slug ? (d.reviewOnly || []).some(function (x) { return x.slug === slug; }) : false;
+      var line = null;
+      if (held) line = h('p', { className: 'pgk-pub__state pgk-pub__state--held', role: 'alert' }, h('strong', {}, 'Not on the site yet. '), 'The last build (' + shortSha(d.commit) + ', ' + when(d.builtAt) + ') held this project back as a draft because: ' + held.reasons.join('; ') + '. Fix this and Save; the switch alone does not make it public.');
+      else if (test) line = h('p', { className: 'pgk-pub__state pgk-pub__state--test' }, h('strong', {}, 'Review-only test project. '), 'Shown on the review site with a note; never built for the live site.');
+      else if (on && slug && d) line = h('p', { className: 'pgk-pub__state' }, 'Shown on the review site as of build ' + shortSha(d.commit) + ', ' + when(d.builtAt) + '. Changes you save appear in about two minutes.');
+      else if (on && !slug) line = h('p', { className: 'pgk-pub__state' }, 'It goes on the review site about two minutes after you save. This line confirms it once the site has updated.');
+      return h('div', { className: 'pgk-pub', id: this.props.forID },
+        h('label', { className: 'pgk-switch' },
+          h('input', { type: 'checkbox', role: 'switch', checked: on, 'aria-checked': on, onChange: function (e) { self.props.onChange(e.target.checked); } }),
+          h('span', {}, on ? 'Published' : 'Draft (not public)')),
+        line);
+    },
+  });
+  CMS.registerWidget('pgk-publish', PublishControl);
+
+  // Widget styles (thumbnails, rows, buttons, status).
+  var widgetCss = document.createElement('style');
+  widgetCss.textContent = [
+    '.pgk-thumb { display: block; width: 160px; height: 110px; object-fit: cover; border-radius: 6px; background: #eef0f3; }',
+    '.pgk-thumb--empty, .pgk-thumb--missing { display: flex; align-items: center; justify-content: center; padding: 8px; font-size: 12px; line-height: 1.3; color: #5b6472; text-align: center; box-sizing: border-box; }',
+    '.pgk-gallery__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }',
+    '.pgk-gallery__count { font-size: 13px; color: #5b6472; }',
+    '.pgk-btn { font: inherit; font-size: 14px; padding: 8px 14px; min-height: 40px; border-radius: 6px; border: 1px solid #1f2937; background: #1f2937; color: #fff; cursor: pointer; }',
+    '.pgk-btn--quiet { background: #fff; color: #1f2937; }', '.pgk-btn[disabled] { opacity: .6; cursor: wait; }',
+    '.pgk-gallery__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }',
+    '.pgk-row { display: grid; grid-template-columns: 160px 1fr auto; gap: 14px; align-items: start; padding: 10px; border: 1px solid #dfe3e8; border-radius: 8px; background: #fff; }',
+    '.pgk-row__fields label { display: block; margin-bottom: 8px; } .pgk-row__fields label span { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; }',
+    '.pgk-row__fields input, .pgk-row__fields select { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 7px 9px; border: 1px solid #c9ced6; border-radius: 6px; }',
+    '.pgk-row__file { margin: 0; font-size: 12px; color: #5b6472; word-break: break-all; }',
+    '.pgk-row__tools { display: flex; flex-direction: column; gap: 6px; }',
+    '.pgk-icon { width: 40px; height: 40px; border-radius: 6px; border: 1px solid #c9ced6; background: #fff; font-size: 16px; cursor: pointer; }',
+    '.pgk-icon[disabled] { opacity: .35; cursor: default; } .pgk-icon--danger { color: #b42318; }',
+    '.pgk-msg { margin: 8px 0; padding: 8px 12px 8px 28px; border-radius: 6px; background: #fef3f2; color: #912018; font-size: 13px; }',
+    '.pgk-pub { display: grid; gap: 8px; } .pgk-switch { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; cursor: pointer; }',
+    '.pgk-switch input { width: 20px; height: 20px; accent-color: #1f2937; }',
+    '.pgk-pub__state { margin: 0; padding: 10px 12px; border-radius: 6px; background: #f1f5f9; font-size: 13px; line-height: 1.45; color: #1f2937; }',
+    '.pgk-pub__state--held { background: #fef3f2; color: #912018; border: 1px solid #fecdca; }',
+    '.pgk-pub__state--test { background: #fffaeb; color: #7a4a00; border: 1px solid #fedf89; }',
+    '.pgk-statusbar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 400; max-width: 760px; margin: 0 auto; padding: 10px 14px; border-radius: 8px; background: #fff; border: 1px solid #fecdca; box-shadow: 0 6px 24px rgba(0,0,0,.12); font-size: 13px; line-height: 1.45; color: #1f2937; }',
+    '.pgk-statusbar p { margin: 0 0 6px; } .pgk-statusbar__held { color: #912018; } .pgk-statusbar__meta { color: #5b6472; margin: 0 !important; }',
+    '.pgk-card-thumb { display: block; width: 100%; height: 150px; object-fit: cover; border-radius: 4px 4px 0 0; margin: -16px 0 12px; background: #eef0f3; }',
+    '.pgk-card-thumb--broken, .pgk-card-thumb--none { display: flex; align-items: center; justify-content: center; height: 150px; margin: -16px 0 12px; background: #eef0f3; color: #5b6472; font-size: 12px; }',
+    '.pgk-card-thumb--broken::after { content: "Preview not available yet"; }',
+    '.pgk-modal { position: fixed; inset: 0; z-index: 500; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }',
+    '.pgk-modal__box { background: #fff; border-radius: 10px; width: min(1100px, 100%); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }',
+    '.pgk-modal__head { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px; border-bottom: 1px solid #dfe3e8; } .pgk-modal__head input { flex: 1 1 240px; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',
+    '.pgk-modal__grid { list-style: none; margin: 0; padding: 14px; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }',
+    '.pgk-pick { display: block; width: 100%; padding: 0; border: 2px solid transparent; border-radius: 6px; background: #fff; cursor: pointer; text-align: left; font: inherit; }',
+    '.pgk-pick img { display: block; width: 100%; height: 100px; object-fit: cover; border-radius: 4px; } .pgk-pick span { display: block; font-size: 11px; line-height: 1.3; padding: 4px 2px; color: #374151; }',
+    '.pgk-pick.is-on { border-color: #1f2937; box-shadow: 0 0 0 2px #1f2937; }',
+    '@media (max-width: 640px) { .pgk-row { grid-template-columns: 96px 1fr; } .pgk-thumb { width: 96px; height: 72px; } .pgk-row__tools { grid-column: 1 / -1; flex-direction: row; } }',
+  ].join('\n');
+  document.head.appendChild(widgetCss);
 
   // Phones: Decap's editor has an 800 px minimum width, so a phone zooms the whole page out. Below 800 px the
   // side-by-side preview is hidden (the Vercel preview link is the real check) and the form takes the full width.

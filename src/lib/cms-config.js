@@ -48,7 +48,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   // ---------- Projects ----------
   const projectFields = [
     { name: 'title', label: 'Project name', widget: 'string', pattern: max(80, 'name'), hint: 'Usually the client, builder or designer, e.g. “Yankee Barn Builders”. No street addresses.' },
-    { name: 'published', label: 'Published', widget: 'boolean', default: false, required: false, hint: hint.published },
+    { name: 'published', label: 'Published', widget: 'pgk-publish', default: false, required: false, hint: hint.published },
     { name: 'category', label: 'Service', widget: 'select', options: workCats, hint: 'Which service page and gallery the project belongs to. Do not change it after publishing (the web address depends on it).' },
     { name: 'shortTitle', label: 'Short name for cards', widget: 'string', required: false, pattern: max(40, 'short name') },
     { name: 'client', label: 'Client name shown', widget: 'string', required: false, hint: 'Leave empty if the client has not agreed to be named.' },
@@ -72,6 +72,8 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     // a stored value), so historic pending items stay pending and still cannot be published by accident.
     { name: 'rights', label: 'rights', widget: 'hidden', default: 'approved' },
     { name: 'rightsNote', label: 'rightsNote', widget: 'hidden', required: false },
+    // Marks a project used only to try out the dashboard (James's “Test”): review builds show it with a note, production never builds it.
+    { name: 'reviewOnly', label: 'reviewOnly', widget: 'hidden', required: false },
     { name: 'sortPriority', label: 'Show first (0 = normal, higher = earlier)', widget: 'number', value_type: 'int', required: false, default: 0, hint: 'Raises the project’s new photos in the Home and service galleries.' },
     { name: 'order', label: 'Position in project lists', widget: 'number', value_type: 'int', required: false, hint: 'Lower numbers come first (the original projects use 10, 20, 30…).' },
   ];

@@ -37,10 +37,11 @@ The checks: a description (alt text) on every photo, no street address in names 
 1. **Projects**, then **New Project**.
 2. Fill in **Project name**, choose the **Service** (for example Architecture & Design), and add the **Town or area** (never a street address).
 3. Add a **Short description** (one sentence for cards) and the **Story / goal** paragraph.
-4. Under **Photos**, choose **Add photos** and pick several at once (hold Shift or Command). A thumbnail of each appears straight away. Write a **Description** for each one, for example "Kitchen with a marble island and brass pendant lights". Use the arrows to change the order and the cross to take one out. Everything is saved together when you press **Save**.
+4. Under **Photos**, choose **Upload photos** and pick several at once (hold Shift or Command). A thumbnail of each appears straight away. Write a **Description** for each one, for example "Kitchen with a marble island and brass pendant lights". Use the arrows to change the order and the cross to take one out. Everything is saved together when you press **Save**. To reuse a picture that is already on the site, choose **Choose from site photos**, tick as many as you like and press **Add**.
 5. Photos you add yourself count as approved to show. (There is no separate rights question any more; Published is still the switch that makes anything public.)
-6. Leave **Published** off and choose **Save**, then **Save now**.
-7. Check the preview. The project has its own page with a Draft note. It does not appear on the live site, in galleries or in the sitemap.
+6. Leave **Published** off and choose **Save**, then **Save now**. If you switch Published on while something the site needs is missing (a description, a photo's alt text), the dashboard refuses the save and lists what to fix.
+7. Under the Published switch the dashboard says what the site actually did with the project after its last update: shown, or held back as a draft and why. A bar at the bottom of the dashboard lists anything held back.
+8. Check the preview. The project has its own page with a Draft note. It does not appear on the live site, in galleries or in the sitemap.
 
 Tips for photos: a web JPG or WebP, 2,000 to 2,400 px on the long side, under 5 MB. The dashboard names the files for you after the project (so camera names like PS_00314 never appear on the site) and the site makes the smaller sizes automatically. iPhone HEIC photos need exporting as JPG first.
 

@@ -6,7 +6,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadWork, expandProjectPhotos, slugify } from '../src/lib/work-load.js';
-import { checkContent, looksLikeAddress, isVerbatimExcerpt } from '../src/lib/content-check.js';
+import { checkContent, looksLikeAddress, looksLikeCameraName, isVerbatimExcerpt, holdDashboardProjects, applyReviewOnly } from '../src/lib/content-check.js';
+import { createHash } from 'node:crypto';
 import { cmsConfig } from '../src/lib/cms-config.js';
 import { imageSize } from '../src/lib/image-size.js';
 import { loadFieldNotes, makeFileExists } from '../src/lib/field-notes-load.js';
@@ -166,4 +167,66 @@ test('sign-in: trims pasted keys, asks GitHub only for public_repo, and keeps th
   const none = run({ CMS_GITHUB_CLIENT_ID: undefined, CMS_GITHUB_CLIENT_SECRET: undefined });
   assert.equal(none.statusCode, 503);
   assert.match(none.body, /not set up yet/);
+});
+
+// Codex, Session 56 review: the saved Test project must pass the filename guard without losing James's photos, stay
+// marked review-only, and a held project must say why in the dashboard, while the originals stay strict.
+test('camera file names: caught on dashboard records, none on the original portfolio', () => {
+  for (const n of ['/images/projects/5-ps_00519.jpg', 'PS_00314.jpg', '/x/DJI_0042.JPG', 'IMG_1234.jpeg', 'DSC01234.jpg', '_MG_5678.jpg', 'PXL_20260101_1234.jpg']) assert.equal(looksLikeCameraName(n), true, n);
+  for (const n of ['/images/projects/test-fc560c9d51.jpg', '/v/re-hamptons-beachfront.webp', 'upload-check-52e73f4795.png', 'call_plk7npqwfjep2upn6i7x37lu.png']) assert.equal(looksLikeCameraName(n), false, n);
+  const { errors, warnings } = checkContent({ work: structuredClone(work), fileExists, pageText, testimonials, faqs });
+  assert.deepEqual([...errors, ...warnings].filter((e) => /camera file name/.test(e)), []);
+});
+
+test('Test project: clean file names, same photos byte for byte, originals kept, review-only', async () => {
+  const t = work.projects.find((p) => p.slug === 'test');
+  assert.equal(t.reviewOnly, true);
+  assert.equal(t.published, true, 'James’s Published switch is left as he set it');
+  const sha = async (p) => createHash('sha256').update(await readFile(join(root, 'static', p))).digest('hex');
+  assert.equal(t.hero, '/images/projects/test-fc560c9d51.jpg');
+  assert.equal(t.photos.length, 1);
+  assert.equal(t.photos[0].image, '/images/projects/test-cec9ddbd88.jpg');
+  assert.equal(t.photos[0].alt, 'test test');
+  assert.equal(await sha(t.hero), await sha('/images/projects/5-ps_00519.jpg'));
+  assert.equal(await sha(t.photos[0].image), await sha('/images/projects/4-ps_00374.jpg'));
+  for (const f of ['1-ps_00314.jpg', '2-ps_00319.jpg', '3-ps_00339.jpg', '4-ps_00374.jpg', '5-ps_00519.jpg', 'call_plk7npqwfjep2upn6i7x37lu.png']) assert.ok(fileExists('/images/projects/' + f), `original upload kept: ${f}`);
+  const { errors } = checkContent({ work: structuredClone(work), fileExists, pageText, testimonials, faqs });
+  assert.deepEqual(errors.filter((e) => e.includes('“Test”')), []);
+});
+
+test('held projects: a dashboard project with a problem is held with its reasons; an original is never held', () => {
+  const w = structuredClone(work);
+  const t = w.projects.find((p) => p.slug === 'test');
+  t.photos[0].alt = ''; t.hero = '/images/projects/5-ps_00519.jpg';
+  const orig = w.projects.find((p) => p.path);
+  orig.heroAlt = ''; orig.hero = orig.hero || '/images/projects/test-fc560c9d51.jpg';
+  const first = checkContent({ work: w, fileExists, pageText, testimonials, faqs });
+  const held = holdDashboardProjects(w, first.errors);
+  assert.deepEqual(held.map((x) => x.slug), ['test']);
+  assert.ok(held[0].reasons.some((r) => /photo 1: describe the photo/.test(r)), held[0].reasons.join(' | '));
+  assert.ok(held[0].reasons.some((r) => /camera file name/.test(r)), held[0].reasons.join(' | '));
+  assert.equal(t.published, false);
+  assert.ok(w.media.filter((m) => m.project === 'test' && m.fromProject).every((m) => m.published === false));
+  const again = checkContent({ work: w, fileExists, pageText, testimonials, faqs });
+  assert.ok(again.errors.some((e) => e.startsWith(`Project “${orig.title}”`)), 'the original project still fails the build');
+  assert.equal(orig.published, true);
+});
+
+test('review-only: production never builds the Test project; review keeps it', () => {
+  const r = structuredClone(work);
+  assert.deepEqual(applyReviewOnly(r, true), [{ slug: 'test', title: 'Test' }]);
+  assert.equal(r.projects.find((p) => p.slug === 'test').published, true);
+  const prod = structuredClone(work);
+  applyReviewOnly(prod, false);
+  assert.equal(prod.projects.find((p) => p.slug === 'test').published, false);
+  assert.ok(prod.media.filter((m) => m.project === 'test').every((m) => m.published === false));
+});
+
+test('dashboard config: project Published uses the status switch, drafts by default; reviewOnly kept hidden', () => {
+  const conf = cmsConfig({ site, fieldNotes, work, branch: 'redesign/2027-preview', repo: 'photografikstudios/PS_website', testimonials }).config;
+  const f = conf.collections.find((c) => c.name === 'projects').fields;
+  const pub = f.find((x) => x.name === 'published');
+  assert.equal(pub.widget, 'pgk-publish'); assert.equal(pub.default, false);
+  assert.equal(f.find((x) => x.name === 'reviewOnly').widget, 'hidden');
+  assert.equal(f.filter((x) => x.name === 'reviewOnly').length, 1);
 });

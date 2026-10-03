@@ -14,7 +14,7 @@ import { buildPages } from './pages.js';
 import { cmsConfig } from './lib/cms-config.js';
 import { validateLegal } from './lib/legal-core.js';
 import { loadWork, staticFile } from './lib/work-load.js';
-import { checkContent } from './lib/content-check.js';
+import { checkContent, holdDashboardProjects, applyReviewOnly } from './lib/content-check.js';
 import { imageSize } from './lib/image-size.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -58,25 +58,16 @@ if (fnErrors.length) { console.error('Field Notes errors:\n - ' + fnErrors.join(
 // Dashboard content (projects, photos and films, page text, testimonials, FAQs): published records are strict.
 const fileExists = makeFileExists(root, new Set(Object.keys(mediaAssets.files || {})));
 const imageInfo = (p) => { const f = staticFile(root, p); return f && existsSync(f) ? imageSize(readFileSync(f)) : null; };
+const reviewOnly = applyReviewOnly(work, reviewMode);
 let contentCheck = checkContent({ work, fileExists, imageInfo, pageText, testimonials, faqs });
-// A project James publishes from the dashboard with something missing is held back as a draft (with the reason shown
-// on its review page) instead of stopping the whole site from updating (Oct 3 2026: his first save never deployed and
-// the dashboard could not tell him why). The original projects and everything else stay strict.
-{
-  const held = [];
-  for (const p of work.projects) {
-    if (p.path || p.published === false) continue;
-    const tag = `Project “${p.title || p.slug}”`;
-    const mine = contentCheck.errors.filter((e) => e.startsWith(tag));
-    if (!mine.length) continue;
-    p.published = false; p._held = mine.map((e) => e.slice(tag.length).replace(/^[,:]\s*/, ''));
-    for (const m of work.media) if (m.project === p.slug && m.fromProject) m.published = false;
-    held.push(`${tag}: ${p._held.join('; ')}`);
-  }
-  if (held.length) {
-    console.warn('Held back as drafts until fixed in /admin:\n - ' + held.join('\n - '));
-    contentCheck = checkContent({ work, fileExists, imageInfo, pageText, testimonials, faqs });
-  }
+// A project James publishes from the dashboard with something missing is held back as a draft instead of stopping
+// the whole site from updating (Oct 3 2026: his first save never deployed and the dashboard could not tell him why).
+// The reasons go on its review page and into /admin/status.json, which the dashboard shows on the project itself.
+// The original projects and everything else stay strict.
+const held = holdDashboardProjects(work, contentCheck.errors);
+if (held.length) {
+  console.warn('Held back as drafts until fixed in /admin:\n - ' + held.map((h) => `${h.title}: ${h.reasons.join('; ')}`).join('\n - '));
+  contentCheck = checkContent({ work, fileExists, imageInfo, pageText, testimonials, faqs });
 }
 for (const w of contentCheck.warnings) console.warn(`Content note: ${w}`);
 if (contentCheck.errors.length) { console.error('Content errors (fix them in /admin; the live site keeps the previous version until then):\n - ' + contentCheck.errors.join('\n - ')); process.exit(1); }
@@ -188,7 +179,37 @@ for (const f of await readdir(join(out, 'assets'))) {
   const adminHtml = (await readFile(join(root, 'src/admin/index.html'), 'utf8'))
     .replaceAll('__DECAP_VERSION__', decap.version).replaceAll('__DECAP_SRI__', decap.integrity).replaceAll('__VERSION__', version);
   await writeFile(join(out, 'admin/index.html'), adminHtml);
-  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
+  // Thumbnails for the dashboard's collection lists and photo picker (James, Oct 2 2026: every photo on the site must
+  // show a preview in the back end). Deployed site URLs, small -sm.webp versions where they exist.
+  const assetSet = new Set(Object.keys(mediaAssets.files || {}));
+  const small = (u) => { if (!u) return null; const sm = String(u).replace(/\.webp$/, '-sm.webp'); return sm !== u && assetSet.has(sm) ? sm : u; };
+  const thumbs = { photos: {}, films: {}, projects: {}, pick: [] };
+  // A film's still: its poster, else the .webp still the media step keeps beside a /v/ film.
+  const still = (m) => m.poster || (m.src && /\.mp4$/.test(m.src) && assetSet.has(m.src.replace(/\.mp4$/, '.webp')) ? m.src.replace(/\.mp4$/, '.webp') : null);
+  // Every record the dashboard lists, including ones the site holds back (withheld rights, drafts), gets its preview.
+  const everything = await loadWork(root);
+  // /v/ files of records still waiting on rights are not published by the media step, so they get no thumbnail URL.
+  const served = (m, u) => u && (m.rights === 'approved' || !String(u).startsWith('/v/')) ? u : null;
+  for (const m of everything.media) {
+    if (m.fromProject) continue;
+    if (m.type === 'image' && m.src) { const u = served(m, small(m.src)); if (u) thumbs.photos[m.id] = u; }
+    else { const u = served(m, still(m) && small(still(m))); if (u) thumbs.films[m.id] = u; }
+  }
+  for (const p of everything.projects) {
+    const img = everything.media.find((m) => m.project === p.slug && m.type === 'image' && m.src);
+    const film = everything.media.find((m) => m.project === p.slug && m.type !== 'image' && still(m));
+    const u = p.hero || (p.photos || []).find((x) => x && x.image)?.image || img?.src || (film && still(film));
+    if (u) thumbs.projects[p.slug] = small(u);
+  }
+  const testOnly = new Set(work.projects.filter((p) => p.reviewOnly === true).map((p) => p.slug));
+  // Picker: every image already on the site (library photos and dashboard project photos), with its description.
+  const seen = new Set();
+  for (const m of work.media) {
+    if (m.type !== 'image' || !m.src || seen.has(m.src) || m.rights !== 'approved' || testOnly.has(m.project)) continue;
+    seen.add(m.src);
+    thumbs.pick.push({ src: m.src, thumb: small(m.src), alt: m.alt || '', label: m.title || m.id, cat: m.category || '' });
+  }
+  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
   await cp(join(root, 'src/admin/preview.css'), join(out, 'admin/preview.css'));
 }
@@ -201,10 +222,16 @@ const publishedNote = (r) => fieldNotes.articles.some((a) => `/field-notes/${a.s
 const serviceRoutes = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
 const projectRoutes = new Map(work.projects.map((p) => [p.path || `${serviceRoutes[p.category]}/${p.slug}`, p]));
 // Draft projects (Published off in /admin) never enter the sitemap, even in review builds.
-const sitemapRoutes = routes.filter((r) => (!projectRoutes.has(r) || (isApproved(projectRoutes.get(r)) && projectRoutes.get(r).published !== false))
+const sitemapRoutes = routes.filter((r) => (!projectRoutes.has(r) || (isApproved(projectRoutes.get(r)) && projectRoutes.get(r).published !== false && projectRoutes.get(r).reviewOnly !== true))
   && (!r.startsWith('/field-notes/') || publishedNote(r))
   && (r !== '/field-notes' || fieldNotes.articles.some((a) => a.published === true))
   && !r.startsWith('/admin'));
 await writeFile(join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapRoutes.map((r) => `  <url><loc>${site.canonicalOrigin}${r === '/' ? '/' : r}</loc></url>`).join('\n')}\n</urlset>\n`);
 
+// What this build did with dashboard projects, read by /admin so a held project says why on its own form.
+await writeFile(join(out, 'admin', 'status.json'), JSON.stringify({
+  commit: process.env.VERCEL_GIT_COMMIT_SHA || null, branch: process.env.VERCEL_GIT_COMMIT_REF || null,
+  builtAt: new Date().toISOString(), mode: reviewMode ? 'review' : 'production',
+  held: held.map((h) => ({ collection: 'projects', ...h })), reviewOnly,
+}, null, 1) + '\n');
 console.log(`Built ${routes.length + 1} pages in ${reviewMode ? 'REVIEW' : 'PRODUCTION'} mode${onVercel ? ' (Vercel image optimization on)' : ''}.`);
