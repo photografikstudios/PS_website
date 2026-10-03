@@ -21,17 +21,20 @@ const faqs = await read('content/faqs.json');
 const { fieldNotes } = await loadFieldNotes(root);
 const fileExists = makeFileExists(root, new Set(Object.keys((await read('content/media-assets.json')).files)));
 
-test('portfolio: 13 projects and 128 media records, one file each, names match ids, no load errors', async () => {
+test('portfolio: 13 original projects and 128 media records, one file each, names match ids, no load errors', async () => {
+  // Projects James adds in the dashboard (no fixed path) sit beside the 13 originals and carry their photos inline.
   assert.deepEqual(work.loadErrors, []);
-  assert.equal(work.projects.length, 13);
-  assert.equal(work.media.length, 128);
-  assert.equal((await readdir(join(root, 'content/projects'))).length, 13);
+  const originals = work.projects.filter((p) => p.path);
+  assert.equal(originals.length, 13);
+  assert.equal(work.media.filter((m) => !m.fromProject).length, 128);
+  assert.equal((await readdir(join(root, 'content/projects'))).length, work.projects.length);
   assert.equal((await readdir(join(root, 'content/media'))).length, 128);
-  assert.ok(work.projects.every((p) => p.published === true), 'original projects are explicitly published');
+  assert.ok(originals.every((p) => p.published === true), 'original projects are explicitly published');
   const w = await read('content/work.json');
   assert.ok(!('projects' in w) && !('media' in w) && w.taxonomy, 'work.json keeps only the taxonomy');
   // file order is preserved through `order`
-  assert.deepEqual(work.media.map((m) => m.order), work.media.map((_, i) => (i + 1) * 10));
+  const library = work.media.filter((m) => !m.fromProject);
+  assert.deepEqual(library.map((m) => m.order), library.map((_, i) => (i + 1) * 10));
 });
 
 test('content checks: the current site passes; published problems are errors, draft problems are warnings', () => {
@@ -79,7 +82,7 @@ test('dashboard config: sections, no pricing/legal/booking, every existing field
   const col = (n) => config.collections.find((c) => c.name === n);
   const fieldNames = (c) => new Set(c.fields.map((f) => f.name));
   for (const p of work.projects) for (const k of Object.keys(p)) assert.ok(fieldNames(col('projects')).has(k), `project field ${k}`);
-  for (const m of work.media.filter((x) => x.type === 'image')) for (const k of Object.keys(m)) assert.ok(fieldNames(col('photos')).has(k), `photo field ${k}`);
+  for (const m of work.media.filter((x) => x.type === 'image' && !x.fromProject)) for (const k of Object.keys(m)) assert.ok(fieldNames(col('photos')).has(k), `photo field ${k}`);
   for (const m of work.media.filter((x) => x.type === 'video')) for (const k of Object.keys(m)) assert.ok(fieldNames(col('films')).has(k), `film field ${k}`);
   assert.equal(col('films').create, false);
   assert.equal(col('projects').fields.find((f) => f.name === 'published').default, false);
@@ -105,7 +108,8 @@ test('a draft project with photos: preview shows it with a Draft note; productio
   await mkdir(join(tmp, 'static/images/projects'), { recursive: true });
   // static/ is large: link its subfolders instead of copying, and add the new upload beside them
   for (const d of await readdir(join(root, 'static'))) if (d !== 'images') await symlink(join(root, 'static', d), join(tmp, 'static', d));
-  for (const d of await readdir(join(root, 'static/images'))) await symlink(join(root, 'static/images', d), join(tmp, 'static/images', d));
+  for (const d of await readdir(join(root, 'static/images'))) if (d !== 'projects') await symlink(join(root, 'static/images', d), join(tmp, 'static/images', d));
+  if (existsSync(join(root, 'static/images/projects'))) for (const f of await readdir(join(root, 'static/images/projects'))) await symlink(join(root, 'static/images/projects', f), join(tmp, 'static/images/projects', f));
   await cp(join(root, 'static/images/photografik-2027/curated/yankee-hero.webp'), join(tmp, 'static/images/projects/shelter-island-great-room.webp'));
   await writeFile(join(tmp, 'content/projects/shelter-island-house.json'), JSON.stringify({
     title: 'Shelter Island House', category: 'architecture-design', client: 'Studio X', location: 'Shelter Island', services: ['Project photography'],

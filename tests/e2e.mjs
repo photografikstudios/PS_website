@@ -1288,7 +1288,9 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   assert(JSON.stringify(segs) === JSON.stringify(['architect', 'builder', 'designer']), 'all three disciplines mapped: ' + segs.join(','));
   const segOf = (slug) => work.projects.find((x) => x.slug === slug).segments.join('+');
   assert(segOf('peterson-ramlowtan') === 'architect+builder' && segOf('yankee-barn-builders') === 'builder' && segOf('kerry-delrose') === 'designer' && segOf('barba-architectural') === 'architect', 'owner mapping');
-  const bySeg = async (seg) => { await p.selectOption('#ag-segment', seg); return (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).sort().join(','); };
+  const originals = new Set(work.projects.filter((x) => x.path).map((x) => x.slug));
+  // Owner mapping of the original projects; projects James adds in the dashboard may join any discipline.
+  const bySeg = async (seg) => { await p.selectOption('#ag-segment', seg); return (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).filter((id) => originals.has(id)).sort().join(','); };
   assert(await bySeg('architect') === 'barba-architectural,peterson-ramlowtan', 'architects');
   assert(await bySeg('designer') === 'kerry-delrose', 'designers');
   await p.selectOption('#ag-segment', 'builder');
@@ -1601,11 +1603,14 @@ await check('legal pages: Photografik policies first, Creator supplement last, e
 
 await check('Dashboard content model: all 13 original project URLs load with their hero, title and photos; page text renders from content/pages.json', async () => {
   const work = await loadWorkRecords();
+  assert(work.projects.filter((pr) => pr.path).length === 13, '13 original projects');
   for (const pr of work.projects) {
-    const r = await fetch(base + pr.path);
+    // Projects added in the dashboard have no fixed path; they live at /<service>/<url name>.
+    const route = pr.path || `/${pr.category}/${pr.slug}`;
+    const r = await fetch(base + route);
     const html = await r.text();
-    assert(r.status === 200 && html.includes(`<h1 class="display">${pr.title.replace(/&/g, '&amp;').replace(/'/g, '&#39;')}</h1>`), `${pr.path} loads with its title`);
-    assert(!/Draft, not published/.test(html), `${pr.path} has no draft note`);
+    assert(r.status === 200 && html.includes(`<h1 class="display">${pr.title.replace(/&/g, '&amp;').replace(/'/g, '&#39;')}</h1>`), `${route} loads with its title`);
+    if (pr.path || pr.published !== false) assert(!/Draft, not published/.test(html), `${route} has no draft note`);
   }
   const pt = JSON.parse(await readFile(new URL('../content/pages.json', import.meta.url), 'utf8')).pages;
   for (const [route, t] of Object.entries(pt)) {

@@ -1119,3 +1119,9 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
   /* Four reviews read as two even rows rather than three plus one alone. */
   .reviews__list:has(> li:nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Field Notes photo gallery from the dashboard (Oct 3 2026). */
+.fn-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 32px 0; }
+.fn-gallery .fn-figure { margin: 0; }
+.fn-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+@media (max-width: 520px) { .fn-gallery { grid-template-columns: 1fr; } }

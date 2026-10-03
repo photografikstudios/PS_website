@@ -6,7 +6,7 @@ This is the guide for James and anyone he trusts to update the website. It cover
 
 | Section | What it is for |
 |---|---|
-| **Projects** | Portfolio projects for every service: name, town, story, main image, photos with descriptions, films from the library, rights, order. |
+| **Projects** | Portfolio projects for every service: name, town, story, main image, photos with descriptions, films from the library, order. |
 | **Photos** | Every photo in the galleries. Fix a description, change the focus point, move it up or down, hide it, or replace the picture. |
 | **Films** | Films already on the site. Change the title, description, project or order, or hide one. |
 | **Page text** | The heading and intro at the top of the main pages. |
@@ -22,7 +22,7 @@ What stays with us on purpose: prices, legal policies, booking links, cancellati
 2. **Published** is the switch on each project, photo and article. Off means draft: it is saved, the preview shows it with a small "Draft, not published" note, and the live site, its galleries and the sitemap leave it out completely.
 3. **The site checks your work before it goes live.** If something is missing on a published item, the update stops and the live site keeps running the previous version. The message tells you exactly what to fix.
 
-The checks: rights marked Approved, a description (alt text) on every photo, no street address in names or towns, photos large enough for the layout (at least 1,200 px on the long side, 1,600 px or more recommended), required project text, files that actually exist, and short Home review versions that use the client's own words.
+The checks: a description (alt text) on every photo, no street address in names or towns, photos large enough for the layout (at least 1,200 px on the long side, 1,600 px or more recommended), required project text, files that actually exist, and short Home review versions that use the client's own words.
 
 ## Walkthrough 1: edit an existing Architecture & Design project
 
@@ -37,12 +37,12 @@ The checks: rights marked Approved, a description (alt text) on every photo, no 
 1. **Projects**, then **New Project**.
 2. Fill in **Project name**, choose the **Service** (for example Architecture & Design), and add the **Town or area** (never a street address).
 3. Add a **Short description** (one sentence for cards) and the **Story / goal** paragraph.
-4. Under **Photos**, choose **Add photo**, then **Choose an image** and upload the file. Write the **Description** right away, for example "Kitchen with a marble island and brass pendant lights". Repeat for each photo. Drag to reorder.
-5. Set **Rights to show this work** to Approved only when the owner or client has agreed, and note who approved it and when.
-6. Leave **Published** off and choose **Save**.
+4. Under **Photos**, choose **Add photos** and pick several at once (hold Shift or Command). A thumbnail of each appears straight away. Write a **Description** for each one, for example "Kitchen with a marble island and brass pendant lights". Use the arrows to change the order and the cross to take one out. Everything is saved together when you press **Save**.
+5. Photos you add yourself count as approved to show. (There is no separate rights question any more; Published is still the switch that makes anything public.)
+6. Leave **Published** off and choose **Save**, then **Save now**.
 7. Check the preview. The project has its own page with a Draft note. It does not appear on the live site, in galleries or in the sitemap.
 
-Tips for photos: a web JPG or WebP, 2,000 to 2,400 px on the long side, under 5 MB. Name the file after the client or subject. The site makes the smaller sizes automatically.
+Tips for photos: a web JPG or WebP, 2,000 to 2,400 px on the long side, under 5 MB. The dashboard names the files for you after the project (so camera names like PS_00314 never appear on the site) and the site makes the smaller sizes automatically. iPhone HEIC photos need exporting as JPG first.
 
 ## Walkthrough 3: publish it
 

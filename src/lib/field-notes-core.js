@@ -40,6 +40,8 @@ export function parseArticleFile(text, filename) {
     approvedBy: fm.approvedBy || null,
     legacyUrls: Array.isArray(fm.legacyUrls) ? fm.legacyUrls : [],
     sources: Array.isArray(fm.sources) ? fm.sources : [],
+    // Photo gallery added in the dashboard (several photos in one action), shown after the article text.
+    photos: Array.isArray(fm.photos) ? fm.photos.filter((ph) => ph && ph.image) : [],
     body,
   };
 }
@@ -73,6 +75,7 @@ export function checkFieldNotes(fn, legacy, work, opts = {}) {
     if (a.dateModified && !DATE.test(a.dateModified)) out.push(`${tag}: updated date must be YYYY-MM-DD`);
     if (!a.hero) out.push(`${tag}: hero image is required`);
     if (a.hero && !a.heroAlt) out.push(`${tag}: hero image alt text is required`);
+    (a.photos || []).forEach((ph, i) => { if (!ph.alt) out.push(`${tag}: gallery photo ${i + 1} needs a description (alt text)`); });
     if (!parseBlocks(a.body).length) out.push(`${tag}: article content is empty`);
     if (a.seo?.title && a.seo.title.length > 70) out.push(`${tag}: SEO title over 70 characters`);
     if (a.seo?.description && a.seo.description.length > 160) out.push(`${tag}: meta description over 160 characters`);
@@ -82,7 +85,7 @@ export function checkFieldNotes(fn, legacy, work, opts = {}) {
       else if (a.published && !approvedMedia.has(id)) errors.push(`${tag}: library media ${id} is not rights-approved`);
     }
     if (opts.fileExists) {
-      for (const p of [a.hero, a.seo?.image, ...refs.images].filter(Boolean)) {
+      for (const p of [a.hero, a.seo?.image, ...refs.images, ...(a.photos || []).map((ph) => ph.image)].filter(Boolean)) {
         if (/^https?:/i.test(p)) { out.push(`${tag}: ${p} is an outside link; upload the image instead`); continue; }
         if (!opts.fileExists(p)) out.push(`${tag}: image ${p} is not in the repository`);
       }

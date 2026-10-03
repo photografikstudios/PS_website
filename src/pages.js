@@ -370,6 +370,7 @@ ${splitCta(undefined, undefined, undefined, true)}`,
   <div class="wrap fn-narrow fn-body">
     ${toc ? `<nav class="fn-toc" aria-label="In this article"><p class="fn-toc__h">In this article</p><ol>${join(rendered.toc, (t) => `<li><a href="#${t.id}">${inlineMd(t.text)}</a></li>`)}</ol></nav>` : ''}
     ${rendered.html}
+    ${a.photos?.length ? `<div class="fn-gallery">${join(a.photos, (ph) => `<figure class="fn-figure">${img(ph.image, { alt: ph.alt || '', focal: ph.focal, sizes: '(min-width: 900px) 360px, 50vw' })}</figure>`)}</div>` : ''}
     <aside class="fn-next">
       <p class="eyebrow">Next step</p>
       <p class="fn-next__t">${esc(a.cta?.lead || 'Ready to plan the media for your next listing?')}</p>
@@ -1281,7 +1282,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   <header class="section project__head">
     <div class="wrap project__grid project__grid--${p.heroOrientation}">
       <div class="project__intro">
-        ${reviewMode && p.published === false ? `<p class="fn-draft" role="note"><strong>Draft, not published.</strong> Only review builds show this project. It is not in the sitemap, and the live site leaves it out of every gallery and returns 404 here until Published is switched on in /admin.</p>\n        ` : ''}<p class="eyebrow"><a href="${serviceRoute[p.category]}${isCom ? '#portfolio' : ''}">${esc(catLabel[p.category])}</a>${p.location ? ` · ${esc(p.location)}` : ''}</p>
+        ${reviewMode && p.published === false ? `<p class="fn-draft" role="note"><strong>${p._held ? 'Not published yet: fix this in the dashboard.' : 'Draft, not published.'}</strong> ${p._held ? `Published is switched on, but the site is holding this project back because: ${esc(p._held.join('; '))}.` : 'Only review builds show this project. It is not in the sitemap, and the live site leaves it out of every gallery and returns 404 here until Published is switched on in /admin.'}</p>\n        ` : ''}<p class="eyebrow"><a href="${serviceRoute[p.category]}${isCom ? '#portfolio' : ''}">${esc(catLabel[p.category])}</a>${p.location ? ` · ${esc(p.location)}` : ''}</p>
         <h1 class="display">${esc(p.title)}</h1>
         ${lede ? `<p class="lede">${lede}</p>` : ''}
         <dl class="project__facts">${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}<div><dt>${isCom ? 'Delivered' : 'Services'}</dt><dd>${esc(services)}</dd></div>${goal ? `<div><dt>Goal</dt><dd>${goal}</dd></div>` : ''}${p.location ? `<div><dt>Location</dt><dd>${esc(p.location)}</dd></div>` : ''}</dl>

@@ -61,7 +61,9 @@ test('architecture segments: inherited from the project with evidence, filterabl
   assert.ok(!matches(a, { seg: 'builder', type: 'video' }));
   const base = { taxonomy: { segment: [{ id: 'builder' }] }, media: [], projects: [] };
   assert.deepEqual(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['builder'], segmentSource: 'owner' }] }, []), []);
-  assert.ok(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['builder'] }] }, [])[0].includes('segmentSource'));
+  assert.ok(validateMedia({ ...base, projects: [{ slug: 'x', path: '/architecture-design/x', category: 'architecture-design', segments: ['builder'] }] }, [])[0].includes('segmentSource'));
+  // A project James creates in the dashboard (no fixed path): his choice of discipline is the confirmation.
+  assert.deepEqual(validateMedia({ ...base, projects: [{ slug: 'y', category: 'architecture-design', segments: ['builder'] }] }, []), []);
   assert.ok(validateMedia({ ...base, projects: [{ slug: 'x', category: 'architecture-design', segments: ['architect-guess'], segmentSource: 's' }] }, [])[0].includes('unknown segment'));
   assert.ok(validateMedia({ ...base, media: [{ id: 'm', packageIds: [], published: true, segments: ['builder'] }] }, [])[0].includes('belong on the project'));
 });

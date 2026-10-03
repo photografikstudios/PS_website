@@ -72,7 +72,10 @@ export function validateMedia(work, packageIds, { thisYear = new Date().getFullY
     if (p.segments === undefined) continue;
     if (!Array.isArray(p.segments)) { errors.push(`${p.slug}: segments must be an array`); continue; }
     for (const s of p.segments) if (!segIds.includes(s)) errors.push(`${p.slug}: unknown segment "${s}"`);
-    if (p.segments.length && !p.segmentSource) errors.push(`${p.slug}: segments need a segmentSource (evidence)`);
+    // Projects created in the dashboard (no fixed path) are James's own entries: choosing a discipline there is the
+    // owner's confirmation (Oct 3 2026; this check stopped his first save from deploying). The original projects still
+    // need written evidence for any discipline.
+    if (p.segments.length && !p.segmentSource && p.path) errors.push(`${p.slug}: segments need a segmentSource (evidence)`);
     if (p.segments.length && p.category !== 'architecture-design') errors.push(`${p.slug}: segments only apply to architecture & design projects`);
   }
   return errors;

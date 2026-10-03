@@ -58,7 +58,26 @@ if (fnErrors.length) { console.error('Field Notes errors:\n - ' + fnErrors.join(
 // Dashboard content (projects, photos and films, page text, testimonials, FAQs): published records are strict.
 const fileExists = makeFileExists(root, new Set(Object.keys(mediaAssets.files || {})));
 const imageInfo = (p) => { const f = staticFile(root, p); return f && existsSync(f) ? imageSize(readFileSync(f)) : null; };
-const contentCheck = checkContent({ work, fileExists, imageInfo, pageText, testimonials, faqs });
+let contentCheck = checkContent({ work, fileExists, imageInfo, pageText, testimonials, faqs });
+// A project James publishes from the dashboard with something missing is held back as a draft (with the reason shown
+// on its review page) instead of stopping the whole site from updating (Oct 3 2026: his first save never deployed and
+// the dashboard could not tell him why). The original projects and everything else stay strict.
+{
+  const held = [];
+  for (const p of work.projects) {
+    if (p.path || p.published === false) continue;
+    const tag = `Project “${p.title || p.slug}”`;
+    const mine = contentCheck.errors.filter((e) => e.startsWith(tag));
+    if (!mine.length) continue;
+    p.published = false; p._held = mine.map((e) => e.slice(tag.length).replace(/^[,:]\s*/, ''));
+    for (const m of work.media) if (m.project === p.slug && m.fromProject) m.published = false;
+    held.push(`${tag}: ${p._held.join('; ')}`);
+  }
+  if (held.length) {
+    console.warn('Held back as drafts until fixed in /admin:\n - ' + held.join('\n - '));
+    contentCheck = checkContent({ work, fileExists, imageInfo, pageText, testimonials, faqs });
+  }
+}
 for (const w of contentCheck.warnings) console.warn(`Content note: ${w}`);
 if (contentCheck.errors.length) { console.error('Content errors (fix them in /admin; the live site keeps the previous version until then):\n - ' + contentCheck.errors.join('\n - ')); process.exit(1); }
 // FAQs: the editable answers (content/faqs.json, /admin) first, then the policy answers kept on the review path.

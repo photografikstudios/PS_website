@@ -11,7 +11,6 @@ const FOCAL = [
   { label: 'Bottom', value: 'bottom' }, { label: 'Left', value: 'left' }, { label: 'Right', value: 'right' },
 ];
 const ORIENT = [{ label: 'Work it out from the file', value: 'auto' }, { label: 'Landscape', value: 'horizontal' }, { label: 'Portrait', value: 'vertical' }];
-const RIGHTS = [{ label: 'Approved: the client/owner agreed to it being shown', value: 'approved' }, { label: 'Pending: not confirmed yet', value: 'pending' }];
 const hint = {
   published: 'Off = draft. A draft is saved and shows on the preview with a Draft note, but the live site, its galleries and the sitemap leave it out.',
   alt: 'Describe the picture for people who cannot see it, e.g. “Kitchen with a marble island and brass pendant lights”. No street addresses.',
@@ -41,6 +40,9 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     ['LI Creator Studios', '/creator-studios'], ['Send a Project Brief (contact)', '/contact'],
   ].map(([label, value]) => ({ label, value }));
   const upload = { media_library: { config: { max_file_size: 5000000 } } };
+  // Our own upload widgets (src/admin/cms.js) save into the same folders as before; the paths are stated per field.
+  const projectMedia = { media_folder: '/static/images/projects', public_folder: '/images/projects' };
+  const notesMedia = { media_folder: '/static/images/field-notes', public_folder: '/images/field-notes' };
   const imageHint = 'A web JPG or WebP, 2,000–2,400 px on the long side (5 MB limit). Name the file after the client or subject, never the street address. The site makes the smaller sizes automatically.';
 
   // ---------- Projects ----------
@@ -51,27 +53,25 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'shortTitle', label: 'Short name for cards', widget: 'string', required: false, pattern: max(40, 'short name') },
     { name: 'client', label: 'Client name shown', widget: 'string', required: false, hint: 'Leave empty if the client has not agreed to be named.' },
     { name: 'location', label: 'Town or area', widget: 'string', required: false, hint: hint.location },
-    { name: 'segments', label: 'Disciplines (Architecture & Design filters)', widget: 'select', multiple: true, required: false, options: segments, hint: 'Only for Architecture & Design, and only when confirmed (fill in the next field).' },
-    { name: 'segmentSource', label: 'Who confirmed the disciplines', widget: 'string', required: false, hint: 'e.g. “James, Oct 3 2026: the client is the builder”.' },
+    { name: 'segments', label: 'Disciplines (Architecture & Design filters)', widget: 'select', multiple: true, required: false, options: segments, hint: 'Only for Architecture & Design: who the work was for (architect, builder, designer…).' },
+    { name: 'segmentSource', label: 'segmentSource', widget: 'hidden', required: false },
     { name: 'services', label: 'Services delivered', widget: 'list', required: false, field: { name: 'service', label: 'Service', widget: 'string' }, hint: 'Shown on the project page, e.g. “Project photography”, “Architecture film”.' },
     { name: 'summary', label: 'Short description', widget: 'text', required: false, pattern: max(200, 'description'), hint: 'One sentence for cards and search results.' },
     { name: 'story', label: 'Story / goal', widget: 'text', required: false, pattern: max(700, 'story'), hint: 'The paragraph under the project name: what the work was for and how it was planned.' },
     { name: 'goal', label: 'Goal (Commercial only)', widget: 'text', required: false },
     { name: 'blurbApproved', label: 'Client approved this wording (Commercial only)', widget: 'boolean', required: false, hint: 'Commercial project texts show only after the client has approved them.' },
     { name: 'delivered', label: 'What was delivered (Commercial only)', widget: 'list', required: false, field: { name: 'item', label: 'Item', widget: 'string' } },
-    { name: 'hero', label: 'Main image', widget: 'image', required: false, choose_url: false, ...upload, hint: `Optional: without one, the first photo or film below leads the page. ${imageHint}` },
+    { name: 'hero', label: 'Main image', widget: 'pgk-photo', required: false, ...projectMedia, hint: `Optional: without one, the first photo or film below leads the page. ${imageHint}` },
     { name: 'heroAlt', label: 'Main image description (alt text)', widget: 'string', required: false, hint: hint.alt },
     { name: 'heroFocal', label: 'Main image focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
     { name: 'heroOrientation', label: 'Main image shape', widget: 'select', required: false, default: 'auto', options: ORIENT },
-    { name: 'photos', label: 'Photos', label_singular: 'photo', widget: 'list', required: false, default: [], collapsed: true, summary: '{{fields.alt}}', hint: 'Add each photo with its description. Drag to reorder. Photos already on the site for this project are in the Photos section.', fields: [
-      { name: 'image', label: 'Photo', widget: 'image', choose_url: false, ...upload, hint: imageHint },
-      { name: 'alt', label: 'Description (alt text)', widget: 'string', hint: hint.alt },
-      { name: 'focal', label: 'Focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
-      { name: 'orientation', label: 'Shape', widget: 'select', required: false, default: 'auto', options: ORIENT },
-    ] },
+    { name: 'photos', label: 'Photos', widget: 'pgk-gallery', required: false, default: [], ...projectMedia, hint: `Choose several photos at once, then describe each one. Use the arrows to change the order. Photos already on the site for this project are in the Photos section. ${imageHint}` },
     { name: 'films', label: 'Films from the library', widget: 'relation', collection: 'films', search_fields: ['title', 'location'], value_field: '{{slug}}', display_fields: ['title', 'location'], multiple: true, required: false, hint: 'Choose films that are already on the site. New films need the video upload step (see the guide).' },
-    { name: 'rights', label: 'Rights to show this work', widget: 'select', default: 'pending', options: RIGHTS },
-    { name: 'rightsNote', label: 'Who approved it and when', widget: 'string', required: false, hint: 'e.g. “Owner email, Oct 3 2026; property release on file”.' },
+    // James, Oct 2 2026: media he adds himself is approved, so the rights question is not in the routine form. New
+    // records are saved as approved; existing records keep whatever they already hold (a hidden field never rewrites
+    // a stored value), so historic pending items stay pending and still cannot be published by accident.
+    { name: 'rights', label: 'rights', widget: 'hidden', default: 'approved' },
+    { name: 'rightsNote', label: 'rightsNote', widget: 'hidden', required: false },
     { name: 'sortPriority', label: 'Show first (0 = normal, higher = earlier)', widget: 'number', value_type: 'int', required: false, default: 0, hint: 'Raises the project’s new photos in the Home and service galleries.' },
     { name: 'order', label: 'Position in project lists', widget: 'number', value_type: 'int', required: false, hint: 'Lower numbers come first (the original projects use 10, 20, 30…).' },
   ];
@@ -92,13 +92,13 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   const photoFields = [
     { name: 'type', label: 'type', widget: 'hidden', default: 'image' },
     ...mediaCommon.slice(0, 2),
-    { name: 'src', label: 'Photo', widget: 'image', choose_url: false, ...upload, hint: `Replacing the file keeps the same place on the site. ${imageHint}` },
+    { name: 'src', label: 'Photo', widget: 'pgk-photo', media_folder: '/static/images/library', public_folder: '/images/library', hint: `Replacing the file keeps the same place on the site. ${imageHint}` },
     { name: 'alt', label: 'Description (alt text)', widget: 'string', hint: hint.alt },
     { name: 'focal', label: 'Focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
     { name: 'orientation', label: 'Shape', widget: 'select', default: 'horizontal', options: ORIENT.slice(1) },
     ...mediaCommon.slice(2),
-    { name: 'rights', label: 'Rights to show this photo', widget: 'select', default: 'pending', options: RIGHTS },
-    { name: '_rights', label: 'Who approved it and when', widget: 'string', required: false },
+    { name: 'rights', label: 'rights', widget: 'hidden', default: 'approved' },
+    { name: '_rights', label: '_rights', widget: 'hidden', required: false },
     { name: 'packageIds', label: 'packageIds', widget: 'hidden', default: [] },
     { name: 'capturedYear', label: 'capturedYear', widget: 'hidden', default: null },
     { name: 'source', label: 'source', widget: 'hidden', default: 'upload' },
@@ -138,7 +138,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     collections: [
       {
         name: 'projects', label: 'Projects', label_singular: 'Project',
-        description: 'Portfolio projects for every service. Switch on Published only when the rights are approved and the photos are described.',
+        description: 'Portfolio projects for every service. Switch on Published when the photos are described and the project is ready to show.',
         folder: 'content/projects', create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/projects', public_folder: '/images/projects',
         summary: "{{title}} · {{category}} · {{published | ternary('Published', 'Draft')}}",
@@ -155,7 +155,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/library', public_folder: '/images/library',
         summary: "{{title}} · {{category}} · {{published | ternary('Published', 'Hidden')}}",
         sortable_fields: ['title', 'category', 'sortPriority'],
-        view_filters: [{ label: 'Hidden', field: 'published', pattern: false }, { label: 'Pending rights', field: 'rights', pattern: 'pending' }],
+        view_filters: [{ label: 'Hidden', field: 'published', pattern: false }],
         view_groups: [{ label: 'Service', field: 'category' }],
         fields: [...photoFields, ...keep(photos, photoShown)],
       },
@@ -178,7 +178,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
               pageFields('/', 'Home'), pageFields('/real-estate', 'Real Estate'), pageFields('/agent-content', 'Agent Content'),
               pageFields('/architecture-design', 'Architecture & Design'), pageFields('/commercial', 'Commercial'),
               pageFields('/agency-partnerships', 'Agency Partnerships', [
-                { name: 'image', label: 'Hero image', widget: 'image', choose_url: false, ...upload, hint: imageHint },
+                { name: 'image', label: 'Hero image', widget: 'pgk-photo', media_folder: '/static/images/library', public_folder: '/images/library', hint: imageHint },
                 { name: 'imageAlt', label: 'Hero image description (alt text)', widget: 'string', hint: hint.alt },
               ]),
               pageFields('/creator-studios', 'LI Creator Studios'), pageFields('/about', 'About'),
@@ -238,13 +238,14 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'updated', label: 'Updated date', ...date, required: false, hint: 'Only if you revise a published article.' },
           { name: 'category', label: 'Category', widget: 'select', options: cats },
           { name: 'excerpt', label: 'Short excerpt', widget: 'text', hint: 'One or two sentences for the Field Notes list.', pattern: max(220, 'excerpt') },
-          { name: 'hero', label: 'Hero image', widget: 'image', choose_url: false, ...upload, hint: 'A web JPG or WebP about 2,400 pixels wide is plenty (5 MB limit). The site makes smaller sizes automatically.' },
+          { name: 'hero', label: 'Hero image', widget: 'pgk-photo', ...notesMedia, hint: 'A web JPG or WebP about 2,400 pixels wide is plenty (5 MB limit). The site makes smaller sizes automatically.' },
           { name: 'heroAlt', label: 'Hero image description (alt text)', widget: 'string', hint: 'Describe the picture for people who cannot see it, e.g. “Kitchen with an island and pendant lights”.' },
           { name: 'answer', label: 'Short answer under the title', widget: 'text', required: false, hint: 'Optional. The direct answer in two or three sentences. If empty, the excerpt is shown.' },
           { name: 'body', label: 'Article', widget: 'markdown', modes: ['rich_text', 'raw'], buttons: ['bold', 'italic', 'link', 'heading-two', 'heading-three', 'quote', 'bulleted-list', 'numbered-list'], editor_components: ['image', 'libraryMedia'], hint: 'Use Heading 2 for each section. Quote = a highlighted note. Add pictures with the + button.' },
+          { name: 'photos', label: 'Photo gallery (optional)', widget: 'pgk-gallery', required: false, default: [], ...notesMedia, hint: 'Choose several photos at once; each needs a short description. They appear as a gallery after the article text.' },
           { name: 'seoTitle', label: 'SEO title', widget: 'string', required: false, pattern: max(70, 'SEO title'), hint: 'Optional. Defaults to the title.' },
           { name: 'seoDescription', label: 'Meta description', widget: 'text', required: false, pattern: max(160, 'meta description'), hint: 'Optional. Defaults to the excerpt.' },
-          { name: 'ogImage', label: 'Social sharing image', widget: 'image', required: false, choose_url: false, ...upload, hint: 'Optional. Defaults to the hero image.' },
+          { name: 'ogImage', label: 'Social sharing image', widget: 'pgk-photo', required: false, ...notesMedia, hint: 'Optional. Defaults to the hero image.' },
           { name: 'slug', label: 'URL name', widget: 'string', required: false, pattern: ['^([a-z0-9]+(-[a-z0-9]+)*)?$', 'Lowercase letters, numbers and single hyphens only'], hint: 'Optional. Leave empty to use the title. Do not change it after publishing.' },
           { name: 'author', label: 'Author', widget: 'string', required: false, default: 'Photografik Studios' },
           { name: 'featured', label: 'Featured', widget: 'boolean', required: false, default: false },
