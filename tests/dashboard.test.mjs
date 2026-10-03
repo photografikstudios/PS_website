@@ -2,11 +2,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir, mkdtemp, mkdir, writeFile, cp } from 'node:fs/promises';
+import { readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadWork, expandProjectPhotos, slugify } from '../src/lib/work-load.js';
-import { checkContent, looksLikeAddress, looksLikeCameraName, isVerbatimExcerpt, holdDashboardProjects, applyReviewOnly } from '../src/lib/content-check.js';
+import { checkContent, looksLikeAddress, looksLikeCameraName, isVerbatimExcerpt, holdDashboardProjects, applyReviewOnly, dashboardStatus, statusId } from '../src/lib/content-check.js';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { cmsConfig } from '../src/lib/cms-config.js';
 import { imageSize } from '../src/lib/image-size.js';
@@ -229,4 +231,35 @@ test('dashboard config: project Published uses the status switch, drafts by defa
   assert.equal(pub.widget, 'pgk-publish'); assert.equal(pub.default, false);
   assert.equal(f.find((x) => x.name === 'reviewOnly').widget, 'hidden');
   assert.equal(f.filter((x) => x.name === 'reviewOnly').length, 1);
+});
+
+// Codex, Session 57 source review: /admin/status.json and /admin/config.js are public static files.
+test('status file never names a project: opaque ids, file names removed, no review-only list in production', () => {
+  const held = [{ slug: 'smith-residence', title: 'Smith Residence', reasons: ['photo 1: still has its camera file name (5-ps_00519.jpg). Remove it and add it again', 'the hero image /images/projects/smith-residence-ab12.jpg is missing'] }];
+  for (const reviewMode of [true, false]) {
+    const st = dashboardStatus({ held, reviewOnly: [{ slug: 'test', title: 'Test' }], reviewMode });
+    const text = JSON.stringify(st);
+    assert.ok(!/smith|Smith|ps_00519|\.jpg/.test(text), text);
+    assert.equal(st.held[0].id, statusId('smith-residence'));
+    assert.match(st.held[0].reasons[0], /camera file name \(a photo file\)/);
+    assert.deepEqual(st.reviewOnly, reviewMode ? [{ collection: 'projects', id: statusId('test') }] : []);
+    assert.ok(!/"title"|"slug"/.test(text));
+  }
+  assert.match(statusId('test'), /^[0-9a-f]{16}$/);
+});
+
+test('production build: no review-only or draft project name, photo or reason in any public file', () => {
+  execFileSync(process.execPath, ['src/build.mjs'], { cwd: root, env: { ...process.env, PRODUCTION_VISIBILITY_CHECK: '1', VERCEL: '', VERCEL_ENV: '', CI: '' }, stdio: 'pipe' });
+  const out = join(root, 'dist-prodcheck');
+  const status = JSON.parse(readFileSync(join(out, 'admin/status.json'), 'utf8'));
+  assert.equal(status.mode, 'production'); assert.deepEqual(status.reviewOnly, []);
+  const cfg = readFileSync(join(out, 'admin/config.js'), 'utf8');
+  const thumbs = JSON.parse(cfg.match(/PHOTOGRAFIK_THUMBS = (\{.*?\});\n/)[1]);
+  const drafts = work.projects.filter((p) => p.published === false || p.reviewOnly === true);
+  for (const p of drafts) {
+    assert.ok(!(p.slug in thumbs.projects), `${p.slug} has no thumbnail entry`);
+    for (const ph of p.photos || []) assert.ok(!cfg.includes(ph.image), `${ph.image} not in config.js`);
+    if (p.hero) assert.ok(!cfg.includes(p.hero), `${p.hero} not in config.js`);
+  }
+  assert.ok(!existsSync(join(out, 'architecture-design/test.html')), 'no Test page in production');
 });

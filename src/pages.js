@@ -13,7 +13,10 @@ export function buildPages(ctx) {
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
   const projectBySlug = Object.fromEntries(work.projects.map((p) => [p.slug, p]));
   // Portfolio media. The About testimonial (category 'about') is used only on About, never in galleries.
-  const media = work.media.filter((m) => visible(m) && m.category !== 'about' && m.gallery !== false);
+  // Review-only test projects (James's dashboard "Test", Codex Session 57 review): their own page exists on review builds
+  // with a note, but they never appear as ordinary work in Home or service galleries, project lists or related work.
+  const testOnly = new Set(work.projects.filter((p) => p.reviewOnly === true).map((p) => p.slug));
+  const media = work.media.filter((m) => visible(m) && m.category !== 'about' && m.gallery !== false && !testOnly.has(m.project));
   const catLabel = Object.fromEntries(work.taxonomy.category.map((c) => [c.id, c.label]));
   const svcLabel = Object.fromEntries(work.taxonomy.service.map((c) => [c.id, c.label]));
   const pkg = Object.fromEntries(pricing.packages.map((p) => [p.id, p]));
@@ -811,7 +814,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
   };
   // Gallery (Home Selected Work style, same work.json collection): ONE item per project (its lead asset; the rest stay
   // on the project page) plus approved work without a verified project. Segments come from the project, never a house name.
-  const archProjects = work.projects.filter((p) => p.category === 'architecture-design' && visible(p))
+  const archProjects = work.projects.filter((p) => p.category === 'architecture-design' && visible(p) && !testOnly.has(p.slug))
     .map((p) => ({ p, rep: repOf(archMedia.filter((m) => m.project === p.slug)) })).filter((x) => x.rep);
   // A project with both a film and photos gets a film-led card (All + Video) and a still-led card (Photo only), so each
   // filtered view shows the project once, with the same project-page destination (Codex review of 8184566).
@@ -958,7 +961,7 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
   // representative image or inline video per project; each card opens that project's own page. One client per project.
   const comMedia = media.filter((m) => m.category === 'commercial');
   const comOrder = ['revivaluxe', 'rachel-lynch-pools', 'torella-pools'];
-  const comProjects = work.projects.filter((p) => p.category === 'commercial' && visible(p))
+  const comProjects = work.projects.filter((p) => p.category === 'commercial' && visible(p) && !testOnly.has(p.slug))
     .map((p) => { const items = comMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: filmDelivered(p, deliveredOf(items)) }; })
     .filter((x) => x.items.length)
     .sort((x, y) => ((comOrder.indexOf(x.p.slug) + 1 || 99) - (comOrder.indexOf(y.p.slug) + 1 || 99)));
@@ -1264,7 +1267,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   // Commercial projects (James, Sep 26 2026): only that project's media, the client, what was delivered and the goal.
   // Unapproved client wording shows as a marked placeholder in review builds and is omitted in production.
   for (const p of work.projects.filter(visible)) {
-    const pm = media.filter((m) => m.project === p.slug);
+    const pm = testOnly.has(p.slug) ? work.media.filter((m) => visible(m) && m.project === p.slug) : media.filter((m) => m.project === p.slug);
     const isCom = p.category === 'commercial';
     const related = isCom ? [] : media.filter((m) => m.project !== p.slug && m.category === p.category).slice(0, 3);
     const isRE = p.category === 'real-estate';

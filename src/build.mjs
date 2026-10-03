@@ -14,7 +14,7 @@ import { buildPages } from './pages.js';
 import { cmsConfig } from './lib/cms-config.js';
 import { validateLegal } from './lib/legal-core.js';
 import { loadWork, staticFile } from './lib/work-load.js';
-import { checkContent, holdDashboardProjects, applyReviewOnly } from './lib/content-check.js';
+import { checkContent, holdDashboardProjects, applyReviewOnly, dashboardStatus } from './lib/content-check.js';
 import { imageSize } from './lib/image-size.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -187,7 +187,8 @@ for (const f of await readdir(join(out, 'assets'))) {
   // A film's still: its poster, else the .webp still the media step keeps beside a /v/ film.
   const still = (m) => m.poster || (m.src && /\.mp4$/.test(m.src) && assetSet.has(m.src.replace(/\.mp4$/, '.webp')) ? m.src.replace(/\.mp4$/, '.webp') : null);
   // Every record the dashboard lists, including ones the site holds back (withheld rights, drafts), gets its preview.
-  const everything = await loadWork(root);
+  // Production: only records the public site shows (a draft's name or picture never reaches a public file).
+  const everything = reviewMode ? await loadWork(root) : { projects: work.projects.filter((p) => p.published !== false && p.reviewOnly !== true && isApproved(p)), media: work.media.filter((m) => m.published !== false && m.rights === 'approved') };
   // /v/ files of records still waiting on rights are not published by the media step, so they get no thumbnail URL.
   const served = (m, u) => u && (m.rights === 'approved' || !String(u).startsWith('/v/')) ? u : null;
   for (const m of everything.media) {
@@ -205,7 +206,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   // Picker: every image already on the site (library photos and dashboard project photos), with its description.
   const seen = new Set();
   for (const m of work.media) {
-    if (m.type !== 'image' || !m.src || seen.has(m.src) || m.rights !== 'approved' || testOnly.has(m.project)) continue;
+    if (m.type !== 'image' || !m.src || seen.has(m.src) || m.rights !== 'approved' || testOnly.has(m.project) || (!reviewMode && m.published === false)) continue;
     seen.add(m.src);
     thumbs.pick.push({ src: m.src, thumb: small(m.src), alt: m.alt || '', label: m.title || m.id, cat: m.category || '' });
   }
@@ -229,9 +230,7 @@ const sitemapRoutes = routes.filter((r) => (!projectRoutes.has(r) || (isApproved
 await writeFile(join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapRoutes.map((r) => `  <url><loc>${site.canonicalOrigin}${r === '/' ? '/' : r}</loc></url>`).join('\n')}\n</urlset>\n`);
 
 // What this build did with dashboard projects, read by /admin so a held project says why on its own form.
-await writeFile(join(out, 'admin', 'status.json'), JSON.stringify({
-  commit: process.env.VERCEL_GIT_COMMIT_SHA || null, branch: process.env.VERCEL_GIT_COMMIT_REF || null,
-  builtAt: new Date().toISOString(), mode: reviewMode ? 'review' : 'production',
-  held: held.map((h) => ({ collection: 'projects', ...h })), reviewOnly,
-}, null, 1) + '\n');
+await writeFile(join(out, 'admin', 'status.json'), JSON.stringify(dashboardStatus({
+  held, reviewOnly, reviewMode, commit: process.env.VERCEL_GIT_COMMIT_SHA || null, branch: process.env.VERCEL_GIT_COMMIT_REF || null,
+}), null, 1) + '\n');
 console.log(`Built ${routes.length + 1} pages in ${reviewMode ? 'REVIEW' : 'PRODUCTION'} mode${onVercel ? ' (Vercel image optimization on)' : ''}.`);

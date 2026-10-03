@@ -274,6 +274,24 @@
       el.setAttribute('data-for', mm[2]);
       var host = a.firstElementChild || a; host.insertBefore(el, host.firstChild);
     }
+    // Projects: mark held and review-only cards (matched by opaque id, see the status file note below).
+    if (!window.__pgkBadgeRun) { window.__pgkBadgeRun = true; setTimeout(function () { window.__pgkBadgeRun = false; badgeCards(); }, 80); }
+  }
+  function badgeCards() {
+    var links = document.querySelectorAll('a[href*="/collections/projects/entries/"]');
+    Array.prototype.forEach.call(links, function (a) {
+      var mm = a.getAttribute('href').match(/entries\/([^/?#]+)/); if (!mm) return;
+      statusId(decodeURIComponent(mm[1])).then(function (id) {
+        var kind = heldFor(id) ? 'held' : testFor(id) ? 'test' : '';
+        var b = a.querySelector('.pgk-card-badge');
+        if ((b ? b.getAttribute('data-kind') : '') === kind) return;
+        if (b) b.remove();
+        if (!kind) return;
+        b = document.createElement('span'); b.className = 'pgk-card-badge pgk-card-badge--' + kind; b.setAttribute('data-kind', kind);
+        b.textContent = kind === 'held' ? 'Held: not on the site' : 'Review-only test';
+        (a.firstElementChild || a).appendChild(b);
+      });
+    });
   }
   var cardTimer = null;
   new MutationObserver(function () { clearTimeout(cardTimer); cardTimer = setTimeout(decorateCards, 60); }).observe(document.documentElement, { childList: true, subtree: true });
@@ -322,13 +340,28 @@
   var bar = document.createElement('div'); bar.className = 'pgk-statusbar'; bar.setAttribute('role', 'status'); bar.hidden = true;
   document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(bar); });
   if (document.body) document.body.appendChild(bar);
+  // The status file names nothing (it is public): entries are matched by the same opaque id the build writes.
+  var idCache = {};
+  function statusId(slug) {
+    if (!slug) return Promise.resolve(null);
+    if (idCache[slug]) return Promise.resolve(idCache[slug]);
+    if (!(window.crypto && crypto.subtle)) return Promise.resolve(null);
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode('pgk:' + slug)).then(function (d) {
+      var hex = Array.prototype.map.call(new Uint8Array(d), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('').slice(0, 16);
+      idCache[slug] = hex; return hex;
+    });
+  }
+  var heldFor = function (id) { var d = siteStatus.data; return d && id ? (d.held || []).filter(function (x) { return x.id === id; })[0] || null : null; };
+  var testFor = function (id) { var d = siteStatus.data; return !!(d && id && (d.reviewOnly || []).some(function (x) { return x.id === id; })); };
   function renderBar() {
     var d = siteStatus.data; if (!d) return;
     var parts = [];
-    (d.held || []).forEach(function (x) { parts.push('<p class="pgk-statusbar__held"><strong>Not on the site: ' + esc(x.title) + '.</strong> Published is on, but the last build held it back as a draft because: ' + esc(x.reasons.join('; ')) + '. Open the project, fix this and Save.</p>'); });
-    (d.reviewOnly || []).forEach(function (x) { parts.push('<p><strong>' + esc(x.title) + '</strong> is a review-only test project: it shows on the review site with a note and is never built for the live site.</p>'); });
-    bar.innerHTML = parts.join('') + (parts.length ? '<p class="pgk-statusbar__meta">From the review build ' + esc(shortSha(d.commit)) + ', ' + esc(when(d.builtAt)) + '. A save takes about two minutes to appear.</p>' : '');
+    var n = (d.held || []).length; var t = (d.reviewOnly || []).length;
+    if (n) parts.push('<p class="pgk-statusbar__held"><strong>' + n + (n === 1 ? ' project is' : ' projects are') + ' not on the site.</strong> Published is on, but the last build held ' + (n === 1 ? 'it' : 'them') + ' back as a draft. In Projects ' + (n === 1 ? 'it is' : 'they are') + ' marked “Held”; the form says what to fix.</p>');
+    if (t) parts.push('<p>' + t + (t === 1 ? ' project is a review-only test' : ' projects are review-only tests') + ', marked “Review-only test” in Projects: shown on the review site with a note, never built for the live site.</p>');
+    bar.innerHTML = parts.join('') + (parts.length ? '<p class="pgk-statusbar__meta">From the ' + esc(d.mode === 'production' ? 'live' : 'review') + ' build ' + esc(shortSha(d.commit)) + ', ' + esc(when(d.builtAt)) + '. A save takes about two minutes to appear.</p>' : '');
     bar.hidden = !parts.length;
+    decorateCards();
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   loadStatus(); setInterval(loadStatus, 60000);
@@ -356,6 +389,7 @@
     return out;
   }
   var PublishControl = createClass({
+    getInitialState: function () { return { slug: null, sid: null }; },
     componentDidMount: function () { var self = this; this.sub = function () { self.forceUpdate(); }; siteStatus.subs.push(this.sub); },
     componentWillUnmount: function () { var self = this; siteStatus.subs = siteStatus.subs.filter(function (f) { return f !== self.sub; }); },
     isValid: function () {
@@ -366,8 +400,10 @@
     render: function () {
       var self = this; var on = this.props.value === true; var d = siteStatus.data;
       var slug = this.props.entry && this.props.entry.get('slug');
-      var held = d && slug ? (d.held || []).filter(function (x) { return x.slug === slug; })[0] : null;
-      var test = d && slug ? (d.reviewOnly || []).some(function (x) { return x.slug === slug; }) : false;
+      if (slug && this.state.slug !== slug) statusId(slug).then(function (id) { self.setState({ slug: slug, sid: id }); });
+      var sid = this.state.slug === slug ? this.state.sid : null;
+      var held = heldFor(sid);
+      var test = testFor(sid);
       var line = null;
       if (held) line = h('p', { className: 'pgk-pub__state pgk-pub__state--held', role: 'alert' }, h('strong', {}, 'Not on the site yet. '), 'The last build (' + shortSha(d.commit) + ', ' + when(d.builtAt) + ') held this project back as a draft because: ' + held.reasons.join('; ') + '. Fix this and Save; the switch alone does not make it public.');
       else if (test) line = h('p', { className: 'pgk-pub__state pgk-pub__state--test' }, h('strong', {}, 'Review-only test project. '), 'Shown on the review site with a note; never built for the live site.');
@@ -410,6 +446,8 @@
     '.pgk-card-thumb { display: block; width: 100%; height: 150px; object-fit: cover; border-radius: 4px 4px 0 0; margin: -16px 0 12px; background: #eef0f3; }',
     '.pgk-card-thumb--broken, .pgk-card-thumb--none { display: flex; align-items: center; justify-content: center; height: 150px; margin: -16px 0 12px; background: #eef0f3; color: #5b6472; font-size: 12px; }',
     '.pgk-card-thumb--broken::after { content: "Preview not available yet"; }',
+    '.pgk-card-badge { display: inline-block; margin-top: 8px; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }',
+    '.pgk-card-badge--held { background: #fef3f2; color: #912018; border: 1px solid #fecdca; } .pgk-card-badge--test { background: #fffaeb; color: #7a4a00; border: 1px solid #fedf89; }',
     '.pgk-modal { position: fixed; inset: 0; z-index: 500; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }',
     '.pgk-modal__box { background: #fff; border-radius: 10px; width: min(1100px, 100%); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }',
     '.pgk-modal__head { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px; border-bottom: 1px solid #dfe3e8; } .pgk-modal__head input { flex: 1 1 240px; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',

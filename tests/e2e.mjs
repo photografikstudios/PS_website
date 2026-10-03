@@ -1491,7 +1491,9 @@ await check('LCP: small header logo, hero poster preloaded at high priority; RE 
   // Session 53: a portrait phone fetches only the hero's phone still before load; a desktop only the full frame.
   for (const [vp, want, not] of [[{ width: 390, height: 844 }, '/images/hero/re-hamptons-beachfront-phone.webp', '/v/re-hamptons-beachfront.webp'], [{ width: 1280, height: 900 }, '/v/re-hamptons-beachfront.webp', '/images/hero/re-hamptons-beachfront-phone.webp']]) {
     const q = await newPage(vp); const got = []; let loaded = false;
+    // Count requests until the load event itself (not until goto returns, which can let post-load requests in).
     q.on('request', (r) => { if (!loaded) got.push(new URL(r.url()).pathname); });
+    q.on('load', () => { loaded = true; });
     await q.goto(base + '/', { waitUntil: 'load' }); loaded = true;
     assert(got.includes(want) && !got.includes(not), `${vp.width}px hero still requests before load: ${got.filter((u) => /hero|beachfront/.test(u))}`);
     await q.context().close();
@@ -1640,7 +1642,19 @@ await check('Dashboard status: /admin/status.json lists held projects and review
   const st = await r.json();
   assert(r.status === 200 && Array.isArray(st.held) && st.mode === 'review', 'status file');
   assert(st.held.length === 0, 'nothing held: ' + JSON.stringify(st.held));
-  assert(JSON.stringify(st.reviewOnly) === JSON.stringify([{ slug: 'test', title: 'Test' }]), 'Test is review-only');
+  assert(st.reviewOnly.length === 1 && /^[0-9a-f]{16}$/.test(st.reviewOnly[0].id) && !/"title"|"slug"|Test/.test(JSON.stringify(st)), 'Test is review-only, by opaque id only');
+  // Codex, Session 57 source review: the review-only Test never shows as ordinary work in Home or service galleries.
+  for (const path of ['/', '/architecture-design', '/real-estate', '/commercial', '/agent-content', '/creator-studios']) {
+    const h = await (await fetch(base + path)).text();
+    assert(!/test-cec9ddbd88|test-fc560c9d51|\/architecture-design\/test"|"project":"test"|data-project="test"/.test(h), 'Test absent from ' + path);
+  }
+  const gp = await newPage({ width: 1280, height: 900 });
+  await gp.goto(base + '/architecture-design');
+  const projIds = await gp.locator('[data-project]').evaluateAll((es) => [...new Set(es.map((e) => e.dataset.project))]);
+  assert(!projIds.includes('test') && projIds.length > 0, 'Architecture gallery cards: ' + projIds.join(','));
+  await gp.goto(base + '/');
+  assert(await gp.locator('img[src*="test-cec9"], img[src*="test-fc56"], a[href="/architecture-design/test"]').count() === 0, 'Home shows no Test card');
+  await gp.context().close();
   const html = await (await fetch(base + '/architecture-design/test')).text();
   assert(/Review-only test project\./.test(html) && !/Not published yet/.test(html), 'Test page note');
   assert(!/PS_\d{5}/i.test(html), 'no camera file names on the Test page');

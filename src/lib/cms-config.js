@@ -31,7 +31,9 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   const services = work.taxonomy.service.map((c) => ({ label: c.label, value: c.id }));
   const segments = (work.taxonomy.segment || []).map((c) => ({ label: c.label, value: c.id }));
   const fileMedia = work.media.filter((m) => !m.fromProject);
-  const library = work.media.filter((m) => m.rights === 'approved' && (m.type === 'image' || m.poster))
+  // Only media the site shows (no drafts, no review-only test photos): this list is in the public /admin/config.js.
+  const testOnly = new Set(work.projects.filter((p) => p.reviewOnly === true).map((p) => p.slug));
+  const library = work.media.filter((m) => m.rights === 'approved' && m.published !== false && !testOnly.has(m.project) && (m.type === 'image' || m.poster))
     .map((m) => ({ label: `${m.title}${m.location ? `, ${m.location}` : ''} (${m.type === 'video' ? 'film' : 'photo'})`, value: m.id, image: m.type === 'video' ? m.poster : m.src }))
     .sort((a, b) => a.label.localeCompare(b.label));
   const servicePages = [

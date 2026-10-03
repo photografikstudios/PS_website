@@ -3,6 +3,8 @@
 // editor sees the message in the Vercel build log. Drafts only produce warnings, so unfinished work can be saved.
 // Messages are written for the owner, not for developers.
 
+import { createHash } from 'node:crypto';
+
 const STREET = /\b\d{1,6}[\s_-]+(?:[a-z]+[\s_-]+){0,3}(?:lane|ln|road|rd|street|st|avenue|ave|drive|dr|court|ct|way|place|pl|boulevard|blvd|highway|hwy|path|trail|terrace|circle|cir)\b/i;
 // Camera and phone file names (PS_00314, DJI_0042, IMG_1234, DSC01234, _MG_5678…) must never reach the public site.
 const CAMERA = /(?:^|[^a-z0-9])(?:ps|dji|img|dsc[fn]?|_?mg|mvi|gopr|pxl|gh0?\d)[_-]?\d{4,}/i;
@@ -130,4 +132,23 @@ export function isVerbatimExcerpt(excerpt, quote) {
     at = i + part.length;
   }
   return true;
+}
+
+/** Opaque id for a dashboard entry in the public status file: the dashboard hashes the open entry's name the same way. */
+export const statusId = (slug) => createHash('sha256').update('pgk:' + slug).digest('hex').slice(0, 16);
+/** File names in a reason can carry a client or project name: the public status file says "a photo file" instead. */
+const scrubReason = (r) => String(r).replace(/[^\s()“”"']*\.(?:jpe?g|png|webp|avif|gif|mp4|mov)\b/gi, 'a photo file');
+
+/**
+ * What /admin/status.json says. It is a public static file (Codex, Session 57 review), and the familiar review link is
+ * public too, so no build names a project in it: each held or review-only entry carries only an opaque id that the
+ * signed-in dashboard matches to the entries it loads, and file names are removed from the reasons. A production
+ * build lists no review-only entries (they do not exist there).
+ */
+export function dashboardStatus({ held, reviewOnly, reviewMode, commit = null, branch = null, builtAt = new Date().toISOString() }) {
+  return {
+    commit, branch, builtAt, mode: reviewMode ? 'review' : 'production',
+    held: held.map((h) => ({ collection: 'projects', id: statusId(h.slug), reasons: h.reasons.map(scrubReason) })),
+    reviewOnly: reviewMode ? reviewOnly.map((r) => ({ collection: 'projects', id: statusId(r.slug) })) : [],
+  };
 }
