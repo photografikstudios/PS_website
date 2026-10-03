@@ -5,6 +5,9 @@
   var config = window.PHOTOGRAFIK_CMS_CONFIG;
   // Sign-in runs through this site's own /api/cms-auth (never a third-party auth service).
   if (!config.backend.base_url) config.backend.base_url = window.location.origin;
+  // "View Live" opens the site this dashboard is running on: the review preview now, photografikstudios.com after
+  // launch (James, Oct 2 2026). Only the canonical host keeps the canonical address.
+  if (window.location.origin !== config.site_url) { config.site_url = window.location.origin; config.display_url = window.location.origin; }
   var library = window.PHOTOGRAFIK_LIBRARY || [];
   var byId = {};
   library.forEach(function (m) { byId[m.value] = m; });

@@ -56,6 +56,8 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     pauseAll(v);
     v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
     v.focus({ preventScroll: true });
+    // Phones: the portrait frame is taller than the tile it replaces; bring all of it on screen.
+    if (card.classList.contains('gcard--vertical') && matchMedia('(max-width: 620px)').matches) requestAnimationFrame(() => v.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
     track('video_play', { video: d.id, where: `${where}_inline` });
   }
 

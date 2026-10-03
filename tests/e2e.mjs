@@ -628,6 +628,24 @@ await check('RE gallery: inline mode plays in the card (horizontal and vertical)
   await p.context().close();
 });
 
+await check('RE gallery on a phone: a portrait film plays in a portrait frame (9:16), not letterboxed in the 16:10 tile', async () => {
+  for (const [w, h] of [[390, 844], [320, 568]]) {
+    const p = await newPage({ width: w, height: h });
+    await p.goto(base + '/real-estate?type=video');
+    const btn = p.locator('#rg-grid .gcard--vertical:not([hidden]) button.gcard__open').first();
+    await btn.scrollIntoViewIfNeeded(); await btn.click(); await p.waitForTimeout(700);
+    const r = await p.evaluate(() => { const v = document.querySelector('#rg-grid .gcard--vertical .gcard__video'); const b = v.getBoundingClientRect(); return { w: b.width, h: b.height, top: b.top, bottom: b.bottom, vh: innerHeight, ov: document.documentElement.scrollWidth - innerWidth, controls: v.controls, inline: v.playsInline, dialog: !!document.querySelector('dialog[open]') }; });
+    assert(r.h / r.w > 1.25 && r.h <= r.vh * 0.81 && r.controls && r.inline && !r.dialog && r.ov <= 0, `${w}px portrait frame ${JSON.stringify(r)}`);
+    await p.context().close();
+  }
+  const d = await newPage({ width: 1280, height: 900 });
+  await d.goto(base + '/real-estate?type=video');
+  await d.locator('#rg-grid .gcard--vertical:not([hidden]) button.gcard__open').first().click(); await d.waitForTimeout(400);
+  const dr = await d.evaluate(() => { const b = document.querySelector('#rg-grid .gcard--vertical .gcard__video').getBoundingClientRect(); return b.width / b.height; });
+  assert(Math.abs(dr - 1.6) < 0.02, 'desktop keeps the 16:10 tile ' + dr);
+  await d.context().close();
+});
+
 await check('RE gallery: lightbox mode (review override) with Escape and focus return', async () => {
   const p = await newPage();
   await p.goto(base + '/real-estate?player=lightbox');

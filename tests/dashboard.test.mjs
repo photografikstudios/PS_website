@@ -140,3 +140,26 @@ test('Home review excerpt is a verbatim shortening of the full quote, and Home l
   const home = await readFile(join(root, 'src/pages.js'), 'utf8');
   assert.match(home, /href="\/about#reviews"[^>]*>More reviews →<\/a>/);
 });
+
+test('sign-in: trims pasted keys, asks GitHub only for public_repo, and keeps the 503 message without keys', async () => {
+  const { default: auth } = await import('../api/cms-auth.js');
+  const run = (env) => {
+    const saved = { id: process.env.CMS_GITHUB_CLIENT_ID, secret: process.env.CMS_GITHUB_CLIENT_SECRET };
+    Object.assign(process.env, env);
+    for (const k of Object.keys(env)) if (env[k] === undefined) delete process.env[k];
+    const res = { headers: {}, setHeader(k, v) { this.headers[k.toLowerCase()] = v; }, end(b) { this.body = b; } };
+    auth({ headers: { host: 'example.vercel.app' } }, res);
+    process.env.CMS_GITHUB_CLIENT_ID = saved.id ?? ''; process.env.CMS_GITHUB_CLIENT_SECRET = saved.secret ?? '';
+    if (saved.id === undefined) delete process.env.CMS_GITHUB_CLIENT_ID; if (saved.secret === undefined) delete process.env.CMS_GITHUB_CLIENT_SECRET;
+    return res;
+  };
+  const ok = run({ CMS_GITHUB_CLIENT_ID: ' Ov23exampleId ', CMS_GITHUB_CLIENT_SECRET: ' s3cret ' });
+  assert.equal(ok.statusCode, 302);
+  const u = new URL(ok.headers.location);
+  assert.equal(u.searchParams.get('client_id'), 'Ov23exampleId');
+  assert.equal(u.searchParams.get('scope'), 'public_repo');
+  assert.equal(u.searchParams.get('redirect_uri'), 'https://example.vercel.app/api/cms-callback');
+  const none = run({ CMS_GITHUB_CLIENT_ID: undefined, CMS_GITHUB_CLIENT_SECRET: undefined });
+  assert.equal(none.statusCode, 503);
+  assert.match(none.body, /not set up yet/);
+});

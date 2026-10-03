@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     const r = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: process.env.CMS_GITHUB_CLIENT_ID, client_secret: process.env.CMS_GITHUB_CLIENT_SECRET, code, redirect_uri: `${origin}/api/cms-callback` }),
+      body: JSON.stringify({ client_id: (process.env.CMS_GITHUB_CLIENT_ID || '').trim(), client_secret: (process.env.CMS_GITHUB_CLIENT_SECRET || '').trim(), code, redirect_uri: `${origin}/api/cms-callback` }),
     });
     const data = await r.json();
     if (!data.access_token) { res.statusCode = 401; return res.end(page('error', { message: 'sign-in refused' }, origin)); }
