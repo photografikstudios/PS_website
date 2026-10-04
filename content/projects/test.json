@@ -8,18 +8,6 @@
       "orientation": "auto",
       "image": "/images/projects/test-cec9ddbd88.jpg",
       "alt": "test test"
-    },
-    {
-      "image": "/images/projects/test-3fc8ba6041.jpg",
-      "alt": "CMS test image one: teal background with a diagonal stripe.",
-      "focal": "center",
-      "orientation": "auto"
-    },
-    {
-      "image": "/images/projects/test-6edac6aea7.jpg",
-      "alt": "CMS test image two: rust background with a diagonal stripe.",
-      "focal": "center",
-      "orientation": "auto"
     }
   ],
   "sortPriority": 0,
