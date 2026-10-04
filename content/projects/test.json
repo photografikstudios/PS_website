@@ -8,9 +8,22 @@
       "orientation": "auto",
       "image": "/images/projects/test-cec9ddbd88.jpg",
       "alt": "test test"
+    },
+    {
+      "image": "/images/photografik-2027/curated/lauryn-card.webp",
+      "alt": "White colonial home in Lloyd Harbor at dusk, lights on",
+      "focal": "center",
+      "orientation": "auto"
+    },
+    {
+      "image": "/images/photografik-2027/curated/yankee-card.webp",
+      "alt": "Great room with tall windows in an Amagansett home by Yankee Barn Builders",
+      "focal": "center",
+      "orientation": "auto"
     }
   ],
   "sortPriority": 0,
+  "reviewOnly": true,
   "summary": "This is a test",
   "heroFocal": "center",
   "client": "Test Test",
@@ -29,6 +42,5 @@
     "Photography",
     "Video"
   ],
-  "category": "architecture-design",
-  "reviewOnly": true
+  "category": "architecture-design"
 }
