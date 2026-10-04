@@ -11,7 +11,6 @@
     }
   ],
   "sortPriority": 0,
-  "reviewOnly": true,
   "summary": "This is a test",
   "heroFocal": "center",
   "client": "Test Test",
@@ -30,5 +29,6 @@
     "Photography",
     "Video"
   ],
-  "category": "architecture-design"
+  "category": "architecture-design",
+  "reviewOnly": true
 }
