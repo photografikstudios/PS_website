@@ -1,26 +1,42 @@
 {
   "photos": [
     {
+      "image": "/images/projects/real-estate-test-52e73f4795.jpg",
+      "alt": "landscape test",
       "focal": "center",
       "orientation": "auto",
-      "image": "/images/projects/3-ps_00339.jpg",
-      "alt": "test 1"
+      "photoType": "photography"
     },
     {
+      "image": "/images/projects/real-estate-test-c5e6d58a24.jpg",
+      "alt": "vertical test",
       "focal": "center",
       "orientation": "auto",
-      "image": "/images/projects/3-ps_00339.jpg",
-      "alt": "test 2"
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/projects/real-estate-test-d1e5bd95f6.jpg",
+      "alt": "kitchen test",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/projects/real-estate-test-cec9ddbd88.jpg",
+      "alt": "",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
     }
   ],
   "sortPriority": 0,
   "summary": "real estate photo test",
   "heroFocal": "center",
-  "published": true,
+  "published": false,
   "heroAlt": "test main",
   "blurbApproved": true,
   "story": "real estate photo test",
-  "heroOrientation": "auto",
+  "heroOrientation": "horizontal",
   "rights": "approved",
   "title": "real estate test",
   "hero": "/images/projects/3-ps_00339.jpg",
