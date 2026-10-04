@@ -8,9 +8,16 @@
       "orientation": "auto",
       "image": "/images/projects/test-cec9ddbd88.jpg",
       "alt": "test test"
+    },
+    {
+      "image": "/images/projects/test-d1e5bd95f6.jpg",
+      "alt": "kitchen test",
+      "focal": "center",
+      "orientation": "auto"
     }
   ],
   "sortPriority": 0,
+  "reviewOnly": true,
   "summary": "This is a test",
   "heroFocal": "center",
   "client": "Test Test",
@@ -29,6 +36,5 @@
     "photography",
     "video"
   ],
-  "category": "architecture-design",
-  "reviewOnly": true
+  "category": "architecture-design"
 }
