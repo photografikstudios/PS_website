@@ -1,0 +1,32 @@
+{
+  "photos": [
+    {
+      "focal": "center",
+      "orientation": "auto",
+      "image": "/images/projects/3-ps_00339.jpg",
+      "alt": "test 1"
+    },
+    {
+      "focal": "center",
+      "orientation": "auto",
+      "image": "/images/projects/3-ps_00339.jpg",
+      "alt": "test 2"
+    }
+  ],
+  "sortPriority": 0,
+  "summary": "real estate photo test",
+  "heroFocal": "center",
+  "published": true,
+  "heroAlt": "test main",
+  "blurbApproved": true,
+  "story": "real estate photo test",
+  "heroOrientation": "auto",
+  "rights": "approved",
+  "title": "real estate test",
+  "hero": "/images/projects/3-ps_00339.jpg",
+  "shortTitle": "",
+  "services": [
+    "photography"
+  ],
+  "category": "real-estate"
+}
