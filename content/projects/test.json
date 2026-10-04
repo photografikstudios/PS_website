@@ -14,6 +14,12 @@
       "alt": "kitchen test",
       "focal": "center",
       "orientation": "auto"
+    },
+    {
+      "image": "/images/projects/test-c5e6d58a24.jpg",
+      "alt": "bathroom test",
+      "focal": "center",
+      "orientation": "auto"
     }
   ],
   "sortPriority": 0,
