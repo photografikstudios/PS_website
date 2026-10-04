@@ -26,8 +26,8 @@
   "hero": "/images/projects/test-fc560c9d51.jpg",
   "shortTitle": "This is a test for the upload",
   "services": [
-    "Photography",
-    "Video"
+    "photography",
+    "video"
   ],
   "category": "architecture-design",
   "reviewOnly": true

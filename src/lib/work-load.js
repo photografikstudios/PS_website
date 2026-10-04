@@ -52,7 +52,8 @@ export function expandProjectPhotos(root, p) {
     const f = staticFile(root, ph.image);
     const size = f && existsSync(f) ? imageSize(readFileSync(f)) : null;
     out.push({
-      id, type: 'image', project: p.slug, title: p.title, service: ['photography'], category: p.category,
+      id, type: 'image', project: p.slug, title: p.title,
+      service: ph.photoType === 'drone' ? ['photography', 'drone'] : ['photography'], category: p.category,
       orientation: ph.orientation && ph.orientation !== 'auto' ? ph.orientation : size ? orientationOf(size) : 'horizontal',
       src: ph.image, featured: false, rights: p.rights || 'pending', alt: ph.alt || null, location: p.location || null,
       client: p.client || null, source: 'upload', published: p.published !== false, packageIds: [], capturedYear: null,

@@ -1,6 +1,6 @@
 # Your site dashboard: a walkthrough
 
-This is the guide for James and anyone he trusts to update the website. It covers the dashboard at **/admin** on the review site. It is built and tested on the review branch only. It is not on the live photografikstudios.com yet, and it needs the one-time sign-in setup at the end of this guide before anyone can log in.
+This is the guide for James and anyone he trusts to update the website. For current testing, use **https://ps-website-git-redesign-2027-preview-creator-studios1.vercel.app/admin/**. This is the review deployment of `redesign/2027-preview`; it is not the live photografikstudios.com site. The older `ps-website-rust.vercel.app/admin` editor can still save records to the review branch, but that older site does not redeploy with them and may show broken images. Use the review URL to edit and verify.
 
 ## What you can change yourself
 
@@ -36,14 +36,16 @@ The checks: a description (alt text) on every photo, no street address in names 
 
 1. **Projects**, then **New Project**.
 2. Fill in **Project name**, choose the **Service** (for example Architecture & Design), and add the **Town or area** (never a street address).
-3. Add a **Short description** (one sentence for cards) and the **Story / goal** paragraph.
-4. Under **Photos**, choose **Upload photos** and pick several at once (hold Shift or Command). A thumbnail of each appears straight away. Write a **Description** for each one, for example "Kitchen with a marble island and brass pendant lights". Use the arrows to change the order and the cross to take one out. Everything is saved together when you press **Save**. To reuse a picture that is already on the site, choose **Choose from site photos**, tick as many as you like and press **Add**.
+3. Choose each standard **Services delivered** type. Put unusual work or client specifics in **Special work or client details**; that text appears on the project page without creating another gallery filter. Add a **Short description** (one sentence for cards) and the **Story / goal** paragraph.
+4. Under **Photos**, choose **Upload photos** and pick several at once (hold Shift or Command). A thumbnail of each appears straight away. Write a **Description** for each one, for example "Kitchen with a marble island and brass pendant lights". Choose **Photo type for gallery filters** for each image: Photography or Drone photography. Use the arrows to change the order and the cross to take one out. Everything is saved together when you press **Save**. To reuse a picture that is already on the site, choose **Choose from site photos**, tick as many as you like and press **Add**.
 5. Photos you add yourself count as approved to show. (There is no separate rights question any more; Published is still the switch that makes anything public.)
-6. Leave **Published** off and choose **Save**, then **Save now**. If you switch Published on while something the site needs is missing (a description, a photo's alt text), the dashboard refuses the save and lists what to fix.
+6. Leave **Published** off and choose **Save**, then **Save now**. If you switch Published on while something the site needs is missing (a description, a photo's alt text), the next review build holds the project as a draft and lists what to fix.
 7. Under the Published switch the dashboard says what the site actually did with the project after its last update: shown, or held back as a draft and why. A bar at the bottom of the dashboard counts anything held back, and its card in Projects is marked “Held”. (The status file the site publishes never names a project, so this works safely on the public site too.)
 8. Check the preview. The project has its own page with a Draft note. It does not appear on the live site, in galleries or in the sitemap.
 
 Tips for photos: a web JPG or WebP, 2,000 to 2,400 px on the long side, under 5 MB. The dashboard names the files for you after the project (so camera names like PS_00314 never appear on the site) and the site makes the smaller sizes automatically. iPhone HEIC photos need exporting as JPG first.
+
+The separate **Media** tab currently has a one-file Upload control. For several project photos in one action, use **Projects → Photos → Upload photos**. The project's Service field chooses its service-page gallery; each photo's Photo type controls the Photography/Drone filter. Merely writing a service name in special-work text does not tag an image.
 
 ## Walkthrough 3: publish it
 

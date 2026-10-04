@@ -6,7 +6,8 @@
   "category": "commercial",
   "location": "Long Island",
   "services": [
-    "Brand photography"
+    "photography",
+    "video"
   ],
   "summary": "Launch media for a new medical-aesthetics storefront: team headshots, photos of the space, service film and the owner on camera.",
   "story": "We photographed team headshots and the new space, filmed the team performing their med spa services, caught action shots during treatments and recorded the owner on camera talking about what they do. RevivaLuxe had everything it needed to hit the ground running with its new location.",
@@ -29,5 +30,6 @@
     "Action shots"
   ],
   "published": true,
-  "order": 70
+  "order": 70,
+  "serviceDetails": "Team headshots, space and action photography, a service film, and owner-on-camera footage."
 }

@@ -11,7 +11,7 @@
     "build": "node src/build.mjs",
     "build:production": "SITE_MODE=production node src/build.mjs",
     "serve": "node tests/serve.mjs",
-    "test": "node --test tests/pricing.test.mjs tests/gallery.test.mjs tests/field-notes.test.mjs tests/dashboard.test.mjs tests/legacy.test.mjs tests/fonts.test.mjs",
+    "test": "node --test --test-concurrency=1 tests/pricing.test.mjs tests/gallery.test.mjs tests/field-notes.test.mjs tests/dashboard.test.mjs tests/legacy.test.mjs tests/fonts.test.mjs",
     "test:e2e": "node tests/e2e.mjs",
     "check:legacy": "node scripts/legacy-check.mjs",
     "fetch:legacy": "node scripts/fetch-legacy.mjs",

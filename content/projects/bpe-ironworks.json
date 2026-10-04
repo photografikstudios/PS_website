@@ -5,7 +5,10 @@
   "client": "BPE Ironworks",
   "category": "commercial",
   "location": "Southampton",
-  "services": null,
+  "services": [
+    "photography",
+    "video"
+  ],
   "summary": null,
   "story": null,
   "goal": null,

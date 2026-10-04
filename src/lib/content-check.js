@@ -14,6 +14,7 @@ export const looksLikeAddress = (s) => typeof s === 'string' && (STREET.test(s.r
 export function checkContent({ work, fileExists, imageInfo = () => null, pageText = null, testimonials = null, faqs = null }) {
   const errors = []; const warnings = [];
   const cats = new Set((work.taxonomy?.category || []).map((c) => c.id));
+  const services = new Set((work.taxonomy?.service || []).map((s) => s.id));
   const projectSlugs = new Set(work.projects.map((p) => p.slug));
   const say = (live, msg) => (live ? errors : warnings).push(msg);
   const nameOf = (p) => `Project “${p.title || p.slug}”`;
@@ -23,6 +24,9 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
     const who = nameOf(p);
     if (!p.title) say(live, `${who}: add a title`);
     if (!cats.has(p.category)) say(live, `${who}: choose a service category`);
+    if (!Array.isArray(p.services) || !p.services.length) say(live && !p.path, `${who}: choose at least one standard service delivered`);
+    else for (const id of p.services) if (!services.has(id)) say(live, `${who}: “${id}” is not a standard service. Choose from the list and put special work in its own box`);
+    if (p.serviceDetails && p.serviceDetails.length > 300) say(live, `${who}: keep special work to 300 characters or fewer`);
     // Projects created in the dashboard (no fixed path yet) need both texts; a few original Commercial projects
     // deliberately hold them until the client wording is approved, so for those it is only a note.
     const isNew = !p.path;
@@ -43,6 +47,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
       const label = `${who}, photo ${i + 1}`;
       if (!ph || !ph.image) { say(live, `${label}: choose an image`); continue; }
       if (!ph.alt) say(live, `${label}: describe the photo (alt text)`);
+      if (ph.photoType && !['photography', 'drone'].includes(ph.photoType)) say(live, `${label}: choose Photography or Drone photography for the gallery filter`);
       if (looksLikeAddress(ph.image.split('/').pop())) say(live, `${label}: the file name looks like a street address. Rename the file and upload it again`);
       if (looksLikeCameraName(ph.image)) say(live, `${label}: still has its camera file name (${ph.image.split('/').pop()}). Remove it and add it again so the dashboard renames it`);
       if (!fileExists(ph.image)) { say(live, `${label}: ${ph.image} is missing`); continue; }

@@ -6,10 +6,8 @@
   "category": "agent-content",
   "location": "Lloyd Harbor",
   "services": [
-    "Photography",
-    "Teaser",
-    "Agent on camera",
-    "Film"
+    "photography",
+    "video"
   ],
   "summary": "Property photography and an agent-facing video package captured in one coordinated production day.",
   "story": "One production day, two jobs: complete property media for the listing and on-camera pieces the agent can keep using long after the sale.",
@@ -20,5 +18,6 @@
   "heroOrientation": "horizontal",
   "path": "/agent-content/property-tour-agent-media",
   "published": true,
-  "order": 20
+  "order": 20,
+  "serviceDetails": "Teaser film and agent-on-camera footage."
 }

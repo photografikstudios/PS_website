@@ -1275,7 +1275,9 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const rep = p.hero ? null : repOf(pm);
     const heroHtml = p.hero ? img(p.hero, { focal: p.heroFocal, alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
     const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
-    const services = isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : (p.services || []).join(', ');
+    const selectedServices = (Array.isArray(p.services) ? p.services : []).map((id) => svcLabel[id] || id);
+    const services = selectedServices.length ? selectedServices.join(' · ') : isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : '';
+    const serviceDetails = typeof p.serviceDetails === 'string' ? p.serviceDetails.trim() : '';
     const goal = isCom ? (p.blurbApproved && p.goal ? esc(p.goal) : blurb(p.goal, 'Project goal')) : '';
     const desc = p.summary || `${p.client || p.title}: ${catLabel[p.category].toLowerCase()} by Photografik Studios.`;
     pages[projectPath(p)] = {
@@ -1289,7 +1291,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
         ` : ''}${reviewMode && p.published === false ? `<p class="fn-draft" role="note"><strong>${p._held ? 'Not published yet: fix this in the dashboard.' : 'Draft, not published.'}</strong> ${p._held ? `Published is switched on, but the site is holding this project back because: ${esc(p._held.join('; '))}.` : 'Only review builds show this project. It is not in the sitemap, and the live site leaves it out of every gallery and returns 404 here until Published is switched on in /admin.'}</p>\n        ` : ''}<p class="eyebrow"><a href="${serviceRoute[p.category]}${isCom ? '#portfolio' : ''}">${esc(catLabel[p.category])}</a>${p.location ? ` · ${esc(p.location)}` : ''}</p>
         <h1 class="display">${esc(p.title)}</h1>
         ${lede ? `<p class="lede">${lede}</p>` : ''}
-        <dl class="project__facts">${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}<div><dt>${isCom ? 'Delivered' : 'Services'}</dt><dd>${esc(services)}</dd></div>${goal ? `<div><dt>Goal</dt><dd>${goal}</dd></div>` : ''}${p.location ? `<div><dt>Location</dt><dd>${esc(p.location)}</dd></div>` : ''}</dl>
+        <dl class="project__facts">${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}${services ? `<div><dt>${isCom ? 'Delivered' : 'Services'}</dt><dd>${esc(services)}</dd></div>` : ''}${serviceDetails ? `<div><dt>Special work</dt><dd>${esc(serviceDetails)}</dd></div>` : ''}${goal ? `<div><dt>Goal</dt><dd>${goal}</dd></div>` : ''}${p.location ? `<div><dt>Location</dt><dd>${esc(p.location)}</dd></div>` : ''}</dl>
         <div class="actions">${cta}</div>
       </div>
       <div class="project__hero">${withLoop(p, heroHtml)}</div>

@@ -5,7 +5,9 @@
   "client": "EEStairs",
   "category": "commercial",
   "location": "New York City",
-  "services": null,
+  "services": [
+    "video"
+  ],
   "summary": null,
   "story": null,
   "goal": null,

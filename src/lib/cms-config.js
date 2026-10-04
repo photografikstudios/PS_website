@@ -41,7 +41,6 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     ['Architecture & Design', '/architecture-design'], ['Commercial', '/commercial'], ['Agency Partnerships', '/agency-partnerships'],
     ['LI Creator Studios', '/creator-studios'], ['Send a Project Brief (contact)', '/contact'],
   ].map(([label, value]) => ({ label, value }));
-  const upload = { media_library: { config: { max_file_size: 5000000 } } };
   // Our own upload widgets (src/admin/cms.js) save into the same folders as before; the paths are stated per field.
   const projectMedia = { media_folder: '/static/images/projects', public_folder: '/images/projects' };
   const notesMedia = { media_folder: '/static/images/field-notes', public_folder: '/images/field-notes' };
@@ -57,12 +56,13 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'location', label: 'Town or area', widget: 'string', required: false, hint: hint.location },
     { name: 'segments', label: 'Disciplines (Architecture & Design filters)', widget: 'select', multiple: true, required: false, options: segments, hint: 'Only for Architecture & Design: who the work was for (architect, builder, designer…).' },
     { name: 'segmentSource', label: 'segmentSource', widget: 'hidden', required: false },
-    { name: 'services', label: 'Services delivered', widget: 'list', required: false, field: { name: 'service', label: 'Service', widget: 'string' }, hint: 'Shown on the project page, e.g. “Project photography”, “Architecture film”.' },
+    { name: 'services', label: 'Services delivered', widget: 'select', multiple: true, required: false, options: services, hint: 'Choose every standard type delivered. These same types are used by the gallery filters; the Service field above chooses the project gallery.' },
+    { name: 'serviceDetails', label: 'Special work or client details', widget: 'text', required: false, pattern: max(300, 'special work description'), hint: 'Optional: describe unusual deliverables or a special client brief in your own words. This appears separately on the project page and does not create a new gallery filter.' },
     { name: 'summary', label: 'Short description', widget: 'text', required: false, pattern: max(200, 'description'), hint: 'One sentence for cards and search results.' },
     { name: 'story', label: 'Story / goal', widget: 'text', required: false, pattern: max(700, 'story'), hint: 'The paragraph under the project name: what the work was for and how it was planned.' },
     { name: 'goal', label: 'Goal (Commercial only)', widget: 'text', required: false },
     { name: 'blurbApproved', label: 'Client approved this wording (Commercial only)', widget: 'boolean', required: false, hint: 'Commercial project texts show only after the client has approved them.' },
-    { name: 'delivered', label: 'What was delivered (Commercial only)', widget: 'list', required: false, field: { name: 'item', label: 'Item', widget: 'string' } },
+    { name: 'delivered', label: 'delivered', widget: 'hidden', required: false },
     { name: 'hero', label: 'Main image', widget: 'pgk-photo', required: false, ...projectMedia, hint: `Optional: without one, the first photo or film below leads the page. ${imageHint}` },
     { name: 'heroAlt', label: 'Main image description (alt text)', widget: 'string', required: false, hint: hint.alt },
     { name: 'heroFocal', label: 'Main image focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },

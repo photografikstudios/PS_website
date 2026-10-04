@@ -5,7 +5,9 @@
   "client": "CLOS Lighting",
   "category": "commercial",
   "location": "Long Island",
-  "services": null,
+  "services": [
+    "photography"
+  ],
   "summary": null,
   "story": null,
   "goal": null,

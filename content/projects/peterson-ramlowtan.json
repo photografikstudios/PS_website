@@ -6,9 +6,7 @@
   "category": "architecture-design",
   "location": "East Hampton",
   "services": [
-    "Architecture",
-    "Interiors",
-    "Exteriors"
+    "photography"
   ],
   "summary": "Architecture, interior and exterior photography documenting a finished residence.",
   "story": "A finished residence photographed the way its architects and builders think about it: light, proportion and how each space leads to the next.",
@@ -24,5 +22,6 @@
   ],
   "segmentSource": "James, Sep 27 2026: Peterson & Ramlowtan are architects and builders in one.",
   "published": true,
-  "order": 40
+  "order": 40,
+  "serviceDetails": "Interiors and exteriors."
 }

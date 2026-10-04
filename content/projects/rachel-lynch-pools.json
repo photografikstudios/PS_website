@@ -5,7 +5,10 @@
   "client": "Rachel Lynch Pools",
   "category": "commercial",
   "location": "The Hamptons",
-  "services": null,
+  "services": [
+    "photography",
+    "video"
+  ],
   "summary": null,
   "story": null,
   "goal": null,

@@ -41,13 +41,16 @@ test('portfolio: 13 original projects and 128 media records, one file each, name
 });
 
 test('content checks: the current site passes; published problems are errors, draft problems are warnings', () => {
-  const ok = checkContent({ work, fileExists, pageText, testimonials, faqs });
+  const current = structuredClone(work);
+  const first = checkContent({ work: current, fileExists, pageText, testimonials, faqs });
+  holdDashboardProjects(current, first.errors);
+  const ok = checkContent({ work: current, fileExists, pageText, testimonials, faqs });
   assert.deepEqual(ok.errors, []);
   const draft = { slug: 'new-house', title: '12 Ocean Road', category: 'architecture-design', location: '12 Ocean Road', rights: 'pending', published: false, photos: [{ image: '/images/projects/x.jpg' }] };
-  const r1 = checkContent({ work: { ...work, projects: [...work.projects, draft] }, fileExists });
+  const r1 = checkContent({ work: { ...current, projects: [...current.projects, draft] }, fileExists });
   assert.equal(r1.errors.length, 0);
   assert.ok(r1.warnings.some((w) => /street address/.test(w)) && r1.warnings.some((w) => /rights/.test(w)) && r1.warnings.some((w) => /alt text/.test(w)));
-  const r2 = checkContent({ work: { ...work, projects: [...work.projects, { ...draft, published: true }] }, fileExists });
+  const r2 = checkContent({ work: { ...current, projects: [...current.projects, { ...draft, published: true }] }, fileExists });
   for (const re of [/street address/, /rights are not marked Approved/, /describe the photo/, /short description/, /story/, /is missing/]) assert.ok(r2.errors.some((e) => re.test(e)), re);
   assert.ok(looksLikeAddress('99-hedges-lane-kitchen.jpg') && looksLikeAddress('123 Main St') && !looksLikeAddress('Amagansett') && !looksLikeAddress('yankee-hero.webp'));
   const badPage = checkContent({ work, fileExists, pageText: { pages: { '/': { eyebrow: '', title: 'x', lede: 'y' } } } });
@@ -61,13 +64,15 @@ test('project photos become ordinary media records that inherit the project (dra
   const png = Buffer.alloc(33); png.writeUInt32BE(0x89504e47, 0); png.writeUInt32BE(1200, 16); png.writeUInt32BE(1800, 20);
   await writeFile(join(tmp, 'static/images/projects/Great Room.png'), png);
   const p = { slug: 'shelter-island-house', title: 'Shelter Island House', category: 'architecture-design', location: 'Shelter Island', client: 'Studio X', rights: 'approved', published: false, sortPriority: 2,
-    photos: [{ image: '/images/projects/Great Room.png', alt: 'Great room', focal: 'top' }, { image: '/images/projects/Great Room.png', alt: 'Again' }] };
+    photos: [{ image: '/images/projects/Great Room.png', alt: 'Great room', focal: 'top', photoType: 'drone' }, { image: '/images/projects/Great Room.png', alt: 'Again' }] };
   const out = expandProjectPhotos(tmp, p);
   assert.equal(out.length, 2);
   assert.equal(out[0].id, 'shelter-island-house-great-room');
   assert.equal(out[1].id, 'shelter-island-house-great-room-2');
   assert.equal(out[0].orientation, 'vertical');
   assert.equal(out[0].focal, 'top');
+  assert.deepEqual(out[0].service, ['photography', 'drone']);
+  assert.deepEqual(out[1].service, ['photography']);
   assert.equal(out[1].focal, undefined);
   for (const m of out) {
     assert.equal(m.project, p.slug); assert.equal(m.category, p.category); assert.equal(m.published, false);
@@ -90,6 +95,12 @@ test('dashboard config: sections, no pricing/legal/booking, every existing field
   assert.equal(col('films').create, false);
   assert.equal(col('projects').fields.find((f) => f.name === 'published').default, false);
   assert.equal(col('photos').fields.find((f) => f.name === 'published').default, false);
+  const delivered = col('projects').fields.find((f) => f.name === 'services');
+  assert.equal(delivered.widget, 'select');
+  assert.equal(delivered.multiple, true);
+  assert.deepEqual(delivered.options.map((o) => o.value), work.taxonomy.service.map((s) => s.id));
+  assert.equal(col('projects').fields.find((f) => f.name === 'serviceDetails').widget, 'text');
+  assert.equal(col('projects').fields.find((f) => f.name === 'delivered').widget, 'hidden');
   const policy = await read('content/faqs-policy.json');
   const editable = faqs['real-estate'].map((f) => f.q);
   assert.ok(policy['real-estate'].every((f) => !editable.includes(f.q)) && policy['real-estate'].some((f) => /reschedule/i.test(f.q)));
@@ -115,7 +126,7 @@ test('a draft project with photos: preview shows it with a Draft note; productio
   if (existsSync(join(root, 'static/images/projects'))) for (const f of await readdir(join(root, 'static/images/projects'))) await symlink(join(root, 'static/images/projects', f), join(tmp, 'static/images/projects', f));
   await cp(join(root, 'static/images/photografik-2027/curated/yankee-hero.webp'), join(tmp, 'static/images/projects/shelter-island-great-room.webp'));
   await writeFile(join(tmp, 'content/projects/shelter-island-house.json'), JSON.stringify({
-    title: 'Shelter Island House', category: 'architecture-design', client: 'Studio X', location: 'Shelter Island', services: ['Project photography'],
+    title: 'Shelter Island House', category: 'architecture-design', client: 'Studio X', location: 'Shelter Island', services: ['photography'],
     summary: 'Project photography of a new house.', story: 'Coverage planned around the architect’s portfolio.', rights: 'approved', published: false,
     photos: [{ image: '/images/projects/shelter-island-great-room.webp', alt: 'Great room with timber trusses', focal: 'upper-third' }],
   }, null, 2));
@@ -176,7 +187,10 @@ test('sign-in: trims pasted keys, asks GitHub only for public_repo, and keeps th
 test('camera file names: caught on dashboard records, none on the original portfolio', () => {
   for (const n of ['/images/projects/5-ps_00519.jpg', 'PS_00314.jpg', '/x/DJI_0042.JPG', 'IMG_1234.jpeg', 'DSC01234.jpg', '_MG_5678.jpg', 'PXL_20260101_1234.jpg']) assert.equal(looksLikeCameraName(n), true, n);
   for (const n of ['/images/projects/test-fc560c9d51.jpg', '/v/re-hamptons-beachfront.webp', 'upload-check-52e73f4795.png', 'call_plk7npqwfjep2upn6i7x37lu.png']) assert.equal(looksLikeCameraName(n), false, n);
-  const { errors, warnings } = checkContent({ work: structuredClone(work), fileExists, pageText, testimonials, faqs });
+  const originals = structuredClone(work);
+  originals.projects = originals.projects.filter((p) => p.path);
+  originals.media = originals.media.filter((m) => originals.projects.some((p) => p.slug === m.project) || !m.fromProject);
+  const { errors, warnings } = checkContent({ work: originals, fileExists, pageText, testimonials, faqs });
   assert.deepEqual([...errors, ...warnings].filter((e) => /camera file name/.test(e)), []);
 });
 
@@ -198,6 +212,8 @@ test('Test project: clean file names, same photos byte for byte, originals kept,
 
 test('held projects: a dashboard project with a problem is held with its reasons; an original is never held', () => {
   const w = structuredClone(work);
+  w.projects = w.projects.filter((p) => p.slug !== 'real-estate-test');
+  w.media = w.media.filter((m) => m.project !== 'real-estate-test');
   const t = w.projects.find((p) => p.slug === 'test');
   t.photos[0].alt = ''; t.hero = '/images/projects/5-ps_00519.jpg';
   const orig = w.projects.find((p) => p.path);

@@ -5,7 +5,11 @@
   "client": "Torella Pools",
   "category": "commercial",
   "location": "Long Island",
-  "services": null,
+  "services": [
+    "photography",
+    "video",
+    "drone"
+  ],
   "summary": null,
   "story": null,
   "goal": null,

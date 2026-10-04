@@ -6,10 +6,8 @@
   "category": "real-estate",
   "location": "Lloyd Harbor",
   "services": [
-    "Photography",
-    "Twilight",
-    "Aerial",
-    "Floor plan"
+    "photography",
+    "drone"
   ],
   "summary": "Listing photography, twilight, aerial coverage and a floor plan for a residential property.",
   "story": "A coordinated listing day built around how the home would be marketed: a complete stills set for the room flow and finishes, twilight frames for the launch, aerial context for the setting and a floor plan so buyers understand the layout before they visit.",
@@ -20,5 +18,6 @@
   "heroOrientation": "vertical",
   "path": "/real-estate/lauryn-koke-daniel-gale-sothebys",
   "published": true,
-  "order": 10
+  "order": 10,
+  "serviceDetails": "Twilight photography and floor plans."
 }

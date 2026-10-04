@@ -6,9 +6,8 @@
   "category": "creator-studios",
   "location": "Bohemia",
   "services": [
-    "Podcast",
-    "Interview",
-    "Social cutdowns"
+    "studio",
+    "video"
   ],
   "summary": "Podcast and interview production in Creator Studios, with long-form and short-form edits.",
   "story": "Multi-camera podcast and interview sessions in our Bohemia studio, with hands-on direction on ideas, pacing and delivery.",
@@ -19,5 +18,6 @@
   "heroOrientation": "vertical",
   "path": "/creator-studios/sessions",
   "published": true,
-  "order": 130
+  "order": 130,
+  "serviceDetails": "Interviews and social cutdowns."
 }

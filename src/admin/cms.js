@@ -53,11 +53,16 @@
   var FOCAL = { top: '50% 15%', 'upper-third': '50% 30%', bottom: '50% 85%', left: '20% 50%', right: '80% 50%' };
   var catLabels = {};
   (window.PHOTOGRAFIK_WORK_CATEGORIES || []).forEach(function (c) { catLabels[c.value] = c.label; });
+  var serviceLabels = {};
+  var projectFields = (config.collections || []).find(function (c) { return c.name === 'projects'; });
+  var serviceField = projectFields && projectFields.fields.find(function (f) { return f.name === 'services'; });
+  ((serviceField && serviceField.options) || []).forEach(function (s) { serviceLabels[s.value] = s.label; });
   var ProjectPreview = createClass({
     render: function () {
       var e = this.props.entry; var self = this;
       var get = function (k) { return e.getIn(['data', k]); };
       var photos = (get('photos') || []).toJS ? get('photos').toJS() : (get('photos') || []);
+      var services = (get('services') || []).toJS ? get('services').toJS() : (get('services') || []);
       var warn = [];
       // Historic records that were never cleared keep their pending state (set before Oct 2 2026); say so plainly.
       if (get('rights') === 'pending') warn.push('This older project was never cleared to show. Ask us to clear it before switching Published on.');
@@ -75,6 +80,8 @@
           h('h1', { className: 'display' }, get('title') || 'Untitled project'),
           get('story') ? h('p', { className: 'lede' }, get('story')) : null,
           get('client') ? h('p', {}, h('strong', {}, 'Client: '), get('client')) : null,
+          services.length ? h('p', {}, h('strong', {}, 'Services: '), services.map(function (s) { return serviceLabels[s] || s; }).join(' · ')) : null,
+          get('serviceDetails') ? h('p', {}, h('strong', {}, 'Special work: '), get('serviceDetails')) : null,
           fig(get('hero'), get('heroAlt'), get('heroFocal'), 'hero'),
           h('div', { className: 'dash-grid' }, photos.map(function (p, i) { return fig(p.image, p.alt, p.focal, 'p' + i); }))));
     },
@@ -174,7 +181,7 @@
     onFiles: function (e) {
       var self = this; var files = e.target.files; self.setState({ busy: true, msgs: [] });
       addFiles(this.props, files).then(function (r) {
-        var arr = toArr(self.props.value).concat(r.paths.map(function (p) { return { image: p, alt: '', focal: 'center', orientation: 'auto' }; }));
+        var arr = toArr(self.props.value).concat(r.paths.map(function (p) { return { image: p, alt: '', focal: 'center', orientation: 'auto', photoType: 'photography' }; }));
         self.props.onChange(arr); self.setState({ busy: false, msgs: r.msgs });
       }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
       e.target.value = '';
@@ -193,7 +200,7 @@
           h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: true }); } }, 'Choose from site photos'),
           h('span', { className: 'pgk-gallery__count' }, arr.length ? arr.length + (arr.length === 1 ? ' photo' : ' photos') + '. The first one leads.' : 'Choose several at once: hold Shift or Command.'),
           h('input', { type: 'file', multiple: true, accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose photos' })),
-        this.state.picking ? h(Picker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { self.props.onChange(toArr(self.props.value).concat(list.map(function (x) { return { image: x.src, alt: x.alt || '', focal: 'center', orientation: 'auto' }; }))); self.setState({ picking: false }); } }) : null,
+        this.state.picking ? h(Picker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { self.props.onChange(toArr(self.props.value).concat(list.map(function (x) { return { image: x.src, alt: x.alt || '', focal: 'center', orientation: 'auto', photoType: (x.service || []).includes('drone') ? 'drone' : 'photography' }; }))); self.setState({ picking: false }); } }) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
         h('ol', { className: 'pgk-gallery__list' }, arr.map(function (ph, i) {
           var sz = self.state.sizes[ph.image];
@@ -201,6 +208,8 @@
             h(Thumb, { src: thumbFor(ph.image, self.props.getAsset, self.props.field), path: ph.image, alt: ph.alt, onSize: function (w, ht) { if (!sz) { var s = Object.assign({}, self.state.sizes); s[ph.image] = [w, ht]; self.setState({ sizes: s }); } } }),
             h('div', { className: 'pgk-row__fields' },
               h('label', {}, h('span', {}, 'Description (alt text)' + (ph.alt ? '' : ' · needed before publishing')), h('input', { type: 'text', value: ph.alt || '', placeholder: 'e.g. Kitchen with a marble island and brass pendant lights', onChange: function (e) { self.update(i, 'alt', e.target.value); } })),
+              h('label', {}, h('span', {}, 'Photo type for gallery filters'), h('select', { value: ph.photoType || 'photography', onChange: function (e) { self.update(i, 'photoType', e.target.value); } },
+                h('option', { value: 'photography' }, 'Photography'), h('option', { value: 'drone' }, 'Drone photography'))),
               h('label', {}, h('span', {}, 'Focus when cropped'), h('select', { value: ph.focal || 'center', onChange: function (e) { self.update(i, 'focal', e.target.value); } }, FOCAL_OPTIONS.map(function (o) { return h('option', { key: o[0], value: o[0] }, o[1]); }))),
               h('p', { className: 'pgk-row__file' }, String(ph.image).split('/').pop() + (sz ? ' · ' + sz[0] + '×' + sz[1] + ' px' + (Math.max(sz[0], sz[1]) < 1200 ? ' · too small for the site (1,600 px or more)' : '') : ''))),
             h('div', { className: 'pgk-row__tools' },
@@ -276,6 +285,16 @@
     }
     // Projects: mark held and review-only cards (matched by opaque id, see the status file note below).
     if (!window.__pgkBadgeRun) { window.__pgkBadgeRun = true; setTimeout(function () { window.__pgkBadgeRun = false; badgeCards(); }, 80); }
+    // Decap's separate Media dialog uploads one file at a time. Point batch work to the Project photo picker,
+    // which saves several photos with their descriptions and gallery types in a single project update.
+    var dialog = Array.prototype.find.call(document.querySelectorAll('[role="dialog"]'), function (d) { return d.querySelector('h1') && /^(Media assets|Images)$/.test(d.querySelector('h1').textContent.trim()); });
+    if (dialog && !dialog.querySelector('#pgk-media-help')) {
+      var note = document.createElement('p'); note.id = 'pgk-media-help'; note.className = 'pgk-media-help';
+      note.appendChild(document.createTextNode('Adding several images to a project? '));
+      var link = document.createElement('a'); link.href = '#/collections/projects'; link.textContent = 'Open Projects and use Photos → Upload photos';
+      link.onclick = function () { var close = dialog.querySelector('button[aria-label="Close"]'); if (close) close.click(); };
+      note.appendChild(link); dialog.insertBefore(note, dialog.children[1] || null);
+    }
   }
   function badgeCards() {
     var links = document.querySelectorAll('a[href*="/collections/projects/entries/"]');
@@ -425,6 +444,7 @@
     '.pgk-thumb--empty, .pgk-thumb--missing { display: flex; align-items: center; justify-content: center; padding: 8px; font-size: 12px; line-height: 1.3; color: #5b6472; text-align: center; box-sizing: border-box; }',
     '.pgk-gallery__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }',
     '.pgk-gallery__count { font-size: 13px; color: #5b6472; }',
+    '.pgk-media-help { margin: 10px 24px; padding: 12px 14px; background: #eef4f4; border-radius: 6px; font-size: 14px; color: #273c3d; } .pgk-media-help a { color: #176277; font-weight: 600; text-decoration: underline; }',
     '.pgk-btn { font: inherit; font-size: 14px; padding: 8px 14px; min-height: 40px; border-radius: 6px; border: 1px solid #1f2937; background: #1f2937; color: #fff; cursor: pointer; }',
     '.pgk-btn--quiet { background: #fff; color: #1f2937; }', '.pgk-btn[disabled] { opacity: .6; cursor: wait; }',
     '.pgk-gallery__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }',
