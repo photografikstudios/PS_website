@@ -65,12 +65,12 @@ export function buildPages(ctx) {
   };
 
   // James, Sep 28 2026: galleries show the media only, with no captions beneath (names stay in alt text and labels).
-  const mediaCard = (m, { showMeta = false, sizes } = {}) => {
+  const mediaCard = (m, { showMeta = false, sizes, photoLightboxIndex } = {}) => {
     const project = m.project ? projectBySlug[m.project] : null;
     const href = project && visible(project) ? projectPath(project) : null;
     const frame = m.type === 'video'
       ? videoPlayer(m, { sizes })
-      : `<div class="still still--${m.orientation}">${href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { focal: m.focal, alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${href ? '</a>' : ''}</div>`;
+      : `<div class="still still--${m.orientation}">${photoLightboxIndex != null ? `<button type="button" class="still__link still__link--lightbox" data-project-photo="${photoLightboxIndex}" aria-label="Enlarge ${esc(m.alt || m.title)}">` : href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { focal: m.focal, alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${photoLightboxIndex != null ? '</button>' : href ? '</a>' : ''}</div>`;
     const meta = showMeta ? `<div class="card__meta">
         <p class="card__title">${href ? `<a href="${href}">${esc(m.title)}</a>` : esc(m.title)}</p>
         <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}${m.type === 'video' && m.dialogue !== false && !m.captions ? ` ${needsApproval({ approval: 'pending' }, m.dialogue ? 'Captions and transcript needed before launch' : 'Check whether this film has speech; captions needed if it does')}` : ''}${m.type === 'video' && m.captions && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? ` ${needsApproval({ approval: 'pending' }, 'Captions are a machine-transcribed draft; James to proofread names and wording before launch')}` : ''}</p>
@@ -889,7 +889,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
   </div>
 </section>
 
-<section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-batch="8" data-batch-phone="6">
+<section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-photo-lightbox data-batch="8" data-batch-phone="6">
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Recent projects, <em>by discipline.</em></h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter architecture and design work" onsubmit="return false">
@@ -1271,9 +1271,19 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const isCom = p.category === 'commercial';
     const related = isCom ? [] : media.filter((m) => m.project !== p.slug && m.category === p.category).slice(0, 3);
     const isRE = p.category === 'real-estate';
+    const photoLightbox = p.category === 'architecture-design';
+    const projectPhotos = photoLightbox ? [
+      ...(p.hero ? [{ id: `${p.slug}-hero`, type: 'image', project: p.slug, title: p.title, src: p.hero, alt: p.heroAlt || p.title, orientation: p.heroOrientation, service: [], category: p.category }] : []),
+      ...pm.filter((m) => m.type === 'image'),
+    ].filter((m, i, all) => all.findIndex((other) => other.src === m.src) === i) : [];
+    const photoIndex = new Map(projectPhotos.map((m, i) => [m.src, i]));
     const cta = isRE ? bookBtn('project_detail') : `<a class="btn btn--solid" href="/contact?type=${esc(p.category)}" data-track="project_click" data-track-location="project_detail">${p.category === 'commercial' ? 'Plan a Production' : p.category === 'architecture-design' ? 'Plan the Next Project' : 'Send a Project Brief'}</a>`;
     const rep = p.hero ? null : repOf(pm);
-    const heroHtml = p.hero ? img(p.hero, { focal: p.heroFocal, alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
+    const heroImage = p.hero || (rep?.type === 'image' ? rep.src : null);
+    const heroStill = p.hero ? img(p.hero, { focal: p.heroFocal, alt: p.heroAlt, eager: true, sizes: '(min-width: 900px) 55vw, 100vw' }) : rep?.type === 'image' ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
+    const heroHtml = heroImage && photoLightbox
+      ? `<button type="button" class="project__photo" data-project-photo="${photoIndex.get(heroImage)}" aria-label="Enlarge ${esc(p.heroAlt || rep?.alt || p.title)}">${heroStill}</button>`
+      : p.hero ? heroStill : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
     const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
     const selectedServices = (Array.isArray(p.services) ? p.services : []).map((id) => svcLabel[id] || id);
     const services = selectedServices.length ? selectedServices.join(' · ') : isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : '';
@@ -1282,8 +1292,9 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const desc = p.summary || `${p.client || p.title}: ${catLabel[p.category].toLowerCase()} by Photografik Studios.`;
     pages[projectPath(p)] = {
       seo: { title: `${p.title} | ${catLabel[p.category]} | Photografik`, description: desc, image: p.hero || rep?.poster || rep?.src },
+      scripts: projectPhotos.length ? ['project-gallery.js'] : [],
       body: `
-<article class="project${isCom ? ' project--commercial' : ''}">
+<article class="project${isCom ? ' project--commercial' : ''}"${photoLightbox ? ' data-project-lightbox' : ''}>
   <header class="section project__head">
     <div class="wrap project__grid project__grid--${p.heroOrientation}">
       <div class="project__intro">
@@ -1297,9 +1308,10 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <div class="project__hero">${withLoop(p, heroHtml)}</div>
     </div>
   </header>
-  ${(rest => rest.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(rest, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : '')(rep ? pm.filter((m) => m !== rep) : pm)}
+  ${(rest => rest.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(rest, (m) => mediaCard(m, { photoLightboxIndex: photoLightbox && m.type === 'image' ? photoIndex.get(m.src) : undefined }))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : '')(rep ? pm.filter((m) => m !== rep) : pm)}
   ${related.length ? `<section class="section"><div class="wrap"><div class="section-head"><h2 class="h2 reveal">Related work</h2><a class="link-arrow" href="${serviceRoute[p.category]}${p.category === 'creator-studios' ? '' : '#portfolio'}">More ${esc(catLabel[p.category])} ${arrow}</a></div><div class="justified">${join(related, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
   ${isCom ? `<section class="section"><div class="wrap cta-band cta-band--light"><h2 class="h2">Planning something similar?</h2><p>Tell us about the business, the audience and where the media will be used.</p><div class="actions">${cta}<a class="link-arrow" href="/commercial#portfolio">More client projects ${arrow}</a></div></div></section>` : ''}
+  ${photoLightbox && projectPhotos.length ? `${lightboxDialog()}${itemsJson(projectPhotos)}` : ''}
 </article>`,
     };
   }

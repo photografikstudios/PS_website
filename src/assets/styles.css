@@ -224,6 +224,10 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .still--horizontal { aspect-ratio: 3 / 2; } .still--vertical { aspect-ratio: 9 / 16; }
 .still img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
 .still__link:hover img { transform: scale(1.035); }
+.still__link--lightbox, .project__photo { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; cursor: zoom-in; }
+.still__link--lightbox img { display: block; }
+.still__link--lightbox:focus-visible, .project__photo:focus-visible { outline: 3px solid var(--rust); outline-offset: 4px; }
+.project__photo img { display: block; }
 
 /* ---------- Inline video (no dialog) ---------- */
 .vplayer { position: relative; background: var(--charcoal-3); overflow: hidden; }

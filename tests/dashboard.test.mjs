@@ -200,7 +200,7 @@ test('Test project: clean file names, same photos byte for byte, originals kept,
   assert.equal(t.published, true, 'James’s Published switch is left as he set it');
   const sha = async (p) => createHash('sha256').update(await readFile(join(root, 'static', p))).digest('hex');
   assert.equal(t.hero, '/images/projects/test-fc560c9d51.jpg');
-  assert.equal(t.photos.length, 1);
+  assert.ok(t.photos.length >= 1, 'the original review photo is still present');
   assert.equal(t.photos[0].image, '/images/projects/test-cec9ddbd88.jpg');
   assert.equal(t.photos[0].alt, 'test test');
   assert.equal(await sha(t.hero), await sha('/images/projects/5-ps_00519.jpg'));

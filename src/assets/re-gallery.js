@@ -28,7 +28,8 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
   let mode = root.dataset.player === 'lightbox' ? 'lightbox' : 'inline';
   if (root.hasAttribute('data-allow-player-override') && ['inline', 'lightbox'].includes(params.get('player'))) mode = params.get('player');
   root.dataset.mode = mode;
-  const lb = mode === 'lightbox' ? createLightbox(root.querySelector('dialog'), items, { where }) : null;
+  const photoLightbox = root.hasAttribute('data-photo-lightbox');
+  const lb = mode === 'lightbox' || photoLightbox ? createLightbox(root.querySelector('dialog'), items, { where }) : null;
 
   let shown = BATCH;
   let current = [];
@@ -61,7 +62,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     track('video_play', { video: d.id, where: `${where}_inline` });
   }
 
-  if (mode === 'inline') {
+  if (mode === 'inline' && !photoLightbox) {
     // Photos are shown in place; they are not buttons in inline mode.
     for (const card of cards) {
       if (card.dataset.kind !== 'image') continue;
@@ -78,6 +79,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     if (!btn) return;
     const card = btn.closest('.gcard');
     if (mode === 'lightbox') lb.open(+card.dataset.i, current.slice(0, shown), btn);
+    else if (card.dataset.kind === 'image' && photoLightbox) lb.open(+card.dataset.i, current.slice(0, shown).filter((i) => items[i].kind === 'image'), btn);
     else if (card.dataset.kind === 'video') playInline(card);
   });
 
