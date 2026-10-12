@@ -173,8 +173,8 @@
     {
       "id": "content-session",
       "name": "General studio content",
-      "amount": 499,
-      "priceLabel": "$499",
+      "amount": 500,
+      "priceLabel": "$500",
       "unit": "for a 2-hour minimum",
       "detail": "Film anything you like in the studio: short-form content, educational videos, photoshoots and more.",
       "includes": [
@@ -186,7 +186,7 @@
       ],
       "booking": "square",
       "approval": "approved",
-      "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing. | James, Sep 28 2026 page review: display \"Starting at $499 for a 2-hour minimum\"; this supersedes the older $250-per-hour wording. The Square booking destination is not claimed to match (see handoff). | James, Sep 30 2026 (Wednesday pass, item 3): first two Creator offers and prices approved as configured."
+      "note": "James, Sep 26 2026. Long Island Creator Studios pricing page (licreatorstudios.com/pricing), pointed to by James on Sep 26 2026 as the source for Creator pricing. | James, Sep 28 2026 page review: display \"Starting at $499 for a 2-hour minimum\"; this supersedes the older $250-per-hour wording. The Square booking destination is not claimed to match (see handoff). | James, Sep 30 2026 (Wednesday pass, item 3): first two Creator offers and prices approved as configured. | James, Oct 12 2026: \"just say 500\" for the 2-hour general studio content, matching Square's 2 Hours $500."
     },
     {
       "id": "monthly-content",

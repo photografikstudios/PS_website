@@ -1145,11 +1145,12 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     ['Can I livestream from the studio?', 'Yes. We have fast internet and can stream to any platform.'],
     ['Can you help with uploading and promoting the podcast?', 'Yes. Editing, social media optimization and distribution help are available. Contact us for details.'],
     ['Can I book by the hour, or for less time?', 'No. Podcast sessions are booked in 90-minute blocks. Studio content is booked by the hour with a 2-hour minimum. For longer sessions, please contact us.'],
-    ['What is the cancellation policy?', 'Cancel with at least 48 hours’ notice for a full refund, or with 24 hours’ notice for a 50% refund. Cancellations with less than 24 hours’ notice are not refunded.',],
+    ['What is the cancellation policy?', 'Cancel 48 hours or more before your session for a full refund. Between 48 and 24 hours before, you get 50% back. With less than 24 hours’ notice, the session is not refundable.',],
   ];
   const csBy = Object.fromEntries(sessions.filter(isApproved).map((x) => [x.id, x]));
   // Only approved figures are quoted. James, Sep 27 2026: the single session is $249.
   // James, Sep 28 2026: "Starting at" before every displayed price; general studio content starts at $499 for a 2-hour minimum.
+  // James, Oct 12 2026: $500 (matches Square's 2 Hours $500).
   const csCtaParts = [
     csBy['podcast-session'] && `Single studio sessions start at ${formatUSD(csBy['podcast-session'].amount)} for up to 90 minutes.`,
     csBy['content-session'] && `General studio content starts at ${formatUSD(csBy['content-session'].amount)} for a 2-hour minimum.`,
@@ -1413,7 +1414,7 @@ ${splitCta('Let us help with the next one.')}`,
     <header class="legal__head">
       <p class="eyebrow">Legal</p>
       <h1 class="display legal__title">${esc(page.title)}</h1>
-      <p class="legal__date"><strong>Effective Date: ${esc(eff)}</strong></p>
+      <p class="legal__date"><strong>Effective Date: ${esc(eff)}</strong>${legal.updatedDate ? ` · Last updated: ${esc(new Date(legal.updatedDate + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }))}` : ''}</p>
       ${xHref ? `<p class="legal__cross">Read this together with our <a href="${xHref}">${esc(xLabel)}</a>.</p>` : ''}
       ${legal.ready ? '' : `<p class="legal__pending"><span class="needs-approval">Review build only</span> The page structure is ready; the text will be copied from ${esc(legal.source.file)} when it is supplied. This page is not published.</p>`}
     </header>

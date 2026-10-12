@@ -5,7 +5,23 @@
     "status": "received",
     "sha256": "f96e664ccce5b18c7209e3de8f1618b2b5c0b00fe973f65a47857c6f5b5641b8",
     "receivedFrom": "James, uploaded in the Claude session on Sep 30 2026 (Session 47)",
-    "_note": "Text copied verbatim (whitespace trimmed; bold kept; RAW/Markdown characters escaped). Order changed only as OWNER_LEGAL_HIERARCHY_2026-09-30.md directs: Licensing section 10 (Podcast, Studio & Creator Content) and Terms section 15 (Podcast, Studio and Content Production Rules) moved to a labelled Creator supplement at the end; the remaining sections renumbered continuously. docNumber records each section's number in the source document."
+    "_note": "Text copied verbatim (whitespace trimmed; bold kept; RAW/Markdown characters escaped). Order changed only as OWNER_LEGAL_HIERARCHY_2026-09-30.md directs: Licensing section 10 (Podcast, Studio & Creator Content) and Terms section 15 (Podcast, Studio and Content Production Rules) moved to a labelled Creator supplement at the end; the remaining sections renumbered continuously. docNumber records each section's number in the source document.",
+    "amendments": [
+      {
+        "date": "2026-10-12",
+        "by": "James (owner decision relayed in the Claude session, Oct 12 2026)",
+        "sections": [
+          "Terms 7.1 (two items added)",
+          "Terms 12.3 (one sentence added)"
+        ],
+        "text": [
+          "Real estate listing appointments: a same-day cancellation for a non-weather reason carries a $150 fee, in place of the percentage charges above.",
+          "Creator Studios sessions: cancellations made 48 hours or more before the session receive a full refund; cancellations made between 48 and 24 hours before the session receive a 50% refund; cancellations made less than 24 hours before the session are non-refundable.",
+          "Creator Studios session payments are refunded as stated in section 7.1."
+        ],
+        "_note": "Owner decisions: $150 same-day cancellation for real estate; studio full refund at 48 hours or more, 50% between 48 and 24 hours, non-refundable under 24 hours. The Sep 30 Word document (sha256 above) does not yet contain these sentences; update it to match."
+      }
+    ]
   },
   "effectiveDate": "2026-09-30",
   "ready": true,
@@ -506,6 +522,8 @@
                     "More than 48 hours before the scheduled start: one reschedule may be permitted without a rescheduling fee, subject to availability. Any non-refundable third-party costs remain payable.",
                     "Between 24 and 48 hours before the scheduled start: the Company may charge up to 50% of the scheduled production fee, retain the deposit, or apply a rescheduling fee.",
                     "Less than 24 hours before the scheduled start, same-day cancellation, no-show, denied access, or a location that is materially unprepared: the Company may charge up to 100% of the scheduled production fee plus non-refundable third-party costs.",
+                    "Real estate listing appointments: a same-day cancellation for a non-weather reason carries a $150 fee, in place of the percentage charges above.",
+                    "Creator Studios sessions: cancellations made 48 hours or more before the session receive a full refund; cancellations made between 48 and 24 hours before the session receive a 50% refund; cancellations made less than 24 hours before the session are non-refundable.",
                     "Custom productions, studio blocks, travel assignments, projects involving hired crew/talent, or projects requiring third-party rentals may have stricter cancellation terms stated in the proposal."
                   ]
                 },
@@ -636,7 +654,7 @@
                 },
                 {
                   "type": "p",
-                  "text": "Deposits, retainers, booking fees, and payments made to reserve production time are non-refundable unless the Company expressly states otherwise in writing. Where permitted, the Company may apply an existing deposit to a timely rescheduled date at its discretion."
+                  "text": "Deposits, retainers, booking fees, and payments made to reserve production time are non-refundable unless the Company expressly states otherwise in writing. Where permitted, the Company may apply an existing deposit to a timely rescheduled date at its discretion. Creator Studios session payments are refunded as stated in section 7.1."
                 },
                 {
                   "type": "h3",
@@ -946,5 +964,6 @@
         "text": "Project Portfolio License issued to the commissioning business for its own website, portfolio, organic social media, proposals, awards, and project-specific PR/editorial submissions. Use by other project participants, manufacturers, vendors, advertisers, or real-estate representatives requires separate licensing unless expressly included."
       }
     ]
-  }
+  },
+  "updatedDate": "2026-10-12"
 }

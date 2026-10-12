@@ -907,8 +907,8 @@ await check('creator studios: story, formats with scope, conversations, process,
   // held after Codex S15-16 because he earlier said $250). The page never claims Square checkout shows these figures.
   assert(await p.locator('.plan .needs-approval').count() === 0, 'session prices approved');
   const prices = (await p.locator('.plan__price').allTextContents()).map((t) => t.replace(/\s+/g, ' ').trim());
-  // James, Sep 28 2026: "Starting at" before every price; general studio content starts at $499 for a 2-hour minimum.
-  assert(prices.length === 2 && /^Starting at \$249$/.test(prices[0]) && /^Starting at \$499 for a 2-hour minimum$/.test(prices[1]), 'session prices shown: ' + prices.join('|'));
+  // James, Sep 28 2026: "Starting at" before every price; general studio content starts at $499 for a 2-hour minimum; James, Oct 12 2026: $500.
+  assert(prices.length === 2 && /^Starting at \$249$/.test(prices[0]) && /^Starting at \$500 for a 2-hour minimum$/.test(prices[1]), 'session prices shown: ' + prices.join('|'));
   // James, Sep 30 (Wednesday pass, item 5): live-cut file within 24 hours; most edited episodes and clips in approximately 7–10 days.
   assert(!/next day|immediately|72 hours|5[–-]7|5 to 7|within 7 days/i.test(text) && (text.match(/within 24 hours/g) || []).length >= 2 && (text.match(/approximately 7–10 days/g) || []).length >= 2, 'single delivery promise');
   assert(await p.locator('#faq .needs-approval').count() === 0, 'delivery and cancellation confirmed by James');
@@ -920,7 +920,7 @@ await check('creator studios: story, formats with scope, conversations, process,
   const mcText = await mc.innerText();
   assert(/Monthly Content/i.test(mcText) && /repeatable recording or content schedule/.test(mcText) && !/\$|per month|sessions per month|clips|thumbnails/i.test(mcText) && await mc.locator('.plan__price, .plan__list').count() === 0, 'no price or fixed deliverables: ' + mcText);
   const faqs = await p.locator('#faq details.faq__item').count();
-  assert(faqs === 8 && /48 hours’ notice for a full refund/.test(text), 'FAQ with cancellation policy: ' + faqs);
+  assert(faqs === 8 && /48 hours or more before your session for a full refund. Between 48 and 24 hours before, you get 50% back. With less than 24 hours’ notice, the session is not refundable./.test(text), 'FAQ with cancellation policy: ' + faqs);
   // Square is the booking destination; the page must not claim Square shows these prices or carries a selection over.
   const square = 'https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services';
   const book = p.locator('main a:has-text("Book a Studio Session"), main a:has-text("Book this session")');
