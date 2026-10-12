@@ -280,9 +280,10 @@ test('production build: no review-only or draft project name, photo or reason in
   assert.ok(!existsSync(join(out, 'architecture-design/test.html')), 'no Test page in production');
 });
 
-test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned, street-free, uncredited, excluded property absent', async () => {
+test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned, street-free, town from HDPH, uncredited, excluded property absent', async () => {
   // Session 59. Source mapping in the public repo is the HDPH site id, the original file name (withheld when it names
   // the street) and the original's SHA-256; the street-level mapping stays in the private brief folder.
+  const TOWN_BY_SITE = { 3468716: 'Bridgehampton', 3461445: 'Southampton', 3311429: 'Southold', 3311995: 'Sagaponack', 3236185: 'Lloyd Harbor', 3445820: 'Westhampton Beach', 3426607: 'Southold', 3441330: 'Sag Harbor', 3134520: 'Huntington', 3212349: 'Great Neck', 3290223: 'Water Mill' };
   const EXCLUDED_SITE_IDS = ['3478411', '3463819']; // owner exclusion (Oct 11 2026): never used, in any form
   const pack = work.media.filter((m) => /^(re|ad)26-/.test(m.id));
   assert.equal(pack.length, 26);
@@ -300,7 +301,9 @@ test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned,
     for (const f of [m.src, m.thumb]) assert.ok(pins[f], `${m.id}: ${f} pinned`);
     assert.ok(manifest[m.id] && manifest[m.id].orientation === m.orientation, `${m.id}: manifest`);
     assert.equal(m.rights, 'approved'); assert.equal(m.published, true);
-    assert.equal(m.location, null, `${m.id}: town left blank until James confirms it`);
+    // Town only, read from the HDPH listing record on Oct 12 2026 (James signed in).
+    assert.equal(m.location, TOWN_BY_SITE[site], `${m.id}: town from the HDPH listing`);
+    assert.ok(m.alt.endsWith(' in ' + m.location), `${m.id}: alt names the town`);
     assert.ok(m.project === null && m.client === null && !m.packageIds.length && m.capturedYear === null, `${m.id}: no invented project, client, package or year`);
     assert.equal(m.category, m.id.startsWith('re26-') ? 'real-estate' : 'architecture-design');
     for (const t of [m.alt, m.title, m.id, src._note, m._rights]) assert.ok(!looksLikeAddress(t) && !/\b(lane|ln|road|rd|way)\b/i.test(t.replace(/^.*?SHA-256 [0-9a-f]{64}/, '')), `${m.id}: no street in "${t.slice(0, 60)}"`);

@@ -3,8 +3,8 @@
   "source": {
     "file": "Photografik_Studios_Website_Terms_and_Licensing.docx",
     "status": "received",
-    "sha256": "f96e664ccce5b18c7209e3de8f1618b2b5c0b00fe973f65a47857c6f5b5641b8",
-    "receivedFrom": "James, uploaded in the Claude session on Sep 30 2026 (Session 47)",
+    "sha256": "7dbdf5e14eb47c33c818a6244b33ae80fb67a50cc5ae4a8dd18c692c720cf03c",
+    "receivedFrom": "James, uploaded in the Claude session on Sep 30 2026 (Session 47) | Updated Oct 12 2026 at James's direction (Terms 7.1 two items, 12.3 one sentence, \"Last updated: October 12, 2026\"); the Sep 30 file is kept beside it as Photografik_Studios_Website_Terms_and_Licensing_2026-09-30.docx.",
     "_note": "Text copied verbatim (whitespace trimmed; bold kept; RAW/Markdown characters escaped). Order changed only as OWNER_LEGAL_HIERARCHY_2026-09-30.md directs: Licensing section 10 (Podcast, Studio & Creator Content) and Terms section 15 (Podcast, Studio and Content Production Rules) moved to a labelled Creator supplement at the end; the remaining sections renumbered continuously. docNumber records each section's number in the source document.",
     "amendments": [
       {
@@ -19,9 +19,10 @@
           "Creator Studios sessions: cancellations made 48 hours or more before the session receive a full refund; cancellations made between 48 and 24 hours before the session receive a 50% refund; cancellations made less than 24 hours before the session are non-refundable.",
           "Creator Studios session payments are refunded as stated in section 7.1."
         ],
-        "_note": "Owner decisions: $150 same-day cancellation for real estate; studio full refund at 48 hours or more, 50% between 48 and 24 hours, non-refundable under 24 hours. The Sep 30 Word document (sha256 above) does not yet contain these sentences; update it to match."
+        "_note": "Owner decisions: $150 same-day cancellation for real estate; studio full refund at 48 hours or more, 50% between 48 and 24 hours, non-refundable under 24 hours. The Word document was updated with the same sentences on Oct 12 2026 (sha256 above); previousSha256 is the Sep 30 file."
       }
-    ]
+    ],
+    "previousSha256": "f96e664ccce5b18c7209e3de8f1618b2b5c0b00fe973f65a47857c6f5b5641b8"
   },
   "effectiveDate": "2026-09-30",
   "ready": true,

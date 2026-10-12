@@ -107,7 +107,9 @@ test('legal pages: Photografik general policies first, Creator supplement last, 
   const emptied = structuredClone(legal); emptied.ready = true; emptied.source.sha256 = null; emptied.pages.terms.groups[0].sections[0].blocks = [];
   assert.ok(validateLegal(emptied).length >= 2, 'ready is refused without the checksum or with an empty section');
   if (legal.ready) {
-    assert.equal(legal.source.sha256, 'f96e664ccce5b18c7209e3de8f1618b2b5c0b00fe973f65a47857c6f5b5641b8');
+    // James, Oct 12 2026: the Word document was updated with the cancellation and refund decisions (Sep 30 checksum kept as previousSha256).
+    assert.equal(legal.source.sha256, '7dbdf5e14eb47c33c818a6244b33ae80fb67a50cc5ae4a8dd18c692c720cf03c');
+    assert.equal(legal.source.previousSha256, 'f96e664ccce5b18c7209e3de8f1618b2b5c0b00fe973f65a47857c6f5b5641b8');
     // James's hierarchy: the Creator provisions are the source's Licensing 10 and Terms 15, moved last.
     assert.deepEqual(legal.pages.licensing.groups[1].sections.map((x) => x.docNumber), [10]);
     assert.deepEqual(legal.pages.terms.groups[1].sections.map((x) => x.docNumber), [15]);
