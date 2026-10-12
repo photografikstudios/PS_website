@@ -24,14 +24,14 @@ const faqs = await read('content/faqs.json');
 const { fieldNotes } = await loadFieldNotes(root);
 const fileExists = makeFileExists(root, new Set(Object.keys((await read('content/media-assets.json')).files)));
 
-test('portfolio: 13 original projects and 128 media records, one file each, names match ids, no load errors', async () => {
+test('portfolio: 13 original projects and 154 media records (128 + 26 from the Oct 11 owner pack), one file each, names match ids, no load errors', async () => {
   // Projects James adds in the dashboard (no fixed path) sit beside the 13 originals and carry their photos inline.
   assert.deepEqual(work.loadErrors, []);
   const originals = work.projects.filter((p) => p.path);
   assert.equal(originals.length, 13);
-  assert.equal(work.media.filter((m) => !m.fromProject).length, 128);
+  assert.equal(work.media.filter((m) => !m.fromProject).length, 154);
   assert.equal((await readdir(join(root, 'content/projects'))).length, work.projects.length);
-  assert.equal((await readdir(join(root, 'content/media'))).length, 128);
+  assert.equal((await readdir(join(root, 'content/media'))).length, 154);
   assert.ok(originals.every((p) => p.published === true), 'original projects are explicitly published');
   const w = await read('content/work.json');
   assert.ok(!('projects' in w) && !('media' in w) && w.taxonomy, 'work.json keeps only the taxonomy');
@@ -278,4 +278,36 @@ test('production build: no review-only or draft project name, photo or reason in
     if (p.hero) assert.ok(!cfg.includes(p.hero), `${p.hero} not in config.js`);
   }
   assert.ok(!existsSync(join(out, 'architecture-design/test.html')), 'no Test page in production');
+});
+
+test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned, street-free, uncredited, excluded property absent', async () => {
+  // Session 59. Source mapping in the public repo is the HDPH site id, the original file name (withheld when it names
+  // the street) and the original's SHA-256; the street-level mapping stays in the private brief folder.
+  const EXCLUDED_SITE_IDS = ['3478411', '3463819']; // owner exclusion (Oct 11 2026): never used, in any form
+  const pack = work.media.filter((m) => /^(re|ad)26-/.test(m.id));
+  assert.equal(pack.length, 26);
+  const { items } = await read('content/media-sources.json');
+  const pins = (await read('content/media-assets.json')).files;
+  const manifest = await read('static/v/manifest.json');
+  const sites = new Set();
+  for (const m of pack) {
+    const src = items.find((i) => i.id === m.id);
+    assert.ok(src && src.image, `${m.id}: in media-sources`);
+    const site = /^hdph:(\d{7})$/.exec(src.source)?.[1];
+    assert.ok(site, `${m.id}: HDPH source site id`);
+    sites.add(site);
+    assert.match(src._note, new RegExp(`HDPH source site ${site}, original .+, \\d+x\\d+, SHA-256 [0-9a-f]{64} `), `${m.id}: traceable note`);
+    for (const f of [m.src, m.thumb]) assert.ok(pins[f], `${m.id}: ${f} pinned`);
+    assert.ok(manifest[m.id] && manifest[m.id].orientation === m.orientation, `${m.id}: manifest`);
+    assert.equal(m.rights, 'approved'); assert.equal(m.published, true);
+    assert.equal(m.location, null, `${m.id}: town left blank until James confirms it`);
+    assert.ok(m.project === null && m.client === null && !m.packageIds.length && m.capturedYear === null, `${m.id}: no invented project, client, package or year`);
+    assert.equal(m.category, m.id.startsWith('re26-') ? 'real-estate' : 'architecture-design');
+    for (const t of [m.alt, m.title, m.id, src._note, m._rights]) assert.ok(!looksLikeAddress(t) && !/\b(lane|ln|road|rd|way)\b/i.test(t.replace(/^.*?SHA-256 [0-9a-f]{64}/, '')), `${m.id}: no street in "${t.slice(0, 60)}"`);
+  }
+  assert.equal(sites.size, 11, 'all eleven pack properties are represented');
+  for (const id of EXCLUDED_SITE_IDS) assert.ok(!sites.has(id));
+  let hits = '';
+  try { hits = execFileSync('grep', ['-rlE', EXCLUDED_SITE_IDS.join('|'), 'content', 'src', 'static', 'scripts'], { cwd: root, encoding: 'utf8' }); } catch (e) { if (e.status !== 1) throw e; }
+  assert.equal(hits, '', 'excluded property ids appear in: ' + hits);
 });

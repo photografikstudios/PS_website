@@ -1,10 +1,10 @@
 {
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
-  "recordedFrom": "local dist/v (MEDIA_ALLOW_ENCODE build)",
-  "recordedAt": "2026-09-29",
-  "count": 253,
-  "totalBytes": 340070553,
-  "aggregate": "0a6967bbe8f24cdd575b2cfab0cd8f0d2e2a7e5839d42fc05e2c6a90ad9d3d89",
+  "recordedFrom": "static/v (Session 59: 252 existing pins verified unchanged; 52 Sunday-pack WebP files and manifest.json added)",
+  "recordedAt": "2026-10-12",
+  "count": 305,
+  "totalBytes": 350229248,
+  "aggregate": "9101ffea503983052b400e934a84478e194f8513ab581de9eaba920456015195",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1014,9 +1014,217 @@
       "bytes": 46998,
       "sha256": "0252deb21fefb3af857fa4577db1e29794ac127a81a98918f491ad00ef6acd45"
     },
+    "/v/re26-shingle-pool-aerial.webp": {
+      "bytes": 475004,
+      "sha256": "46527a7039cee5dd2670c4b204aae783cda87ca40c71595270ea2b761b1cfdec"
+    },
+    "/v/re26-shingle-pool-aerial-sm.webp": {
+      "bytes": 90708,
+      "sha256": "9366c4753a342ddbb3c11d1cfbc2c45c839eca606029a0667808024fd47c82cd"
+    },
+    "/v/re26-double-height-entry.webp": {
+      "bytes": 137878,
+      "sha256": "0b31a8576c9363baeb8d7694058aa50bffecd1e32a133b212ece411dff17dcc7"
+    },
+    "/v/re26-double-height-entry-sm.webp": {
+      "bytes": 29416,
+      "sha256": "9ecf9f3a95a7133f2a547d768aa417ee6e7f9bbc2cb2be03b286e0c5b9d6152f"
+    },
+    "/v/re26-white-kitchen-marble.webp": {
+      "bytes": 169578,
+      "sha256": "34447396c1bec227a996a036ab3a112ac5da99d3a8cbd77f35a2d79de25d75f9"
+    },
+    "/v/re26-white-kitchen-marble-sm.webp": {
+      "bytes": 38456,
+      "sha256": "e696998f4b8ebbde2023df7a2d13de4d9f33ff77d1cc4ab1ed6c0a86d13733b2"
+    },
+    "/v/re26-double-height-living.webp": {
+      "bytes": 275906,
+      "sha256": "ef21d2124e666fc0ec567241cb22639d121e3a52c9498f3475a28b8dd3d26953"
+    },
+    "/v/re26-double-height-living-sm.webp": {
+      "bytes": 56962,
+      "sha256": "8217884c80eb114ecd2a13786764adfc0d5cf7dc37a34e62bd3dcb3634c69d61"
+    },
+    "/v/re26-oceanfront-aerial.webp": {
+      "bytes": 514506,
+      "sha256": "d4414dd1ea24c812913825ceb91264a60d3afb6414466be77e6f02de7419059b"
+    },
+    "/v/re26-oceanfront-aerial-sm.webp": {
+      "bytes": 95620,
+      "sha256": "0c1e1b35b163be08bfc159f1acfb4cc2939b3f144daea28a01b4ffe20d409e0b"
+    },
+    "/v/re26-oceanfront-twilight.webp": {
+      "bytes": 290784,
+      "sha256": "f27ebb4eadfda1a5fbc3d330930d2355f2aac4958a57c4b3a9bd8173a2506723"
+    },
+    "/v/re26-oceanfront-twilight-sm.webp": {
+      "bytes": 61698,
+      "sha256": "341cd50a15fdf08d230d57b9c65959a4c1eb5f0be896c99cee326adf6c27ef0c"
+    },
+    "/v/re26-curved-sunroom.webp": {
+      "bytes": 209662,
+      "sha256": "5b7aae8fe55cc2af36c2e3311e3b961a615895060a72836b0396c400925dce0b"
+    },
+    "/v/re26-curved-sunroom-sm.webp": {
+      "bytes": 50110,
+      "sha256": "33f59f78d8c12cd811aae1c0875011fea6a2d5c80b66d752421d15ba605f384d"
+    },
+    "/v/re26-shoreline-aerial.webp": {
+      "bytes": 568392,
+      "sha256": "af779a17a44ea79b7150ad302434c77d95a11ca23ca4733bfac67ea96dcab098"
+    },
+    "/v/re26-shoreline-aerial-sm.webp": {
+      "bytes": 109964,
+      "sha256": "bbfed860ef0a4216df10c2fc0f731c29a9ab87a4f71bfc24ea89d158dae9d5fb"
+    },
+    "/v/re26-pool-overhead.webp": {
+      "bytes": 678596,
+      "sha256": "484b528204063fa4b9a02edceb4f2561fcaabc311a420fc16f47310ba1f55bca"
+    },
+    "/v/re26-pool-overhead-sm.webp": {
+      "bytes": 136448,
+      "sha256": "92b51e3fadf359d39976b74905e08240c64828ef718a7cc4484b4e89b476bbf2"
+    },
+    "/v/re26-pool-oblique-aerial.webp": {
+      "bytes": 764032,
+      "sha256": "1ed0b957b677b6529e68e44290414b4d2210afcdf89e72b35a006d952ccb5538"
+    },
+    "/v/re26-pool-oblique-aerial-sm.webp": {
+      "bytes": 155562,
+      "sha256": "2082f1272420435042149e818e94dcc3867e08f032de1631d7de909389cfa358"
+    },
+    "/v/re26-driveway-twilight.webp": {
+      "bytes": 527462,
+      "sha256": "bfc5263e7513d939bb4cf35b9581338e6b7d6d9ca8bcca641e9443073a2d91ab"
+    },
+    "/v/re26-driveway-twilight-sm.webp": {
+      "bytes": 89110,
+      "sha256": "9e5d1258d333d9fd8c11f7f02f0f0ffae203035900e9d30fd280beeb0970fd02"
+    },
+    "/v/re26-dock-aerial.webp": {
+      "bytes": 230598,
+      "sha256": "a0ff83921b1d4ee5351f9915919d1fbe04ef23251a1d477ff69907027d3625cb"
+    },
+    "/v/re26-dock-aerial-sm.webp": {
+      "bytes": 43218,
+      "sha256": "24a4e971764f8e34c6faab6234484f61139cff5d440c53e0d1ec3a93bc1e1ab7"
+    },
+    "/v/re26-waterfront-terrace-aerial.webp": {
+      "bytes": 355372,
+      "sha256": "73a2afdddc57718c7896755809996777066321cb6704f742f200b19ea7d0d6a8"
+    },
+    "/v/re26-waterfront-terrace-aerial-sm.webp": {
+      "bytes": 80940,
+      "sha256": "ca0a13d89ce57736a5434d3a81ea48b26ca5d528b940625c83cda9035938d04d"
+    },
+    "/v/re26-waterview-living.webp": {
+      "bytes": 224316,
+      "sha256": "63adc6681e06a6bd6ee1981ff1437264273cd89cf052d3bedf27de224ebdabf5"
+    },
+    "/v/re26-waterview-living-sm.webp": {
+      "bytes": 39738,
+      "sha256": "2f67d43eef143c93ccfc3322138cacccf5e04c83364665c3d048614b154eec7f"
+    },
+    "/v/re26-white-kitchen-range-hood.webp": {
+      "bytes": 97820,
+      "sha256": "2b3b6aca1f8725e5052f860be58d409c7bb4d3208e5d91e7c20e2e887155f2f9"
+    },
+    "/v/re26-white-kitchen-range-hood-sm.webp": {
+      "bytes": 24830,
+      "sha256": "67a52b51cc41cf8d37c94ad32c4e239ed360a26c16e02cfd6638090243218f6e"
+    },
+    "/v/ad26-open-staircase.webp": {
+      "bytes": 106312,
+      "sha256": "66a29633918415e8aa726c2b599534f53ebade1d539fbc8fe8ca2118f0aa8708"
+    },
+    "/v/ad26-open-staircase-sm.webp": {
+      "bytes": 28016,
+      "sha256": "b79d923121606e394bb4d8ecb12684fd986a54e60e763dce6f1385be7150fc70"
+    },
+    "/v/ad26-wood-kitchen.webp": {
+      "bytes": 131430,
+      "sha256": "b827d5789cc5a731d02923dd1d714e5754d1a4eb98c7a3c82960f50483cf5045"
+    },
+    "/v/ad26-wood-kitchen-sm.webp": {
+      "bytes": 27528,
+      "sha256": "c381c4d7f92b76e47fda0b84b3eab1ec7cdbff5d463fff9e18eec1dad1bb892c"
+    },
+    "/v/ad26-powder-room.webp": {
+      "bytes": 211848,
+      "sha256": "0e0b4eba6316855038f60fef32be76d281b7f1a84a31ac70070589615481ef8d"
+    },
+    "/v/ad26-powder-room-sm.webp": {
+      "bytes": 34602,
+      "sha256": "9ef22e4bc5bb515e508d5bf6882cb34abbc51e3201051a7201b038f4ce482f3c"
+    },
+    "/v/ad26-wood-stair-glass.webp": {
+      "bytes": 249858,
+      "sha256": "bdd2d6eac89d33be877d1aceca8d6b2bbe656fec6e566ec5e7e39a5c4e4d05f7"
+    },
+    "/v/ad26-wood-stair-glass-sm.webp": {
+      "bytes": 59512,
+      "sha256": "bce4fdb147747aef4a18dfb5109572a2f2323263d7baa7b0b8dc457dac9a2c4f"
+    },
+    "/v/ad26-window-seat.webp": {
+      "bytes": 140252,
+      "sha256": "b507f318763c40c99e203483638440482525ea277e491448246a50af67cbd0a1"
+    },
+    "/v/ad26-window-seat-sm.webp": {
+      "bytes": 30184,
+      "sha256": "22aff1b46316d65dfa657133b1e5894125961d4f9e8ac1ff234fcfe3e29e76ca"
+    },
+    "/v/ad26-glass-house-pool.webp": {
+      "bytes": 480294,
+      "sha256": "da27c8115b40d9743dc9b9d6e765e9680042b715e86eeada4e9662545f351a33"
+    },
+    "/v/ad26-glass-house-pool-sm.webp": {
+      "bytes": 103318,
+      "sha256": "9e0352050e2c4dc12ccc359a8d8b6126acedb5f952bce7d37d8d47dca5b568c5"
+    },
+    "/v/ad26-glass-house-dusk.webp": {
+      "bytes": 420848,
+      "sha256": "cddf33c7b8125683ecd800b8724e99cf91333d06511b7fca6278a93ea9fc1b0e"
+    },
+    "/v/ad26-glass-house-dusk-sm.webp": {
+      "bytes": 80558,
+      "sha256": "f1dc927f76f768119b9f031c3b90135b1bdd15017767557ecb89667e028c502b"
+    },
+    "/v/ad26-minimal-kitchen.webp": {
+      "bytes": 239692,
+      "sha256": "1af41fa7076fd67c385e3a0ef28829dc6c5c52bab31afcde498f959944709cb9"
+    },
+    "/v/ad26-minimal-kitchen-sm.webp": {
+      "bytes": 55172,
+      "sha256": "77c8a41db916e3da731741e247078175e035a740dcfa3d6bbbcb0419baf83c46"
+    },
+    "/v/ad26-firehouse-front.webp": {
+      "bytes": 228056,
+      "sha256": "7489384cf291436b94fb74ea355479a5f331d239592986ff89c9c01f3c356f8c"
+    },
+    "/v/ad26-firehouse-front-sm.webp": {
+      "bytes": 42508,
+      "sha256": "1641a62a7391dc7ce3ad645b45f61d0dd76ff28eed78b2eaf57a25412eeb227c"
+    },
+    "/v/ad26-firehouse-bay.webp": {
+      "bytes": 206598,
+      "sha256": "f3984746eeaa32a9e15d05f9b5cc7284fdcee8757f60eca3f9bac164dbc34021"
+    },
+    "/v/ad26-firehouse-bay-sm.webp": {
+      "bytes": 53236,
+      "sha256": "8b67d8336f8c48a0375398c276690e78d7d91819f9ccfcca42e3001ba5d703a0"
+    },
+    "/v/ad26-construction-progress.webp": {
+      "bytes": 502432,
+      "sha256": "e5e0aab7cbca58d4dafe2c98eb210d5b318afea76784d6262e0b9c991f6f125b"
+    },
+    "/v/ad26-construction-progress-sm.webp": {
+      "bytes": 100580,
+      "sha256": "9a8cb2c06a0b3d321755762777a7be7087aa02574ffb639694f1401187b048ac"
+    },
     "/v/manifest.json": {
-      "bytes": 9959,
-      "sha256": "8fa245562c87dc08fe9eb6901ce18cfa7f3c46e8c93ef082c349324e80bd137c"
+      "bytes": 13134,
+      "sha256": "3b38a73771d6219a66a298466f12f6b6d817cfec3c04b3e26d40c5458ba76b88"
     }
   }
 }

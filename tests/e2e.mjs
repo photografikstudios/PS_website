@@ -1281,7 +1281,8 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   await p.goto(base + '/architecture-design');
   const shown = () => p.locator('#ag-grid .gcard:not([hidden])').count();
   const total = +(await p.textContent('#ag-count')).match(/\d+/)[0];
-  assert(total >= 4 && total <= 12 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
+  // Session 59: the Oct 11 owner pack adds 11 uncredited architecture stills after the project cards (was at most 12).
+  assert(total >= 4 && total <= 20 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
   // Only segments with mapped, evidenced projects are offered; nothing is inferred from a house name.
   const segs = await p.locator('#ag-segment option').evaluateAll((os) => os.map((o) => o.value).filter(Boolean));
   const mapped = new Set(work.projects.filter((x) => x.category === 'architecture-design' && x.segments?.length).flatMap((x) => x.segments));
@@ -1338,8 +1339,13 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   }
   await p.selectOption('#ag-type', 'photo');
   const photoCount = +(await p.textContent('#ag-count')).match(/\d+/)[0]; // screen-reader result count (no visible counts)
-  assert(photoCount === await p.locator('#ag-grid .gcard:not([hidden])').count() && (await p.textContent('#ag-count')) === `${photoCount} results`, 'photo count coherent');
+  // Session 59: with the owner pack the views can exceed one batch of 8, so check the batch, then Load more to the end.
+  const loadAll = async () => { for (let i = 0; i < 10 && await p.isVisible('#ag-more'); i++) { await p.click('#ag-more'); await p.waitForTimeout(150); } };
+  assert(await shown() === Math.min(photoCount, 8) && (await p.textContent('#ag-count')) === `${photoCount} results`, 'photo count coherent (first batch)');
+  await loadAll();
+  assert(await shown() === photoCount, 'photo view: Load more reaches every result');
   await p.selectOption('#ag-type', '');
+  await loadAll();
   assert((await p.textContent('#ag-count')) === `${total} results` && await shown() === total, 'All shows each project once');
   // James, Sep 28 2026: tiles show the media only; every project page is linked once in the list under the gallery.
   assert(await p.locator('#ag-grid .gcard__meta, #ag-grid figcaption, #ag-grid a').count() === 0, 'no captions or text links on Architecture tiles');

@@ -828,6 +828,162 @@
       "drive": "1IMHxLNE_GVzfvSbHamu7_pXnUF1ym016",
       "source": "frame at 61 s of the approved BPE Ironworks film (biz-bpe-ironworks web encode, 1280x720)",
       "_note": "James, Sep 29 2026 (Vercel comment on /commercial): use a better action shot of BPE Ironworks. Frame chosen from a 3 s contact sheet of the film; torch cutting a beam with sparks. WebP q82 + 900 px -sm q76."
+    },
+    {
+      "id": "re26-shingle-pool-aerial",
+      "image": true,
+      "source": "hdph:3468716",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3468716, original DJI_20261007121706_0412_D.jpg, 6000x3375, SHA-256 76fd3ea01e20ab853e79b9420d41dda339a4f83c6c4db0bcf0ffb639a149ebda (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-double-height-entry",
+      "image": true,
+      "source": "hdph:3468716",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3468716, original PS_00260.jpg, 6000x3999, SHA-256 56c5cbfb42affe9a5c702d11ca1dc5c868ac49af6758077cdf0805b7a71f3c33 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-white-kitchen-marble",
+      "image": true,
+      "source": "hdph:3468716",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3468716, original PS_00325.jpg, 6000x4000, SHA-256 47cab937ec6c6526eabd9435b0729c3b71ff3c7de172a7a483eafd7336ff0b00 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-double-height-living",
+      "image": true,
+      "source": "hdph:3468716",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3468716, original PS_00410.jpg, 6000x4000, SHA-256 c7b9486e210dfa7a9ee05127396231c4039e75a41c9d67f5edc73917f2395ae8 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-oceanfront-aerial",
+      "image": true,
+      "source": "hdph:3461445",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3461445, original DJI_20261006150609_0693_D.jpg, 5999x3375, SHA-256 6557a661d2d7a875c8563cf4ad807e79e8b85c2db4b2a0007b4f677f792eb6ce (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-oceanfront-twilight",
+      "image": true,
+      "source": "hdph:3461445",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3461445, original DJI_20261006182641_0837_D-Edit.jpg, 7941x4467, SHA-256 4d9a21765e6b8bf3600d3a5ba5676328b5346e2d1e1f9426d456c51106af8df4 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-curved-sunroom",
+      "image": true,
+      "source": "hdph:3461445",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3461445, original PS_00384.jpg, 5995x3996, SHA-256 e4d904ea71ed1fc607861c3745fe2c56ed98f4b70b3c970c245a5fee676b64f4 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-shoreline-aerial",
+      "image": true,
+      "source": "hdph:3311429",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3311429, original DJI_20260819111014_0019_D.jpg, 6000x3374, SHA-256 a76c8c13c303bddd117b3e62ba9ca03828e47569aea85ca07fc2c8d767ce0216 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-pool-overhead",
+      "image": true,
+      "source": "hdph:3311995",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3311995, original DJI_20260824233023_0875_D.jpg, 8191x6143, SHA-256 56f1cc10e8811048c60881144e4b2b48538eefc03b3bfe8c4e92c96dda0a7a56 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-pool-oblique-aerial",
+      "image": true,
+      "source": "hdph:3311995",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3311995, original DJI_20260824232230_0815_D.jpg, 8188x6141, SHA-256 12d1a39a4745a56a677cbe2288e1a48d0b3ea04a6213281d50ee5675c4553948 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-driveway-twilight",
+      "image": true,
+      "source": "hdph:3236185",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3236185, original (owner twilight edit; file name withheld because it names the street), 9504x6336, SHA-256 d1267fa1f75831ba5315d2d7e0edc9c04a713c93faacc322d0ba3fff671dda43 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-dock-aerial",
+      "image": true,
+      "source": "hdph:3236185",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3236185, original DJI_20260724150318_0111_D.jpg, 6000x3374, SHA-256 ec51179d2e482e2c33f6502baa4fcc6107442b9a3187d056bef4fbef511f58be (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-waterfront-terrace-aerial",
+      "image": true,
+      "source": "hdph:3445820",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3445820, original DJI_20260930112824_0232_D.jpg, 5999x3374, SHA-256 608d8c4ce7194532a010503960e7adbf5fa7f252f883ae65bd43ccd915e105ab (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-waterview-living",
+      "image": true,
+      "source": "hdph:3445820",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3445820, original PS_00089.jpg, 6000x4000, SHA-256 98c08b93307de5cf66f8ffc1a39552bbb550318bc285e7477ef1a73349324530 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "re26-white-kitchen-range-hood",
+      "image": true,
+      "source": "hdph:3426607",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3426607, original PS_00319.jpg, 6000x4000, SHA-256 1c52e034fe1fd0b16142c9af9538eaa1242138be66a1dc1f0d99afb43e005bbc (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-open-staircase",
+      "image": true,
+      "source": "hdph:3445820",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3445820, original PS_00059.jpg, 6000x4000, SHA-256 62bd40ef9c14c9c89c3835c1df9cda99e57e8ce208a0056346090e89b67fdf94 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-wood-kitchen",
+      "image": true,
+      "source": "hdph:3445820",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3445820, original PS_00004.jpg, 5999x4000, SHA-256 b0ad39bb66893bc81306b9465e178efc8481deec24f5a17a8130f63ac350d104 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-powder-room",
+      "image": true,
+      "source": "hdph:3441330",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3441330, original PS_00309.jpg, 6000x4000, SHA-256 d8b1ad02e6de2af8da9991bb3ab0648b2030a11bf54c1ebf06e854e3162e22fa (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-wood-stair-glass",
+      "image": true,
+      "source": "hdph:3441330",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3441330, original PS_00404.jpg, 6000x4000, SHA-256 025c91a51a998dbbfd4b6b7a39225222dcf849f41096d36011eacf7ac181f8a6 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-window-seat",
+      "image": true,
+      "source": "hdph:3441330",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3441330, original PS_00549.jpg, 5999x3999, SHA-256 0c6102455266e46b180cf2bf2f047b4fcdfa770cc4de35f2802841258c55cbfb (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-glass-house-pool",
+      "image": true,
+      "source": "hdph:3134520",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3134520, original DJI_20260613082728_0537_D.jpg, 6000x3375, SHA-256 92a4fc89b4898740d26e6b9d5040885ac82df3a6165e5eaaf99299aa4f561d50 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-glass-house-dusk",
+      "image": true,
+      "source": "hdph:3134520",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3134520, original DJI_20260613142249_0648_D.jpg, 6000x3375, SHA-256 6659fc1c01a780c383ad648618a62421bb23d05208057cc90a2de11567615c7b (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-minimal-kitchen",
+      "image": true,
+      "source": "hdph:3134520",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3134520, original PS_00062.jpg, 5997x3998, SHA-256 5bfe715d1abeef06231f685ec01136802ade3616ad5e0bd7c846d2326fafa668 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-firehouse-front",
+      "image": true,
+      "source": "hdph:3212349",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3212349, original LIBS_Firehouse-3.jpg, 9494x6329, SHA-256 2091de531b9ffb13d2d5544a8c804e6cd8702c8d27ab21e56c3a3fac7dbf563e (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-firehouse-bay",
+      "image": true,
+      "source": "hdph:3212349",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3212349, original LIBS_Firehouse_interior-1.jpg, 9486x6324, SHA-256 f02135108d9a629bd93f4a183436befb014dbcb93607196b365453774fbd5347 (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "ad26-construction-progress",
+      "image": true,
+      "source": "hdph:3290223",
+      "_note": "Owner media pack Oct 11 2026. HDPH source site 3290223, original DJI_20260804165509_0146_D.jpg, 8064x4536, SHA-256 7777ac024884064f22653247c2602f3760ae86a58a361193f6d6517c367da37d (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
     }
   ],
   "docs": [

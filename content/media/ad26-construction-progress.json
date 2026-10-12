@@ -1,0 +1,25 @@
+{
+  "id": "ad26-construction-progress",
+  "type": "image",
+  "project": null,
+  "title": "House under construction with exposed wood sheathing, documented from the air",
+  "service": [
+    "drone"
+  ],
+  "category": "architecture-design",
+  "orientation": "horizontal",
+  "src": "/v/ad26-construction-progress.webp",
+  "thumb": "/v/ad26-construction-progress-sm.webp",
+  "featured": false,
+  "rights": "approved",
+  "alt": "House under construction with exposed wood sheathing, documented from the air",
+  "location": null,
+  "client": null,
+  "source": "hdph",
+  "published": true,
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "_rights": "Owner media pack, Oct 11 2026 (_transfer/incoming/website-media-2026, MEDIA_PLACEMENT_GUIDE: ready for the review website). Town names only; no street, number, agent or brokerage. Town not yet confirmed by James, so location is blank. No architect, designer or builder credit is claimed.",
+  "order": 1540
+}

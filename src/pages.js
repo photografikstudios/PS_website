@@ -527,11 +527,13 @@ ${splitCta(undefined, undefined, undefined, true)}`,
     </div>
     <div class="features features--media">
       ${join([
-        ['photography', 're-quiogue-kitchen', 'Photography', 'A complete stills set, from room flow and material detail to the exterior setting. Vertical social-ready frames are included where they suit the property.'],
+        // Session 59 (owner media pack, Oct 11 2026): the kitchen James asked for, the shoreline aerial and a driveway
+        // twilight replace the older examples here; the pricing rows below use different frames from the same pack.
+        ['photography', 're26-white-kitchen-range-hood', 'Photography', 'A complete stills set, from room flow and material detail to the exterior setting. Vertical social-ready frames are included where they suit the property.'],
         ['video', 're-hamptons-standout', 'Horizontal and vertical film', 'Horizontal film plays on the listing page, YouTube and in your presentations. Vertical reels are made for Instagram, TikTok and Reels. We plan and shoot each format on purpose rather than cropping one into the other.'],
-        ['drone', 're-bridgehampton-aerial', 'Drone', 'Aerials show what a ground photo cannot: the water, the land, the neighborhood and how the home sits in it.'],
+        ['drone', 're26-shoreline-aerial', 'Drone', 'Aerials show what a ground photo cannot: the water, the land, the neighborhood and how the home sits in it.'],
         ['floor-plan', 're-floorplan', 'Floor plans', 'A schematic floor plan lets buyers understand the layout before they visit, so the people who book showings arrive better prepared.'],
-        ['twilight', 'ph-oceanfront-twilight-pool', 'Twilight and day-to-night', 'For launches that deserve it, twilight stills and day-to-night film carry the presentation into the evening.'],
+        ['twilight', 're26-driveway-twilight', 'Twilight and day-to-night', 'For launches that deserve it, twilight stills and day-to-night film carry the presentation into the evening.'],
         ['agent', 'agent-expertise-hero', 'You, on camera', 'Optional. Listing Engine puts you on camera presenting the listing through its sale; Agent Engine turns the same shoot day into content about you. We coach you if the camera is not your favorite place.'],
       ], ([id, mid, h, t]) => `<div class="feature reveal" id="${id}">${reFeatureFig(mid, id)}<h3 class="h3">${h}</h3><p>${t}</p></div>`)}
     </div>
@@ -609,7 +611,8 @@ ${fnTeaser('real-estate')}
   // Codex, Sep 29 2026 (P1): package cards share one size-tier note under the grid instead of one per card.
   // James, Sep 29 2026: a small example photo beside each photo service, and one static price note under each table
   // instead of a line under every price. Prices that do not change with square footage show just the price.
-  const svcThumb = { photography: 're-southampton-living', 'photo-floor-plan': 're-floorplan-with-photo', 'floor-plan': 're-floorplan', 'exterior-drone': 're-quiogue-aerial-pool', twilight: 'ph-hamptons-residence-twilight' };
+  // Session 59: photography, drone and twilight rows use the Oct 11 owner pack (no frame repeats the Real Estate features).
+  const svcThumb = { photography: 're26-white-kitchen-marble', 'photo-floor-plan': 're-floorplan-with-photo', 'floor-plan': 're-floorplan', 'exterior-drone': 're26-pool-overhead', twilight: 're26-oceanfront-twilight' };
   const rowPrice = (rec) => { const s = resolvePrice(rec, null); return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span></p>`; };
   const rowThumb = (s) => { const m = allMediaById[svcThumb[s.id]]; return m ? `<div class="prow__thumb">${img(m.type === 'video' ? m.poster : m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 700px) 150px, 96px' })}</div>` : ''; };
   const serviceRow = (s) => `<li class="prow${svcThumb[s.id] ? ' prow--thumb' : ''}" data-record="${esc(s.id)}">
