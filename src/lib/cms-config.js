@@ -4,7 +4,7 @@
 // links and page layout are deliberately not editable here (they stay on the reviewed code path).
 // Every field a record already has is declared (unknown ones as hidden fields), so saving a form never drops data.
 
-import { PAGES as PAGE_MEDIA, KINDS } from './page-media-core.js';
+import { PAGES as PAGE_MEDIA, KINDS, isGallery } from './page-media-core.js';
 
 const max = (n, what) => [`^[\\s\\S]{0,${n}}$`, `Keep the ${what} to ${n} characters or fewer`];
 const date = { widget: 'datetime', format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, picker_utc: true };
@@ -125,7 +125,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'posterTime', label: 'Poster frame (seconds into the film)', widget: 'number', value_type: 'int', required: false, default: 3, hint: 'The still shown before the film plays.' },
     { name: 'dialogue', label: 'Does the film have speech?', widget: 'boolean', required: false, default: true, hint: 'Films with speech need captions before the live site can launch.' },
     { name: 'captions', label: 'Captions', widget: 'pgk-captions', required: false, media_folder: '/static/captions', public_folder: '/captions' },
-    { name: 'captionsStatus', label: 'Captions checked', widget: 'select', required: false, default: 'machine-draft', options: [{ label: 'Draft: not checked word for word yet', value: 'machine-draft' }, { label: 'Checked word for word against the audio', value: 'approved' }] },
+    { name: 'captionsStatus', label: 'Captions approved', widget: 'select', required: false, default: 'machine-draft', options: [{ label: 'Draft: not approved yet (for example machine captions)', value: 'machine-draft' }, { label: 'Approved by James', value: 'approved' }], hint: 'Burned-in captions and caption files both show with the sound off. A caption file is shown by default on the site.' },
     ...mediaCommon.slice(2),
     { name: 'rights', label: 'rights', widget: 'hidden', default: 'approved' },
     { name: 'packageIds', label: 'packageIds', widget: 'hidden', default: [] },
@@ -296,7 +296,8 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
       fields: [
         { name: '_about', label: 'About this page', widget: 'pgk-page-note', required: false, route: pg.route, automatic: pg.automatic || [] },
         ...pg.slots.map((sl) => ({
-          name: sl.key, label: sl.label, widget: 'pgk-slot', required: false, accepts: sl.accepts, kind: KINDS[sl.accepts],
+          name: sl.key, label: sl.label, widget: isGallery(sl) ? 'pgk-gallery-slot' : 'pgk-slot', required: false, accepts: sl.accepts, kind: KINDS[sl.accepts],
+          galleryKey: `${pg.file}.${sl.key}`, auto: sl.auto || '',
           multiple: !!sl.list, min: sl.list ? sl.list.min : sl.required ? 1 : 0, max: sl.list ? sl.list.max : 1, mustHave: !!sl.required,
           labelled: !!sl.labelled, altMode: sl.alt || 'library', empty: sl.empty || '', route: pg.route,
           media_folder: '/static/images/library', public_folder: '/images/library',

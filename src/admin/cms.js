@@ -333,20 +333,55 @@
   }
   var cardTimer = null;
   new MutationObserver(function () { clearTimeout(cardTimer); cardTimer = setTimeout(decorateCards, 60); }).observe(document.documentElement, { childList: true, subtree: true });
+  window.__pgkDecorate = decorateCards; // for the dashboard tests
+
+  // ---------- Dialogs: keyboard focus stays inside, Escape closes, focus returns to the button that opened it ----------
+  var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  var Modal = createClass({
+    componentDidMount: function () {
+      var self = this; var o = document.activeElement;
+      this.opener = o && o !== document.body ? { el: o, text: (o.textContent || '').trim(), scope: o.closest && o.closest('[id]') ? o.closest('[id]').id : null } : null;
+      this.onKey = function (e) {
+        if (!self.el) return;
+        if (e.key === 'Escape' && self.props.onClose) { e.preventDefault(); e.stopPropagation(); self.props.onClose(); return; }
+        if (e.key !== 'Tab') return;
+        var f = Array.prototype.filter.call(self.el.querySelectorAll(FOCUSABLE), function (x) { return !x.hidden && x.getClientRects().length; });
+        if (!f.length) { e.preventDefault(); return; }
+        var first = f[0]; var last = f[f.length - 1]; var at = document.activeElement;
+        if (!self.el.contains(at)) { e.preventDefault(); first.focus(); } else if (e.shiftKey && at === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
+      };
+      document.addEventListener('keydown', this.onKey, true);
+      setTimeout(function () { if (self.el && !self.el.contains(document.activeElement)) { var a = self.el.querySelector('[autofocus]') || self.el.querySelector(FOCUSABLE); if (a) a.focus(); } }, 0);
+    },
+    componentWillUnmount: function () {
+      document.removeEventListener('keydown', this.onKey, true);
+      var o = this.opener; if (!o) return;
+      setTimeout(function () {
+        var el = o.el && document.contains(o.el) ? o.el : null;
+        // If the page redrew the opener, find the same button again in the same place.
+        if (!el && o.scope && document.getElementById(o.scope)) el = Array.prototype.find.call(document.getElementById(o.scope).querySelectorAll('button'), function (b) { return (b.textContent || '').trim() === o.text; });
+        if (el && el.focus) el.focus();
+      }, 0);
+    },
+    render: function () {
+      var self = this;
+      return h('div', { className: 'pgk-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': this.props.label, 'aria-labelledby': this.props.labelledBy, ref: function (el) { self.el = el; } },
+        h('div', { className: 'pgk-modal__box' + (this.props.narrow ? ' pgk-modal__box--narrow' : '') }, this.props.children));
+    },
+  });
 
   // ---------- Picker: choose photos that are already on the site ----------
   // For adding existing site photos to a project or article without uploading them again. Multi-select in galleries.
   var Picker = createClass({
     getInitialState: function () { return { q: '', chosen: {} }; },
-    componentDidMount: function () { var self = this; this.onKey = function (e) { if (e.key === 'Escape') self.props.onClose(); }; document.addEventListener('keydown', this.onKey); if (this.search) this.search.focus(); },
-    componentWillUnmount: function () { document.removeEventListener('keydown', this.onKey); },
+    componentDidMount: function () { if (this.search) this.search.focus(); },
     toggle: function (src) { var c = Object.assign({}, this.state.chosen); if (c[src]) delete c[src]; else { if (!this.props.multiple) c = {}; c[src] = true; } this.setState({ chosen: c }); },
     render: function () {
       var self = this; var q = this.state.q.toLowerCase();
       var items = siteThumbs.pick.filter(function (x) { return !q || (x.label + ' ' + x.alt + ' ' + x.cat).toLowerCase().indexOf(q) >= 0; });
       var n = Object.keys(this.state.chosen).length;
-      return h('div', { className: 'pgk-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choose photos already on the site' },
-        h('div', { className: 'pgk-modal__box' },
+      return h(Modal, { label: 'Choose photos already on the site', onClose: this.props.onClose },
+        h('div', { className: 'pgk-modal__inner' },
           h('div', { className: 'pgk-modal__head' },
             h('input', { type: 'search', placeholder: 'Search the site’s photos', value: this.state.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search photos' }),
             h('button', { type: 'button', className: 'pgk-btn', disabled: !n, onClick: function () { self.props.onPick(siteThumbs.pick.filter(function (x) { return self.state.chosen[x.src]; })); } }, n ? 'Add ' + n + (n === 1 ? ' photo' : ' photos') : 'Choose photos'),
@@ -391,18 +426,30 @@
   }
   var heldFor = function (id) { var d = siteStatus.data; return d && id ? (d.held || []).filter(function (x) { return x.id === id; })[0] || null : null; };
   var testFor = function (id) { var d = siteStatus.data; return !!(d && id && (d.reviewOnly || []).some(function (x) { return x.id === id; })); };
+  // Bottom note (Codex live review, Oct 13 2026): a held project stays a clear alert; the harmless review-only-test
+  // note is one short line that can be opened or hidden; build details sit behind “Details”. It sits to the right of
+  // the save/deploy pill instead of over it.
+  var testNoteHidden = function (t) { try { return sessionStorage.getItem('pgk-hide-test-note') === String(t); } catch (e) { return false; } };
+  bar.addEventListener('click', function (e) {
+    if (!e.target.closest || !e.target.closest('.pgk-statusbar__x')) return;
+    try { sessionStorage.setItem('pgk-hide-test-note', String(((siteStatus.data || {}).reviewOnly || []).length)); } catch (err) { /* hidden for this view only */ }
+    bar.setAttribute('data-test-hidden', '1'); renderBar();
+  });
   function renderBar() {
     var d = siteStatus.data; if (!d) return;
     var parts = [];
     var n = (d.held || []).length; var t = (d.reviewOnly || []).length;
     if (n) parts.push('<p class="pgk-statusbar__held"><strong>' + n + (n === 1 ? ' project is' : ' projects are') + ' not on the site.</strong> Published is on, but the last build held ' + (n === 1 ? 'it' : 'them') + ' back as a draft. In Projects ' + (n === 1 ? 'it is' : 'they are') + ' marked “Held”; the form says what to fix.</p>');
-    if (t) parts.push('<p>' + t + (t === 1 ? ' project is a review-only test' : ' projects are review-only tests') + ', marked “Review-only test” in Projects: shown on the review site with a note, never built for the live site.</p>');
-    bar.innerHTML = parts.join('') + (parts.length ? '<p class="pgk-statusbar__meta">From the ' + esc(d.mode === 'production' ? 'live' : 'review') + ' build ' + esc(shortSha(d.commit)) + ', ' + esc(when(d.builtAt)) + '. A save takes about two minutes to appear.</p>' : '');
+    var showTest = t && !testNoteHidden(t) && bar.getAttribute('data-test-hidden') !== '1';
+    if (showTest) parts.push('<div class="pgk-statusbar__test"><details><summary>' + t + (t === 1 ? ' review-only test project' : ' review-only test projects') + '</summary><p>Marked “Review-only test” in Projects: shown on the review site with a note, never built for the live site.</p></details><button type="button" class="pgk-statusbar__x" aria-label="Hide this note">×</button></div>');
+    bar.innerHTML = parts.join('') + (parts.length ? '<details class="pgk-statusbar__meta"><summary>Details</summary><p>From the ' + esc(d.mode === 'production' ? 'live' : 'review') + ' build ' + esc(shortSha(d.commit)) + ', ' + esc(when(d.builtAt)) + '. A save usually takes a few minutes to appear.</p></details>' : '');
     bar.hidden = !parts.length;
+    bar.className = 'pgk-statusbar' + (n ? ' pgk-statusbar--held' : ' pgk-statusbar--quiet');
     decorateCards();
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   loadStatus(); setInterval(loadStatus, 60000);
+  window.__pgkReloadStatus = loadStatus; // lets the dashboard tests ask again without waiting a minute
 
   // What a project needs before Published can be saved as on (the same rules the build applies to dashboard projects).
   function publishProblems(data) {
@@ -469,6 +516,8 @@
       case 'still': return m.kind === 'photo' || (m.kind === 'film' && m.still);
       case 'loopOrPhoto': return m.kind === 'photo' || m.loop;
       case 'photoOrFilm': return m.kind === 'photo' || m.kind === 'film';
+      case 'gallery': return m.kind === 'photo' || (m.kind === 'film' && m.still);
+      case 'filmGallery': return m.kind === 'film';
       default: return false;
     }
   };
@@ -486,8 +535,7 @@
   // Library picker for Page Media: search, type and service filters, previews for photos, films and playing excerpts.
   var LibraryPicker = createClass({
     getInitialState: function () { return { q: '', kind: '', cat: '', chosen: [] }; },
-    componentDidMount: function () { var self = this; this.onKey = function (e) { if (e.key === 'Escape') self.props.onClose(); }; document.addEventListener('keydown', this.onKey); if (this.search) this.search.focus(); },
-    componentWillUnmount: function () { document.removeEventListener('keydown', this.onKey); },
+    componentDidMount: function () { if (this.search) this.search.focus(); },
     toggle: function (id) { var c = this.state.chosen.slice(); var i = c.indexOf(id); if (i >= 0) c.splice(i, 1); else { if (!this.props.multiple) c = []; c.push(id); } this.setState({ chosen: c }); },
     render: function () {
       var self = this; var st = this.state; var q = st.q.toLowerCase();
@@ -496,8 +544,8 @@
       var cats = []; pool.forEach(function (m) { if (m.catLabel && cats.indexOf(m.catLabel) < 0) cats.push(m.catLabel); }); cats.sort();
       var items = pool.filter(function (m) { return (!st.kind || m.kind === st.kind) && (!st.cat || m.catLabel === st.cat) && (!q || (m.title + ' ' + m.alt + ' ' + m.catLabel + ' ' + (m.project || '') + ' ' + m.id).toLowerCase().indexOf(q) >= 0); });
       var n = st.chosen.length;
-      return h('div', { className: 'pgk-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choose from the library' },
-        h('div', { className: 'pgk-modal__box' },
+      return h(Modal, { label: 'Choose from the library', onClose: this.props.onClose },
+        h('div', { className: 'pgk-modal__inner' },
           h('div', { className: 'pgk-modal__head' },
             h('input', { type: 'search', placeholder: 'Search by name, description or service', value: st.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search the library' }),
             kinds.length > 1 ? h('select', { value: st.kind, onChange: function (e) { self.setState({ kind: e.target.value }); }, 'aria-label': 'Type' }, h('option', { value: '' }, 'Photos and films'), kinds.map(function (k) { return h('option', { key: k, value: k }, KIND_WORD[k] + 's'); })) : null,
@@ -566,7 +614,7 @@
           return h('li', { key: (it.media || it.src || '') + i, className: 'pgk-row' },
             h(MediaThumb, { item: it }),
             h('div', { className: 'pgk-row__fields' },
-              h('p', { className: 'pgk-row__title' }, h('strong', {}, name), ' ', h('span', {}, m ? [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.hidden ? 'hidden in the library, still shown here' : ''].filter(Boolean).join(' · ') : 'Photo file used only here')),
+              h('p', { className: 'pgk-row__title' }, h('strong', {}, name), ' ', h('span', {}, m ? [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.hidden ? 'hidden in the library: shown on the review site only, left out of the live site' : ''].filter(Boolean).join(' · ') : 'Photo file used only here')),
               it.src && self.f('altMode') !== 'decorative' ? h('label', {}, h('span', {}, 'Description (alt text)' + (it.alt ? '' : ' · needed')), h('input', { type: 'text', value: it.alt || '', onChange: function (e) { self.update(i, 'alt', e.target.value); } })) : null,
               self.f('labelled') && it.media && !(m && m.kind === 'photo') ? h('label', {}, h('span', {}, 'What a screen reader hears' + (it.label ? '' : ' · needed')), h('input', { type: 'text', value: it.label || '', placeholder: 'e.g. Beachfront estate film, muted excerpt', onChange: function (e) { self.update(i, 'label', e.target.value); } })) : null,
               h('div', { className: 'pgk-gallery__bar' },
@@ -588,6 +636,96 @@
     },
   });
   CMS.registerWidget('pgk-slot', SlotControl);
+
+  // ---------- Page Media galleries (Codex review of 11c9abe: per-page selection, order and removal) ----------
+  // Automatic keeps today's behaviour; “Leave out on this page” hides one item here only; “My own selection” is exactly
+  // these items in this order. The library and every other page stay as they are.
+  var GALLERIES = window.PHOTOGRAFIK_GALLERIES || {};
+  var PROJECTS = window.PHOTOGRAFIK_PROJECTS || [];
+  var projectById = {}; PROJECTS.forEach(function (p) { projectById[p.slug] = p; });
+  var ProjectThumb = function (p) { var x = projectById[p.slug]; return x && x.thumb ? h('img', { className: 'pgk-thumb', src: x.thumb, alt: '' }) : h('div', { className: 'pgk-thumb pgk-thumb--missing' }, x ? 'No preview' : 'Not found'); };
+  var ProjectPicker = createClass({
+    getInitialState: function () { return { q: '', chosen: [] }; },
+    componentDidMount: function () { if (this.search) this.search.focus(); },
+    toggle: function (s) { var c = this.state.chosen.slice(); var i = c.indexOf(s); if (i >= 0) c.splice(i, 1); else { if (!this.props.multiple) c = []; c.push(s); } this.setState({ chosen: c }); },
+    render: function () {
+      var self = this; var q = this.state.q.toLowerCase(); var n = this.state.chosen.length;
+      var list = PROJECTS.filter(function (p) { return p.cat === 'commercial' && (!q || (p.title + ' ' + p.slug).toLowerCase().indexOf(q) >= 0); });
+      return h(Modal, { label: 'Choose projects', onClose: this.props.onClose },
+        h('div', { className: 'pgk-modal__inner' },
+          h('div', { className: 'pgk-modal__head' },
+            h('input', { type: 'search', placeholder: 'Search Commercial projects', value: this.state.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search projects' }),
+            h('button', { type: 'button', className: 'pgk-btn', disabled: !n, onClick: function () { self.props.onPick(self.state.chosen); } }, n ? (self.props.multiple ? 'Add ' + n : 'Use this') : 'Choose'),
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.props.onClose }, 'Cancel')),
+          h('ul', { className: 'pgk-modal__grid' }, list.map(function (p) {
+            var on = self.state.chosen.indexOf(p.slug) >= 0;
+            return h('li', { key: p.slug }, h('button', { type: 'button', className: 'pgk-pick' + (on ? ' is-on' : ''), 'aria-pressed': on, onClick: function () { self.toggle(p.slug); } },
+              h(ProjectThumb, { slug: p.slug }), h('span', {}, p.title), h('span', { className: 'pgk-pick__meta' }, p.hidden ? 'Draft' : 'Published')));
+          }))));
+    },
+  });
+  var GallerySlot = createClass({
+    getInitialState: function () { return { picking: false, showAll: false }; },
+    f: function (k) { return this.props.field.get(k); },
+    val: function () { var v = this.props.value; return v && v.toJS ? v.toJS() : v || null; },
+    byProject: function () { return this.f('accepts') === 'projectGallery' || this.f('accepts') === 'project'; },
+    idOf: function (it) { return this.byProject() ? it.project : it.media; },
+    item: function (id) { var o = {}; o[this.byProject() ? 'project' : 'media'] = id; return o; },
+    auto: function () { return GALLERIES[this.f('galleryKey')] || []; },
+    // Same limit as the build (GALLERY_MAX in page-media-core.js). An empty own selection is allowed: nothing shows here.
+    isValid: function () { var v = this.val(); return v && v.mode === 'custom' && (v.items || []).length > 400 ? { error: { type: 'custom', message: 'Choose no more than 400.' } } : true; },
+    setCustom: function (items) { this.props.onChange({ mode: 'custom', items: items }); },
+    move: function (i, d) { var items = this.val().items.slice(); var j = i + d; if (j < 0 || j >= items.length) return; var x = items[i]; items[i] = items[j]; items[j] = x; this.setCustom(items); },
+    thumb: function (id) { return this.byProject() ? h(ProjectThumb, { slug: id }) : h(MediaThumb, { item: { media: id } }); },
+    title: function (id) { var x = this.byProject() ? projectById[id] : mediaById[id]; return x ? x.title : id; },
+    sub: function (id) { if (this.byProject()) { var p = projectById[id]; return p ? (p.hidden ? 'Draft project' : 'Project') : 'Not found'; } var m = mediaById[id]; return m ? [KIND_WORD[m.kind], m.catLabel, m.hidden ? 'hidden: review site only' : ''].filter(Boolean).join(' · ') : 'Not in the library any more'; },
+    render: function () {
+      var self = this; var v = this.val(); var accepts = this.f('accepts');
+      // A single project (Commercial case study).
+      if (accepts === 'project') {
+        return h('div', { className: 'pgk-slot', id: this.props.forID },
+          h('p', { className: 'pgk-slot__kind' }, 'Automatic: ' + this.f('auto')),
+          h('label', { className: 'pgk-confirm' }, h('span', {}, 'Project shown as the case study'),
+            h('select', { value: v && v.hide ? '-' : v && v.project ? v.project : '', onChange: function (e) { var x = e.target.value; self.props.onChange(x === '-' ? { hide: true } : x ? { project: x } : null); } },
+              h('option', { value: '' }, 'Automatic'), h('option', { value: '-' }, 'No case study on this page'), PROJECTS.filter(function (p) { return p.cat === 'commercial'; }).map(function (p) { return h('option', { key: p.slug, value: p.slug }, p.title + (p.hidden ? ' (draft)' : '')); }))));
+      }
+      var custom = v && v.mode === 'custom';
+      var exclude = (v && v.exclude) || [];
+      var radio = function (mode, label) { return h('label', { className: 'pgk-radio' }, h('input', { type: 'radio', name: self.props.forID + '-mode', checked: (mode === 'custom') === !!custom, onChange: function () {
+        if (mode === 'automatic') self.props.onChange(exclude.length ? { mode: 'automatic', exclude: exclude } : null);
+        else self.setCustom(self.auto().filter(function (id) { return exclude.indexOf(id) < 0; }).map(function (id) { return self.item(id); }));
+      } }), ' ' + label); };
+      var list = custom ? (v.items || []).map(function (it) { return self.idOf(it); }) : this.auto();
+      var shown = this.state.showAll || custom ? list : list.slice(0, 24);
+      return h('div', { className: 'pgk-slot', id: this.props.forID },
+        h('fieldset', { className: 'pgk-files' }, h('legend', {}, 'What this gallery shows'),
+          radio('automatic', 'Automatic: ' + this.f('auto')),
+          radio('custom', 'My own selection and order (starts from what it shows now)')),
+        !custom && exclude.length ? h('p', { className: 'pgk-slot__kind' }, exclude.length + ' left out on this page only.') : null,
+        h('ol', { className: 'pgk-gallery__list' }, shown.map(function (id, i) {
+          var out = !custom && exclude.indexOf(id) >= 0;
+          return h('li', { key: id + i, className: 'pgk-row' + (out ? ' pgk-row--out' : '') },
+            self.thumb(id),
+            h('div', { className: 'pgk-row__fields' }, h('p', { className: 'pgk-row__title' }, h('strong', {}, self.title(id)), ' ', h('span', {}, out ? 'Left out on this page' : self.sub(id)))),
+            h('div', { className: 'pgk-row__tools' },
+              custom ? h('button', { type: 'button', className: 'pgk-icon', onClick: function () { self.move(i, -1); }, disabled: i === 0, 'aria-label': 'Move item ' + (i + 1) + ' up' }, '↑') : null,
+              custom ? h('button', { type: 'button', className: 'pgk-icon', onClick: function () { self.move(i, 1); }, disabled: i === list.length - 1, 'aria-label': 'Move item ' + (i + 1) + ' down' }, '↓') : null,
+              custom ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () { var items = v.items.slice(); items.splice(i, 1); self.setCustom(items); } }, 'Take off this page')
+                : h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () {
+                  var ex = out ? exclude.filter(function (x) { return x !== id; }) : exclude.concat([id]);
+                  self.props.onChange(ex.length ? { mode: 'automatic', exclude: ex } : null);
+                } }, out ? 'Put back' : 'Leave out on this page')));
+        })),
+        !custom && list.length > shown.length ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ showAll: true }); } }, 'Show all ' + list.length) : null,
+        custom ? h('div', { className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.setState({ picking: true }); } }, this.byProject() ? 'Add projects' : 'Add from library')) : null,
+        custom && !list.length ? h('p', { className: 'pgk-slot__empty' }, 'Nothing chosen: this gallery shows nothing on this page.') : null,
+        h('p', { className: 'pgk-slot__note' }, 'Changes here affect this page only. The library and every other page stay as they are.'),
+        this.state.picking ? (this.byProject()
+          ? h(ProjectPicker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (ids) { self.setCustom(v.items.concat(ids.filter(function (id) { return list.indexOf(id) < 0; }).map(function (id) { return self.item(id); }))); self.setState({ picking: false }); } })
+          : h(LibraryPicker, { accepts: accepts, multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (ids) { self.setCustom(v.items.concat(ids.filter(function (id) { return list.indexOf(id) < 0; }).map(function (id) { return self.item(id); }))); self.setState({ picking: false }); } })) : null);
+    },
+  });
+  CMS.registerWidget('pgk-gallery-slot', GallerySlot);
 
   // Top of each Page Media page: where to see it, what fills itself, and whether the site has caught up with saves.
   var PageNote = createClass({
@@ -618,24 +756,47 @@
 
   // ---------- Saved vs on the site (Codex CMS audit #9) ----------
   // Compares the branch's latest commit (what Save wrote) with the commit the review site was built from.
-  var siteState = { head: null, at: 0, subs: [], text: function () {
-    var d = siteStatus.data; if (!d || !siteState.head) return 'Checking whether the site has your latest save…';
-    if (d.commit && siteState.head.indexOf(d.commit) === 0 || siteState.head === d.commit) return 'The review site shows your latest save (built ' + when(d.builtAt) + ').';
-    return 'Your latest save is being built. The review site still shows the version from ' + when(d.builtAt) + '; it usually updates within a few minutes.';
+  // States, from what is actually known (Codex CMS review): the branch's latest commit (what Save wrote), the build
+  // Vercel reported on that commit (pending, success, failure or nothing yet), and the commit the review site serves.
+  var siteState = { head: null, build: null, subs: [], kind: function () {
+    var d = siteStatus.data; var b = siteState.build || { state: 'unknown' };
+    if (!d || !siteState.head) return 'checking';
+    if (d.commit === siteState.head) return 'live';
+    if (b.state === 'failure') return 'failed';
+    if (b.state === 'pending') return 'building';
+    if (b.state === 'success') return 'built';
+    return 'saved';
+  }, text: function () {
+    var d = siteStatus.data; var since = d ? when(d.builtAt) : '';
+    switch (siteState.kind()) {
+      case 'live': return 'The review site shows your latest save (built ' + since + ').';
+      case 'failed': return 'The review site could not be updated with your latest save, so it still shows the version from ' + since + '. Your save is kept. Open the build report to see why, then fix or undo the last change and save again.';
+      case 'building': return 'Your latest save is being built. The review site still shows the version from ' + since + '.';
+      case 'built': return 'Your latest save has been built; the review site will show it in a moment.';
+      case 'saved': return 'Saved. No build has been reported for it yet; the review site still shows the version from ' + since + '.';
+      default: return 'Checking whether the site has your latest save…';
+    }
   } };
+  var PILL = { live: ['Site up to date', ''], building: ['Site updating…', ' pgk-sitepill--busy'], built: ['Site updating…', ' pgk-sitepill--busy'], saved: ['Saved, waiting for the site', ' pgk-sitepill--busy'], failed: ['Site update failed', ' pgk-sitepill--failed'] };
   var pill = document.createElement('p'); pill.className = 'pgk-sitepill'; pill.setAttribute('role', 'status'); pill.hidden = true;
   document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(pill); }); if (document.body) document.body.appendChild(pill);
+  function drawPill() {
+    var k = siteState.kind(); var p = PILL[k]; if (!p) return;
+    pill.hidden = false; pill.className = 'pgk-sitepill' + p[1]; pill.textContent = p[0]; pill.title = siteState.text();
+    if (k === 'failed' && siteState.build && siteState.build.url) { var a = document.createElement('a'); a.href = siteState.build.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ' Build report'; pill.appendChild(a); }
+  }
   function checkHead() {
     if (!ghToken()) return;
     manage({ action: 'head' }).then(function (r) {
-      if (!r.ok) return; siteState.head = r.head; siteState.at = Date.now();
-      var up = siteStatus.data && siteStatus.data.commit === r.head;
-      pill.hidden = false; pill.className = 'pgk-sitepill' + (up ? '' : ' pgk-sitepill--busy'); pill.textContent = up ? 'Site up to date' : 'Site updating…'; pill.title = siteState.text();
-      siteState.subs.forEach(function (f) { f(); });
+      if (!r.ok) return; siteState.head = r.head; siteState.build = r.build || { state: 'unknown' };
+      // A finished build means a newer status file: read it now rather than at the next minute.
+      if (siteState.build.state === 'success' && siteStatus.data && siteStatus.data.commit !== r.head) loadStatus();
+      drawPill(); siteState.subs.forEach(function (f) { f(); });
     });
   }
-  siteStatus.subs.push(function () { siteState.subs.forEach(function (f) { f(); }); });
+  siteStatus.subs.push(function () { drawPill(); siteState.subs.forEach(function (f) { f(); }); });
   setTimeout(checkHead, 1500); setInterval(checkHead, 45000);
+  window.__pgkCheckSite = checkHead; // lets the dashboard tests ask again without waiting 45 s
 
   // ---------- Where it is used, and delete (photos, films, projects, Field Notes) ----------
   var COLLECTION_WORD = { photos: 'photo', films: 'film', projects: 'project', 'field-notes': 'article' };
@@ -673,14 +834,15 @@
         st.err && !st.open ? h('p', { className: 'pgk-msg', role: 'alert' }, st.err) : null,
         info ? h('div', {},
           used.length ? h('div', {}, h('p', {}, h('strong', {}, 'Used in ' + used.length + (used.length === 1 ? ' place:' : ' places:'))), h('ul', {}, used.map(function (u, i) { return h('li', { key: i }, u.href ? h('a', { href: u.href }, u.text) : u.text); })))
-            : h('p', {}, h('strong', {}, 'Not used by any page section, project or article.')),
+            : h('p', {}, h('strong', {}, 'Not chosen for any page section, project or article.')),
+          (info.auto || []).length ? h('p', {}, 'Shown automatically in: ' + info.auto.join('; ') + '. Deleting it simply takes it out of ' + (info.auto.length === 1 ? 'that' : 'those') + '; nothing else changes.') : !used.length ? h('p', { className: 'pgk-manage__note' }, 'It does not appear anywhere on the site right now.') : null,
           (info.notes || []).map(function (n, i) { return h('p', { key: i, className: 'pgk-manage__note' }, n); }),
           this.col() === 'photos' || this.col() === 'films' ? h('p', { className: 'pgk-manage__note' }, 'To take it off the site but keep it, switch Published off instead of deleting.') : null,
           h('div', { className: 'pgk-gallery__bar' },
             h('button', { type: 'button', className: 'pgk-btn pgk-btn--danger', onClick: function () { self.setState({ open: true, typed: '', err: '', done: null }); } }, 'Delete this ' + word + '…'),
             h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.check }, 'Check again'))) : null,
-        st.open && info ? h('div', { className: 'pgk-modal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'pgk-del-h' },
-          h('div', { className: 'pgk-modal__box pgk-modal__box--narrow' },
+        st.open && info ? h(Modal, { labelledBy: 'pgk-del-h', narrow: true, onClose: st.busy ? null : function () { if (st.done && !st.done.undone) { location.hash = '#/collections/' + self.col(); location.reload(); } else self.setState({ open: false }); } },
+          h('div', { className: 'pgk-modal__inner' },
             h('div', { className: 'pgk-modal__body' },
               h('h2', { id: 'pgk-del-h' }, st.done ? (st.done.undone ? 'Restored' : 'Deleted') : 'Delete “' + info.name + '”?'),
               st.done ? h('div', {},
@@ -719,35 +881,63 @@
     },
     componentWillUnmount: function () { clearTimeout(this.timer); },
     isNew: function () { return !!(this.props.entry && this.props.entry.get('newRecord')); },
+    // A new film, or a film asked to be (re)imported, cannot be saved without the Drive link of the film file.
+    isValid: function () {
+      var v = this.val(); var asked = this.isNew() || (v && (v.state === 'waiting' || v.state === 'retry'));
+      if (asked && !/^https:\/\/drive\.google\.com\/(file\/d\/|open\?id=|uc\?id=)[\w-]{20,}/.test(String(this.data('drive') || ''))) return { error: { type: 'custom', message: 'Paste the Google Drive link of the film file (drive.google.com/file/d/…) before saving.' } };
+      return true;
+    },
     val: function () { var v = this.props.value; return v && v.toJS ? v.toJS() : v; },
     data: function (k) { var v = this.props.entry && this.props.entry.getIn(['data', k]); return v && v.toJS ? v.toJS() : v; },
     // The import runs in GitHub Actions (film-import.yml); its latest run says whether it is working on it right now.
+    // Follows this film, not just the latest run on the branch (Codex CMS review): the saved record itself (has the
+    // import recorded ready or failed since this form was opened?), then the import run started by the commit that
+    // saved this film.
     pollRun: function () {
-      var self = this; var t = ghToken();
-      fetch('https://api.github.com/repos/' + config.backend.repo + '/actions/workflows/film-import.yml/runs?per_page=1&branch=' + encodeURIComponent(config.backend.branch), { headers: t ? { Authorization: 'Bearer ' + t } : {} })
-        .then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { var run = j && j.workflow_runs && j.workflow_runs[0]; self.setState({ run: run || null }); })
-        .catch(function () { /* the plain waiting text stays */ }).then(function () { self.timer = setTimeout(self.pollRun, 30000); });
+      var self = this; var t = ghToken(); var hd = t ? { Authorization: 'Bearer ' + t } : {};
+      var api = 'https://api.github.com/repos/' + config.backend.repo; var br = encodeURIComponent(config.backend.branch);
+      var path = 'content/media/' + this.props.entry.get('slug') + '.json';
+      var json = function (r) { return r.ok ? r.json() : null; };
+      fetch(api + '/contents/' + path + '?ref=' + br, { headers: Object.assign({ Accept: 'application/vnd.github.raw+json' }, hd), cache: 'no-store' }).then(json).then(function (rec) {
+        var saved = rec && rec.import && rec.import.state;
+        if (saved === 'ready' || saved === 'failed') { self.setState({ finished: saved }); return null; }
+        return fetch(api + '/commits?sha=' + br + '&path=' + encodeURIComponent(path) + '&per_page=1', { headers: hd }).then(json).then(function (cs) {
+          var c = cs && cs[0]; if (!c) return null;
+          return fetch(api + '/actions/workflows/film-import.yml/runs?head_sha=' + c.sha + '&per_page=5', { headers: hd }).then(json).then(function (j) {
+            self.setState({ run: (j && j.workflow_runs && j.workflow_runs[0]) || null, savedAt: c.commit && c.commit.committer && c.commit.committer.date, checked: true });
+          });
+        });
+      }).catch(function () { /* the plain waiting text stays */ }).then(function () { if (!self.state.finished) self.timer = setTimeout(self.pollRun, 30000); });
     },
     render: function () {
       var self = this; var v = this.val(); var src = this.data('src'); var slug = this.props.entry && this.props.entry.get('slug');
       var box = function (cls, kids) { return h('div', { className: 'pgk-film pgk-film--' + cls, id: self.props.forID, role: 'status' }, kids); };
       if (this.isNew()) return box('new', [h('p', { key: 1 }, h('strong', {}, 'Add a film from Google Drive. '), 'Paste the Drive link below, fill in the title and service, then Save. The site then makes the web copies it plays (a 720p film, a poster and a small card poster): usually a few minutes for a short film. The original stays in your Drive.'), h('p', { key: 2 }, 'The film stays a draft until you switch Published on. Finished exports under 200 MB, shared “Anyone with the link can view”.')]);
-      if (!v || (!this.data('drive') && src)) {
+      var replace = function (label) { return h('div', { key: 'r', className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.props.onChange({ state: 'retry' }); } }, label)); };
+      var asked = v && (v.state === 'waiting' || v.state === 'retry');
+      if (!v || (!asked && v.state !== 'failed' && !this.data('drive') && src)) {
         // A film already on the site: say what the site actually does with it.
         var rights = this.data('rights'); var rep = this.data('replacement'); var pub = this.data('published');
         var caps = this.data('captions'); var capOk = caps === 'burned-in' || this.data('captionsStatus') === 'approved' || this.data('dialogue') === false;
         var line = rights !== 'approved' ? 'Held: its rights are not cleared, so it is not on the site whatever Published says.'
           : rep && rep.status === 'pending' ? 'On the review site, waiting for its replacement before launch (James, Oct 13).'
-            : pub === false ? 'Hidden: not on the site.' : capOk ? 'On the site.' : 'On the review site. Its captions still need checking word for word before the live site can launch.';
-        return box('ready', [h('p', { key: 1 }, line), src ? h(FilmPreview, { key: 2, src: src, poster: this.data('poster') }) : null]);
+            : pub === false ? 'Hidden: not on the site.' : capOk ? 'On the site.' : 'On the review site. Its captions are not approved yet, which the live site needs before launch.';
+        return box('ready', [h('p', { key: 1 }, line), src ? h(FilmPreview, { key: 2, src: src, poster: this.data('poster') }) : null, replace('Replace with a file from Google Drive')]);
       }
-      if (v.state === 'ready') return box('ready', [h('p', { key: 1 }, h('strong', {}, 'Ready. '), v.message || 'Imported from Google Drive.'), h(FilmPreview, { key: 2, src: src || '/v/' + slug + '.mp4', poster: this.data('poster') })]);
+      if (v.state === 'ready') return box('ready', [h('p', { key: 1 }, h('strong', {}, 'Ready. '), v.message || 'Imported from Google Drive.'), h(FilmPreview, { key: 2, src: src || '/v/' + slug + '.mp4', poster: this.data('poster') }),
+        h('p', { key: 3, className: 'pgk-gallery__count' }, 'Editing the title, description or captions never re-imports the film. To use a new export, or new poster or excerpt settings:'), replace('Replace or re-import from Google Drive')]);
       if (v.state === 'failed') return box('failed', [h('p', { key: 1 }, h('strong', {}, 'The import did not work. '), v.message || ''), h('div', { key: 2, className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.props.onChange({ state: 'retry' }); } }, 'Retry import'), h('span', { className: 'pgk-gallery__count' }, 'Then press Save. Fix the link or the sharing in Drive first if the message says so.'))]);
-      var run = this.state.run; var running = run && (run.status === 'queued' || run.status === 'in_progress');
-      var failedRun = run && run.status === 'completed' && run.conclusion !== 'success';
-      return box('waiting', [h('p', { key: 1 }, h('strong', {}, running ? 'Importing from Google Drive now. ' : 'Waiting to import from Google Drive. '),
-        running ? 'Started ' + when(run.run_started_at || run.created_at) + '. This page updates by itself; reopen the film in a few minutes.' : failedRun ? 'The last import run stopped with an error before it could report here. Press Retry import, then Save; if it happens again, the import step needs a look.' : 'It starts within a minute or two of saving.'),
-        failedRun ? h('button', { key: 2, type: 'button', className: 'pgk-btn', onClick: function () { self.props.onChange({ state: 'retry' }); } }, 'Retry import') : null]);
+      var st = this.state; var run = st.run;
+      if (st.finished) return box(st.finished === 'ready' ? 'ready' : 'failed', [h('p', { key: 1 }, h('strong', {}, st.finished === 'ready' ? 'The import has finished. ' : 'The import has finished, but it did not work. '), 'Reload to see the result here.'), h('button', { key: 2, type: 'button', className: 'pgk-btn', onClick: function () { location.reload(); } }, 'Reload')]);
+      var retry = h('button', { key: 3, type: 'button', className: 'pgk-btn', onClick: function () { self.props.onChange({ state: 'retry' }); } }, 'Retry import');
+      var line; var showRetry = false;
+      if (run && (run.status === 'queued' || run.status === 'in_progress' || run.status === 'waiting')) line = [h('strong', { key: 'a' }, 'Importing from Google Drive now. '), 'Started ' + when(run.run_started_at || run.created_at) + '. A short film usually takes a few minutes.'];
+      else if (run && run.status === 'completed' && run.conclusion === 'success') { line = [h('strong', { key: 'a' }, 'The import ran but did not record this film. '), 'It may have been changed while it was importing. Press Retry import, then Save.']; showRetry = true; }
+      else if (run && run.status === 'completed') { line = [h('strong', { key: 'a' }, 'The import stopped with an error before it could report here. '), 'Press Retry import, then Save. If it happens again, the import step needs a look. ', run.html_url ? h('a', { key: 'b', href: run.html_url, target: '_blank', rel: 'noopener' }, 'Details') : null]; showRetry = true; }
+      else if (st.checked && st.savedAt && Date.now() - new Date(st.savedAt).getTime() > 10 * 60000) line = [h('strong', { key: 'a' }, 'The import has not started. '), 'It was saved ' + when(st.savedAt) + ' and no import has run for it. GitHub Actions may not be running for this site; ask for it to be checked.'];
+      else line = [h('strong', { key: 'a' }, 'Waiting to import from Google Drive. '), 'It starts within a minute or two of saving.'];
+      var replacing = src && asked ? h('p', { key: 0 }, h('strong', {}, 'Replacing this film. '), 'Paste the new Drive link above if it is a new file (or keep it to re-import with new poster or excerpt settings), then Save. The site keeps playing the current copy until the new one is ready.') : null;
+      return box('waiting', [replacing, h('p', { key: 1 }, line), showRetry ? retry : null]);
     },
   });
   // Plays the site's copy; until the review site has it, the copy in the repository (same file).
@@ -812,8 +1002,14 @@
     '.pgk-pub__state { margin: 0; padding: 10px 12px; border-radius: 6px; background: #f1f5f9; font-size: 13px; line-height: 1.45; color: #1f2937; }',
     '.pgk-pub__state--held { background: #fef3f2; color: #912018; border: 1px solid #fecdca; }',
     '.pgk-pub__state--test { background: #fffaeb; color: #7a4a00; border: 1px solid #fedf89; }',
-    '.pgk-statusbar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 400; max-width: 760px; margin: 0 auto; padding: 10px 14px; border-radius: 8px; background: #fff; border: 1px solid #fecdca; box-shadow: 0 6px 24px rgba(0,0,0,.12); font-size: 13px; line-height: 1.45; color: #1f2937; }',
-    '.pgk-statusbar p { margin: 0 0 6px; } .pgk-statusbar__held { color: #912018; } .pgk-statusbar__meta { color: #5b6472; margin: 0 !important; }',
+    '.pgk-statusbar { position: fixed; right: 12px; bottom: 12px; z-index: 400; max-width: min(560px, calc(100% - 260px)); padding: 8px 12px; border-radius: 8px; background: #fff; border: 1px solid #dfe3e8; box-shadow: 0 6px 24px rgba(0,0,0,.12); font-size: 13px; line-height: 1.45; color: #1f2937; }',
+    '.pgk-statusbar[hidden], .pgk-sitepill[hidden] { display: none !important; }',
+    '.pgk-statusbar--held { border-color: #fecdca; } .pgk-statusbar--quiet { padding: 4px 8px; display: flex; align-items: flex-start; gap: 12px; } .pgk-statusbar--quiet .pgk-statusbar__test { flex: 1; align-items: center; }',
+    '.pgk-statusbar__test { display: flex; align-items: flex-start; gap: 8px; } .pgk-statusbar__test details { flex: 1; } .pgk-statusbar summary { cursor: pointer; }',
+    '.pgk-statusbar__x { border: 0; background: none; font-size: 18px; line-height: 1; padding: 2px 6px; cursor: pointer; color: #5b6472; min-width: 32px; min-height: 32px; }',
+    '.pgk-statusbar__meta summary { color: #5b6472; } .pgk-statusbar details p { margin: 6px 0 0; }',
+    '@media (max-width: 640px) { .pgk-statusbar { left: 12px; right: 12px; max-width: none; bottom: 52px; } }',
+    '.pgk-statusbar p { margin: 0 0 6px; } .pgk-statusbar__held { color: #912018; }',
     'a.pgk-card--grid { display: flex !important; flex-direction: column; overflow: hidden; }',
     'a.pgk-card--grid > .pgk-card-thumb { flex: 0 0 150px; display: block; width: 100%; height: 150px; margin: 0; object-fit: cover; border-radius: 5px 5px 0 0; background: #eef0f3; }',
     'a.pgk-card--grid > [class*="CardBody"] { flex: 1 1 auto; min-height: 0; }',
@@ -838,12 +1034,14 @@
     '.pgk-note, .pgk-manage, .pgk-film { padding: 12px 14px; border-radius: 8px; background: #f1f5f9; font-size: 14px; line-height: 1.5; color: #1f2937; } .pgk-note p, .pgk-manage p, .pgk-film p { margin: 0 0 8px; }',
     '.pgk-note a, .pgk-manage a { color: #176277; font-weight: 600; text-decoration: underline; } .pgk-note ul, .pgk-manage ul { margin: 0 0 8px; padding-left: 20px; } .pgk-note__h { font-weight: 600; } .pgk-note__state, .pgk-manage__note { color: #5b6472; }',
     '.pgk-film--failed { background: #fef3f2; color: #912018; } .pgk-film--waiting { background: #fffaeb; } .pgk-film__player { display: block; width: 100%; max-width: 480px; max-height: 360px; border-radius: 6px; background: #000; }',
-    '.pgk-modal__box--narrow { width: min(560px, 100%); } .pgk-modal__body { padding: 20px; overflow: auto; } .pgk-modal__body h2 { margin: 0 0 12px; font-size: 20px; }',
+    '.pgk-modal__inner { display: flex; flex-direction: column; min-height: 0; max-height: 90vh; } .pgk-modal__box--narrow { width: min(560px, 100%); } .pgk-modal__body { padding: 20px; overflow: auto; } .pgk-modal__body h2 { margin: 0 0 12px; font-size: 20px; }',
     '.pgk-modal__count, .pgk-modal__empty { margin: 0; padding: 8px 14px 0; font-size: 13px; color: #5b6472; } .pgk-modal__head select { font: inherit; padding: 8px; border: 1px solid #c9ced6; border-radius: 6px; }',
     '.pgk-pick .pgk-thumb { width: 100%; height: 100px; } .pgk-pick__meta { color: #5b6472 !important; }',
     '.pgk-files { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dfe3e8; border-radius: 6px; } .pgk-files label { display: block; margin: 4px 0; }',
     '.pgk-confirm { display: block; margin: 0 0 12px; } .pgk-confirm span { display: block; margin-bottom: 6px; } .pgk-confirm input { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',
     '.pgk-captions .pgk-radio { display: block; margin: 4px 0; }',
+    '.pgk-files .pgk-radio { display: block; margin: 4px 0; } .pgk-row--out { opacity: .55; }',
+    '.pgk-sitepill--failed { background: #fef3f2 !important; border-color: #fecdca !important; color: #912018 !important; } .pgk-sitepill a { color: inherit; font-weight: 600; }',
     '.pgk-sitepill { position: fixed; left: 12px; bottom: 12px; z-index: 390; margin: 0; padding: 6px 12px; border-radius: 999px; background: #ecfdf3; border: 1px solid #abefc6; color: #05603a; font-size: 12px; } .pgk-sitepill--busy { background: #fffaeb; border-color: #fedf89; color: #7a4a00; }',
     '@media (max-width: 640px) { .pgk-row { grid-template-columns: 96px 1fr; } .pgk-thumb { width: 96px; height: 72px; } .pgk-row__tools { grid-column: 1 / -1; flex-direction: row; } }',
   ].join('\n');

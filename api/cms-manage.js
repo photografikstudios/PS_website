@@ -30,7 +30,8 @@ export default async function handler(req, res) {
   try {
     if (action === 'restore') return await restore(res, token, owner, name, branch, String(body.commit || ''));
     // Saved vs on the site: the dashboard compares this with the commit the review site was built from (/admin/status.json).
-    if (action === 'head') return send(res, 200, { ok: true, head: await branchHead(token, owner, name, branch), branch });
+    // A save alone does not mean a build started or worked: the build state is what Vercel reported on that commit.
+    if (action === 'head') { const head = await branchHead(token, owner, name, branch); return send(res, 200, { ok: true, head, branch, build: await buildState(token, owner, name, head) }); }
     if (!COLLECTIONS[collection] || !KEY.test(String(key || ''))) return send(res, 400, { ok: false, message: 'This kind of item cannot be checked here.' });
     const head = await branchHead(token, owner, name, branch);
     const repo = await readRepo(token, owner, name, head);
@@ -61,6 +62,25 @@ export default async function handler(req, res) {
   } catch (e) {
     return send(res, e.status === 401 ? 401 : 502, { ok: false, message: e.status === 401 ? e.message : 'GitHub could not be reached. Nothing was changed; try again in a minute.' });
   }
+}
+
+/** What Vercel reported on a commit: 'success', 'pending', 'failure' or 'unknown' (nothing reported yet), with its link. */
+async function buildState(token, owner, name, sha) {
+  const [st, cr] = await Promise.all([gh(token, `/repos/${owner}/${name}/commits/${sha}/statuses?per_page=100`), gh(token, `/repos/${owner}/${name}/commits/${sha}/check-runs?per_page=100`)]);
+  return pickBuildState((st.ok && Array.isArray(st.json) ? st.json : []), (cr.ok && cr.json.check_runs) || []);
+}
+/**
+ * The newest report per Vercel status context or check (a retried build that succeeded replaces the earlier failure),
+ * then the most serious of those: any current failure, else still building, else success.
+ */
+export function pickBuildState(statuses, checkRuns) {
+  const latest = new Map();
+  const keep = (key, r) => { const prev = latest.get(key); if (!prev || String(r.at || '') > String(prev.at || '')) latest.set(key, r); };
+  for (const x of statuses) if (/vercel/i.test(x.context || '')) keep(`s:${x.context}`, { state: x.state === 'success' ? 'success' : x.state === 'pending' ? 'pending' : 'failure', url: x.target_url, at: x.updated_at || x.created_at });
+  for (const x of checkRuns) if (/vercel/i.test(`${x.name} ${x.app && x.app.slug}`)) keep(`c:${x.name}`, { state: x.status !== 'completed' ? 'pending' : ['success', 'neutral', 'skipped'].includes(x.conclusion) ? 'success' : 'failure', url: x.details_url || x.html_url, at: x.completed_at || x.started_at });
+  if (!latest.size) return { state: 'unknown' };
+  const rank = { failure: 3, pending: 2, success: 1 };
+  return [...latest.values()].sort((a, b) => rank[b.state] - rank[a.state])[0];
 }
 
 /** Undo one dashboard deletion: put back the files it removed, if they are still absent, as a new commit. */

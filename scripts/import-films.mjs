@@ -68,10 +68,10 @@ const readJson = async (p) => JSON.parse(await readFile(join(root, p), 'utf8'));
 const writeJson = (p, v) => writeFile(join(root, p), JSON.stringify(v, null, 2) + '\n');
 
 /** Encodes one film and returns what to record. Same settings as scripts/media.mjs. */
-async function encode(id, src, rec) {
+async function encode(id, src, rec, out) {
   const { w, h, d, audio } = probe(src);
   const vertical = h > w;
-  const full = join(root, 'static/v', `${id}.mp4`); const poster = join(root, 'static/v', `${id}.webp`); const card = join(root, 'static/images/posters-sm', `${id}.webp`);
+  const full = join(out, 'static/v', `${id}.mp4`); const poster = join(out, 'static/v', `${id}.webp`); const card = join(out, 'static/images/posters-sm', `${id}.webp`);
   await mkdir(dirname(full), { recursive: true }); await mkdir(dirname(card), { recursive: true });
   run(['-i', src, '-vf', `${vertical ? 'scale=720:-2' : 'scale=-2:720'}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '27',
     '-maxrate', '2500k', '-bufsize', '5000k', ...(audio ? ['-c:a', 'aac', '-b:a', '96k', '-ac', '2'] : ['-an']), '-movflags', '+faststart', full]);
@@ -83,30 +83,75 @@ async function encode(id, src, rec) {
   if (rec.makeLoop) {
     loop = [0, Math.max(1, Math.min(25, Math.floor(d)))];
     run(['-ss', '0', '-t', String(loop[1]), '-i', src, '-an', '-vf', `${vertical ? 'scale=540:-2' : 'scale=-2:540'}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264',
-      '-preset', 'veryfast', '-crf', '28', '-maxrate', '1500k', '-bufsize', '6000k', '-movflags', '+faststart', join(root, 'static/v', `${id}-loop.mp4`)]);
+      '-preset', 'veryfast', '-crf', '28', '-maxrate', '1500k', '-bufsize', '6000k', '-movflags', '+faststart', join(out, 'static/v', `${id}-loop.mp4`)]);
   }
   return { orientation: vertical ? 'vertical' : 'horizontal', duration: Math.round(d), width: w, height: h, posterAt: at, loop };
 }
 
-export async function importFilms({ now = new Date().toISOString() } = {}) {
+/** The import settings a run worked from: if any of them changes while it encodes, its output is not used. */
+const settingsOf = (rec) => ({ drive: rec.drive, posterTime: rec.posterTime ?? null, makeLoop: !!rec.makeLoop });
+const sameSettings = (a, b) => a.drive === b.drive && a.posterTime === b.posterTime && a.makeLoop === b.makeLoop;
+
+/** Films the dashboard saved for import, in the current checkout. */
+async function waiting() {
   const dir = join(root, 'content/media');
   const todo = [];
   for (const f of (await readdir(dir)).filter((x) => x.endsWith('.json')).sort()) {
     const rec = JSON.parse(await readFile(join(dir, f), 'utf8'));
-    if (rec.type === 'video' && rec.drive && rec.import && ['waiting', 'retry'].includes(rec.import.state)) todo.push({ id: f.replace(/\.json$/, ''), file: join(dir, f), rec });
+    if (rec.type === 'video' && rec.drive && rec.import && ['waiting', 'retry'].includes(rec.import.state)) todo.push({ id: f.replace(/\.json$/, ''), rec });
   }
+  return todo;
+}
+
+/**
+ * Step 1 (slow, touches nothing in the repository): download and encode every waiting film into `out`, and write
+ * out/results.json with what each one became (or why it failed) and the Drive file it came from.
+ */
+export async function encodeWaiting(out, { now = new Date().toISOString() } = {}) {
+  await mkdir(out, { recursive: true });
   const results = [];
-  for (const { id, file, rec } of todo) {
+  for (const { id, rec } of await waiting()) {
     await mkdir(tmp, { recursive: true });
     const src = join(tmp, `${id}.src`);
+    const driveId = driveFileId(rec.drive);
     try {
-      const driveId = driveFileId(rec.drive);
       if (!driveId) throw new Error('Paste the Google Drive link of the film file (it looks like drive.google.com/file/d/…). A folder link will not work.');
       try { await download(driveId, src); } catch (e) { if (e instanceof TooBig) throw new Error('The file is larger than 200 MB. Export a smaller finished version (for example 1080p H.264) and try again.'); throw e; }
-      const meta = await encode(id, src, rec);
+      results.push({ id, ...settingsOf(rec), driveId, state: 'ready', meta: await encode(id, src, rec, out), at: now });
+    } catch (e) {
+      results.push({ id, ...settingsOf(rec), driveId, state: 'failed', message: String(e.message || e).slice(0, 400), at: now });
+    } finally { await rm(src, { force: true }); }
+  }
+  await writeFile(join(out, 'results.json'), JSON.stringify(results, null, 1));
+  return results;
+}
+
+/**
+ * Step 2 (quick, run on the latest branch just before committing; repeated if the push loses a race): record the
+ * results on top of whatever is saved now. Only the import's own fields change; every other field James saved meanwhile
+ * is kept. A film is skipped, and stays waiting for the next run, if it was deleted, already imported by another run,
+ * or its Drive link was changed after this run started.
+ */
+export async function applyResults(out) {
+  const results = JSON.parse(await readFile(join(out, 'results.json'), 'utf8'));
+  const applied = [];
+  for (const r of results) {
+    const file = join(root, 'content/media', `${r.id}.json`);
+    if (!existsSync(file)) { applied.push({ ...r, state: 'skipped', message: 'deleted since the import started' }); continue; }
+    const rec = JSON.parse(await readFile(file, 'utf8'));
+    if (!(rec.import && ['waiting', 'retry'].includes(rec.import.state))) { applied.push({ ...r, state: 'skipped', message: 'already recorded by another run' }); continue; }
+    if (!sameSettings(settingsOf(rec), r)) { applied.push({ ...r, state: 'skipped', message: 'the Drive link, poster frame or excerpt setting changed; the next run imports with the new settings' }); continue; }
+    if (r.state === 'failed') {
+      rec.import = { state: 'failed', at: r.at, message: r.message };
+    } else {
+      const { meta } = r; const id = r.id;
+      const names = [`${id}.mp4`, `${id}.webp`, ...(meta.loop ? [`${id}-loop.mp4`] : [])];
+      await mkdir(join(root, 'static/v'), { recursive: true }); await mkdir(join(root, 'static/images/posters-sm'), { recursive: true });
+      for (const n of names) await writeFile(join(root, 'static/v', n), await readFile(join(out, 'static/v', n)));
+      await writeFile(join(root, 'static/images/posters-sm', `${id}.webp`), await readFile(join(out, 'static/images/posters-sm', `${id}.webp`)));
       // Pins and manifests, exactly as the committed media expects them.
       const assets = await readJson('content/media-assets.json');
-      for (const n of [`${id}.mp4`, `${id}.webp`, ...(meta.loop ? [`${id}-loop.mp4`] : [])]) assets.files[`/v/${n}`] = await pin(join(root, 'static/v', n));
+      for (const n of names) assets.files[`/v/${n}`] = await pin(join(root, 'static/v', n));
       const manifest = JSON.parse(await readFile(join(root, 'static/v/manifest.json'), 'utf8'));
       manifest[id] = { orientation: meta.orientation, duration: meta.duration, width: meta.width, height: meta.height };
       await writeFile(join(root, 'static/v/manifest.json'), JSON.stringify(manifest));
@@ -120,23 +165,30 @@ export async function importFilms({ now = new Date().toISOString() } = {}) {
       await writeJson('content/poster-assets.json', posters);
       const sources = await readJson('content/media-sources.json');
       sources.items = sources.items.filter((it) => it.id !== id);
-      sources.items.push({ id, drive: driveId, posterAt: meta.posterAt, ...(meta.loop ? { loop: meta.loop } : {}), _note: `Added from the dashboard (Add film from Google Drive), ${now.slice(0, 10)}. The original stays in Drive.` });
+      sources.items.push({ id, drive: r.driveId, posterAt: meta.posterAt, ...(meta.loop ? { loop: meta.loop } : {}), _note: `Added from the dashboard (Add film from Google Drive), ${r.at.slice(0, 10)}. The original stays in Drive.` });
       await writeJson('content/media-sources.json', sources);
       delete rec.makeLoop;
       Object.assign(rec, { src: `/v/${id}.mp4`, poster: `/v/${id}.webp`, orientation: meta.orientation, duration: meta.duration, source: 'drive',
-        import: { state: 'ready', at: now, message: `Imported from Google Drive (${meta.width}×${meta.height}, ${meta.duration} s). The original stays in Drive.` } });
-      results.push({ id, state: 'ready' });
-    } catch (e) {
-      rec.import = { state: 'failed', at: now, message: String(e.message || e).slice(0, 400) };
-      results.push({ id, state: 'failed', message: rec.import.message });
-    } finally { await rm(src, { force: true }); }
+        import: { state: 'ready', at: r.at, message: `Imported from Google Drive (${meta.width}×${meta.height}, ${meta.duration} s). The original stays in Drive.` } });
+    }
     await writeFile(file, JSON.stringify(rec, null, 2) + '\n');
+    applied.push(r);
   }
-  return results;
+  await writeFile(join(out, 'summary.txt'), applied.map((a) => `${a.id}: ${a.state}${a.message ? ` (${a.message})` : ''}`).join('\n') + '\n');
+  return applied;
 }
 
+/** Both steps in place (local use and tests). */
+export async function importFilms({ now = new Date().toISOString() } = {}) {
+  const out = await mkdtempDir();
+  await encodeWaiting(out, { now });
+  return (await applyResults(out)).map(({ id, state, message }) => ({ id, state, ...(message ? { message } : {}) }));
+}
+const mkdtempDir = async () => { const { mkdtemp } = await import('node:fs/promises'); const { tmpdir } = await import('node:os'); return mkdtemp(join(tmpdir(), 'pgk-film-out-')); };
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const results = await importFilms();
+  const [cmd, out] = process.argv.slice(2);
+  const results = cmd === 'encode' ? await encodeWaiting(out) : cmd === 'apply' ? await applyResults(out) : await importFilms();
   for (const r of results) console.log(`film import: ${r.id} ${r.state}${r.message ? `: ${r.message}` : ''}`);
   if (!results.length) console.log('film import: nothing waiting');
 }

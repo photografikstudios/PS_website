@@ -21,6 +21,8 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "captionsStatus": "machine-draft",
-  "order": 180
+  "captionsStatus": "approved",
+  "order": 180,
+  "captionsApprovedBy": "James, Oct 13 2026 (OWNER_REEL_CAPTIONS_2026-10-13.md): “captions on the reels are fine, we want people to see the captions without sound on as well.” Owner approval of the current reel captions, not an independent word-for-word audit.",
+  "_captionsDisplay": "WebVTT track shown by default (track default), so the words show with sound off."
 }

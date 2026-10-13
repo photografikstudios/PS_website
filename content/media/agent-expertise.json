@@ -21,5 +21,7 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "order": 110
+  "order": 110,
+  "captionsStatus": "approved",
+  "captionsApprovedBy": "James, Oct 13 2026 (OWNER_REEL_CAPTIONS_2026-10-13.md): “captions on the reels are fine, we want people to see the captions without sound on as well.” Owner approval of the current reel captions, not an independent word-for-word audit."
 }

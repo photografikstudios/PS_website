@@ -63,8 +63,18 @@ export function start(port = 0) {
       || await tryFile(join(dist, path.replace(/\/$/, '') + '.html'))
       || (path !== '/' && await tryFile(join(dist, path.replace(/\/$/, ''), 'index.html'))); // directory index, e.g. /admin
     if (!file) { res.writeHead(404, { 'Content-Type': types['.html'] }); return res.end(await readFile(join(dist, '404.html'))); }
-    res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream' });
-    res.end(await readFile(file));
+    // Byte ranges, as Vercel serves them: browsers need them to start a video part-way (#t=3) or seek.
+    const body = await readFile(file); const type = types[extname(file)] || 'application/octet-stream';
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (range) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, body.length - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(Number(range[2]), body.length - 1) : body.length - 1;
+      if (start >= body.length || start > end) { res.writeHead(416, { 'Content-Range': `bytes */${body.length}` }); return res.end(); }
+      res.writeHead(206, { 'Content-Type': type, 'Content-Range': `bytes ${start}-${end}/${body.length}`, 'Accept-Ranges': 'bytes', 'Content-Length': end - start + 1 });
+      return res.end(body.subarray(start, end + 1));
+    }
+    res.writeHead(200, { 'Content-Type': type, 'Accept-Ranges': 'bytes' });
+    res.end(body);
   });
   return new Promise((resolve) => server.listen(port, () => resolve(server)));
 }

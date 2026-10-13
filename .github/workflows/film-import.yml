@@ -1,7 +1,8 @@
-# Add film from Google Drive (dashboard → Films → New Film). Runs only when a film record changes on the review branch.
-# Makes the web copies the site serves (scripts/import-films.mjs), then commits them in one commit. The original stays
-# in Google Drive; nothing here signs in to Google or changes sharing. Needs: GitHub Actions enabled for this repository
-# and "Read and write permissions" allowed for workflows (repository Settings → Actions → General).
+# Add film from Google Drive (dashboard → Films → New Film). Runs when a film record changes on the review branch.
+# Makes the web copies the site serves (scripts/import-films.mjs) and records them in one commit. The original stays
+# in Google Drive; nothing here signs in to Google or changes sharing.
+# Permissions: this workflow asks only for contents: write (scoped here; the repository default stays read-only).
+# After launch approval, add the live branch to `branches` below as part of the launch change.
 name: Film import from Google Drive
 on:
   push:
@@ -11,14 +12,18 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: film-import
+  group: film-import-${{ github.ref_name }}
   cancel-in-progress: false
 jobs:
   import:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # The latest branch, not the commit that triggered this run: a run that waited in the queue must not redo a film
+      # an earlier run already finished.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -28,16 +33,24 @@ jobs:
       - name: Install ffmpeg
         if: steps.waiting.outputs.count != '0'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - name: Import waiting films
+      - name: Make the web copies (nothing is changed in the repository yet)
         if: steps.waiting.outputs.count != '0'
-        run: node scripts/import-films.mjs
-      - name: Commit the web copies
+        run: node scripts/import-films.mjs encode "$RUNNER_TEMP/film-out"
+      - name: Record them on top of the latest saves, then push (retried if a save lands at the same moment)
         if: steps.waiting.outputs.count != '0'
+        env:
+          BR: ${{ github.ref_name }}
         run: |
-          if [ -z "$(git status --porcelain)" ]; then echo "Nothing to import."; exit 0; fi
           git config user.name "photografik-dashboard[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add content/media content/media-assets.json content/poster-assets.json content/media-sources.json static/v static/images/posters-sm
-          git commit -m "Dashboard: film import from Google Drive" -m "$(node -e "for (const f of require('fs').readdirSync('content/media')) { const r = JSON.parse(require('fs').readFileSync('content/media/'+f)); if (r.import && r.import.at) console.log(f.replace('.json',''), r.import.state) }" | sort | tail -5)"
-          for i in 1 2 3; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done
-          echo "Could not push the imported film; it will be retried on the next save." && exit 1
+          for i in 1 2 3 4; do
+            git fetch -q origin "$BR" && git reset -q --hard "origin/$BR"
+            node scripts/import-films.mjs apply "$RUNNER_TEMP/film-out"
+            if [ -z "$(git status --porcelain)" ]; then echo "Nothing to record."; exit 0; fi
+            git add content/media content/media-assets.json content/poster-assets.json content/media-sources.json static/v static/images/posters-sm
+            git commit -q -m "Dashboard: film import from Google Drive" -m "$(cat "$RUNNER_TEMP/film-out/summary.txt")"
+            if git push -q origin "HEAD:$BR"; then exit 0; fi
+            echo "A save landed at the same moment; trying again on top of it."; sleep $((i * 5))
+          done
+          echo "::error::Could not record the imported film after 4 tries. Press Retry import in the dashboard."
+          exit 1

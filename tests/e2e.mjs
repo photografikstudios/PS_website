@@ -1108,6 +1108,47 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
   await p.context().close();
 });
 
+// James, Oct 13 2026 (OWNER_REEL_CAPTIONS): reel captions are approved and must be readable with the sound off. The
+// waterfront Agent on camera reel shows its WebVTT words by default while muted; burned-in reels carry no second track.
+let longFixture = null;
+try { const { execFileSync } = await import('node:child_process'); const f = '/tmp/pgk-reel-12s.webm'; execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc=size=360x640:rate=25', '-t', '12', '-c:v', 'libvpx', '-b:v', '300k', f]); longFixture = await readFile(f); } catch { /* no ffmpeg: the check reports it */ }
+await check('reels: words show while muted (WebVTT default on Agent on camera; burned-in on the replacement, no doubled track); excerpts advance', async () => {
+  for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    const p = await newPage(vp);
+    // This Chromium cannot decode the real H.264 reel, and the shared fixture ends before the first spoken words (6.9 s),
+    // so the reel is stood in for by a 12-second WebM; the captions file, track and player are the site's own.
+    if (longFixture) await p.route(/agent-property-tour\.mp4/, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: longFixture }));
+    await p.goto(base + '/agent-content');
+    const card = p.locator('.ac-example:has([data-id="agent-on-camera"])');
+    await card.scrollIntoViewIfNeeded();
+    await card.locator('.vplayer__start').click();
+    const st = await card.locator('video').evaluate(async (v) => {
+      v.muted = true; await v.play().catch(() => {});
+      await new Promise((r) => setTimeout(r, 500)); const t0 = v.currentTime;
+      // The first spoken words start at 6.9 s; the test server has no range requests, so let it play there.
+      for (let i = 0; i < 200 && !(v.textTracks[0] && v.textTracks[0].activeCues && v.textTracks[0].activeCues.length && v.currentTime > 7.3); i++) await new Promise((r) => setTimeout(r, 100));
+      if (!(t0 > 0)) return { muted: v.muted, mode: 'not playing', cue: '', time: t0 };
+      v.currentTime = 7.2;
+      const t = v.textTracks[0];
+      return { muted: v.muted, mode: t && t.mode, cue: t && t.activeCues && t.activeCues[0] ? t.activeCues[0].text : '', played: t0, controls: v.controls };
+    });
+    assert(st.muted && st.played > 0 && st.mode === 'showing' && /part of the story/.test(st.cue) && st.controls, `${vp.width}: muted words ${JSON.stringify(st)}`);
+    await p.goto(base + '/creator-studios/sessions');
+    const rep = p.locator('.card:has([data-id="cs-podcast-ep23-short"])');
+    assert(await rep.locator('video track').count() === 0, 'burned-in reel has no second caption track');
+    await rep.scrollIntoViewIfNeeded(); await rep.locator('.vplayer__start').click();
+    const t2 = await rep.locator('video').evaluate(async (v) => { v.muted = true; await v.play().catch(() => {}); await new Promise((r) => setTimeout(r, 1500)); return v.currentTime; });
+    assert(t2 > 0.5, `${vp.width}: replacement plays muted (${t2})`);
+    await p.goto(base + '/creator-studios');
+    const loop = p.locator('.cs-loops video source[src="/v/cs-podcast-ep23-short-loop.mp4"]').locator('..');
+    await loop.scrollIntoViewIfNeeded();
+    const t3 = await loop.evaluate(async (v) => { await v.play().catch(() => {}); await new Promise((r) => setTimeout(r, 1500)); return { t: v.currentTime, muted: v.muted }; });
+    assert(t3.muted && t3.t > 0.5, `${vp.width}: opening excerpt advances muted ${JSON.stringify(t3)}`);
+    assert(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${vp.width}: no sideways scroll`);
+    await p.context().close();
+  }
+});
+
 // James, Sep 26 2026: About page shows client reviews. Codex S15-16: short curated selection, no empty video slot,
 // James confirmed Sep 27 that the Google 'Hampton Innovation' review is Aubri Peele, Brown Harris Stevens (in reserve).
 await check('About reviews: Jack Richardson video testimonial with credit, curated verbatim quotes, Google link, no overflow at 375 px', async () => {

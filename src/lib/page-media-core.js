@@ -22,7 +22,20 @@ export const KINDS = {
   still: 'Photo, or the still frame of a film',
   loopOrPhoto: 'Playing example or photo',
   photoOrFilm: 'Photo, or a film with sound',
+  gallery: 'Gallery: photos and films (films need a still)',
+  filmGallery: 'Gallery: films',
+  projectGallery: 'Gallery: projects',
+  project: 'A project',
 };
+// Galleries (Codex review of 11c9abe: per-page control). A gallery's value is null or { mode: 'automatic', exclude: [ids] }
+// (the page's automatic choice, minus what James left out on this page) or { mode: 'custom', items: [{ media }] }
+// (exactly these, in this order). Project galleries use { project } items and slugs. Nothing here changes the library
+// or any other page.
+const G = (key, label, accepts, more = {}) => ({ key, label, accepts, gallery: true, required: false, empty: 'Automatic, as before.', ...more });
+const GALLERY_KINDS = ['gallery', 'filmGallery', 'projectGallery', 'project'];
+export const isGallery = (slot) => GALLERY_KINDS.includes(slot.accepts);
+// Larger than any automatic gallery today (Home 146, Real Estate 98), so “My own selection” can always start from it.
+export const GALLERY_MAX = 400;
 const OPTIONAL = { required: false, empty: 'Nothing is shown here (the page stays text only).' };
 
 const S = (key, label, accepts, more = {}) => ({ key, label, accepts, required: true, ...more });
@@ -41,9 +54,7 @@ export const PAGES = [
       S('pathCommercial', '“Who we work with”, 03 Business & brand: playing example', 'loop'),
       S('pathCreator', '“Who we work with”, 04 LI Creator Studios: playing example', 'loop'),
       S('closing', 'Closing “Next step” band: background photo', 'photo', { alt: 'decorative' }),
-    ],
-    automatic: [
-      ['Selected work (Videos / Photos)', 'Fills itself from Photos and Films that are shown. To move one up, raise “Show first” on that photo or film.', '#/collections/photos'],
+      G('selectedWork', 'Selected work (Videos / Photos)', 'gallery', { auto: 'Every photo and film that is shown, newest first; “Show first” on a photo or film moves it up everywhere.' }),
     ],
   },
   {
@@ -57,9 +68,7 @@ export const PAGES = [
       S('featureFloorPlan', 'Service block “Floor plans”: picture', 'still', { required: false, empty: 'A simple drawn floor plan is shown instead.' }),
       S('featureTwilight', 'Service block “Twilight and day-to-night”: picture', 'still'),
       S('featureAgent', 'Service block “You, on camera”: picture', 'still'),
-    ],
-    automatic: [
-      ['Real estate portfolio', 'Fills itself from Real Estate photos and films that are shown. Use “Show first” on a photo or film to change the order.', '#/collections/photos'],
+      G('portfolio', 'Real estate portfolio', 'gallery', { auto: 'Every Real Estate photo and film that is shown.' }),
     ],
   },
   {
@@ -82,9 +91,7 @@ export const PAGES = [
       S('hero', 'Top of the page: moving background', 'heroLoop'),
       S('whyFilm', '“Why it matters”: film with sound', 'film'),
       S('shootDayPhoto', '“How the shoot day works”: photo', 'photo'),
-    ],
-    automatic: [
-      ['Examples', 'Every other Agent Content film that is shown. Hide a film in Films to take it out.', '#/collections/films'],
+      G('examples', 'Examples (films beside “Fair questions”)', 'filmGallery', { auto: 'Every other Agent Content film that is shown.' }),
     ],
   },
   {
@@ -100,10 +107,10 @@ export const PAGES = [
       S('stepPlan', '“How it works”, 02 Plan: picture', 'still'),
       S('stepProduce', '“How it works”, 03 Produce: picture', 'still'),
       S('closing', 'Closing band: background photo', 'photo', { alt: 'decorative' }),
+      G('selectedWork', 'Selected work', 'gallery', { auto: 'One card per Architecture & Design project plus uncredited photos and films; the three photos chosen above are left out so nothing repeats.' }),
     ],
     automatic: [
-      ['Selected work', 'One card per Architecture & Design project plus uncredited photos and films. Photos chosen for the three sections marked above are left out of it so nothing repeats.', '#/collections/projects'],
-      ['“Project film” picture', 'The first Architecture & Design film in Selected work.', '#/collections/films'],
+      ['“Project film” picture', 'The first film in Selected work.', '#/collections/films'],
     ],
   },
   {
@@ -116,9 +123,11 @@ export const PAGES = [
       S('featureRecurring', '“What we do”, Recurring production: picture', 'still'),
       S('agencyPhoto', '“For agencies”: picture', 'still'),
       S('closing', 'Closing band: background photo', 'photo', { alt: 'decorative' }),
+      G('caseStudy', 'Case study: which project', 'project', { auto: 'RevivaLuxe, or the first client project.' }),
+      G('clientWork', 'Client work: which projects, in which order', 'projectGallery', { auto: 'Every Commercial project with media, RevivaLuxe, Rachel Lynch Pools and Torella Pools first.' }),
     ],
     automatic: [
-      ['Case study and Client work', 'Each Commercial project’s own films and photos. Edit them in Projects.', '#/collections/projects'],
+      ['Each project’s own films and photos', 'Edited in Projects.', '#/collections/projects'],
     ],
   },
   {
@@ -186,6 +195,7 @@ export function checkPageMedia(pm, lib) {
     for (const slot of page.slots) {
       const where = `Page Media ${page.label}, ${slot.label}`;
       const v = values[slot.key];
+      if (isGallery(slot)) { galleryProblems(slot, v, lib, where, errors, warnings); continue; }
       const items = asList(v);
       if (slot.list && v != null && !Array.isArray(v)) { errors.push(`${where}: should be a list`); continue; }
       if (!slot.list && Array.isArray(v)) { errors.push(`${where}: choose one item, not a list`); continue; }
@@ -199,12 +209,44 @@ export function checkPageMedia(pm, lib) {
         if (problem) errors.push(`${at}: ${problem}`);
         else {
           const m = it.media ? lib.media.get(it.media) : null;
-          if (m && m.published === false) warnings.push(`${at}: “${m.title || m.id}” is hidden in ${m.type === 'video' ? 'Films' : 'Photos'}, but this section still shows it`);
+          if (m && m.published === false) warnings.push(`${at}: “${m.title || m.id}” is hidden in ${m.type === 'video' ? 'Films' : 'Photos'}, so the live site leaves it out of this section (the review site still shows it)`);
         }
       }
     }
   }
   return { errors, warnings };
+}
+
+function galleryProblems(slot, v, lib, where, errors, warnings) {
+  if (v == null) return;
+  if (slot.accepts === 'project') {
+    if (isItem(v) && v.hide === true) return; // James chose to show no case study
+    if (!isItem(v) || typeof v.project !== 'string') errors.push(`${where}: choose a project, or Automatic`);
+    else if (lib.projects && !lib.projects.has(v.project)) errors.push(`${where}: the project “${v.project}” does not exist`);
+    return;
+  }
+  if (!isItem(v) || !['automatic', 'custom'].includes(v.mode)) { errors.push(`${where}: choose Automatic or your own selection`); return; }
+  const byProject = slot.accepts === 'projectGallery';
+  if (v.mode === 'automatic') {
+    if (v.exclude != null && (!Array.isArray(v.exclude) || v.exclude.some((x) => typeof x !== 'string'))) errors.push(`${where}: the left-out list is not valid`);
+    return;
+  }
+  // An empty own selection is allowed on purpose: the gallery then shows nothing on this page.
+  if (!Array.isArray(v.items)) { errors.push(`${where}: the selection is not valid`); return; }
+  if (v.items.length > GALLERY_MAX) errors.push(`${where}: choose no more than ${GALLERY_MAX}`);
+  const seen = new Set();
+  v.items.forEach((it, i) => {
+    const at = `${where}, item ${i + 1}`;
+    const id = isItem(it) ? (byProject ? it.project : it.media) : null;
+    if (typeof id !== 'string') { errors.push(`${at}: not a valid choice`); return; }
+    if (seen.has(id)) errors.push(`${at}: chosen twice`); seen.add(id);
+    if (byProject) { if (lib.projects && !lib.projects.has(id)) errors.push(`${at}: the project “${id}” does not exist`); return; }
+    const m = lib.media.get(id);
+    if (!m) errors.push(`${at}: “${id}” is not in the library (or its rights are not approved)`);
+    else if (slot.accepts === 'filmGallery' && m.type !== 'video') errors.push(`${at}: “${m.title || id}” is a photo; this gallery shows films`);
+    else if (slot.accepts === 'gallery' && m.type === 'video' && !m.poster) errors.push(`${at}: “${m.title || id}” has no still for its card`);
+    else if (m.published === false) warnings.push(`${at}: “${m.title || id}” is hidden, so the live site leaves it out (the review site still shows it)`);
+  });
 }
 
 /** What is wrong with one item in a section, or '' when it fits. */
@@ -255,9 +297,12 @@ export function pageMediaRefs(pm) {
   for (const page of PAGES) {
     const values = (pm && pm[page.file]) || {};
     for (const slot of page.slots) {
-      for (const it of asList(values[slot.key])) {
+      const v = values[slot.key];
+      // A gallery uses only what James chose himself (an automatic gallery depends on the library, not on one item).
+      const items = isGallery(slot) ? (slot.accepts === 'project' ? asList(v).filter((x) => x && x.project) : v && v.mode === 'custom' && Array.isArray(v.items) ? v.items : []) : asList(v);
+      for (const it of items) {
         if (!isItem(it)) continue;
-        out.push({ page: page.label, route: page.route, file: page.file, key: slot.key, label: slot.label, media: it.media || null, src: it.src || null });
+        out.push({ page: page.label, route: page.route, file: page.file, key: slot.key, label: slot.label, media: it.media || null, src: it.src || null, project: it.project || null });
       }
     }
   }

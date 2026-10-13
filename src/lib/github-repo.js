@@ -27,7 +27,7 @@ export async function branchHead(token, owner, name, branch) {
 }
 
 const DIRS = { projects: 'content/projects', media: 'content/media', notes: 'content/field-notes', pageMedia: 'content/page-media' };
-const FILES = { pageText: 'content/pages.json', legacy: 'content/legacy-articles.json', vercel: 'vercel.json', assets: 'content/media-assets.json', posters: 'content/poster-assets.json' };
+const FILES = { work: 'content/work.json', pageText: 'content/pages.json', legacy: 'content/legacy-articles.json', vercel: 'vercel.json', assets: 'content/media-assets.json', posters: 'content/poster-assets.json' };
 
 /** Parses a Field Note file the same way the build does (JSON front matter, then Markdown). */
 export function parseNote(text, file) {
@@ -36,6 +36,8 @@ export function parseNote(text, file) {
   const front = close > 0 ? JSON.parse(src.slice(0, close + 2)) : {};
   return { file, slug: (front.slug || file.replace(/\.md$/, '')).trim(), front, body: close > 0 ? src.slice(close + 2) : '' };
 }
+
+export const withName = (rec, key, file) => ({ ...rec, [key]: rec[key] === undefined || rec[key] === null || rec[key] === '' ? file.replace(/\.json$/, '') : rec[key] });
 
 /** Everything whereUsed() needs, read at commit `oid`. */
 export async function readRepo(token, owner, name, oid) {
@@ -49,10 +51,12 @@ export async function readRepo(token, owner, name, oid) {
   const json = (t, f) => { try { return JSON.parse(t); } catch { throw Object.assign(new Error(`${f} could not be read`), { status: 500 }); } };
   const list = (k, ext) => ((repo[k] && repo[k].entries) || []).filter((e) => e.type === 'blob' && e.name.endsWith(ext));
   return {
-    projects: list('projects', '.json').map((e) => ({ slug: e.name.replace(/\.json$/, ''), ...json(e.object.text, e.name) })).map((p) => ({ ...p, slug: p.slug })),
-    media: list('media', '.json').map((e) => ({ ...json(e.object.text, e.name), id: e.name.replace(/\.json$/, '') })),
+    // Same as loadWork: a record without its own slug/id (new in the dashboard) takes its file name.
+    projects: list('projects', '.json').map((e) => withName(json(e.object.text, e.name), 'slug', e.name)),
+    media: list('media', '.json').map((e) => withName(json(e.object.text, e.name), 'id', e.name)),
     notes: list('notes', '.md').map((e) => parseNote(e.object.text, e.name)),
     pageMedia: Object.fromEntries(list('pageMedia', '.json').map((e) => [e.name.replace(/\.json$/, ''), json(e.object.text, e.name)])),
+    work: repo.work ? json(repo.work.text, 'work.json') : {},
     pageText: repo.pageText ? json(repo.pageText.text, 'pages.json') : {},
     legacy: repo.legacy ? json(repo.legacy.text, 'legacy-articles.json') : {},
     vercel: repo.vercel ? json(repo.vercel.text, 'vercel.json') : {},

@@ -35,9 +35,25 @@ export function buildPages(ctx) {
   // Page Media (content/page-media/<page>.json, edited in /admin): the photo or film chosen for each named section.
   // Values were checked by the build (src/lib/page-media-core.js); { media } is a library id or film loop, { src, alt } a file.
   const PM = ctx.pageMedia || {};
-  const pmv = (file, key) => PM[file]?.[key];
+  // Published off means off the live site, here too (Codex CMS review, Oct 13 2026): in production a hidden photo or film
+  // is left out of every section it was chosen for, and the section shows its empty state. Review builds still show it.
+  const hiddenIds = reviewMode ? new Set() : new Set(work.media.filter((m) => m.published === false).map((m) => m.id));
+  const keepItem = (it) => !!it && !(it.media && hiddenIds.has(it.media));
+  const pmv = (file, key) => { const v = PM[file]?.[key]; return Array.isArray(v) ? v.filter(keepItem) : keepItem(v) ? v : null; };
   const pmList = (file, key) => (Array.isArray(pmv(file, key)) ? pmv(file, key) : []);
   const pmId = (file, key) => pmv(file, key)?.media;
+  // Galleries per page (Page Media): Automatic as before, minus what James left out on this page, or exactly his own
+  // selection and order. Choices come from `pool` (what the site may show), so hidden or replaced media never return.
+  // The automatic list is also handed to the dashboard (ctx.galleryAuto) so it can show what Automatic means today.
+  const curate = (file, key, auto, pool, id = (m) => m.id) => {
+    if (ctx.galleryAuto && !ctx.galleryAuto[`${file}.${key}`]) ctx.galleryAuto[`${file}.${key}`] = auto.map(id);
+    const g = PM[file]?.[key];
+    if (!g || g.mode !== 'custom') { const out = new Set((g && g.exclude) || []); return auto.filter((m) => !out.has(id(m))); }
+    const byId = new Map(pool.map((m) => [id(m), m]));
+    return (g.items || []).map((it) => byId.get(it.media || it.project)).filter(Boolean);
+  };
+  // A moving background, or nothing when its section is empty (the page then opens on its plain heading).
+  const loopOf = (file, key) => (pmId(file, key) ? { loop: pmId(file, key) } : undefined);
   // Library photo or film behind an item; a film shows its still. { src, alt, thumb, m } or null.
   // Optional section on a text-only page: nothing at all when empty, so the page is unchanged until James adds one.
   const pmExtra = (it, sizes = '(min-width: 900px) 720px, 100vw') => {
@@ -160,7 +176,7 @@ export function buildPages(ctx) {
   const mediaFig = (id, opts = {}) => { const m = allMediaById[id]; if (!m) return ''; return blockFig(m.type === 'video' ? m.poster : m.src, opts.alt || (m.type === 'video' ? `Frame from ${m.title}` : (m.alt || m.title)), { thumb: m.thumb, ...opts }); };
   const bleedCta = ({ title, text, cta, image, alt = '', eyebrow = '' }) => `
 <section class="closing closing--bleed on-dark">
-  <div class="closing__media">${img(image, { alt, sizes: '100vw' })}</div>
+  ${image ? `<div class="closing__media">${img(image, { alt, sizes: '100vw' })}</div>` : ''}
   <div class="wrap closing__inner cta-band">
     ${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ''}
     <h2 class="h2 reveal">${title}</h2>
@@ -172,7 +188,8 @@ export function buildPages(ctx) {
 
   // ---------- HOME ----------
   // Home showcase: videos with a poster and all stills, filtered client-side (Videos/Photos × category).
-  const showcase = editorialOrder(media.filter((m) => (m.type === 'video' ? !!m.poster : true)));
+  const cardable = media.filter((m) => (m.type === 'video' ? !!m.poster : true));
+  const showcase = curate('home', 'selectedWork', editorialOrder(cardable), cardable);
   const homeLimit = site.galleries?.home?.limit || 9;
   // Codex/James Sep 29 2026: one approved written review on Home; the rest and Jack's film stay on About.
   // Oct 1 2026: Home shows the review's verbatim excerpt (with an ellipsis) when it has one; About keeps the full quote.
@@ -189,8 +206,8 @@ export function buildPages(ctx) {
     overlay: true,
     scripts: ['showcase.js'],
     body: `
-<section class="hero hero--video" data-hero-source="${esc(pmId('home', 'hero'))}">
-  <div class="hero__media">${ambient(pmId('home', 'hero'), { eager: true, cls: 'hero__video' })}</div>
+<section class="hero${pmId('home', 'hero') ? ' hero--video' : ''}"${pmId('home', 'hero') ? ` data-hero-source="${esc(pmId('home', 'hero'))}"` : ''}>
+  ${pmId('home', 'hero') ? `<div class="hero__media">${ambient(pmId('home', 'hero'), { eager: true, cls: 'hero__video' })}</div>` : ''}
   <div class="wrap hero__inner">
     <p class="eyebrow">${esc(heroText('/').eyebrow)}</p>
     <h1 class="display display--xl">${heroText('/').title}</h1>
@@ -263,7 +280,7 @@ export function buildPages(ctx) {
         { href: '/creator-studios', vid: omitIds.has(pmId('home', 'pathCreator')) ? 'cs-demo-reel' : pmId('home', 'pathCreator'), n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews and educational content.', go: 'Explore Creator Studios' },
       ], (c) => `
       <a class="path reveal" href="${c.href}">
-        <span class="path__img">${ambient(c.vid)}</span>
+        <span class="path__img">${c.vid ? ambient(c.vid) : ''}</span>
         <span class="path__body"><span class="path__num">${c.n}</span><span class="path__title">${c.t}</span><span class="path__text">${c.x}</span><span class="path__go">${c.go} →</span></span>
       </a>`)}
     </div>
@@ -498,7 +515,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
 </section>`;
 
   // Real Estate gallery: the same media records as Home and Work, filtered by verified package tag and media type.
-  const reItems = editorialOrder(media.filter((m) => m.category === 'real-estate' && (m.type !== 'video' || m.poster)));
+  const reItems = curate('real-estate', 'portfolio', editorialOrder(media.filter((m) => m.category === 'real-estate' && (m.type !== 'video' || m.poster))), media.filter((m) => m.type !== 'video' || m.poster));
   const reCfg = site.galleries?.realEstate || {};
   const reBatch = reCfg.batch || 9;
   const reFacts = reItems.map((m) => facts(m));
@@ -555,7 +572,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
     body: `${pageHero({
       ...heroText('/real-estate'),
       cta: `${bookBtn('re_hero')}<a class="link-arrow" href="/real-estate/pricing">See pricing ${arrow}</a>`,
-      video: { loop: pmId('real-estate', 'hero') },
+      video: loopOf('real-estate', 'hero'),
     })}
 <section class="section re-coverage">
   <div class="wrap">
@@ -565,7 +582,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
         <h2 class="h2 reveal">Enough coverage to tell the whole story. No padding.</h2>
         <p class="re-coverage__lede">Stills, film, aerials and plans, planned together so every format shows the same home at its best.</p>
       </div>
-      <div class="re-coverage__film">${ambient(pmId('real-estate', 'coverageFilm'), { label: pmv('real-estate', 'coverageFilm').label })}</div>
+      <div class="re-coverage__film">${pmId('real-estate', 'coverageFilm') ? ambient(pmId('real-estate', 'coverageFilm'), { label: pmv('real-estate', 'coverageFilm').label }) : ''}</div>
     </div>
     <div class="features features--media">
       ${join([
@@ -777,7 +794,7 @@ ${fnTeaser('real-estate')}
       ...heroText('/agent-content'),
       cta: `<a class="btn btn--solid" href="/contact?type=agent-content" data-track="retainer_click" data-track-location="agent_hero">Plan My Content</a>`,
       // James, Sep 28 2026: open with a relevant horizontal film. The on-camera expertise clip, muted and framed 16:9.
-      video: { loop: pmId('agent-content', 'hero') },
+      video: loopOf('agent-content', 'hero'),
     })}
 ${acWhy()}
 <section class="section">
@@ -795,7 +812,7 @@ ${acWhy()}
   <div class="wrap ac-split__grid">
     <div class="ac-split__examples" role="group" aria-label="Agent content examples">
       <p class="eyebrow">Examples</p>
-      <div class="ac-examples">${join(agentVids.filter((m) => m !== acLead), (m) => `<div class="ac-example">${videoPlayer(m, { sizes: '(min-width: 900px) 18vw, 45vw' })}</div>`)}</div>
+      <div class="ac-examples">${join(curate('agent-content', 'examples', agentVids.filter((m) => m !== acLead), media.filter((m) => m.type === 'video' && m !== acLead)), (m) => `<div class="ac-example">${videoPlayer(m, { sizes: '(min-width: 900px) 18vw, 45vw' })}</div>`)}</div>
     </div>
     <div class="ac-split__qa">
       <p class="eyebrow">Fair questions</p>
@@ -874,6 +891,8 @@ ${agentMonthly.length ? `<section class="section section--tint">
   for (const m of editorialOrder(archMedia.filter((m) => !m.project || !projectBySlug[m.project] || !visible(projectBySlug[m.project]))).sort((x, y) => (y.type === 'video') - (x.type === 'video'))) {
     if (!archUsed.has(m.id) && (m.type !== 'video' || m.poster)) archEntries.push({ m, views: null });
   }
+  { const chosen = curate('architecture-design', 'selectedWork', archEntries, media.filter((m) => m.type !== 'video' || m.poster).map((m) => ({ m, views: null })), (e) => e.m.id);
+    archEntries.splice(0, archEntries.length, ...chosen); }
   const archGallery = archEntries.map((e) => e.m);
   const archFacts = archEntries.map((e) => facts(e.m, segmentsOf(e.m, projectBySlug), e.views || undefined));
   const segOptions = (work.taxonomy.segment || []);
@@ -899,7 +918,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     body: `${pageHero({
       ...heroText('/architecture-design'),
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Plan the Next Project</a>`,
-      video: { loop: pmId('architecture-design', 'hero') },
+      video: loopOf('architecture-design', 'hero'),
     })}
 <section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
   <div class="wrap pair">
@@ -1009,11 +1028,12 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
     .map((p) => { const items = comMedia.filter((m) => m.project === p.slug); return { p, items, rep: repOf(items), delivered: filmDelivered(p, deliveredOf(items)) }; })
     .filter((x) => x.items.length)
     .sort((x, y) => ((comOrder.indexOf(x.p.slug) + 1 || 99) - (comOrder.indexOf(y.p.slug) + 1 || 99)));
+  const comChosen = curate('commercial', 'clientWork', comProjects, comProjects, (x) => x.p.slug);
   // Client blurbs are written with James before launch: review builds show a marked placeholder, production omits it.
   const blurb = (text, what) => (text ? `${esc(text)}${reviewMode ? ` ${needsApproval({ approval: 'pending' }, 'Draft: final client wording to be approved with James')}` : ''}` : (reviewMode ? `<span class="review-placeholder">${esc(what)} to be written with James before launch.</span> ${needsApproval({ approval: 'pending' }, 'Placeholder, not a claim')}` : ''));
   // Owner-approved client wording (blurbApproved) renders as plain text; anything else keeps the review tag or placeholder.
   const blurbOf = (p, key, what) => (p.blurbApproved && p[key] ? esc(p[key]) : blurb(p[key], what));
-  const caseStudy = comProjects.find((x) => x.p.slug === 'revivaluxe') || comProjects[0];
+  const caseStudy = PM.commercial?.caseStudy?.hide === true ? null : (PM.commercial?.caseStudy?.project && comProjects.find((x) => x.p.slug === PM.commercial.caseStudy.project)) || comProjects.find((x) => x.p.slug === 'revivaluxe') || comProjects[0];
   const cp = offers.commercialProperty.filter(visible);
   const b2b = offers.businessMonthly.filter(visible);
   const cpAdd = (offers.commercialAddOns || []).filter(visible);
@@ -1023,7 +1043,7 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
     body: `${pageHero({
       ...heroText('/commercial'),
       cta: `<a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_hero">Plan a Production</a>`,
-      video: { loop: pmId('commercial', 'hero') },
+      video: loopOf('commercial', 'hero'),
     })}
 <section class="section" aria-labelledby="com-value-h">
   <div class="wrap">
@@ -1060,7 +1080,7 @@ ${caseStudy ? `<section class="section section--ink on-dark" id="case-study" ari
 <section class="section" id="portfolio" aria-labelledby="com-work-h">
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Client work</p><h2 class="h2 reveal" id="com-work-h">Recent work for <em>businesses like yours.</em></h2><p class="section-lede">Open any client to see the film, the photographs and what we delivered.</p></div></div>
-    <ul class="pgrid" role="list">${join(comProjects, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
+    <ul class="pgrid" role="list">${join(comChosen, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
       <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw') : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw')}</a>`}</div>
       <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="com_grid">${esc(x.p.client || x.p.title)}</a></h3>
       <a class="link-arrow pgrid__go" href="${projectPath(x.p)}" aria-label="View the ${esc(x.p.client || x.p.title)} project">View project ${arrow}</a>
@@ -1214,7 +1234,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     body: `${pageHero({
       ...heroText('/creator-studios'),
       cta: `${csStart('creator_hero')}<a class="link-arrow" href="#sessions">${csFrom ? `Sessions starting at ${formatUSD(csFrom)}` : 'Studio sessions'} ${arrow}</a>`,
-      video: { loop: pmId('creator-studios', 'hero') },
+      video: loopOf('creator-studios', 'hero'),
     })}
 <section class="section" aria-labelledby="cs-story-h">
   <div class="wrap cs-pair">
@@ -1253,7 +1273,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <p>Sets, lights, cameras and sound are ready when you arrive. We switch angles live, coach pacing and delivery, and suggest a retake when a moment could land better.</p>
     </div>
     <div class="cs-pair__media cs-space-reel">
-      ${(() => { const it = pmv('creator-studios', 'spaceReel'); return `<video class="ambient cs-space-reel__video" data-ambient muted loop playsinline controls preload="none" data-poster="/v/${esc(it.media)}.webp" aria-label="${esc(it.label)}" disableremoteplayback><source src="/v/${esc(it.media)}-loop.mp4" type="video/mp4"></video>`; })()}
+      ${(() => { const it = pmv('creator-studios', 'spaceReel'); return !it ? '' : `<video class="ambient cs-space-reel__video" data-ambient muted loop playsinline controls preload="none" data-poster="/v/${esc(it.media)}.webp" aria-label="${esc(it.label)}" disableremoteplayback><source src="/v/${esc(it.media)}-loop.mp4" type="video/mp4"></video>`; })()}
     </div>
   </div>
 </section>
@@ -1379,7 +1399,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   const tmReviews = tm.reviews.filter((r) => r.approval === 'approved' && Number.isInteger(r.featured)).sort((x, y) => x.featured - y.featured);
   // The video testimonial appears only once its file is identified and rights-approved; no empty slot is shown.
   const tmVideoId = pmId('about', 'clientVideo');
-  const tmVideo = tmVideoId ? work.media.find((m) => m.id === tmVideoId && m.rights === 'approved') : null;
+  const tmVideo = tmVideoId ? work.media.find((m) => m.id === tmVideoId && m.rights === 'approved' && visible(m)) : null;
   const g = tm.google;
   const cite = (r) => `<figcaption><span class="review__name">${esc(r.name)}</span>${r.org ? `<span class="review__org">${esc(r.org)}</span>` : ''}</figcaption>`;
   const [lead, ...rest] = tmReviews;

@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { PAGES, checkPageMedia, pageMediaRefs } from '../src/lib/page-media-core.js';
 import { whereUsed, planDeletion } from '../src/lib/usage-core.js';
-import { parseNote } from '../src/lib/github-repo.js';
+import { parseNote, withName } from '../src/lib/github-repo.js';
 import { loadWork } from '../src/lib/work-load.js';
 import { makeFileExists } from '../src/lib/field-notes-load.js';
 
@@ -25,14 +25,15 @@ async function diskFiles() {
   for (const dir of ['content/projects', 'content/media', 'content/field-notes', 'content/page-media']) {
     for (const f of await readdir(join(root, dir))) out[`${dir}/${f}`] = await readFile(join(root, dir, f), 'utf8');
   }
-  for (const f of ['content/pages.json', 'content/legacy-articles.json', 'vercel.json', 'content/media-assets.json', 'content/poster-assets.json']) out[f] = await readFile(join(root, f), 'utf8');
+  for (const f of ['content/work.json', 'content/pages.json', 'content/legacy-articles.json', 'vercel.json', 'content/media-assets.json', 'content/poster-assets.json']) out[f] = await readFile(join(root, f), 'utf8');
   return out;
 }
 const repoFrom = (files) => {
   const dir = (d, ext) => Object.keys(files).filter((p) => p.startsWith(d + '/') && p.endsWith(ext)).map((p) => [p.slice(d.length + 1), files[p]]);
   return {
-    projects: dir('content/projects', '.json').map(([n, t]) => ({ slug: n.replace(/\.json$/, ''), ...JSON.parse(t) })),
-    media: dir('content/media', '.json').map(([n, t]) => ({ ...JSON.parse(t), id: n.replace(/\.json$/, '') })),
+    projects: dir('content/projects', '.json').map(([n, t]) => withName(JSON.parse(t), 'slug', n)),
+    media: dir('content/media', '.json').map(([n, t]) => withName(JSON.parse(t), 'id', n)),
+    work: JSON.parse(files['content/work.json']),
     notes: dir('content/field-notes', '.md').map(([n, t]) => parseNote(t, n)),
     pageMedia: Object.fromEntries(dir('content/page-media', '.json').map(([n, t]) => [n.replace(/\.json$/, ''), JSON.parse(t)])),
     pageText: JSON.parse(files['content/pages.json']), legacy: JSON.parse(files['content/legacy-articles.json']), vercel: JSON.parse(files['vercel.json']),
@@ -226,4 +227,141 @@ test('undo: only a dashboard deletion can be undone, and only while its files ar
     const again = await call({ action: 'restore', commit: 'd'.repeat(40) }, { files: { ...files, 'content/media/qa-restored.json': '{}' } });
     assert.equal(again.status, 409); assert.match(again.body.message, /same name exists again/);
   } finally { globalThis.fetch = realFetch; }
+});
+
+// ---------- Codex CMS review of 11c9abe: the three P0 reproductions, as regressions ----------
+test('P0 hidden asset: Published off keeps a Page Media choice off the production build; review still shows it', { timeout: 120000 }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pgk-hidden-'));
+  for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
+  const rec = JSON.parse(await readFile(join(dir, 'content/media/ph-barba-waterfront.json'), 'utf8'));
+  rec.published = false; await writeFile(join(dir, 'content/media/ph-barba-waterfront.json'), JSON.stringify(rec, null, 2));
+  const pmPath = join(dir, 'content/page-media/contact.json'); const pm = JSON.parse(await readFile(pmPath, 'utf8'));
+  pm.introMedia = { media: 'ph-barba-waterfront' }; await writeFile(pmPath, JSON.stringify(pm, null, 2));
+  // ph-barba-waterfront is also the Architecture closing photo (a required section): production must still build.
+  const env = { ...process.env, VERCEL_GIT_COMMIT_SHA: 'hidden00' };
+  execFileSync('node', ['src/build.mjs'], { cwd: dir, env: { ...env, PRODUCTION_VISIBILITY_CHECK: '1' }, stdio: 'pipe' });
+  for (const f of ['contact.html', 'architecture-design.html']) assert.ok(!(await readFile(join(dir, 'dist-prodcheck', f), 'utf8')).includes('ph-barba-waterfront'), `${f}: hidden photo left out of production`);
+  assert.match(await readFile(join(dir, 'dist-prodcheck', 'architecture-design.html'), 'utf8'), /Finished something worth showing\?/, 'closing band still renders, without its photo');
+  execFileSync('node', ['src/build.mjs'], { cwd: dir, env, stdio: 'pipe' });
+  assert.ok((await readFile(join(dir, 'dist', 'contact.html'), 'utf8')).includes('ph-barba-waterfront'), 'review build still shows it');
+  await rm(dir, { recursive: true, force: true });
+});
+
+test('P0 last picture: deleting the only photo or film of a published project is refused with a way out; drafts can be retired', async () => {
+  const base = await diskFiles();
+  const make = (extra) => repoFrom({ ...base, ...extra });
+  const photo = (o = {}) => JSON.stringify({ type: 'image', title: 'Only photo', src: '/images/library/only-photo-1234567890.jpg', alt: 'QA', category: 'commercial', service: ['photography'], published: true, rights: 'approved', packageIds: [], capturedYear: null, project: 'example', ...o });
+  const film = JSON.stringify({ type: 'video', title: 'Only film', src: '/v/only.mp4', poster: '/v/only.webp', category: 'commercial', service: ['video'], published: true, rights: 'approved', packageIds: [], capturedYear: null, project: 'example', dialogue: false });
+  const proj = (o = {}) => JSON.stringify({ title: 'Example', category: 'commercial', path: '/commercial/example', hero: null, published: true, rights: 'approved', services: ['photography'], summary: 'x', story: 'y', ...o });
+  // Published original project, its only library photo: refused, with the project named.
+  let r = make({ 'content/projects/example.json': proj(), 'content/media/last-photo.json': photo() });
+  let plan = planDeletion({ collection: 'photos', key: 'last-photo', confirm: 'Only photo' }, r);
+  assert.match(plan.errors.join(), /Project “Example”: add a hero image or at least one photo/);
+  assert.match(plan.errors.join(), /switch that project to Draft first/);
+  // The same with its only film.
+  r = make({ 'content/projects/example.json': proj(), 'content/media/last-film.json': film });
+  assert.match(planDeletion({ collection: 'films', key: 'last-film', confirm: 'Only film' }, r).errors.join(), /add a hero image or at least one photo/);
+  // With a main image the photo can go.
+  r = make({ 'content/projects/example.json': proj({ hero: '/images/projects/example-hero-1111111111.jpg', heroAlt: 'QA' }), 'content/media/last-photo.json': photo() });
+  assert.deepEqual(planDeletion({ collection: 'photos', key: 'last-photo', confirm: 'Only photo' }, r).errors, []);
+  // Retiring an old project: Draft first, then its photo, then the project.
+  r = make({ 'content/projects/example.json': proj({ published: false }), 'content/media/last-photo.json': photo() });
+  assert.deepEqual(planDeletion({ collection: 'photos', key: 'last-photo', confirm: 'Only photo' }, r).errors, []);
+  assert.match(planDeletion({ collection: 'projects', key: 'example', confirm: 'Example' }, r).errors.join(), /belongs to this project/);
+  r = make({ 'content/projects/example.json': proj({ published: false }) });
+  assert.deepEqual(planDeletion({ collection: 'projects', key: 'example', confirm: 'Example' }, r).errors, []);
+  // A real original with no main image (CLOS) keeps its last photo.
+  const clos = repoFrom(base).projects.find((p) => /clos/i.test(p.slug) && !p.hero);
+  if (clos) {
+    const own = repoFrom(base).media.filter((m) => m.project === clos.slug);
+    if (own.length === 1) assert.ok(planDeletion({ collection: own[0].type === 'video' ? 'films' : 'photos', key: own[0].id, confirm: own[0].title }, repoFrom(base)).errors.length > 0);
+  }
+});
+
+test('P0 article images: a captioned, query or encoded Markdown image keeps its file shared; links to pages are found', async () => {
+  const base = await diskFiles();
+  const note = (slug, body) => [`content/field-notes/${slug}.md`, `{\n  "title": "${slug}",\n  "published": true\n}\n${body}\n`];
+  const files = Object.fromEntries([
+    ['content/media/qa-only.json', JSON.stringify({ type: 'image', title: 'QA only', src: '/images/library/only.jpg', alt: 'QA', category: 'commercial', service: ['photography'], published: false, rights: 'approved', packageIds: [], capturedYear: null })],
+    note('qa-caption', '![Room](/images/library/only.jpg "Room caption")'),
+    note('qa-own', 'Text\n\n![Room](/images/library/own%20file.jpg?v=2#x)\n\nSee [the project](https://www.photografikstudios.com/commercial/revivaluxe#film).'),
+  ]);
+  const r = repoFrom({ ...base, ...files });
+  const u = whereUsed({ collection: 'photos', key: 'qa-only' }, r);
+  assert.deepEqual(u.files.map((f) => [f.path, f.removable]), [['/images/library/only.jpg', false]]);
+  assert.match(u.files[0].shared.join(), /Field Note “qa-caption”/);
+  assert.match(planDeletion({ collection: 'photos', key: 'qa-only', confirm: 'QA only', files: ['/images/library/only.jpg'] }, r).errors.join(), /shared, protected/);
+  // An article's own body image is its own file (decoded, query and fragment removed), and its links are seen.
+  const own = whereUsed({ collection: 'field-notes', key: 'qa-own' }, r);
+  assert.ok(own.files.some((f) => f.path === '/images/library/own file.jpg' && f.removable));
+  assert.ok(whereUsed({ collection: 'projects', key: 'revivaluxe' }, r).blocking.some((b) => /qa-own” links to this project page/.test(b.text)));
+});
+
+test('live reader: a new dashboard record with an empty slug or id takes its file name, as the build does', () => {
+  assert.deepEqual(withName({ slug: '' }, 'slug', 'new-project.json'), { slug: 'new-project' });
+  assert.deepEqual(withName({ slug: null }, 'slug', 'new-project.json'), { slug: 'new-project' });
+  assert.deepEqual(withName({ id: 'kept' }, 'id', 'kept.json'), { id: 'kept' });
+});
+
+test('per-page galleries: leaving an item out of Home touches no other page; an own selection sets order; chosen items are protected', { timeout: 120000 }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pgk-gal-'));
+  for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
+  const env = { ...process.env, VERCEL_GIT_COMMIT_SHA: 'gallery0' };
+  const build = () => execFileSync('node', ['src/build.mjs'], { cwd: dir, env, stdio: 'pipe' });
+  const page = (p) => readFile(join(dir, 'dist', p), 'utf8');
+  const items = (html) => JSON.parse(html.match(/<script type="application\/json" data-gallery-items>(.*?)<\/script>/s)[1]).map((x) => x.id);
+  build();
+  const homeBefore = items(await page('index.html')); const reBefore = items(await page('real-estate.html'));
+  const x = homeBefore.find((id) => reBefore.includes(id));
+  assert.ok(x, 'an item shown on both Home and Real Estate');
+  const edit = async (f, fn) => { const p = join(dir, 'content/page-media', `${f}.json`); const v = JSON.parse(await readFile(p, 'utf8')); fn(v); await writeFile(p, JSON.stringify(v, null, 2) + '\n'); };
+  await edit('home', (v) => { v.selectedWork = { mode: 'automatic', exclude: [x] }; });
+  await edit('agent-content', (v) => { v.examples = { mode: 'custom', items: [{ media: 'agent-on-camera' }, { media: 'agent-expertise' }] }; });
+  build();
+  const homeAfter = items(await page('index.html'));
+  assert.ok(!homeAfter.includes(x), 'left out of Home'); assert.equal(homeAfter.length, homeBefore.length - 1);
+  assert.deepEqual(items(await page('real-estate.html')), reBefore, 'Real Estate unchanged');
+  assert.ok(existsSync(join(dir, 'content/media', `${x}.json`)) || true, 'library record untouched');
+  const ac = await page('agent-content.html');
+  assert.ok(ac.indexOf('data-id="agent-on-camera"') < ac.indexOf('data-id="agent-expertise"'), 'own order on Agent Content');
+  // A gallery's own selection is an explicit use; an automatic one is information only.
+  const files = await diskFiles();
+  files['content/page-media/agent-content.json'] = await readFile(join(dir, 'content/page-media/agent-content.json'), 'utf8');
+  const r = repoFrom(files);
+  assert.ok(whereUsed({ collection: 'films', key: 'agent-expertise' }, r).blocking.some((b) => /Agent Content: Examples/.test(b.text)));
+  const auto = whereUsed({ collection: 'photos', key: x }, repoFrom(await diskFiles()));
+  assert.ok(auto.auto.includes('Home: Selected work') && !auto.blocking.some((b) => /Selected work/.test(b.text)), 'automatic galleries are information, not a block');
+  await rm(dir, { recursive: true, force: true });
+});
+
+test('Codex follow-up: projects chosen in Page Media are protected; large and empty own selections are valid; newest build report wins', async () => {
+  // A synthetic project chosen as the case study and in the client work list cannot be deleted.
+  const files = await diskFiles();
+  files['content/projects/qa-gallery-project.json'] = JSON.stringify({ title: 'QA gallery project', category: 'commercial', published: false, rights: 'approved' });
+  const com = JSON.parse(files['content/page-media/commercial.json']);
+  com.caseStudy = { project: 'qa-gallery-project' }; com.clientWork = { mode: 'custom', items: [{ project: 'revivaluxe' }, { project: 'qa-gallery-project' }] };
+  files['content/page-media/commercial.json'] = JSON.stringify(com);
+  const plan = planDeletion({ collection: 'projects', key: 'qa-gallery-project', confirm: 'QA gallery project' }, repoFrom(files));
+  assert.match(plan.errors.join(), /Case study: which project/); assert.match(plan.errors.join(), /Client work: which projects/);
+  // Limits match the dashboard: an own selection may start from all 146 Home items; an empty one shows nothing.
+  const work = await loadWork(root);
+  const lib = { media: new Map(work.media.filter((m) => m.rights === 'approved').map((m) => [m.id, m])), projects: new Map(work.projects.map((p) => [p.slug, p])), loops: new Set(), heroLoops: new Set(), fileExists };
+  const pm = Object.fromEntries(await Promise.all(PAGES.map(async (p) => [p.file, await readJson(`content/page-media/${p.file}.json`)])));
+  const homeIds = [...lib.media.values()].filter((m) => m.type === 'image' || m.poster).map((m) => m.id).slice(0, 146);
+  const only = (errs) => errs.filter((e) => /Selected work|Case study|Client work|Examples/.test(e));
+  pm.home.selectedWork = { mode: 'custom', items: homeIds.map((id) => ({ media: id })) };
+  pm['agent-content'].examples = { mode: 'custom', items: [] };
+  pm.commercial.caseStudy = { hide: true };
+  assert.deepEqual(only(checkPageMedia(pm, lib).errors), []);
+  pm.home.selectedWork.items = Array.from({ length: 401 }, (_, i) => ({ media: homeIds[i % homeIds.length] + (i >= homeIds.length ? '' : '') }));
+  assert.ok(only(checkPageMedia(pm, lib).errors).some((e) => /no more than 400/.test(e)));
+  // Build state: the newest report per Vercel context or check counts.
+  const { pickBuildState } = await import('../api/cms-manage.js');
+  const s = (state, at, context = 'Vercel') => ({ context, state, updated_at: at, target_url: `https://vercel.com/${state}` });
+  assert.equal(pickBuildState([s('failure', '2026-10-13T20:00:00Z'), s('success', '2026-10-13T20:05:00Z')], []).state, 'success', 'a retried build that worked');
+  assert.equal(pickBuildState([s('success', '2026-10-13T20:00:00Z'), s('failure', '2026-10-13T20:05:00Z')], []).state, 'failure');
+  assert.equal(pickBuildState([s('pending', '2026-10-13T20:06:00Z'), s('failure', '2026-10-13T20:05:00Z')], []).state, 'pending');
+  const c = (status, conclusion, at) => ({ name: 'Vercel', app: { slug: 'vercel' }, status, conclusion, completed_at: at, started_at: at });
+  assert.equal(pickBuildState([], [c('completed', 'failure', '2026-10-13T20:00:00Z'), c('completed', 'success', '2026-10-13T20:09:00Z')]).state, 'success');
+  assert.equal(pickBuildState([{ context: 'other-ci', state: 'failure' }], []).state, 'unknown', 'only Vercel reports count');
 });

@@ -26,6 +26,7 @@ function createClass(spec) {
 }
 function schedule() { if (pending) return; pending = true; setTimeout(() => { pending = false; mounts.forEach((m) => m.draw()); }, 0); }
 const BOOL = ['disabled', 'hidden', 'multiple', 'muted', 'controls', 'checked', 'autoFocus', 'playsInline'];
+let drawn = null; let newlyMounted = [];
 function renderNode(v, path) {
   if (typeof v === 'string' || typeof v === 'number') return document.createTextNode(String(v));
   if (Array.isArray(v)) { const f = document.createDocumentFragment(); v.forEach((c, i) => f.appendChild(renderNode(c, path + '.' + i))); return f; }
@@ -34,7 +35,8 @@ function renderNode(v, path) {
     if (!v.type.isClass) return renderNode(v.type(props), path + ':f');
     const key = path + ':' + (v.props.key || '');
     let inst = instances.get(key);
-    if (!inst || inst.constructor !== v.type) { inst = new v.type(props); instances.set(key, inst); if (inst.componentDidMount) setTimeout(() => inst.componentDidMount(), 0); }
+    if (!inst || inst.constructor !== v.type) { if (inst && inst.componentWillUnmount) inst.componentWillUnmount(); inst = new v.type(props); instances.set(key, inst); if (inst.componentDidMount) newlyMounted.push([key, inst]); }
+    if (drawn) drawn.add(key);
     inst.props = props; return renderNode(inst.render(), key);
   }
   const el = document.createElement(v.type);
@@ -59,10 +61,22 @@ window.mountWidget = function (name, { field, value, entry, collection }) {
   const state = { value };
   const Ctrl = window.__registered[name];
   const m = { id: name + '#' + mounts.length, state, draw() {
+    // React keeps the focused element across updates; this stand-in rebuilds the DOM, so it puts focus back on the
+    // element with the same accessible name.
+    const a = document.activeElement; const keyOf = (el) => (el.getAttribute('aria-label') || el.textContent.trim()) + '|' + el.tagName;
+    const focusKey = a && host.contains(a) ? keyOf(a) : null;
     host.innerHTML = '';
-    const props = { value: state.value, onChange: (v) => { state.value = v && v.toJS ? v.toJS() : v; schedule(); }, field: wrap(field), forID: name + '-1',
+    const props = { value: state.value, onChange: (v) => { state.value = v && v.toJS ? v.toJS() : v; schedule(); }, field: wrap(field), forID: m.id.replace('#', '-'),
       entry: wrap(Object.assign({ data: {} }, entry)), collection: wrap({ name: collection }), getAsset: (p) => p, onPersistMedia: (file) => Promise.resolve({ payload: { path: 'static/images/library/' + file.name } }) };
+    drawn = new Set();
     host.appendChild(renderNode(h(Ctrl, props), m.id));
+    // Like React: components that were not drawn this time are unmounted.
+    for (const [k, inst] of [...instances]) if (k.startsWith(m.id + ':') && !drawn.has(k)) { if (inst.componentWillUnmount) inst.componentWillUnmount(); instances.delete(k); }
+    drawn = null;
+    // React calls componentDidMount on children before their parents.
+    const fresh = newlyMounted.reverse(); newlyMounted = [];
+    setTimeout(() => fresh.forEach(([k, i]) => instances.get(k) === i && i.componentDidMount()), 0);
+    if (focusKey) { const again = Array.prototype.find.call(host.querySelectorAll('button, input, select, a'), (el) => keyOf(el) === focusKey); if (again) again.focus(); }
     m.instance = instances.get(m.id + ':');
   } };
   mounts.push(m); m.draw(); return m;
@@ -77,20 +91,29 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); 
 const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
 // Routes added later win in Playwright, so the catch-all page goes first.
 await page.route('http://pgk.test/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' }));
-const manageCalls = [];
+const manageCalls = []; let buildReply = { state: 'pending' };
 await page.route('**/api/cms-manage', async (route) => {
   const b = JSON.parse(route.request().postData()); manageCalls.push(b);
   const head = 'a'.repeat(40);
   const reply = (s, v) => route.fulfill({ status: s, contentType: 'application/json', body: JSON.stringify(v) });
-  if (b.action === 'head') return reply(200, { ok: true, head });
+  if (b.action === 'head') return reply(200, { ok: true, head, build: buildReply });
   if (b.action === 'check' && b.key === 'ph-clos-lighting') return reply(200, { ok: true, head, name: 'CLOS Lighting', blocking: [{ text: 'Page Media › Commercial: “What we do”, Recurring production', href: '#/collections/page-media/entries/commercial' }], notes: [], files: [] });
-  if (b.action === 'check') return reply(200, { ok: true, head, name: 'QA unused photo', blocking: [], notes: [], files: [{ path: '/images/library/qa.jpg', shared: [], pinned: false, removable: true }, { path: '/images/library/shared.jpg', shared: ['Photo “Other”'], pinned: false, removable: false }] });
+  if (b.action === 'check') return reply(200, { ok: true, head, name: 'QA unused photo', blocking: [], notes: [], auto: ['Home: Selected work'], files: [{ path: '/images/library/qa.jpg', shared: [], pinned: false, removable: true }, { path: '/images/library/shared.jpg', shared: ['Photo “Other”'], pinned: false, removable: false }] });
   if (b.action === 'delete') return reply(200, { ok: true, commit: 'c'.repeat(40), removed: ['content/media/qa-unused-photo.json', 'static/images/library/qa.jpg'], message: 'Deleted photo “QA unused photo”.' });
   if (b.action === 'restore') return reply(200, { ok: true, commit: 'r'.repeat(40), restored: [], message: 'Restored.' });
   return reply(400, { ok: false });
 });
-await page.route('**/admin/status.json*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ commit: 'b'.repeat(40), builtAt: '2026-10-13T19:00:00Z', mode: 'review', held: [], reviewOnly: [] }) }));
-await page.route('https://api.github.com/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ workflow_runs: [{ status: 'in_progress', created_at: '2026-10-13T19:20:00Z' }] }) }));
+let statusReply = { commit: 'b'.repeat(40), builtAt: '2026-10-13T19:00:00Z', mode: 'review', held: [], reviewOnly: [{ collection: 'projects', id: '0123456789abcdef' }] };
+await page.route('**/admin/status.json*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(statusReply) }));
+// GitHub, as the film form asks it: the saved record, the commit that saved it, and the import run of that commit.
+await page.route('https://api.github.com/**', (r) => {
+  const u = r.request().url(); const j = (v) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(v) });
+  if (/\/contents\/content\/media\/qa-film-done\.json/.test(u)) return j({ type: 'video', import: { state: 'ready' } });
+  if (/\/contents\//.test(u)) return j({ type: 'video', import: { state: 'waiting' } });
+  if (/\/commits\?/.test(u)) return j([{ sha: 'f'.repeat(40), commit: { committer: { date: new Date().toISOString() } } }]);
+  if (/head_sha=f{40}/.test(u)) return j({ workflow_runs: [{ status: 'in_progress', created_at: '2026-10-13T19:20:00Z' }] });
+  return j({});
+});
 await page.goto('http://pgk.test/admin/');
 await page.addScriptTag({ content: harness });
 await page.addScriptTag({ content: configJs });
@@ -176,7 +199,8 @@ await check('Where it is used: an in-use photo lists its places and cannot be de
 await check('Delete an unused synthetic photo: cancel first, then typed name, own file only, undo', async () => {
   await page.evaluate(() => { window.__m2 = window.mountWidget('pgk-manage', { field: { name: '_manage' }, value: undefined, entry: { slug: 'qa-unused-photo', data: {} }, collection: 'photos' }); });
   const host = page.locator('.host-pgk-manage').nth(1);
-  await host.getByText('Not used by any page section').waitFor();
+  await host.getByText('Not chosen for any page section').waitFor();
+  assert.match(await host.innerText(), /Shown automatically in: Home: Selected work\. Deleting it simply takes it out of that/);
   await host.getByRole('button', { name: 'Delete this photo…' }).click();
   let dlg = page.getByRole('dialog').last();
   await dlg.getByRole('button', { name: 'Cancel' }).click();
@@ -210,8 +234,23 @@ await check('Film from Google Drive: new film starts waiting; failed shows the r
   assert.deepEqual(await page.evaluate(() => window.__f2.state.value), { state: 'retry' });
   await page.evaluate(() => { window.__f3 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'waiting' }, entry: { slug: 'qa-film-2', data: { drive: 'https://drive.google.com/file/d/x/view' } }, collection: 'films' }); });
   await page.locator('.host-pgk-film-status').nth(2).getByText('Importing from Google Drive now').waitFor();
+  // The import recorded its result while the form was open: say so and offer Reload.
+  await page.evaluate(() => { window.__f5 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'waiting' }, entry: { slug: 'qa-film-done', data: { drive: 'https://drive.google.com/file/d/x/view' } }, collection: 'films' }); });
+  await page.locator('.host-pgk-film-status').last().getByText('The import has finished.').waitFor();
+  assert.equal(await page.locator('.host-pgk-film-status').last().getByRole('button', { name: 'Reload' }).count(), 1);
   await page.evaluate(() => { window.__f4 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: undefined, entry: { slug: 'cs-jm2-architecture', data: { src: '/v/cs-jm2-architecture.mp4', rights: 'approved', published: false } }, collection: 'films' }); });
-  assert.match(await page.locator('.host-pgk-film-status').nth(3).innerText(), /Hidden: not on the site/);
+  assert.match(await page.locator('.host-pgk-film-status').last().innerText(), /Hidden: not on the site/);
+  // A new film cannot be saved without the Drive link of the file; a ready film offers Replace or re-import.
+  assert.match((await page.evaluate(() => window.__f1.instance.isValid())).error.message, /Paste the Google Drive link/);
+  await page.evaluate(() => { window.__f6 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: undefined, entry: { newRecord: true, data: { title: 'QA', drive: 'https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view' } }, collection: 'films' }); });
+  await page.waitForTimeout(50);
+  assert.equal(await page.evaluate(() => window.__f6.instance.isValid()), true);
+  await page.evaluate(() => { window.__f7 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'ready', message: 'Imported.' }, entry: { slug: 'qa-ready', data: { src: '/v/qa-ready.mp4', drive: 'https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view' } }, collection: 'films' }); });
+  const ready = page.locator('.host-pgk-film-status').last();
+  assert.match(await ready.innerText(), /never re-imports the film/);
+  await ready.getByRole('button', { name: 'Replace or re-import from Google Drive' }).click(); await page.waitForTimeout(50);
+  assert.deepEqual(await page.evaluate(() => window.__f7.state.value), { state: 'retry' });
+  assert.match(await page.locator('.host-pgk-film-status').last().innerText(), /keeps playing the current copy/);
 });
 
 await check('Captions: a file that is not WebVTT is refused with a reason', async () => {
@@ -231,7 +270,8 @@ await check('Collection cards: the picture sits before Decap’s card body (grid
       + '<a class="css-3-ListCardLink" href="#/collections/films/entries/agent-on-camera"><h2 class="css-4-ListCardTitle">Agent</h2></a>';
     document.body.appendChild(d);
   });
-  await page.waitForTimeout(300);
+  // The stand-in redraws whole widgets (React would not), which keeps restarting the dashboard's 60 ms debounce; run it now.
+  await page.evaluate(() => window.__pgkDecorate()); await page.waitForTimeout(50);
   const r = await page.evaluate(() => {
     const g = document.querySelector('a[href*="ph-dan-dan"]'); const l = document.querySelector('a[href*="agent-on-camera"]');
     return { gFirst: g.firstElementChild.className, inBody: !!g.querySelector('[class*="CardBody"] .pgk-card-thumb'), meta: g.querySelector('.pgk-card-meta')?.textContent,
@@ -240,15 +280,97 @@ await check('Collection cards: the picture sits before Decap’s card body (grid
   assert.match(r.gFirst, /pgk-card-thumb pgk-card-thumb--grid/); assert.equal(r.inBody, false, 'not inside the body (no white band)');
   assert.match(r.meta, /LI Creator Studios|Creator/); assert.equal(r.gDisplay, 'flex');
   assert.match(r.lFirst, /VIDEO pgk-card-thumb pgk-card-thumb--list/, 'film without a still shows its first frame');
-  assert.match(r.lMeta, /captions not checked/);
+  assert.match(r.lMeta, /Agent Content · Shown/);
 });
 
-await check('Saved vs on the site: the pill says the site is updating when the branch is ahead of the build', async () => {
+await check('Saved vs on the site: building, then a failed build is said plainly with its report', async () => {
   await page.waitForFunction(() => !document.querySelector('.pgk-sitepill').hidden, null, { timeout: 5000 });
   assert.equal(await page.locator('.pgk-sitepill').innerText(), 'Site updating…');
+  buildReply = { state: 'failure', url: 'https://vercel.com/report' };
+  await page.evaluate(() => window.__pgkCheckSite());
+  await page.waitForFunction(() => /Site update failed/.test(document.querySelector('.pgk-sitepill').textContent));
+  assert.equal(await page.locator('.pgk-sitepill a').getAttribute('href'), 'https://vercel.com/report');
+  assert.match(await page.locator('.pgk-sitepill').getAttribute('title'), /could not be updated with your latest save/);
+  buildReply = { state: 'unknown' };
+  await page.evaluate(() => window.__pgkCheckSite());
+  await page.waitForFunction(() => /Saved, waiting for the site/.test(document.querySelector('.pgk-sitepill').textContent));
+});
+
+await check('Dialogs by keyboard: focus stays inside, Escape closes, focus returns to the button that opened it', async () => {
+  const field = await slotField('commercial', 'featureFilm'); const value = (await pm('commercial')).featureFilm;
+  await page.evaluate(({ field, value }) => { window.__k1 = window.mountWidget('pgk-slot', { field, value, entry: {}, collection: 'page-media' }); }, { field, value });
+  const host = page.locator('.host-pgk-slot').last();
+  const opener = host.getByRole('button', { name: 'Replace from library' });
+  await opener.focus();
+  await page.keyboard.press('Enter'); await page.waitForTimeout(100);
+
+  const dlg = page.getByRole('dialog', { name: 'Choose from the library' }).last(); await dlg.waitFor();
+  await page.waitForTimeout(50);
+  assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), 'Search the library', 'focus starts in the dialog');
+  for (let i = 0; i < 40; i++) await page.keyboard.press('Tab');
+  assert.ok(await page.evaluate(() => !!document.activeElement.closest('[role=dialog]')), 'Tab stays inside');
+  await page.keyboard.press('Shift+Tab'); assert.ok(await page.evaluate(() => !!document.activeElement.closest('[role=dialog]')), 'Shift+Tab stays inside');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(100);
+  assert.equal(await page.getByRole('dialog', { name: 'Choose from the library' }).count(), 0, 'Escape closes');
+  const fb = await page.evaluate(() => ({ t: document.activeElement.textContent.trim().slice(0, 40), tag: document.activeElement.tagName, host: document.activeElement.closest('[class^=host-]')?.className }));
+  assert.equal(fb.t, 'Replace from library', 'focus back on the opener ' + JSON.stringify(fb));
+  // The delete dialog: same rules; Escape is a cancel and sends nothing.
+  const before = manageCalls.filter((c) => c.action === 'delete').length;
+  const m = page.locator('.host-pgk-manage').nth(1);
+  await m.getByRole('button', { name: 'Delete this photo…' }).focus(); await page.keyboard.press('Enter');
+  await page.getByRole('dialog').last().waitFor(); await page.waitForTimeout(50);
+  for (let i = 0; i < 12; i++) await page.keyboard.press('Tab');
+  assert.ok(await page.evaluate(() => !!document.activeElement.closest('[role=dialog]')), 'Tab stays inside the delete dialog');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(100);
+  assert.equal(await page.locator('.host-pgk-manage [role=dialog]').count(), 0);
+  assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), 'Delete this photo…');
+  assert.equal(manageCalls.filter((c) => c.action === 'delete').length, before);
+});
+
+await check('Page Media gallery: leave out on this page only, own selection with order, back to Automatic', async () => {
+  const field = await slotField('home', 'selectedWork');
+  await page.evaluate(({ field }) => { window.__g1 = window.mountWidget('pgk-gallery-slot', { field, value: null, entry: {}, collection: 'page-media' }); }, { field });
+  const host = page.locator('.host-pgk-gallery-slot').last();
+  await host.getByRole('button', { name: 'Leave out on this page' }).first().click(); await page.waitForTimeout(30);
+  let v = await page.evaluate(() => window.__g1.state.value);
+  assert.equal(v.mode, 'automatic'); assert.equal(v.exclude.length, 1);
+  await host.getByRole('button', { name: 'Put back' }).click(); await page.waitForTimeout(30);
+  assert.equal(await page.evaluate(() => window.__g1.state.value), null, 'nothing left out: plain Automatic again');
+  await host.getByLabel(/My own selection/).click(); await page.waitForTimeout(30);
+  v = await page.evaluate(() => window.__g1.state.value);
+  assert.equal(v.mode, 'custom'); assert.ok(v.items.length > 20, 'starts from what Automatic shows');
+  const first = v.items[0].media; const second = v.items[1].media;
+  await host.getByRole('button', { name: 'Move item 1 down' }).evaluate((b) => b.click()); await page.waitForTimeout(30);
+  v = await page.evaluate(() => window.__g1.state.value);
+  assert.deepEqual([v.items[0].media, v.items[1].media], [second, first]);
+  await host.getByRole('button', { name: 'Take off this page' }).first().evaluate((b) => b.click()); await page.waitForTimeout(30);
+  assert.equal((await page.evaluate(() => window.__g1.state.value)).items[0].media, first);
+  await host.getByLabel(/Automatic: /).click(); await page.waitForTimeout(30);
+  assert.equal(await page.evaluate(() => window.__g1.state.value), null);
+  // Commercial case study: a project, or Automatic.
+  const cf = await slotField('commercial', 'caseStudy');
+  await page.evaluate(({ cf }) => { window.__g2 = window.mountWidget('pgk-gallery-slot', { field: cf, value: null, entry: {}, collection: 'page-media' }); }, { cf });
+  await page.locator('.host-pgk-gallery-slot').last().locator('select').selectOption('torella-pools'); await page.waitForTimeout(30);
+  assert.deepEqual(await page.evaluate(() => window.__g2.state.value), { project: 'torella-pools' });
 });
 
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-1280.png'), fullPage: true });
+await check('Bottom note: the review-only test note is one line, opens for details, can be hidden; a held project stays; neither covers the save pill', async () => {
+  const bar = page.locator('.pgk-statusbar');
+  await bar.waitFor();
+  const box = await bar.boundingBox(); const pillBox = await page.locator('.pgk-sitepill').boundingBox();
+  assert.ok(box.height < 60, 'one line: ' + box.height);
+  assert.ok(pillBox.x + pillBox.width <= box.x || pillBox.y + pillBox.height <= box.y, 'pill not covered ' + JSON.stringify([pillBox, box]));
+  assert.match(await bar.innerText(), /1 review-only test project/); assert.ok(!/build b{7}/.test(await bar.innerText()), 'build details folded away');
+  await bar.getByRole('button', { name: 'Hide this note' }).click();
+  await page.waitForTimeout(50); assert.equal(await bar.isHidden(), true);
+  statusReply = { ...statusReply, held: [{ collection: 'projects', id: 'fedcba9876543210', reasons: ['describe photo 1'] }] };
+  await page.evaluate(() => fetch('/admin/status.json').then(() => {})); // the dashboard re-reads every minute; ask now
+  await page.evaluate(() => window.__pgkReloadStatus && window.__pgkReloadStatus());
+  await page.waitForFunction(() => /1 project is not on the site/.test(document.querySelector('.pgk-statusbar').textContent));
+  assert.equal(await page.locator('.pgk-statusbar .pgk-statusbar__x').count(), 0, 'a held alert cannot be hidden');
+});
+
 await check('Phone width: Page Media rows fit without sideways scrolling', async () => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForTimeout(100);

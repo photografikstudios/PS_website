@@ -91,7 +91,7 @@ if (mediaErrors.length) { console.error('Media metadata errors:\n - ' + mediaErr
 // film loops that exist (/v/<id>-loop.mp4) and the committed phone stills; a bad choice stops the build with the reason.
 const pageMedia = Object.fromEntries(await Promise.all(PAGE_MEDIA.map(async (pg) => [pg.file, existsSync(join(root, 'content/page-media', `${pg.file}.json`)) ? JSON.parse(await readFile(join(root, 'content/page-media', `${pg.file}.json`), 'utf8')) : null])));
 const loopIds = new Set(Object.keys(mediaAssets.files || {}).map((f) => f.match(/^\/v\/([\w-]+)-loop\.mp4$/)?.[1]).filter(Boolean));
-const pmLib = { media: new Map(work.media.map((m) => [m.id, m])), loops: loopIds, heroLoops: new Set([...loopIds].filter((id) => existsSync(join(root, 'static/images/hero', `${id}-phone.webp`)))), fileExists };
+const pmLib = { media: new Map(work.media.map((m) => [m.id, m])), projects: new Map(work.projects.map((p) => [p.slug, p])), loops: loopIds, heroLoops: new Set([...loopIds].filter((id) => existsSync(join(root, 'static/images/hero', `${id}-phone.webp`)))), fileExists };
 const pmCheck = checkPageMedia(pageMedia, pmLib);
 for (const w of pmCheck.warnings) console.warn(`Page Media note: ${w}`);
 if (pmCheck.errors.length) { console.error('Page Media errors (fix them in /admin → Page Media; the site keeps the previous version until then):\n - ' + pmCheck.errors.join('\n - ')); process.exit(1); }
@@ -133,6 +133,7 @@ if (!reviewMode && !prodCheck) {
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
 const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
+ctx.galleryAuto = {}; // filled by buildPages: what each gallery shows automatically today (for the dashboard)
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.
 if (!pages['/field-notes']) {
@@ -233,7 +234,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   const statusOf = (m) => (m.rights !== 'approved' ? 'Held: rights not cleared, not on the site'
     : m.replacement?.status === 'pending' ? 'On the review site; waiting for its replacement before launch'
       : m.published === false ? 'Hidden'
-        : m.type === 'video' && m.dialogue !== false && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? 'Shown; captions not checked yet (needed before launch)' : 'Shown');
+        : m.type === 'video' && m.dialogue !== false && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? 'Shown; captions not approved yet (needed before launch)' : 'Shown');
   for (const m of everything.media) {
     if (m.fromProject) continue;
     thumbs.meta[m.type === 'image' ? 'photos' : 'films'][m.id] = { cat: catName[m.category] || '', status: statusOf(m) };
@@ -272,7 +273,10 @@ for (const f of await readdir(join(out, 'assets'))) {
   for (const id of loopIds) if (!pickMedia.some((x) => x.id === id)) {
     pickMedia.push({ id, kind: 'loop', title: LOOP_TITLES[id] || (sourceTitle[id] || id).replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' '), alt: '', cat: '', catLabel: 'Playing excerpt', thumb: `/v/${id}.webp`, loop: true, hero: pmLib.heroLoops.has(id), still: false });
   }
-  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_MEDIA = ${safe(pickMedia)};\nwindow.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
+  // Projects for the Commercial gallery choices (published ones only in production).
+  const pickProjects = work.projects.filter((p) => !testOnly.has(p.slug) && (reviewMode || p.published !== false))
+    .map((p) => ({ slug: p.slug, title: p.client || p.title, cat: p.category, catLabel: catName[p.category] || '', thumb: thumbs.projects[p.slug] || null, hidden: p.published === false }));
+  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_GALLERIES = ${safe(ctx.galleryAuto)};\nwindow.PHOTOGRAFIK_PROJECTS = ${safe(pickProjects)};\nwindow.PHOTOGRAFIK_MEDIA = ${safe(pickMedia)};\nwindow.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
   // The dashboard checks Page Media choices with the same rules as the build.
   await cp(join(root, 'src/lib/page-media-core.js'), join(out, 'admin/page-media-core.js'));
