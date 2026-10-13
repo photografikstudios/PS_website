@@ -3,6 +3,8 @@ import { renderArticle, bodyRefs, inline as inlineMd } from './lib/markdown.js';
 import { numberSections } from './lib/legal-core.js';
 import { formatUSD, resolvePrice, inclusion, includeLabels, tierLabel, findTier } from './lib/pricing-core.js';
 import { facts, editorialOrder, TYPE_FILTERS, optionCounts, segmentsOf } from './lib/gallery-core.js';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const arrow = '<span aria-hidden="true">→</span>';
 
@@ -82,11 +84,16 @@ export function buildPages(ctx) {
   };
 
   // ---------- shared gallery pieces (one media collection, several views) ----------
-  const galThumb = (m) => (m.type === 'video' ? (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080)) : (m.thumb || ctx.optimized(m.src, 1080)));
+  // Film cards show a 640px card poster (static/images/posters-sm/<id>.webp) when one exists; the player and lightbox keep
+  // the full 1280px poster. Oct 13 2026: on phones the full posters cost ~0.7 MB for Home's six default film cards, and the
+  // Beachfront card's lazy poster (same file as the desktop hero still) sometimes arrived before load.
+  const posterFull = (m) => (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080));
+  const cardPoster = (m) => { const p = `/images/posters-sm/${m.id}.webp`; return existsSync(fileURLToPath(new URL(`../static${p}`, import.meta.url))) ? p : posterFull(m); };
+  const galThumb = (m) => (m.type === 'video' ? cardPoster(m) : (m.thumb || ctx.optimized(m.src, 1080)));
   const galFull = (m) => (m.type === 'video' ? ctx.mediaUrl(m.src) : ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
   const galleryItem = (m) => ({
     id: m.id, title: m.title, sub: [m.client, m.location].filter(Boolean).join(' · '), src: galFull(m),
-    poster: m.type === 'video' ? galThumb(m) : null, alt: m.alt || m.title, category: m.category, orientation: m.orientation, ...facts(m, segmentsOf(m, projectBySlug)),
+    poster: m.type === 'video' ? posterFull(m) : null, alt: m.alt || m.title, category: m.category, orientation: m.orientation, ...facts(m, segmentsOf(m, projectBySlug)),
     captions: m.type === 'video' && m.captions && m.captions !== 'burned-in' ? m.captions : undefined,
     openCaptions: m.openCaptions || undefined,
   });

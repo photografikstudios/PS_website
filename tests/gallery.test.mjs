@@ -83,3 +83,17 @@ test('a project with a film and photos appears once per media view (film lead + 
   // facts() must not treat Array.prototype.map's index/array as segments/views.
   assert.equal([{ type: 'image' }].map((m) => facts(m))[0].views, undefined);
 });
+
+test('film cards: every published film with a /v poster has a small card poster (640px, light)', async () => {
+  // Oct 13 2026: cards used the 1280px poster (Home phones fetched ~0.7 MB for six film cards). The player keeps the full one.
+  const { existsSync, readFileSync } = await import('node:fs');
+  const { imageSize } = await import('../src/lib/image-size.js');
+  const films = work.media.filter((m) => m.type === 'video' && m.published !== false && m.rights === 'approved' && /^\/v\//.test(m.poster || '') && existsSync(fileURLToPath(new URL(`../static${m.poster}`, import.meta.url))));
+  assert.ok(films.length >= 19);
+  for (const m of films) {
+    const f = fileURLToPath(new URL(`../static/images/posters-sm/${m.id}.webp`, import.meta.url));
+    assert.ok(existsSync(f), `${m.id}: card poster`);
+    const buf = readFileSync(f); const size = imageSize(buf);
+    assert.ok(Math.max(size.width, size.height) <= 640 && buf.length <= 80 * 1024, `${m.id}: ${size.width}x${size.height}, ${buf.length} bytes`);
+  }
+});
