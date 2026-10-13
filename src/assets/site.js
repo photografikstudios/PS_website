@@ -6,6 +6,8 @@
 export function track(name, props = {}) {
   const payload = { event: name, ...props, page: location.pathname };
   (window.dataLayer = window.dataLayer || []).push(payload);
+  // GA4 (production only, when configured): the same event name and properties, no personal data.
+  if (typeof window.gtag === 'function') { const { event, ...params } = payload; window.gtag('event', event, params); }
   window.dispatchEvent(new CustomEvent('pgk:track', { detail: payload }));
 }
 window.pgkTrack = track;

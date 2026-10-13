@@ -1,5 +1,15 @@
 import { esc, attrs, join } from './lib/html.js';
 
+// Google Analytics 4 (James, Oct 13 2026): production only, and only with a well-formed Measurement ID in content/site.json.
+export const GA4_ID = /^G-[A-Z0-9]{4,16}$/;
+export function ga4Tag(site, reviewMode) {
+  const id = site.analytics?.ga4MeasurementId || '';
+  if (reviewMode || !id) return '';
+  if (!GA4_ID.test(id)) throw new Error(`content/site.json analytics.ga4MeasurementId "${id}" is not a GA4 Measurement ID (G-XXXXXXXXXX)`);
+  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${id}');</script>`;
+}
+
 export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = false, overlay = false, ogType = 'website', articleDates = null }) {
   const { site, reviewMode, img, mediaUrl } = ctx;
   const canonical = site.canonicalOrigin + (route === '/' ? '/' : route);
@@ -35,6 +45,7 @@ ${(() => { const m = body.match(/<picture class="hero-still"><source media="([^"
 <link rel="preload" href="/assets/fonts/instrument-serif-400-latin-60c06664.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/dm-sans-latin-aa530716.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/styles.css?v=${ctx.version}">
+${ga4Tag(site, reviewMode)}
 ${join([].concat(jsonLd || []), (j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`)}
 </head>
 <body class="${[dark ? 'page--dark' : '', overlay ? 'has-overlay' : '', reviewMode ? 'has-review-bar' : ''].join(' ').trim()}">

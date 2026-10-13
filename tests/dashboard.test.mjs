@@ -314,3 +314,15 @@ test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned,
   try { hits = execFileSync('grep', ['-rlE', EXCLUDED_SITE_IDS.join('|'), 'content', 'src', 'static', 'scripts'], { cwd: root, encoding: 'utf8' }); } catch (e) { if (e.status !== 1) throw e; }
   assert.equal(hits, '', 'excluded property ids appear in: ' + hits);
 });
+
+test('GA4: production only, valid Measurement ID only, events forwarded', async () => {
+  const { ga4Tag } = await import('../src/layout.js');
+  assert.equal(ga4Tag({ analytics: { ga4MeasurementId: '' } }, false), '', 'no ID, no tag');
+  assert.equal(ga4Tag({ analytics: { ga4MeasurementId: 'G-ABC123XYZ' } }, true), '', 'review previews never load GA');
+  const tag = ga4Tag({ analytics: { ga4MeasurementId: 'G-ABC123XYZ' } }, false);
+  assert.match(tag, /googletagmanager\.com\/gtag\/js\?id=G-ABC123XYZ/);
+  assert.match(tag, /gtag\('config','G-ABC123XYZ'\)/);
+  assert.throws(() => ga4Tag({ analytics: { ga4MeasurementId: 'UA-1234-1' } }, false), /not a GA4 Measurement ID/);
+  const js = readFileSync(join(root, 'src/assets/site.js'), 'utf8');
+  assert.match(js, /window\.gtag\('event', event, params\)/, 'track() forwards each event to GA4');
+});
