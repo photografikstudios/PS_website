@@ -1,0 +1,84 @@
+{
+  "_readme": "640px film card posters (Oct 13 2026), derived from each film's pinned /v/<id>.webp poster (Pillow LANCZOS, WebP q74). Cards use these; players and lightboxes keep the full poster. Checked by scripts/media-check.mjs.",
+  "count": 19,
+  "totalBytes": 600556,
+  "aggregate": "2185957b6adfb87d8f04546c4ce93b1008769be81b2a115ef0d001a6a36699fb",
+  "files": {
+    "/images/posters-sm/arch-yankee-barn-film.webp": {
+      "bytes": 44742,
+      "sha256": "40362be855441478469926326d1dd1aa77c3d56b7d8fb8dff29f3b71cf01b307"
+    },
+    "/images/posters-sm/biz-bpe-ironworks.webp": {
+      "bytes": 11392,
+      "sha256": "f9dde9822840fdc03f8daaef29f6e4db5adee528e0fa963848173f9cced9423d"
+    },
+    "/images/posters-sm/biz-eestairs-gramercy.webp": {
+      "bytes": 50444,
+      "sha256": "a9d7edb3e60115e3ed1b4b6a4554a08fda14e3bb071618d6aabf2679c368ab5c"
+    },
+    "/images/posters-sm/biz-rachel-lynch-pools.webp": {
+      "bytes": 8528,
+      "sha256": "71d3b03e390514456878739623376e9321a75f80542ffc10000878348259155c"
+    },
+    "/images/posters-sm/biz-torella-pools.webp": {
+      "bytes": 48742,
+      "sha256": "61d681a600a8f76d86887b7efb02ba7247564c8bcc094608ab3efe1ab95a7d72"
+    },
+    "/images/posters-sm/cs-demo-reel.webp": {
+      "bytes": 28828,
+      "sha256": "8bc11a8e3fea3e6462d5a0c913a74df8e710aa5d3f746f1943631aebaf76f2dc"
+    },
+    "/images/posters-sm/cs-jm2-architecture.webp": {
+      "bytes": 18744,
+      "sha256": "ee94e614175914795d89414e4c31a208ab5d42c908f4631bd41b051b02278221"
+    },
+    "/images/posters-sm/cs-noah-knows-short.webp": {
+      "bytes": 13376,
+      "sha256": "3f3ca0269cb5c966860988863469c8cceee52a9eb217765a8dda5ce9bbfa768e"
+    },
+    "/images/posters-sm/cs-tick.webp": {
+      "bytes": 27388,
+      "sha256": "09d342c8544d46ca804971c238b88461654f2ee1738cc6f24bf1b4c49a7b68c5"
+    },
+    "/images/posters-sm/re-east-end-listing-reel.webp": {
+      "bytes": 22414,
+      "sha256": "324c6fe864e688fcd35f7bb5be513099a6a6d639ee6ecbd304d76d0de64a2dd1"
+    },
+    "/images/posters-sm/re-hampton-luxury-home.webp": {
+      "bytes": 44404,
+      "sha256": "451278362e0f7cd3239d41be310a5866141599a84151aa7e407f7cba4a34d22b"
+    },
+    "/images/posters-sm/re-hamptons-aesthetic.webp": {
+      "bytes": 54624,
+      "sha256": "b6d4d5972511dffdf17fb2196639a2dd1e2e0a50284b0243d30d426773843afa"
+    },
+    "/images/posters-sm/re-hamptons-beachfront.webp": {
+      "bytes": 29762,
+      "sha256": "f155eb904fc1f2bbb6c59535a8fb17c57967df2b724b791b58cd9f29b289a536"
+    },
+    "/images/posters-sm/re-hamptons-calm.webp": {
+      "bytes": 40218,
+      "sha256": "bdcdcbaf15c0e00e363d3069a0af71793d9d3e4b95548455662d8f5368973010"
+    },
+    "/images/posters-sm/re-hamptons-cinematic.webp": {
+      "bytes": 46528,
+      "sha256": "b5384f6c515ba26de516f261b5bfb59e473b97e55fd3f91abd7ec32ce07e2b2a"
+    },
+    "/images/posters-sm/re-hamptons-home-aesthetic.webp": {
+      "bytes": 16860,
+      "sha256": "22a5c0d25039d485c9e89e57fb2c294e4fb49b29eb807d33406470eb4a671346"
+    },
+    "/images/posters-sm/re-hamptons-standout.webp": {
+      "bytes": 42078,
+      "sha256": "e28c602c1cfd75054326da67e4e9a04b85ed8c3ecaf59b5489bf7ca2ad5d0088"
+    },
+    "/images/posters-sm/re-hamptons-upbeat.webp": {
+      "bytes": 25178,
+      "sha256": "b337dc2b26a72b4d8b9b9c1924574ec07107cf08f3caa4ffb1fb1efab8ca7698"
+    },
+    "/images/posters-sm/testimonial-jack-richardson.webp": {
+      "bytes": 26306,
+      "sha256": "2cb085a6bb8ba3c7949c917a575a77e83179882c827ad52ef19d2352a841b55a"
+    }
+  }
+}

@@ -21,7 +21,19 @@ for (const p of need) {
   if (buf.length !== pin.bytes || h !== pin.sha256) { problems.push(`mismatch   static${p}`); continue; }
   good++;
 }
-console.log(`web-ready media needed: ${need.length}; committed and verified: ${good}; problems: ${problems.length}`);
+// Film card posters (Oct 13 2026): pinned in content/poster-assets.json; every file in the folder must be pinned.
+const { readdir } = await import('node:fs/promises');
+let posterPins = { files: {} }; try { posterPins = JSON.parse(await readFile(join(root, 'content/poster-assets.json'), 'utf8')); } catch { /* none */ }
+let posterGood = 0; const posterDir = join(staticDir, 'images/posters-sm');
+const onDisk = new Set((await readdir(posterDir).catch(() => [])).filter((f) => f.endsWith('.webp')).map((f) => `/images/posters-sm/${f}`));
+for (const p of new Set([...onDisk, ...Object.keys(posterPins.files)])) {
+  const pin = posterPins.files[p];
+  if (!pin) { problems.push(`unpinned   static${p}`); continue; }
+  let buf; try { buf = await readFile(join(staticDir, p)); } catch { problems.push(`missing    static${p}`); continue; }
+  if (buf.length !== pin.bytes || createHash('sha256').update(buf).digest('hex') !== pin.sha256) { problems.push(`mismatch   static${p}`); continue; }
+  posterGood++;
+}
+console.log(`web-ready media needed: ${need.length}; committed and verified: ${good}; card posters verified: ${posterGood}/${onDisk.size}; problems: ${problems.length}`);
 for (const p of problems.slice(0, 40)) console.log('  ' + p);
 if (problems.length > 40) console.log(`  ... and ${problems.length - 40} more`);
 process.exit(problems.length ? 1 : 0);
