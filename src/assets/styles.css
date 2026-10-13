@@ -828,7 +828,7 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .case__facts dd { margin: 0; color: var(--on-dark); }
 .case__more { margin-top: clamp(24px, 3vw, 36px); }
 @media (max-width: 900px) { .case { grid-template-columns: 1fr; } }
-.review-placeholder { font-style: italic; opacity: .8; }
+.review-placeholder { font-style: italic; } /* full opacity: 3.45:1 at .8 failed WCAG AA (axe, Oct 12) */
 .pgrid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(24px, 2.4vw, 36px) clamp(16px, 2vw, 28px); }
 @media (max-width: 1199px) { .pgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 899px) { .pgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
