@@ -1,0 +1,8 @@
+{
+  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
+  "hero": {
+    "src": "/images/photografik-2027/curated/home-path-on-location.webp",
+    "alt": "Camera operator filming outdoors on location"
+  },
+  "askFirstMedia": null
+}

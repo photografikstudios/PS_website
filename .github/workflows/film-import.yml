@@ -1,0 +1,43 @@
+# Add film from Google Drive (dashboard → Films → New Film). Runs only when a film record changes on the review branch.
+# Makes the web copies the site serves (scripts/import-films.mjs), then commits them in one commit. The original stays
+# in Google Drive; nothing here signs in to Google or changes sharing. Needs: GitHub Actions enabled for this repository
+# and "Read and write permissions" allowed for workflows (repository Settings → Actions → General).
+name: Film import from Google Drive
+on:
+  push:
+    branches: ['redesign/2027-preview']
+    paths: ['content/media/*.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: film-import
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Any film waiting?
+        id: waiting
+        run: echo "count=$(node -e "const fs=require('fs');let n=0;for(const f of fs.readdirSync('content/media')){const r=JSON.parse(fs.readFileSync('content/media/'+f));if(r.type==='video'&&r.drive&&r.import&&['waiting','retry'].includes(r.import.state))n++}console.log(n)")" >> "$GITHUB_OUTPUT"
+      - name: Install ffmpeg
+        if: steps.waiting.outputs.count != '0'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Import waiting films
+        if: steps.waiting.outputs.count != '0'
+        run: node scripts/import-films.mjs
+      - name: Commit the web copies
+        if: steps.waiting.outputs.count != '0'
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then echo "Nothing to import."; exit 0; fi
+          git config user.name "photografik-dashboard[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content/media content/media-assets.json content/poster-assets.json content/media-sources.json static/v static/images/posters-sm
+          git commit -m "Dashboard: film import from Google Drive" -m "$(node -e "for (const f of require('fs').readdirSync('content/media')) { const r = JSON.parse(require('fs').readFileSync('content/media/'+f)); if (r.import && r.import.at) console.log(f.replace('.json',''), r.import.state) }" | sort | tail -5)"
+          for i in 1 2 3; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done
+          echo "Could not push the imported film; it will be retried on the next save." && exit 1

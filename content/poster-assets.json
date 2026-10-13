@@ -79,6 +79,10 @@
     "/images/posters-sm/testimonial-jack-richardson.webp": {
       "bytes": 26306,
       "sha256": "2cb085a6bb8ba3c7949c917a575a77e83179882c827ad52ef19d2352a841b55a"
+    },
+    "/images/posters-sm/cs-podcast-ep23-short.webp": {
+      "bytes": 11806,
+      "sha256": "602fcfd994b4843d698995d189de95fedc97c69e0e3b1d5770d7672a7550c5fb"
     }
   }
 }

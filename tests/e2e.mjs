@@ -1008,7 +1008,7 @@ await check('creator studios: story, formats with scope, conversations, process,
   assert(await p.locator('#portfolio').count() === 0 && !/Recent sessions/i.test(text), 'Recent Sessions removed');
   const loops = await p.locator('.cs-loops video').evaluateAll((vs) => vs.map((v) => [v.muted || v.hasAttribute('muted'), v.loop, v.getAttribute('aria-label'), v.querySelector('source').getAttribute('src'), !!v.closest('figure')?.querySelector('figcaption')]));
   assert(loops.length === 3 && loops.every((l) => l[0] && l[1] && l[2] && /-loop\.mp4$/.test(l[3]) && !l[4]), 'three muted vertical loops: ' + JSON.stringify(loops));
-  assert(loops.map((l) => l[3]).join() === '/v/cs-ifcu-clip-loop.mp4,/v/cs-noah-knows-short-loop.mp4,/v/cs-jm2-architecture-loop.mp4', 'loop sources');
+  assert(loops.map((l) => l[3]).join() === '/v/cs-ifcu-clip-loop.mp4,/v/cs-noah-knows-short-loop.mp4,/v/cs-podcast-ep23-short-loop.mp4', 'loop sources (JM2 replaced, James Oct 13)');
   // James, Sep 29 2026: the story section ends with two buttons, Book a Session and See Pricing (to the sessions/pricing section).
   const storyCtas = await p.locator('section:has(#cs-story-h) .actions a').evaluateAll((as) => as.map((a) => [a.textContent.trim(), a.getAttribute('href')]));
   assert(storyCtas.length === 2 && /Book a Session/.test(storyCtas[0][0]) && storyCtas[1][0] === 'See Pricing' && storyCtas[1][1] === '#sessions' && (await p.locator('#sessions .plan__price').count()) > 0, 'story CTAs ' + JSON.stringify(storyCtas));
@@ -1071,7 +1071,14 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
   const p = await newPage();
   // James, Sep 28 2026: Creator Studios shows muted loops (no sound, so no track); the playable clips with CC live on
   // All sessions. Agent Content examples play inline with CC but no caption text or transcript link beneath.
-  for (const [path, id] of [['/creator-studios/sessions', 'cs-jm2-architecture'], ['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
+  // James, Oct 13 2026: the JM2 clip is replaced by the episode 23 short (captions burned into the picture, no track)
+  // and is gone from every page; its record and files are kept for recovery.
+  { const ses = await (await fetch(base + '/creator-studios/sessions')).text();
+    assert(/data-id="cs-podcast-ep23-short"/.test(ses), 'replacement on Sessions');
+    for (const path of ['/', '/creator-studios', '/creator-studios/sessions', '/architecture-design']) assert(!/cs-jm2-architecture/.test(await (await fetch(base + path)).text()), 'JM2 clip gone from ' + path);
+    await p.goto(base + '/creator-studios/sessions');
+    assert(await p.locator('.card:has([data-id="cs-podcast-ep23-short"]) video track').count() === 0, 'burned-in captions: no separate track'); }
+  for (const [path, id] of [['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
     await p.goto(base + path);
     const card = p.locator(`.card:has([data-id="${id}"]), .ac-example:has([data-id="${id}"])`).first();
     const src = await card.locator('video track[kind="captions"]').getAttribute('src');
@@ -1718,14 +1725,14 @@ await check('Dashboard content model: all 13 original project URLs load with the
   }
 });
 
-await check('Site dashboard: /admin is noindex, pinned and Git-backed; seven sections; drafts are off by default', async () => {
+await check('Site dashboard: /admin is noindex, pinned and Git-backed; eight sections; drafts are off by default', async () => {
   const html = await (await fetch(base + '/admin')).text();
   assert(/noindex/.test(html) && /unpkg\.com\/decap-cms@\d+\.\d+\.\d+\/dist\/decap-cms\.js" integrity="sha384-[A-Za-z0-9+/=]+"/.test(html), 'pinned Decap with SRI');
   const cfg = await (await fetch(base + '/admin/config.js')).text();
   const conf = JSON.parse(cfg.match(/PHOTOGRAFIK_CMS_CONFIG = (\{.*\});/)[1]);
   const col = (n) => conf.collections.find((c) => c.name === n);
   assert(conf.backend.name === 'github' && conf.backend.auth_endpoint === 'api/cms-auth' && col('field-notes').folder === 'content/field-notes', 'git backend');
-  assert(conf.collections.map((c) => c.name).join() === 'projects,photos,films,page-text,testimonials,faqs,field-notes', 'sections');
+  assert(conf.collections.map((c) => c.name).join() === 'projects,photos,films,page-media,page-text,testimonials,faqs,field-notes', 'sections');
   for (const n of ['field-notes', 'projects', 'photos']) assert(col(n).fields.find((x) => x.name === 'published').default === false, `${n}: drafts by default`);
   const robots = await (await fetch(base + '/robots.txt')).text();
   assert(/Disallow: \//.test(robots), 'robots');

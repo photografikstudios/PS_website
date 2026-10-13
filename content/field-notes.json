@@ -1,6 +1,5 @@
 {
   "_readme": "Field Notes settings. Articles live one per file in content/field-notes/<slug>.md (JSON front matter, Markdown body) and are edited through /admin (Decap CMS, Git-backed). published:false keeps an article out of the index, sitemap, related links and teasers; production builds do not generate its page (404). Review builds render it at its URL with a Draft banner for proofreading. Body Markdown supports ## and ### headings, paragraphs, lists, > notes, links, uploaded images and ::media[id] for approved Photografik library media. legacyUrls = old Squarespace paths this article replaces one-to-one (vercel.json must redirect each of them here); see content/legacy-articles.json.",
-  "heroMedia": "ph-oceanfront-twilight-pool",
   "_editorial": "James, Sep 25 2026: byline is Photografik Studios. Reuse original blog substance and URL mappings. One AEO rewrite per week is a drafting workflow only (docs/FIELD_NOTES_AEO_WORKFLOW.md); nothing publishes without editorial review and approvedBy. | James, Sep 30 2026: the three Day 1 articles are approved; Field Notes expands weekly after launch through the CMS.",
   "categories": [
     {

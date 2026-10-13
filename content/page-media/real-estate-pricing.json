@@ -1,0 +1,44 @@
+{
+  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
+  "loopLuxury": {
+    "media": "re-hampton-luxury-home",
+    "label": "Luxury Media example: aerial, exterior and interiors from a Hamptons listing film"
+  },
+  "loopSignature": {
+    "media": "re-hamptons-upbeat",
+    "label": "Signature example: day and twilight exteriors and a dusk aerial from a Hamptons listing film"
+  },
+  "loopSocial": {
+    "media": "re-east-end-listing-reel",
+    "label": "Social Media example: an East End vertical listing reel"
+  },
+  "starterStills": [
+    {
+      "media": "re-southampton-front"
+    },
+    {
+      "media": "re-sag-harbor-kitchen"
+    },
+    {
+      "media": "re-quiogue-aerial-pool"
+    },
+    {
+      "media": "re-southampton-bedroom"
+    }
+  ],
+  "rowPhotography": {
+    "media": "re26-white-kitchen-marble"
+  },
+  "rowPhotoFloorPlan": {
+    "media": "re-floorplan-with-photo"
+  },
+  "rowFloorPlan": {
+    "media": "re-floorplan"
+  },
+  "rowExteriorDrone": {
+    "media": "re26-pool-overhead"
+  },
+  "rowTwilight": {
+    "media": "re26-oceanfront-twilight"
+  }
+}

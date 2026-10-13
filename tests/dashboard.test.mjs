@@ -23,15 +23,24 @@ const pageText = await read('content/pages.json');
 const faqs = await read('content/faqs.json');
 const { fieldNotes } = await loadFieldNotes(root);
 const fileExists = makeFileExists(root, new Set(Object.keys((await read('content/media-assets.json')).files)));
+// A synthetic, published dashboard project (a copy of James's “Test” with its own name), added only to cloned data so
+// these checks never depend on, or change, the Published switch James sets on his real Test project (Oct 13 2026).
+const withSynthetic = (w) => {
+  const base = w.projects.find((p) => p.slug === 'test');
+  const qa = { ...structuredClone(base), slug: 'qa-synthetic', title: 'QA synthetic', published: true, reviewOnly: true };
+  w.projects.push(qa);
+  for (const m of expandProjectPhotos(root, qa)) w.media.push(m);
+  return qa;
+};
 
-test('portfolio: 13 original projects and 154 media records (128 + 26 from the Oct 11 owner pack), one file each, names match ids, no load errors', async () => {
+test('portfolio: 13 original projects and 155 media records (128 + 26 from the Oct 11 owner pack + the Oct 13 JM2 replacement), one file each, names match ids, no load errors', async () => {
   // Projects James adds in the dashboard (no fixed path) sit beside the 13 originals and carry their photos inline.
   assert.deepEqual(work.loadErrors, []);
   const originals = work.projects.filter((p) => p.path);
   assert.equal(originals.length, 13);
-  assert.equal(work.media.filter((m) => !m.fromProject).length, 154);
+  assert.equal(work.media.filter((m) => !m.fromProject).length, 155);
   assert.equal((await readdir(join(root, 'content/projects'))).length, work.projects.length);
-  assert.equal((await readdir(join(root, 'content/media'))).length, 154);
+  assert.equal((await readdir(join(root, 'content/media'))).length, 155);
   assert.ok(originals.every((p) => p.published === true), 'original projects are explicitly published');
   const w = await read('content/work.json');
   assert.ok(!('projects' in w) && !('media' in w) && w.taxonomy, 'work.json keeps only the taxonomy');
@@ -84,15 +93,19 @@ test('project photos become ordinary media records that inherit the project (dra
 test('dashboard config: sections, no pricing/legal/booking, every existing field kept, policy FAQs not editable', async () => {
   const { config } = cmsConfig({ site, fieldNotes, work, branch: 'redesign/2027-preview', repo: 'photografikstudios/PS_website', testimonials });
   const names = config.collections.map((c) => c.name);
-  assert.deepEqual(names, ['projects', 'photos', 'films', 'page-text', 'testimonials', 'faqs', 'field-notes']);
+  assert.deepEqual(names, ['projects', 'photos', 'films', 'page-media', 'page-text', 'testimonials', 'faqs', 'field-notes']);
   const files = JSON.stringify(config.collections.map((c) => c.folder || c.files.map((f) => f.file)));
-  for (const f of ['pricing.json', 'legal.json', 'offers.json', 'site.json', 'faqs-policy.json', 'seo.json']) assert.ok(!files.includes(f), f);
+  // Whole paths: Page Media's own content/page-media/real-estate-pricing.json holds only that page's pictures.
+  for (const f of ['pricing.json', 'legal.json', 'offers.json', 'site.json', 'faqs-policy.json', 'seo.json']) assert.ok(!files.includes(`"content/${f}"`), f);
   const col = (n) => config.collections.find((c) => c.name === n);
   const fieldNames = (c) => new Set(c.fields.map((f) => f.name));
   for (const p of work.projects) for (const k of Object.keys(p)) assert.ok(fieldNames(col('projects')).has(k), `project field ${k}`);
   for (const m of work.media.filter((x) => x.type === 'image' && !x.fromProject)) for (const k of Object.keys(m)) assert.ok(fieldNames(col('photos')).has(k), `photo field ${k}`);
   for (const m of work.media.filter((x) => x.type === 'video')) for (const k of Object.keys(m)) assert.ok(fieldNames(col('films')).has(k), `film field ${k}`);
-  assert.equal(col('films').create, false);
+  // Oct 13 2026: films are added from Google Drive; nothing is deleted through Decap's own (unchecked) Delete.
+  assert.equal(col('films').create, true);
+  for (const c of config.collections) assert.equal(c.delete, false, `${c.name}: no unchecked native delete`);
+  for (const n of ['projects', 'photos', 'films', 'field-notes']) assert.equal(col(n).fields.filter((f) => f.widget === 'pgk-manage').length, 1, `${n}: where-used and delete panel`);
   assert.equal(col('projects').fields.find((f) => f.name === 'published').default, false);
   assert.equal(col('photos').fields.find((f) => f.name === 'published').default, false);
   const delivered = col('projects').fields.find((f) => f.name === 'services');
@@ -197,7 +210,7 @@ test('camera file names: caught on dashboard records, none on the original portf
 test('Test project: clean file names, same photos byte for byte, originals kept, review-only', async () => {
   const t = work.projects.find((p) => p.slug === 'test');
   assert.equal(t.reviewOnly, true);
-  assert.equal(t.published, true, 'James’s Published switch is left as he set it');
+  assert.equal(typeof t.published, 'boolean', 'James’s Published switch is left as he set it (Oct 13 2026: off)');
   const sha = async (p) => createHash('sha256').update(await readFile(join(root, 'static', p))).digest('hex');
   assert.equal(t.hero, '/images/projects/test-fc560c9d51.jpg');
   assert.ok(t.photos.length >= 1, 'the original review photo is still present');
@@ -214,30 +227,34 @@ test('held projects: a dashboard project with a problem is held with its reasons
   const w = structuredClone(work);
   w.projects = w.projects.filter((p) => p.slug !== 'real-estate-test');
   w.media = w.media.filter((m) => m.project !== 'real-estate-test');
-  const t = w.projects.find((p) => p.slug === 'test');
+  const t = withSynthetic(w);
   t.photos[0].alt = ''; t.hero = '/images/projects/5-ps_00519.jpg';
   const orig = w.projects.find((p) => p.path);
   orig.heroAlt = ''; orig.hero = orig.hero || '/images/projects/test-fc560c9d51.jpg';
   const first = checkContent({ work: w, fileExists, pageText, testimonials, faqs });
   const held = holdDashboardProjects(w, first.errors);
-  assert.deepEqual(held.map((x) => x.slug), ['test']);
+  assert.deepEqual(held.map((x) => x.slug), ['qa-synthetic']);
   assert.ok(held[0].reasons.some((r) => /photo 1: describe the photo/.test(r)), held[0].reasons.join(' | '));
   assert.ok(held[0].reasons.some((r) => /camera file name/.test(r)), held[0].reasons.join(' | '));
   assert.equal(t.published, false);
-  assert.ok(w.media.filter((m) => m.project === 'test' && m.fromProject).every((m) => m.published === false));
+  assert.ok(w.media.filter((m) => m.project === 'qa-synthetic' && m.fromProject).every((m) => m.published === false));
   const again = checkContent({ work: w, fileExists, pageText, testimonials, faqs });
   assert.ok(again.errors.some((e) => e.startsWith(`Project “${orig.title}”`)), 'the original project still fails the build');
   assert.equal(orig.published, true);
 });
 
 test('review-only: production never builds the Test project; review keeps it', () => {
-  const r = structuredClone(work);
-  assert.deepEqual(applyReviewOnly(r, true), [{ slug: 'test', title: 'Test' }]);
-  assert.equal(r.projects.find((p) => p.slug === 'test').published, true);
-  const prod = structuredClone(work);
+  const r = structuredClone(work); withSynthetic(r);
+  const jamesTest = r.projects.find((p) => p.slug === 'test').published;
+  assert.deepEqual(applyReviewOnly(r, true), [{ slug: 'test', title: 'Test' }, { slug: 'qa-synthetic', title: 'QA synthetic' }]);
+  assert.equal(r.projects.find((p) => p.slug === 'qa-synthetic').published, true, 'review keeps a published review-only project');
+  assert.equal(r.projects.find((p) => p.slug === 'test').published, jamesTest, 'review never changes James’s switch');
+  const prod = structuredClone(work); withSynthetic(prod);
   applyReviewOnly(prod, false);
-  assert.equal(prod.projects.find((p) => p.slug === 'test').published, false);
-  assert.ok(prod.media.filter((m) => m.project === 'test').every((m) => m.published === false));
+  for (const slug of ['test', 'qa-synthetic']) {
+    assert.equal(prod.projects.find((p) => p.slug === slug).published, false);
+    assert.ok(prod.media.filter((m) => m.project === slug).every((m) => m.published === false));
+  }
 });
 
 test('dashboard config: project Published uses the status switch, drafts by default; reviewOnly kept hidden', () => {

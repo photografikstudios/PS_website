@@ -21,7 +21,7 @@
   "location": "Bohemia",
   "client": "JM2 Architecture",
   "source": "drive",
-  "published": true,
+  "published": false,
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
@@ -30,8 +30,11 @@
   "_openCaptionsNote": "Sep 26: the clip has animated word-by-word captions burned in (seen at 0:03, 0:05, 0:26 in the review player). The WebVTT track is offered through the player CC control but not shown by default, so text is not doubled. James to confirm the burned-in words cover all speech.",
   "order": 90,
   "replacement": {
-    "status": "pending",
+    "status": "replaced",
+    "by": "cs-podcast-ep23-short",
     "decidedBy": "James, Oct 13 2026 (Codex chat): \"For these podcast clips, we'll be changing them out with other newer clips so proofread is not needed.\"",
-    "note": "The machine-draft captions are not proofed and are not approved. This clip ships only after a replacement is received, its identity and playback are checked and it has suitable captions, or after James decides to hide it."
-  }
+    "replacedBy": "James, Oct 13 2026: supplied Drive 1EbGdv-zpesjU69VLtemNIcRZyryzueF4 “to replace the jm2 clip.”",
+    "note": "Replaced in every page section and left out of every gallery (gallery: false; Published off); its files and record are kept so it can be restored."
+  },
+  "gallery": false
 }

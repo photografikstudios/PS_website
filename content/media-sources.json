@@ -984,6 +984,16 @@
       "image": true,
       "source": "hdph:3290223",
       "_note": "Owner media pack Oct 11 2026. HDPH source site 3290223, original DJI_20260804165509_0146_D.jpg, 8064x4536, SHA-256 7777ac024884064f22653247c2602f3760ae86a58a361193f6d6517c367da37d (matches PHOTO_FILE_VERIFICATION.json). Web files encoded Oct 12 from that original: 2000 px WebP q80 + 900 px q76, EXIF orientation applied, ICC converted to sRGB, metadata stripped. Not from the owner-excluded property. Street-level mapping stays in the private brief folder."
+    },
+    {
+      "id": "cs-podcast-ep23-short",
+      "drive": "1EbGdv-zpesjU69VLtemNIcRZyryzueF4",
+      "posterAt": 12,
+      "loop": [
+        0,
+        23
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-13. The original stays in Drive."
     }
   ],
   "docs": [

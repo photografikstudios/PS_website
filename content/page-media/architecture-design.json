@@ -1,0 +1,45 @@
+{
+  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
+  "hero": {
+    "media": "arch-yankee-barn-film"
+  },
+  "introPhoto": {
+    "media": "ph-peterson-dining"
+  },
+  "storyPhoto": {
+    "media": "ph-yankee-barn-great-room"
+  },
+  "storyBrand": {
+    "media": "cs-podcast-ep23-short",
+    "alt": "A podcast guest speaking on camera about building contracts, from a podcast clip"
+  },
+  "detailPhoto": {
+    "media": "peterson-detail"
+  },
+  "designDetail": [
+    {
+      "media": "re-bridgehampton-stair-detail"
+    },
+    {
+      "media": "re-bridgehampton-kitchen"
+    },
+    {
+      "media": "re-bridgehampton-facade"
+    },
+    {
+      "media": "re-bridgehampton-bath"
+    }
+  ],
+  "stepTell": {
+    "media": "ph-yankee-barn-exterior"
+  },
+  "stepPlan": {
+    "media": "ph-peterson-game-room"
+  },
+  "stepProduce": {
+    "media": "ph-kerry-delrose-pool"
+  },
+  "closing": {
+    "media": "ph-barba-waterfront"
+  }
+}

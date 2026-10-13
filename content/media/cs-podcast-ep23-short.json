@@ -1,0 +1,39 @@
+{
+  "type": "video",
+  "title": "Podcast short: payment schedules in a building contract",
+  "published": true,
+  "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view?usp=drive_link",
+  "import": {
+    "state": "ready",
+    "at": "2026-10-13T19:26:44.832Z",
+    "message": "Web copies made from the Drive original (1080×1920, 23 s). The original stays in Drive."
+  },
+  "posterTime": 12,
+  "alt": "Two men at a studio podcast table talk through the payment schedule in a contract, with captions on screen",
+  "project": "creator-studios",
+  "category": "creator-studios",
+  "service": [
+    "video",
+    "studio"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": "burned-in",
+  "openCaptions": true,
+  "transcript": null,
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 1550,
+  "replaces": "cs-jm2-architecture",
+  "_identityNote": "James, Oct 13 2026: “to replace the jm2 clip” (Drive 1EbGdv-zpesjU69VLtemNIcRZyryzueF4, Short 5_NC_EP23.mp4, 11,851,508 bytes, SHA-256 93c662435a80d59bb6707123124f8e9de2cb93053b6646d5b6dec7bae7522bd3, Podcast Clips folder). Vertical 1080x1920, 23.1 s, AAC stereo. File name says episode 23. Two speakers at a podcast table; a NOAH logo shows on shirts, but the show, guest and client names are not confirmed, so no credit is shown. James to confirm the credit before one is added. Web copies were made with scripts/import-films.mjs (the same step the dashboard’s Google Drive import runs) from Codex’s unchanged download of the Drive file (same size and SHA-256); the GitHub Action’s own anonymous download from Drive is not yet verified.",
+  "_captionsNote": "Oct 13 2026: word-by-word captions are burned into the picture; a 1 s sample of the whole clip showed captions with every spoken phrase (e.g. “Do they have a payment schedule?”, “I need 30% upfront”, “as you move forward”). Not yet listened to word for word against the audio.",
+  "src": "/v/cs-podcast-ep23-short.mp4",
+  "poster": "/v/cs-podcast-ep23-short.webp",
+  "orientation": "vertical",
+  "duration": 23
+}

@@ -1,8 +1,10 @@
 // Decap CMS configuration for the owner dashboard (/admin). Generated at build time so the category lists, the
 // library pickers and the Git branch always match the content being deployed.
-// Sections: Projects, Photos, Films, Page text, Testimonials, FAQs, Field Notes. Pricing, legal policies, booking
+// Sections: Projects, Photos, Films, Page Media, Page text, Testimonials, FAQs, Field Notes. Pricing, legal policies, booking
 // links and page layout are deliberately not editable here (they stay on the reviewed code path).
 // Every field a record already has is declared (unknown ones as hidden fields), so saving a form never drops data.
+
+import { PAGES as PAGE_MEDIA, KINDS } from './page-media-core.js';
 
 const max = (n, what) => [`^[\\s\\S]{0,${n}}$`, `Keep the ${what} to ${n} characters or fewer`];
 const date = { widget: 'datetime', format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false, picker_utc: true };
@@ -19,6 +21,8 @@ const hint = {
 };
 
 /** Hidden fields for every key the records have that the form does not show, so saving keeps them. */
+// “Where it is used, and delete” panel (src/admin/cms.js → /api/cms-manage). Saves nothing into the record.
+const MANAGE = { name: '_manage', label: 'Where it is used, and delete', widget: 'pgk-manage', required: false };
 function keep(records, shown) {
   const keys = new Set();
   for (const r of records) for (const k of Object.keys(r)) if (!shown.has(k)) keys.add(k);
@@ -108,15 +112,31 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'source', label: 'source', widget: 'hidden', default: 'upload' },
   ];
   // Films: the video files and their captions are managed on the review path; here only how they are shown.
+  // Films. New ones come from Google Drive (James, Oct 13 2026): paste the Drive link and save; the import step
+  // (.github/workflows/film-import.yml → scripts/import-films.mjs) makes the web copies the site serves, the poster and
+  // the card poster, and marks the film ready. The original stays in Drive. Existing films keep their files.
   const filmFields = [
+    { name: 'type', label: 'type', widget: 'hidden', default: 'video' },
     ...mediaCommon.slice(0, 2),
+    { name: 'import', label: 'Film file and status', widget: 'pgk-film-status', required: false },
+    { name: 'drive', label: 'Google Drive link (new films)', widget: 'string', required: false, pattern: ['^(https://drive\\.google\\.com/(file/d/|open\\?id=|uc\\?id=)[\\w-]{20,}[^\\s]*)?$', 'Paste the link of the film file in Google Drive (drive.google.com/file/d/…), not a folder'], hint: 'In Drive: right-click the finished film → Share → Copy link. It must be shared “Anyone with the link can view” (the dashboard never changes sharing). Under 200 MB. Leave empty for films already on the site.' },
+    { name: 'makeLoop', label: 'Also make a playing excerpt (new films)', widget: 'boolean', required: false, hint: 'A muted excerpt of up to 25 seconds, so the film can also be a playing example in Page Media sections.' },
     { name: 'alt', label: 'Description of the film', widget: 'string', required: false, hint: 'What the film shows, for screen readers.' },
+    { name: 'posterTime', label: 'Poster frame (seconds into the film)', widget: 'number', value_type: 'int', required: false, default: 3, hint: 'The still shown before the film plays.' },
+    { name: 'dialogue', label: 'Does the film have speech?', widget: 'boolean', required: false, default: true, hint: 'Films with speech need captions before the live site can launch.' },
+    { name: 'captions', label: 'Captions', widget: 'pgk-captions', required: false, media_folder: '/static/captions', public_folder: '/captions' },
+    { name: 'captionsStatus', label: 'Captions checked', widget: 'select', required: false, default: 'machine-draft', options: [{ label: 'Draft: not checked word for word yet', value: 'machine-draft' }, { label: 'Checked word for word against the audio', value: 'approved' }] },
     ...mediaCommon.slice(2),
+    { name: 'rights', label: 'rights', widget: 'hidden', default: 'approved' },
+    { name: 'packageIds', label: 'packageIds', widget: 'hidden', default: [] },
+    { name: 'capturedYear', label: 'capturedYear', widget: 'hidden', default: null },
+    { name: 'source', label: 'source', widget: 'hidden', default: 'drive' },
   ];
   const photoShown = new Set(photoFields.map((f) => f.name));
   const filmShown = new Set(filmFields.map((f) => f.name));
   const photos = fileMedia.filter((m) => m.type === 'image');
-  const films = fileMedia.filter((m) => m.type === 'video');
+  const films = [...fileMedia.filter((m) => m.type === 'video'), ...(work.importing || [])];
+  const catFilters = workCats.map((c) => ({ label: c.label, field: 'category', pattern: `^${c.value}$` }));
 
   const pageFields = (route, label, extra = []) => ({ name: route, label, widget: 'object', collapsed: true, fields: [
     { name: 'eyebrow', label: 'Small label above the heading', widget: 'string', pattern: max(60, 'label') },
@@ -145,35 +165,37 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         description: 'Portfolio projects for every service. Switch on Published when the photos are described and the project is ready to show.',
         folder: 'content/projects', create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/projects', public_folder: '/images/projects',
-        summary: "{{title}} · {{category}} · {{published | ternary('Published', 'Draft')}}",
+        summary: "{{title}} · {{published | ternary('Published', 'Draft')}}",
         sortable_fields: ['order', 'title', 'category'],
-        view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Published', field: 'published', pattern: true }],
+        view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Published', field: 'published', pattern: true }, ...catFilters],
         view_groups: [{ label: 'Service', field: 'category' }],
         preview_path: '{{fields.category}}/{{slug}}',
-        fields: [...projectFields, ...keep(work.projects, projectShown)],
+        fields: [...projectFields, ...keep(work.projects, projectShown), MANAGE],
       },
       {
         name: 'photos', label: 'Photos', label_singular: 'Photo',
-        description: 'Every photo in the galleries. Replace a picture, fix its description or focus, change where it shows, or hide it.',
+        description: 'Every photo in the library. Replace a picture, fix its description or focus, change where it shows, hide it, or delete it for good (the panel at the bottom of each photo says where it is used first).',
         folder: 'content/media', filter: { field: 'type', value: 'image' }, create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/library', public_folder: '/images/library',
-        summary: "{{title}} · {{category}} · {{published | ternary('Published', 'Hidden')}}",
+        summary: "{{title}} · {{published | ternary('Shown', 'Hidden')}}",
         sortable_fields: ['title', 'category', 'sortPriority'],
-        view_filters: [{ label: 'Hidden', field: 'published', pattern: false }],
-        view_groups: [{ label: 'Service', field: 'category' }],
-        fields: [...photoFields, ...keep(photos, photoShown)],
+        view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters, { label: 'Drone photos', field: 'service', pattern: 'drone' }],
+        view_groups: [{ label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
+        fields: [...photoFields, ...keep(photos, photoShown), MANAGE],
       },
       {
         name: 'films', label: 'Films', label_singular: 'Film',
-        description: 'Films already on the site. Change the title, description, project or order, or hide one. Adding a new film is a separate upload step.',
-        folder: 'content/media', filter: { field: 'type', value: 'video' }, create: false, delete: false, extension: 'json', format: 'json',
-        identifier_field: 'title', summary: "{{title}} · {{category}} · {{published | ternary('Published', 'Hidden')}}",
-        sortable_fields: ['title', 'category', 'sortPriority'], view_groups: [{ label: 'Service', field: 'category' }],
-        fields: [...filmFields, ...keep(films, filmShown)],
+        description: 'Every film in the library. Add a film from Google Drive with “New Film” (the original stays in your Drive), change how a film is shown, hide it, or delete it for good.',
+        folder: 'content/media', filter: { field: 'type', value: 'video' }, create: true, delete: false, extension: 'json', format: 'json',
+        slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{published | ternary('Shown', 'Hidden')}}",
+        sortable_fields: ['title', 'category', 'sortPriority'],
+        view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters],
+        view_groups: [{ label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
+        fields: [...filmFields, ...keep(films, filmShown), MANAGE],
       },
       {
         name: 'page-text', label: 'Page text', label_singular: 'Page text', delete: false,
-        description: 'The heading and intro at the top of each main page. Layout, buttons, prices and booking links are not changed here.',
+        description: 'The heading and intro at the top of each main page. Pictures and films are in Page Media. Layout, buttons, prices and booking links are not changed here.',
         files: [{
           name: 'pages', label: 'Page headings and intros', file: 'content/pages.json',
           fields: [
@@ -181,10 +203,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
             { name: 'pages', label: 'Pages', widget: 'object', fields: [
               pageFields('/', 'Home'), pageFields('/real-estate', 'Real Estate'), pageFields('/agent-content', 'Agent Content'),
               pageFields('/architecture-design', 'Architecture & Design'), pageFields('/commercial', 'Commercial'),
-              pageFields('/agency-partnerships', 'Agency Partnerships', [
-                { name: 'image', label: 'Hero image', widget: 'pgk-photo', media_folder: '/static/images/library', public_folder: '/images/library', hint: imageHint },
-                { name: 'imageAlt', label: 'Hero image description (alt text)', widget: 'string', hint: hint.alt },
-              ]),
+              pageFields('/agency-partnerships', 'Agency Partnerships'),
               pageFields('/creator-studios', 'LI Creator Studios'), pageFields('/about', 'About'),
             ] },
           ],
@@ -230,7 +249,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
       {
         name: 'field-notes', label: 'Field Notes', label_singular: 'Field Note',
         description: 'Articles for photografikstudios.com/field-notes. Switch on “Published” only when the article is ready: drafts stay off the site, the Field Notes list and the sitemap.',
-        folder: 'content/field-notes', create: true, delete: true, extension: 'md', format: 'json-frontmatter',
+        folder: 'content/field-notes', create: true, delete: false, extension: 'md', format: 'json-frontmatter',
         media_folder: '/static/images/field-notes', public_folder: '/images/field-notes',
         slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{date}} · {{published | ternary('Published', 'Draft')}}",
         sortable_fields: ['date', 'title', 'category'], view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Published', field: 'published', pattern: true }],
@@ -262,9 +281,29 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'approvedBy', label: 'Approved by', widget: 'hidden', required: false },
           { name: 'legacyUrls', label: 'Old site addresses', widget: 'hidden', required: false },
           { name: 'sources', label: 'Sources', widget: 'hidden', required: false },
+          MANAGE,
         ],
       },
     ],
   };
+  // Page Media (James, Oct 13 2026): every named photo and video section of the site's own pages, one entry per page.
+  // Each section is a pgk-slot widget (src/admin/cms.js) that knows what it accepts; the build checks the same rules.
+  config.collections.splice(3, 0, {
+    name: 'page-media', label: 'Page Media', label_singular: 'page', delete: false,
+    description: 'The photos and films in each section of the site’s pages. Choose from the library, upload a photo, change the order, or take an item off a page. Taking something off a page never deletes it from the library.',
+    files: PAGE_MEDIA.map((pg) => ({
+      name: pg.file, label: pg.label, file: `content/page-media/${pg.file}.json`,
+      fields: [
+        { name: '_about', label: 'About this page', widget: 'pgk-page-note', required: false, route: pg.route, automatic: pg.automatic || [] },
+        ...pg.slots.map((sl) => ({
+          name: sl.key, label: sl.label, widget: 'pgk-slot', required: false, accepts: sl.accepts, kind: KINDS[sl.accepts],
+          multiple: !!sl.list, min: sl.list ? sl.list.min : sl.required ? 1 : 0, max: sl.list ? sl.list.max : 1, mustHave: !!sl.required,
+          labelled: !!sl.labelled, altMode: sl.alt || 'library', empty: sl.empty || '', route: pg.route,
+          media_folder: '/static/images/library', public_folder: '/images/library',
+          hint: sl.empty ? `Optional. When empty: ${sl.empty}` : undefined,
+        })),
+      ],
+    })),
+  });
   return { config, library, categories: cats };
 }

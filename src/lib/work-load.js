@@ -70,6 +70,11 @@ export async function loadWork(root) {
   const projects = await readDir(join(root, 'content', 'projects'), 'slug');
   const media = await readDir(join(root, 'content', 'media'), 'id');
   const errors = [...projects.errors, ...media.errors];
+  // Films added from Google Drive (dashboard, Oct 13 2026) join the library only once their web copies exist
+  // (import.state "ready", written by scripts/import-films.mjs). Until then the site leaves them out entirely, so a
+  // film that is still importing, or whose import failed, can never break a build or appear half-made.
+  const importing = media.records.filter((m) => m.type === 'video' && m.drive && m.import && m.import.state !== 'ready');
+  media.records = media.records.filter((m) => !importing.includes(m));
   // A replaced photo keeps no stale phone-size version: the -sm.webp thumb only belongs to its own /v/ still.
   for (const m of media.records) if (m.thumb && !(typeof m.src === 'string' && m.src.startsWith('/v/') && m.thumb === m.src.replace(/\.webp$/, '-sm.webp'))) delete m.thumb;
   for (const p of projects.records) {
@@ -95,7 +100,7 @@ export async function loadWork(root) {
       else m.project = p.slug;
     }
   }
-  return { ...base, projects: projects.records, media: all, loadErrors: errors };
+  return { ...base, projects: projects.records, media: all, importing, loadErrors: errors };
 }
 
 /** The fields the build adds for bookkeeping only; strip them when comparing with the pre-split work.json. */

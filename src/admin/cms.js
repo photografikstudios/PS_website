@@ -135,7 +135,7 @@
     var name = String(repoPath).split('/').pop();
     return (pub ? pub.replace(/\/+$/, '') : '/' + media.replace(/^static\//, '')) + '/' + name;
   };
-  function addFiles(props, files) {
+  function addFiles(props, files, baseName) {
     var list = Array.prototype.slice.call(files || []);
     var bad = list.filter(function (f) { return ACCEPT.split(',').indexOf(f.type) < 0; });
     var ok = list.filter(function (f) { return ACCEPT.split(',').indexOf(f.type) >= 0 && f.size <= 5000000; });
@@ -147,7 +147,7 @@
     // the public site, and a second "IMG_0001.jpg" can never replace an earlier photo with the same name).
     var data = props.entry && props.entry.get && props.entry.get('data');
     var typed = document.querySelector('input[id^="title-field"]'); // the entry prop can lag one keystroke behind
-    var base = String((data && (data.get('title') || data.get('shortTitle'))) || (typed && typed.value) || 'photo').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'photo';
+    var base = String(baseName || (data && data.get && (data.get('title') || data.get('shortTitle'))) || (typed && typed.value) || 'photo').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'photo';
     // The name ends in a fingerprint of the photo itself: the same photo picked twice (say as the main image and in the
     // gallery) is one file with one address, because Decap keeps only one copy of identical files in a save.
     var fingerprint = function (f) {
@@ -259,43 +259,62 @@
     openEntry = k;
   });
 
-  // ---------- Thumbnails on the collection lists (James, Oct 2 2026) ----------
+  // ---------- Thumbnails on the collection lists (James, Oct 2 2026; layout fixed Oct 13 2026) ----------
   // Decap's list cards are text only. Each card links to its entry, so we add the photo the site itself serves for
-  // that entry (built into config.js as PHOTOGRAFIK_THUMBS), or the local preview of a photo picked in this session.
-  var siteThumbs = window.PHOTOGRAFIK_THUMBS || { photos: {}, films: {}, projects: {}, pick: [] };
-  function cardThumb(col, slug) {
-    var m = siteThumbs[col] || {};
-    return m[slug] || null;
-  }
+  // that entry (built into config.js as PHOTOGRAFIK_THUMBS). The picture goes in front of Decap's card body, never
+  // inside it: the body draws a white fade (CardBody::after) over its lower part, which showed as a white band across
+  // our pictures (Codex, Oct 13 2026, live). Grid and list cards each get their own layout; other cards are untouched.
+  var siteThumbs = window.PHOTOGRAFIK_THUMBS || { photos: {}, films: {}, projects: {}, pick: [], meta: {}, filmFrames: {} };
+  siteThumbs.meta = siteThumbs.meta || {}; siteThumbs.filmFrames = siteThumbs.filmFrames || {};
+  function cardThumb(col, slug) { var m = siteThumbs[col] || {}; return m[slug] || null; }
+  var cardBodyOf = function (a) { return a.querySelector('[class*="CardBody"]'); };
   function decorateCards() {
     var links = document.querySelectorAll('a[href*="/collections/"][href*="/entries/"]');
     for (var i = 0; i < links.length; i++) {
       var a = links[i];
       var mm = a.getAttribute('href').match(/collections\/([^/]+)\/entries\/([^/?#]+)/);
       if (!mm || !siteThumbs[mm[1]]) continue;
-      var want = cardThumb(mm[1], decodeURIComponent(mm[2]));
-      var have = a.querySelector('img.pgk-card-thumb, .pgk-card-thumb--none');
+      var slug = decodeURIComponent(mm[2]);
+      var have = a.querySelector(':scope > .pgk-card-thumb');
       if (have && have.getAttribute('data-for') === mm[2]) continue;
       if (have) have.remove();
+      var body = cardBodyOf(a); var grid = !!body;
+      var want = cardThumb(mm[1], slug); var frame = mm[1] === 'films' ? siteThumbs.filmFrames[slug] : null;
       var el;
-      if (want) { el = document.createElement('img'); el.src = want; el.alt = ''; el.loading = 'lazy'; el.className = 'pgk-card-thumb'; el.onerror = function () { this.className = 'pgk-card-thumb pgk-card-thumb--broken'; this.removeAttribute('src'); }; }
-      else { el = document.createElement('div'); el.className = 'pgk-card-thumb--none'; el.textContent = mm[1] === 'films' ? 'No still image for this film yet' : 'New: preview after the next site update'; }
+      if (want) { el = document.createElement('img'); el.src = want; el.alt = ''; el.loading = 'lazy'; el.onerror = function () { this.classList.add('pgk-card-thumb--broken'); this.removeAttribute('src'); }; }
+      else if (frame) { el = document.createElement('video'); el.src = frame; el.muted = true; el.preload = 'metadata'; el.setAttribute('playsinline', ''); el.setAttribute('aria-hidden', 'true'); el.tabIndex = -1; }
+      else { el = document.createElement('div'); el.textContent = mm[1] === 'films' ? 'No still image for this film yet' : 'New: preview after the next site update'; el.className = 'pgk-card-thumb--none'; }
+      el.classList.add('pgk-card-thumb', grid ? 'pgk-card-thumb--grid' : 'pgk-card-thumb--list');
       el.setAttribute('data-for', mm[2]);
-      var host = a.firstElementChild || a; host.insertBefore(el, host.firstChild);
+      a.classList.add('pgk-card', grid ? 'pgk-card--grid' : 'pgk-card--list');
+      a.insertBefore(el, a.firstChild);
+      // Service label and what the site does with it, in plain words (not the stored code such as architecture-design).
+      var meta = (siteThumbs.meta[mm[1]] || {})[slug];
+      var line = a.querySelector('.pgk-card-meta');
+      if (meta && !line) { line = document.createElement('span'); line.className = 'pgk-card-meta'; line.textContent = [meta.cat, meta.status].filter(Boolean).join(' · '); (body || a).appendChild(line); }
     }
-    // Projects: mark held and review-only cards (matched by opaque id, see the status file note below).
     if (!window.__pgkBadgeRun) { window.__pgkBadgeRun = true; setTimeout(function () { window.__pgkBadgeRun = false; badgeCards(); }, 80); }
     // Decap's separate Media dialog uploads one file at a time. Point batch work to the Project photo picker,
     // which saves several photos with their descriptions and gallery types in a single project update.
-    var dialog = Array.prototype.find.call(document.querySelectorAll('[role="dialog"]'), function (d) { return d.querySelector('h1') && /^(Media assets|Images)$/.test(d.querySelector('h1').textContent.trim()); });
+    var dialog = mediaDialog();
     if (dialog && !dialog.querySelector('#pgk-media-help')) {
       var note = document.createElement('p'); note.id = 'pgk-media-help'; note.className = 'pgk-media-help';
       note.appendChild(document.createTextNode('Adding several images to a project? '));
       var link = document.createElement('a'); link.href = '#/collections/projects'; link.textContent = 'Open Projects and use Photos → Upload photos';
       link.onclick = function () { var close = dialog.querySelector('button[aria-label="Close"]'); if (close) close.click(); };
-      note.appendChild(link); dialog.insertBefore(note, dialog.children[1] || null);
+      note.appendChild(link);
+      note.appendChild(document.createTextNode(' Files are deleted together with the photo, film, project or article that uses them (open it, then “Where it is used, and delete”), so nothing still on the site can lose its picture here.'));
+      dialog.insertBefore(note, dialog.children[1] || null);
     }
+    if (dialog) Array.prototype.forEach.call(dialog.querySelectorAll('button'), function (b) { if (/^\s*delete( selected)?\s*$/i.test(b.textContent)) b.style.display = 'none'; });
   }
+  function mediaDialog() { return Array.prototype.find.call(document.querySelectorAll('[role="dialog"]'), function (d) { return d.querySelector('h1') && /^(Media assets|Images)$/.test(d.querySelector('h1').textContent.trim()); }); }
+  // Raw file deletion in Decap's Media dialog is switched off: it cannot tell whether a page still uses the file.
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest && e.target.closest('button');
+    var d = b && mediaDialog();
+    if (d && d.contains(b) && /^\s*delete( selected)?\s*$/i.test(b.textContent)) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
   function badgeCards() {
     var links = document.querySelectorAll('a[href*="/collections/projects/entries/"]');
     Array.prototype.forEach.call(links, function (a) {
@@ -308,7 +327,7 @@
         if (!kind) return;
         b = document.createElement('span'); b.className = 'pgk-card-badge pgk-card-badge--' + kind; b.setAttribute('data-kind', kind);
         b.textContent = kind === 'held' ? 'Held: not on the site' : 'Review-only test';
-        (a.firstElementChild || a).appendChild(b);
+        (cardBodyOf(a) || a).appendChild(b);
       });
     });
   }
@@ -437,6 +456,338 @@
   });
   CMS.registerWidget('pgk-publish', PublishControl);
 
+  // ===================== Page Media, where-used and delete, films from Google Drive (Oct 13 2026) =====================
+  var MEDIA = window.PHOTOGRAFIK_MEDIA || [];
+  var mediaById = {}; MEDIA.forEach(function (m) { mediaById[m.id] = m; });
+  var KIND_WORD = { photo: 'Photo', film: 'Film', loop: 'Playing excerpt' };
+  var fits = function (accepts, m) {
+    switch (accepts) {
+      case 'heroLoop': return m.loop && m.hero;
+      case 'loop': return m.loop;
+      case 'film': return m.kind === 'film';
+      case 'photo': return m.kind === 'photo';
+      case 'still': return m.kind === 'photo' || (m.kind === 'film' && m.still);
+      case 'loopOrPhoto': return m.kind === 'photo' || m.loop;
+      case 'photoOrFilm': return m.kind === 'photo' || m.kind === 'film';
+      default: return false;
+    }
+  };
+  var takesFiles = function (accepts) { return ['photo', 'still', 'loopOrPhoto', 'photoOrFilm'].indexOf(accepts) >= 0; };
+  var asItems = function (v) { var x = v && v.toJS ? v.toJS() : v; return Array.isArray(x) ? x.filter(Boolean) : x ? [x] : []; };
+  // A small preview for any library item: its still, or the first frame of a film that has none.
+  function MediaThumb(p) {
+    var m = p.item && p.item.media ? mediaById[p.item.media] : null;
+    if (p.item && p.item.src) return h(Thumb, { src: thumbFor(p.item.src), path: p.item.src, alt: '' });
+    if (m && m.thumb) return h('img', { className: 'pgk-thumb', src: m.thumb, alt: '' });
+    if (m && m.frame) return h('video', { className: 'pgk-thumb', src: m.frame, muted: true, preload: 'metadata', playsInline: true, 'aria-hidden': true, tabIndex: -1 });
+    return h('div', { className: 'pgk-thumb pgk-thumb--missing' }, m ? 'No preview' : 'Not in the library');
+  }
+
+  // Library picker for Page Media: search, type and service filters, previews for photos, films and playing excerpts.
+  var LibraryPicker = createClass({
+    getInitialState: function () { return { q: '', kind: '', cat: '', chosen: [] }; },
+    componentDidMount: function () { var self = this; this.onKey = function (e) { if (e.key === 'Escape') self.props.onClose(); }; document.addEventListener('keydown', this.onKey); if (this.search) this.search.focus(); },
+    componentWillUnmount: function () { document.removeEventListener('keydown', this.onKey); },
+    toggle: function (id) { var c = this.state.chosen.slice(); var i = c.indexOf(id); if (i >= 0) c.splice(i, 1); else { if (!this.props.multiple) c = []; c.push(id); } this.setState({ chosen: c }); },
+    render: function () {
+      var self = this; var st = this.state; var q = st.q.toLowerCase();
+      var pool = MEDIA.filter(function (m) { return fits(self.props.accepts, m); });
+      var kinds = ['photo', 'film', 'loop'].filter(function (k) { return pool.some(function (m) { return m.kind === k; }); });
+      var cats = []; pool.forEach(function (m) { if (m.catLabel && cats.indexOf(m.catLabel) < 0) cats.push(m.catLabel); }); cats.sort();
+      var items = pool.filter(function (m) { return (!st.kind || m.kind === st.kind) && (!st.cat || m.catLabel === st.cat) && (!q || (m.title + ' ' + m.alt + ' ' + m.catLabel + ' ' + (m.project || '') + ' ' + m.id).toLowerCase().indexOf(q) >= 0); });
+      var n = st.chosen.length;
+      return h('div', { className: 'pgk-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choose from the library' },
+        h('div', { className: 'pgk-modal__box' },
+          h('div', { className: 'pgk-modal__head' },
+            h('input', { type: 'search', placeholder: 'Search by name, description or service', value: st.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search the library' }),
+            kinds.length > 1 ? h('select', { value: st.kind, onChange: function (e) { self.setState({ kind: e.target.value }); }, 'aria-label': 'Type' }, h('option', { value: '' }, 'Photos and films'), kinds.map(function (k) { return h('option', { key: k, value: k }, KIND_WORD[k] + 's'); })) : null,
+            cats.length > 1 ? h('select', { value: st.cat, onChange: function (e) { self.setState({ cat: e.target.value }); }, 'aria-label': 'Service' }, h('option', { value: '' }, 'Every service'), cats.map(function (c) { return h('option', { key: c, value: c }, c); })) : null,
+            h('button', { type: 'button', className: 'pgk-btn', disabled: !n, onClick: function () { self.props.onPick(st.chosen); } }, n ? (self.props.multiple ? 'Add ' + n : 'Use this') : 'Choose'),
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.props.onClose }, 'Cancel')),
+          h('p', { className: 'pgk-modal__count', role: 'status' }, items.length + ' of ' + pool.length + ' that fit this section'),
+          items.length ? h('ul', { className: 'pgk-modal__grid' }, items.map(function (m) {
+            var on = st.chosen.indexOf(m.id) >= 0;
+            return h('li', { key: m.id },
+              h('button', { type: 'button', className: 'pgk-pick' + (on ? ' is-on' : ''), 'aria-pressed': on, onClick: function () { self.toggle(m.id); }, title: m.title },
+                h(MediaThumb, { item: { media: m.id } }),
+                h('span', {}, m.title), h('span', { className: 'pgk-pick__meta' }, [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.project ? 'from ' + m.project : '', m.hidden ? 'Hidden' : ''].filter(Boolean).join(' · '))));
+          })) : h('p', { className: 'pgk-modal__empty' }, 'Nothing matches. Clear the search or the filters.')));
+    },
+  });
+
+  // One section of a page (a single item or a list): replace, add, reorder, take off the page. Never deletes anything.
+  var SlotControl = createClass({
+    getInitialState: function () { return { picking: null, busy: false, msgs: [] }; },
+    f: function (k) { return this.props.field.get(k); },
+    items: function () { return asItems(this.props.value).map(function (x) { return Object.assign({}, x); }); },
+    set: function (arr) { this.props.onChange(this.f('multiple') ? arr : (arr[0] || null)); },
+    isValid: function () {
+      var self = this; var arr = this.items(); var errs = [];
+      if (this.f('mustHave') && !arr.length) errs.push('This section cannot be empty: choose a replacement instead of taking it off.');
+      if (this.f('multiple') && arr.length && arr.length < this.f('min')) errs.push('Choose at least ' + this.f('min') + '.');
+      if (arr.length > this.f('max')) errs.push('Choose no more than ' + this.f('max') + '.');
+      arr.forEach(function (it, i) {
+        var n = self.f('multiple') ? ' (item ' + (i + 1) + ')' : '';
+        if (it.src && self.f('altMode') !== 'decorative' && !it.alt) errs.push('Describe the photo' + n + '.');
+        var m = it.media ? mediaById[it.media] : null;
+        if (it.media && !m) errs.push('“' + it.media + '” is not in the library any more' + n + '. Choose another.');
+        if (m && !fits(self.f('accepts'), m)) errs.push('“' + m.title + '” does not fit this section' + n + '.');
+        if (self.f('labelled') && it.media && !(m && m.kind === 'photo') && !it.label) errs.push('Add the words a screen reader hears' + n + '.');
+      });
+      return errs.length ? { error: { type: 'custom', message: errs.join(' ') } } : true;
+    },
+    pickDone: function (ids) {
+      var arr = this.items(); var mode = this.state.picking;
+      var add = ids.map(function (id) { return { media: id }; });
+      if (mode === 'add') arr = arr.concat(add); else if (typeof mode === 'number') arr[mode] = add[0]; else arr = add.slice(0, 1);
+      this.set(arr.slice(0, this.f('max'))); this.setState({ picking: null });
+    },
+    upload: function (e, index) {
+      var self = this; var files = e.target.files; this.setState({ busy: true, msgs: [] });
+      addFiles(this.props, files, this.props.field.get('label').split(':')[0]).then(function (r) {
+        var arr = self.items(); var add = r.paths.map(function (p) { return { src: p, alt: '' }; });
+        if (typeof index === 'number') arr[index] = add[0]; else arr = self.f('multiple') ? arr.concat(add) : add.slice(0, 1);
+        self.set(arr.slice(0, self.f('max'))); self.setState({ busy: false, msgs: r.msgs });
+      }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
+      e.target.value = '';
+    },
+    update: function (i, k, v) { var arr = this.items(); arr[i][k] = v; this.set(arr); },
+    move: function (i, d) { var arr = this.items(); var j = i + d; if (j < 0 || j >= arr.length) return; var x = arr[i]; arr[i] = arr[j]; arr[j] = x; this.set(arr); },
+    remove: function (i) { var arr = this.items(); arr.splice(i, 1); this.set(arr); },
+    render: function () {
+      var self = this; var arr = this.items(); var multi = this.f('multiple'); var accepts = this.f('accepts');
+      var full = arr.length >= this.f('max'); var locked = this.f('mustHave') && arr.length <= Math.max(1, this.f('min') || 1);
+      var fileInput = function (index) { return h('input', { type: 'file', accept: ACCEPT, multiple: multi && index == null, hidden: true, ref: function (el) { self['in' + (index == null ? 'Add' : index)] = el; }, onChange: function (e) { self.upload(e, index); }, 'aria-label': 'Upload a photo' }); };
+      return h('div', { className: 'pgk-slot', id: this.props.forID },
+        h('p', { className: 'pgk-slot__kind' }, 'Takes: ' + (this.f('kind') || '') + (multi ? ' · up to ' + this.f('max') : '') + (this.f('empty') ? ' · ' + this.f('empty') : '')),
+        arr.length ? h('ol', { className: 'pgk-gallery__list' }, arr.map(function (it, i) {
+          var m = it.media ? mediaById[it.media] : null;
+          var name = m ? m.title : it.src ? String(it.src).split('/').pop() : '';
+          return h('li', { key: (it.media || it.src || '') + i, className: 'pgk-row' },
+            h(MediaThumb, { item: it }),
+            h('div', { className: 'pgk-row__fields' },
+              h('p', { className: 'pgk-row__title' }, h('strong', {}, name), ' ', h('span', {}, m ? [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.hidden ? 'hidden in the library, still shown here' : ''].filter(Boolean).join(' · ') : 'Photo file used only here')),
+              it.src && self.f('altMode') !== 'decorative' ? h('label', {}, h('span', {}, 'Description (alt text)' + (it.alt ? '' : ' · needed')), h('input', { type: 'text', value: it.alt || '', onChange: function (e) { self.update(i, 'alt', e.target.value); } })) : null,
+              self.f('labelled') && it.media && !(m && m.kind === 'photo') ? h('label', {}, h('span', {}, 'What a screen reader hears' + (it.label ? '' : ' · needed')), h('input', { type: 'text', value: it.label || '', placeholder: 'e.g. Beachfront estate film, muted excerpt', onChange: function (e) { self.update(i, 'label', e.target.value); } })) : null,
+              h('div', { className: 'pgk-gallery__bar' },
+                h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: i }); } }, 'Replace from library'),
+                takesFiles(accepts) ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: self.state.busy, onClick: function () { self['in' + i].click(); } }, 'Replace with an upload') : null,
+                takesFiles(accepts) ? fileInput(i) : null)),
+            h('div', { className: 'pgk-row__tools' },
+              multi ? h('button', { type: 'button', className: 'pgk-icon', onClick: function () { self.move(i, -1); }, disabled: i === 0, 'aria-label': 'Move item ' + (i + 1) + ' up' }, '↑') : null,
+              multi ? h('button', { type: 'button', className: 'pgk-icon', onClick: function () { self.move(i, 1); }, disabled: i === arr.length - 1, 'aria-label': 'Move item ' + (i + 1) + ' down' }, '↓') : null,
+              h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', disabled: locked, title: locked ? 'This section needs a picture. Replace it instead.' : '', onClick: function () { self.remove(i); } }, 'Take off this page')));
+        })) : h('p', { className: 'pgk-slot__empty' }, this.f('empty') ? 'Empty. ' + this.f('empty') : 'Nothing chosen yet.'),
+        !full || !arr.length ? h('div', { className: 'pgk-gallery__bar' },
+          h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.setState({ picking: 'add' }); } }, arr.length ? 'Add from library' : 'Choose from library'),
+          takesFiles(accepts) ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: this.state.busy, onClick: function () { self.inAdd.click(); } }, this.state.busy ? 'Uploading…' : 'Upload a photo') : null,
+          takesFiles(accepts) ? fileInput(null) : null) : null,
+        h('p', { className: 'pgk-slot__note' }, 'Taking something off this page leaves it in the library. To delete a photo or film for good, open it in Photos or Films.'),
+        this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
+        this.state.picking !== null ? h(LibraryPicker, { accepts: accepts, multiple: multi && this.state.picking === 'add', onClose: function () { self.setState({ picking: null }); }, onPick: function (ids) { self.pickDone(ids); } }) : null);
+    },
+  });
+  CMS.registerWidget('pgk-slot', SlotControl);
+
+  // Top of each Page Media page: where to see it, what fills itself, and whether the site has caught up with saves.
+  var PageNote = createClass({
+    componentDidMount: function () { var self = this; this.sub = function () { self.forceUpdate(); }; siteState.subs.push(this.sub); },
+    componentWillUnmount: function () { var self = this; siteState.subs = siteState.subs.filter(function (f) { return f !== self.sub; }); },
+    render: function () {
+      var f = this.props.field; var route = f.get('route'); var auto = (f.get('automatic') && f.get('automatic').toJS) ? f.get('automatic').toJS() : [];
+      return h('div', { className: 'pgk-note', id: this.props.forID },
+        h('p', {}, h('a', { href: window.location.origin + route, target: '_blank', rel: 'noopener' }, 'Open this page on the review site ↗'), ' ', h('span', { className: 'pgk-note__state' }, siteState.text())),
+        auto.length ? h('div', {}, h('p', { className: 'pgk-note__h' }, 'Fills itself (changed elsewhere):'), h('ul', {}, auto.map(function (a, i) { return h('li', { key: i }, h('strong', {}, a[0] + ': '), a[1] + ' ', h('a', { href: a[2] }, 'Open')); }))) : null);
+    },
+  });
+  CMS.registerWidget('pgk-page-note', PageNote);
+
+  // ---------- Talking to /api/cms-manage with the signed-in editor's GitHub session ----------
+  function ghToken() {
+    var keys = ['decap-cms-user', 'netlify-cms-user'];
+    for (var i = 0; i < keys.length; i++) { try { var u = JSON.parse(localStorage.getItem(keys[i]) || 'null'); if (u && u.token) return u.token; } catch (e) { /* try the next */ } }
+    return null;
+  }
+  function manage(body) {
+    var t = ghToken();
+    if (!t) return Promise.resolve({ ok: false, status: 401, message: 'Sign out and sign in again, so the dashboard can check the latest saved version.' });
+    return fetch('/api/cms-manage', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + t }, body: JSON.stringify(body), cache: 'no-store' })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, message: 'The site did not answer. Try again in a minute.' }; }).then(function (j) { j.status = r.status; return j; }); })
+      .catch(function () { return { ok: false, message: 'No connection. Nothing was changed.' }; });
+  }
+
+  // ---------- Saved vs on the site (Codex CMS audit #9) ----------
+  // Compares the branch's latest commit (what Save wrote) with the commit the review site was built from.
+  var siteState = { head: null, at: 0, subs: [], text: function () {
+    var d = siteStatus.data; if (!d || !siteState.head) return 'Checking whether the site has your latest save…';
+    if (d.commit && siteState.head.indexOf(d.commit) === 0 || siteState.head === d.commit) return 'The review site shows your latest save (built ' + when(d.builtAt) + ').';
+    return 'Your latest save is being built. The review site still shows the version from ' + when(d.builtAt) + '; it usually updates within a few minutes.';
+  } };
+  var pill = document.createElement('p'); pill.className = 'pgk-sitepill'; pill.setAttribute('role', 'status'); pill.hidden = true;
+  document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(pill); }); if (document.body) document.body.appendChild(pill);
+  function checkHead() {
+    if (!ghToken()) return;
+    manage({ action: 'head' }).then(function (r) {
+      if (!r.ok) return; siteState.head = r.head; siteState.at = Date.now();
+      var up = siteStatus.data && siteStatus.data.commit === r.head;
+      pill.hidden = false; pill.className = 'pgk-sitepill' + (up ? '' : ' pgk-sitepill--busy'); pill.textContent = up ? 'Site up to date' : 'Site updating…'; pill.title = siteState.text();
+      siteState.subs.forEach(function (f) { f(); });
+    });
+  }
+  siteStatus.subs.push(function () { siteState.subs.forEach(function (f) { f(); }); });
+  setTimeout(checkHead, 1500); setInterval(checkHead, 45000);
+
+  // ---------- Where it is used, and delete (photos, films, projects, Field Notes) ----------
+  var COLLECTION_WORD = { photos: 'photo', films: 'film', projects: 'project', 'field-notes': 'article' };
+  var ManageControl = createClass({
+    getInitialState: function () { return { loading: false, info: null, open: false, typed: '', files: {}, busy: false, done: null, err: '' }; },
+    key: function () { return this.props.entry && this.props.entry.get('slug'); },
+    col: function () { return this.props.collection && this.props.collection.get('name'); },
+    isNew: function () { return !this.key() || (this.props.entry && this.props.entry.get('newRecord')); },
+    check: function () {
+      var self = this; if (this.isNew()) return; this.setState({ loading: true, err: '' });
+      manage({ action: 'check', collection: this.col(), key: this.key() }).then(function (r) {
+        var files = {}; (r.files || []).forEach(function (f) { if (f.removable) files[f.path] = true; });
+        self.setState({ loading: false, info: r.ok ? r : null, err: r.ok ? '' : r.message, files: files });
+      });
+    },
+    componentDidMount: function () { this.check(); },
+    del: function () {
+      var self = this; var st = this.state; this.setState({ busy: true, err: '' });
+      manage({ action: 'delete', collection: this.col(), key: this.key(), head: st.info.head, confirm: st.typed, files: Object.keys(st.files).filter(function (p) { return st.files[p]; }) }).then(function (r) {
+        if (r.ok) self.setState({ busy: false, done: r });
+        else { self.setState({ busy: false, err: r.message || 'Nothing was deleted.' }); if (r.changed) self.check(); }
+      });
+    },
+    undo: function () {
+      var self = this; this.setState({ busy: true });
+      manage({ action: 'restore', commit: this.state.done.commit }).then(function (r) { self.setState({ busy: false, done: r.ok ? Object.assign({}, self.state.done, { undone: r }) : self.state.done, err: r.ok ? '' : r.message }); });
+    },
+    render: function () {
+      var self = this; var st = this.state; var word = COLLECTION_WORD[this.col()] || 'item';
+      if (this.isNew()) return h('div', { className: 'pgk-note', id: this.props.forID }, 'Where this ' + word + ' is used appears here after it is saved.');
+      var info = st.info;
+      var used = info ? info.blocking : [];
+      return h('div', { className: 'pgk-manage', id: this.props.forID },
+        st.loading ? h('p', { role: 'status' }, 'Checking where this ' + word + ' is used in the latest saved version…') : null,
+        st.err && !st.open ? h('p', { className: 'pgk-msg', role: 'alert' }, st.err) : null,
+        info ? h('div', {},
+          used.length ? h('div', {}, h('p', {}, h('strong', {}, 'Used in ' + used.length + (used.length === 1 ? ' place:' : ' places:'))), h('ul', {}, used.map(function (u, i) { return h('li', { key: i }, u.href ? h('a', { href: u.href }, u.text) : u.text); })))
+            : h('p', {}, h('strong', {}, 'Not used by any page section, project or article.')),
+          (info.notes || []).map(function (n, i) { return h('p', { key: i, className: 'pgk-manage__note' }, n); }),
+          this.col() === 'photos' || this.col() === 'films' ? h('p', { className: 'pgk-manage__note' }, 'To take it off the site but keep it, switch Published off instead of deleting.') : null,
+          h('div', { className: 'pgk-gallery__bar' },
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--danger', onClick: function () { self.setState({ open: true, typed: '', err: '', done: null }); } }, 'Delete this ' + word + '…'),
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.check }, 'Check again'))) : null,
+        st.open && info ? h('div', { className: 'pgk-modal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'pgk-del-h' },
+          h('div', { className: 'pgk-modal__box pgk-modal__box--narrow' },
+            h('div', { className: 'pgk-modal__body' },
+              h('h2', { id: 'pgk-del-h' }, st.done ? (st.done.undone ? 'Restored' : 'Deleted') : 'Delete “' + info.name + '”?'),
+              st.done ? h('div', {},
+                h('p', {}, st.done.undone ? 'Everything that was deleted is back. The review site updates in a few minutes.' : st.done.message + ' Removed in one saved change: ' + st.done.removed.length + (st.done.removed.length === 1 ? ' file' : ' files') + '. The review site updates in a few minutes.'),
+                st.done.undone ? null : h('p', {}, 'Changed your mind? Undo puts back exactly what was removed.'),
+                h('div', { className: 'pgk-gallery__bar' },
+                  st.done.undone ? null : h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: st.busy, onClick: this.undo }, st.busy ? 'Undoing…' : 'Undo'),
+                  h('button', { type: 'button', className: 'pgk-btn', onClick: function () { location.hash = '#/collections/' + self.col(); location.reload(); } }, 'Back to the list')))
+              : used.length ? h('div', {},
+                h('p', {}, 'It cannot be deleted while it is used. Change these first (each link opens the place), then check again:'),
+                h('ul', {}, used.map(function (u, i) { return h('li', { key: i }, u.href ? h('a', { href: u.href, onClick: function () { self.setState({ open: false }); } }, u.text) : u.text); })),
+                h('div', { className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.setState({ open: false }); } }, 'Close')))
+              : h('div', {},
+                h('p', {}, 'This removes the ' + word + ' from the dashboard and the site in one saved change. It can be undone straight after, and it stays recoverable in the site’s history.'),
+                (info.files || []).length ? h('fieldset', { className: 'pgk-files' }, h('legend', {}, 'Picture files'),
+                  info.files.map(function (f) {
+                    var nm = String(f.path).split('/').pop();
+                    return f.removable ? h('label', { key: f.path }, h('input', { type: 'checkbox', checked: !!st.files[f.path], onChange: function (e) { var x = Object.assign({}, st.files); x[f.path] = e.target.checked; self.setState({ files: x }); } }), ' Also delete the file ' + nm + ' (nothing else uses it)')
+                      : h('p', { key: f.path }, 'Keeps ' + nm + ': ' + (f.shared.length ? 'also used by ' + f.shared.join('; ') : 'a protected site file') + '.');
+                  })) : null,
+                h('label', { className: 'pgk-confirm' }, h('span', {}, 'Type the name to confirm: ', h('strong', {}, info.name)), h('input', { type: 'text', value: st.typed, autoFocus: true, onChange: function (e) { self.setState({ typed: e.target.value }); } })),
+                st.err ? h('p', { className: 'pgk-msg', role: 'alert' }, st.err) : null,
+                h('div', { className: 'pgk-gallery__bar' },
+                  h('button', { type: 'button', className: 'pgk-btn pgk-btn--danger', disabled: st.busy || st.typed.trim().toLowerCase() !== String(info.name).trim().toLowerCase(), onClick: this.del }, st.busy ? 'Deleting…' : 'Delete for good'),
+                  h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ open: false }); } }, 'Cancel')))))) : null);
+    },
+  });
+  CMS.registerWidget('pgk-manage', ManageControl);
+
+  // ---------- Films from Google Drive: status, retry and a playable preview ----------
+  var FilmStatus = createClass({
+    getInitialState: function () { return { run: null }; },
+    componentDidMount: function () {
+      if (this.isNew() && !this.props.value) this.props.onChange({ state: 'waiting' });
+      var v = this.val(); if (v && (v.state === 'waiting' || v.state === 'retry') && !this.isNew()) this.pollRun();
+    },
+    componentWillUnmount: function () { clearTimeout(this.timer); },
+    isNew: function () { return !!(this.props.entry && this.props.entry.get('newRecord')); },
+    val: function () { var v = this.props.value; return v && v.toJS ? v.toJS() : v; },
+    data: function (k) { var v = this.props.entry && this.props.entry.getIn(['data', k]); return v && v.toJS ? v.toJS() : v; },
+    // The import runs in GitHub Actions (film-import.yml); its latest run says whether it is working on it right now.
+    pollRun: function () {
+      var self = this; var t = ghToken();
+      fetch('https://api.github.com/repos/' + config.backend.repo + '/actions/workflows/film-import.yml/runs?per_page=1&branch=' + encodeURIComponent(config.backend.branch), { headers: t ? { Authorization: 'Bearer ' + t } : {} })
+        .then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { var run = j && j.workflow_runs && j.workflow_runs[0]; self.setState({ run: run || null }); })
+        .catch(function () { /* the plain waiting text stays */ }).then(function () { self.timer = setTimeout(self.pollRun, 30000); });
+    },
+    render: function () {
+      var self = this; var v = this.val(); var src = this.data('src'); var slug = this.props.entry && this.props.entry.get('slug');
+      var box = function (cls, kids) { return h('div', { className: 'pgk-film pgk-film--' + cls, id: self.props.forID, role: 'status' }, kids); };
+      if (this.isNew()) return box('new', [h('p', { key: 1 }, h('strong', {}, 'Add a film from Google Drive. '), 'Paste the Drive link below, fill in the title and service, then Save. The site then makes the web copies it plays (a 720p film, a poster and a small card poster): usually a few minutes for a short film. The original stays in your Drive.'), h('p', { key: 2 }, 'The film stays a draft until you switch Published on. Finished exports under 200 MB, shared “Anyone with the link can view”.')]);
+      if (!v || (!this.data('drive') && src)) {
+        // A film already on the site: say what the site actually does with it.
+        var rights = this.data('rights'); var rep = this.data('replacement'); var pub = this.data('published');
+        var caps = this.data('captions'); var capOk = caps === 'burned-in' || this.data('captionsStatus') === 'approved' || this.data('dialogue') === false;
+        var line = rights !== 'approved' ? 'Held: its rights are not cleared, so it is not on the site whatever Published says.'
+          : rep && rep.status === 'pending' ? 'On the review site, waiting for its replacement before launch (James, Oct 13).'
+            : pub === false ? 'Hidden: not on the site.' : capOk ? 'On the site.' : 'On the review site. Its captions still need checking word for word before the live site can launch.';
+        return box('ready', [h('p', { key: 1 }, line), src ? h(FilmPreview, { key: 2, src: src, poster: this.data('poster') }) : null]);
+      }
+      if (v.state === 'ready') return box('ready', [h('p', { key: 1 }, h('strong', {}, 'Ready. '), v.message || 'Imported from Google Drive.'), h(FilmPreview, { key: 2, src: src || '/v/' + slug + '.mp4', poster: this.data('poster') })]);
+      if (v.state === 'failed') return box('failed', [h('p', { key: 1 }, h('strong', {}, 'The import did not work. '), v.message || ''), h('div', { key: 2, className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.props.onChange({ state: 'retry' }); } }, 'Retry import'), h('span', { className: 'pgk-gallery__count' }, 'Then press Save. Fix the link or the sharing in Drive first if the message says so.'))]);
+      var run = this.state.run; var running = run && (run.status === 'queued' || run.status === 'in_progress');
+      var failedRun = run && run.status === 'completed' && run.conclusion !== 'success';
+      return box('waiting', [h('p', { key: 1 }, h('strong', {}, running ? 'Importing from Google Drive now. ' : 'Waiting to import from Google Drive. '),
+        running ? 'Started ' + when(run.run_started_at || run.created_at) + '. This page updates by itself; reopen the film in a few minutes.' : failedRun ? 'The last import run stopped with an error before it could report here. Press Retry import, then Save; if it happens again, the import step needs a look.' : 'It starts within a minute or two of saving.'),
+        failedRun ? h('button', { key: 2, type: 'button', className: 'pgk-btn', onClick: function () { self.props.onChange({ state: 'retry' }); } }, 'Retry import') : null]);
+    },
+  });
+  // Plays the site's copy; until the review site has it, the copy in the repository (same file).
+  var FilmPreview = createClass({
+    getInitialState: function () { return { step: 0 }; },
+    render: function () {
+      var self = this; var p = this.props;
+      var url = this.state.step === 0 ? p.src : /^\/v\//.test(p.src) ? repoRaw + p.src : null;
+      if (!url) return h('p', { className: 'pgk-gallery__count' }, 'Preview not available yet. It appears once the site has updated.');
+      return h('video', { className: 'pgk-film__player', src: url, poster: p.poster && this.state.step === 0 ? p.poster : undefined, controls: true, preload: 'metadata', playsInline: true, onError: function () { self.setState({ step: self.state.step + 1 }); } });
+    },
+  });
+  CMS.registerWidget('pgk-film-status', FilmStatus);
+
+  // Captions: none yet, burned into the video, or a .vtt file uploaded here.
+  var CaptionsControl = createClass({
+    getInitialState: function () { return { msg: '', busy: false }; },
+    upload: function (e) {
+      var self = this; var f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      this.setState({ busy: true, msg: '' });
+      f.text().then(function (txt) {
+        if (!/^﻿?WEBVTT/.test(txt)) throw new Error('This is not a WebVTT captions file (.vtt). Export captions as WebVTT and try again.');
+        var slug = (self.props.entry && self.props.entry.get('slug')) || String(self.props.entry.getIn(['data', 'title']) || 'film').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        var file = new File([f], slug + '.vtt', { type: 'text/vtt' });
+        return Promise.resolve(self.props.onPersistMedia(file, { field: self.props.field })).then(function () { self.props.onChange('/captions/' + slug + '.vtt'); self.setState({ busy: false }); });
+      }).catch(function (err) { self.setState({ busy: false, msg: String(err.message || err) }); });
+    },
+    render: function () {
+      var self = this; var v = this.props.value || null; var mode = !v ? 'none' : v === 'burned-in' ? 'burned' : 'file';
+      var radio = function (val, label) { return h('label', { className: 'pgk-radio' }, h('input', { type: 'radio', name: self.props.forID, checked: mode === val, onChange: function () { if (val === 'none') self.props.onChange(null); else if (val === 'burned') self.props.onChange('burned-in'); else self.input.click(); } }), ' ' + label); };
+      return h('div', { id: this.props.forID, className: 'pgk-captions' },
+        radio('none', 'No captions yet'), radio('burned', 'Captions are burned into the video'), radio('file', 'Caption file (.vtt)'),
+        mode === 'file' ? h('p', { className: 'pgk-gallery__count' }, String(v).split('/').pop(), ' ', h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () { self.input.click(); } }, 'Replace file')) : null,
+        h('input', { type: 'file', accept: '.vtt,text/vtt', hidden: true, ref: function (el) { self.input = el; }, onChange: this.upload, 'aria-label': 'Choose a captions file' }),
+        this.state.busy ? h('p', { role: 'status' }, 'Adding the captions file…') : null,
+        this.state.msg ? h('p', { className: 'pgk-msg', role: 'alert' }, this.state.msg) : null);
+    },
+  });
+  CMS.registerWidget('pgk-captions', CaptionsControl);
+
   // Widget styles (thumbnails, rows, buttons, status).
   var widgetCss = document.createElement('style');
   widgetCss.textContent = [
@@ -463,9 +814,15 @@
     '.pgk-pub__state--test { background: #fffaeb; color: #7a4a00; border: 1px solid #fedf89; }',
     '.pgk-statusbar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 400; max-width: 760px; margin: 0 auto; padding: 10px 14px; border-radius: 8px; background: #fff; border: 1px solid #fecdca; box-shadow: 0 6px 24px rgba(0,0,0,.12); font-size: 13px; line-height: 1.45; color: #1f2937; }',
     '.pgk-statusbar p { margin: 0 0 6px; } .pgk-statusbar__held { color: #912018; } .pgk-statusbar__meta { color: #5b6472; margin: 0 !important; }',
-    '.pgk-card-thumb { display: block; width: 100%; height: 150px; object-fit: cover; border-radius: 4px 4px 0 0; margin: -16px 0 12px; background: #eef0f3; }',
-    '.pgk-card-thumb--broken, .pgk-card-thumb--none { display: flex; align-items: center; justify-content: center; height: 150px; margin: -16px 0 12px; background: #eef0f3; color: #5b6472; font-size: 12px; }',
+    'a.pgk-card--grid { display: flex !important; flex-direction: column; overflow: hidden; }',
+    'a.pgk-card--grid > .pgk-card-thumb { flex: 0 0 150px; display: block; width: 100%; height: 150px; margin: 0; object-fit: cover; border-radius: 5px 5px 0 0; background: #eef0f3; }',
+    'a.pgk-card--grid > [class*="CardBody"] { flex: 1 1 auto; min-height: 0; }',
+    'a.pgk-card--list { display: flex !important; align-items: center; gap: 14px; }',
+    'a.pgk-card--list > .pgk-card-thumb { flex: 0 0 72px; width: 72px; height: 54px; margin: 0; object-fit: cover; border-radius: 4px; background: #eef0f3; }',
+    '.pgk-card-thumb--none, .pgk-card-thumb--broken { display: flex !important; align-items: center; justify-content: center; padding: 6px; box-sizing: border-box; color: #5b6472; font-size: 12px; line-height: 1.3; text-align: center; }',
+    'a.pgk-card--list > .pgk-card-thumb--none { font-size: 10px; }',
     '.pgk-card-thumb--broken::after { content: "Preview not available yet"; }',
+    '.pgk-card-meta { display: block; margin-top: 4px; font-size: 12px; line-height: 1.35; color: #5b6472; font-weight: 400; }',
     '.pgk-card-badge { display: inline-block; margin-top: 8px; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }',
     '.pgk-card-badge--held { background: #fef3f2; color: #912018; border: 1px solid #fecdca; } .pgk-card-badge--test { background: #fffaeb; color: #7a4a00; border: 1px solid #fedf89; }',
     '.pgk-modal { position: fixed; inset: 0; z-index: 500; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }',
@@ -475,6 +832,19 @@
     '.pgk-pick { display: block; width: 100%; padding: 0; border: 2px solid transparent; border-radius: 6px; background: #fff; cursor: pointer; text-align: left; font: inherit; }',
     '.pgk-pick img { display: block; width: 100%; height: 100px; object-fit: cover; border-radius: 4px; } .pgk-pick span { display: block; font-size: 11px; line-height: 1.3; padding: 4px 2px; color: #374151; }',
     '.pgk-pick.is-on { border-color: #1f2937; box-shadow: 0 0 0 2px #1f2937; }',
+    '.pgk-btn--small { min-height: 34px; padding: 5px 10px; font-size: 13px; } .pgk-btn--danger { background: #b42318; border-color: #b42318; color: #fff; } .pgk-btn--danger[disabled] { cursor: not-allowed; }',
+    '.pgk-slot__kind, .pgk-slot__note, .pgk-slot__empty { margin: 4px 0 8px; font-size: 13px; color: #5b6472; } .pgk-slot__empty { padding: 12px; border: 1px dashed #c9ced6; border-radius: 6px; }',
+    '.pgk-row__title { margin: 0 0 8px; font-size: 14px; } .pgk-row__title span { color: #5b6472; font-size: 12px; }',
+    '.pgk-note, .pgk-manage, .pgk-film { padding: 12px 14px; border-radius: 8px; background: #f1f5f9; font-size: 14px; line-height: 1.5; color: #1f2937; } .pgk-note p, .pgk-manage p, .pgk-film p { margin: 0 0 8px; }',
+    '.pgk-note a, .pgk-manage a { color: #176277; font-weight: 600; text-decoration: underline; } .pgk-note ul, .pgk-manage ul { margin: 0 0 8px; padding-left: 20px; } .pgk-note__h { font-weight: 600; } .pgk-note__state, .pgk-manage__note { color: #5b6472; }',
+    '.pgk-film--failed { background: #fef3f2; color: #912018; } .pgk-film--waiting { background: #fffaeb; } .pgk-film__player { display: block; width: 100%; max-width: 480px; max-height: 360px; border-radius: 6px; background: #000; }',
+    '.pgk-modal__box--narrow { width: min(560px, 100%); } .pgk-modal__body { padding: 20px; overflow: auto; } .pgk-modal__body h2 { margin: 0 0 12px; font-size: 20px; }',
+    '.pgk-modal__count, .pgk-modal__empty { margin: 0; padding: 8px 14px 0; font-size: 13px; color: #5b6472; } .pgk-modal__head select { font: inherit; padding: 8px; border: 1px solid #c9ced6; border-radius: 6px; }',
+    '.pgk-pick .pgk-thumb { width: 100%; height: 100px; } .pgk-pick__meta { color: #5b6472 !important; }',
+    '.pgk-files { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dfe3e8; border-radius: 6px; } .pgk-files label { display: block; margin: 4px 0; }',
+    '.pgk-confirm { display: block; margin: 0 0 12px; } .pgk-confirm span { display: block; margin-bottom: 6px; } .pgk-confirm input { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',
+    '.pgk-captions .pgk-radio { display: block; margin: 4px 0; }',
+    '.pgk-sitepill { position: fixed; left: 12px; bottom: 12px; z-index: 390; margin: 0; padding: 6px 12px; border-radius: 999px; background: #ecfdf3; border: 1px solid #abefc6; color: #05603a; font-size: 12px; } .pgk-sitepill--busy { background: #fffaeb; border-color: #fedf89; color: #7a4a00; }',
     '@media (max-width: 640px) { .pgk-row { grid-template-columns: 96px 1fr; } .pgk-thumb { width: 96px; height: 72px; } .pgk-row__tools { grid-column: 1 / -1; flex-direction: row; } }',
   ].join('\n');
   document.head.appendChild(widgetCss);

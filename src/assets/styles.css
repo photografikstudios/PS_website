@@ -1134,3 +1134,8 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 video[controls]:focus { outline: 2px solid var(--rust); outline-offset: 3px; }
 .on-dark video[controls]:focus, .page--dark video[controls]:focus { outline-color: var(--ivory); }
 .cs-loop img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Page Media optional sections (Oct 13 2026): a photo or film James adds to a text-only part of a page. */
+.pm-extra { margin: 28px 0 0; }
+.pm-extra img { display: block; width: 100%; height: auto; border-radius: 4px; }
+.wrap.narrow > .pm-extra:first-child { margin: 0 0 32px; }

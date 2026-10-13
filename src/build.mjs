@@ -16,6 +16,7 @@ import { validateLegal } from './lib/legal-core.js';
 import { loadWork, staticFile } from './lib/work-load.js';
 import { checkContent, holdDashboardProjects, applyReviewOnly, dashboardStatus } from './lib/content-check.js';
 import { imageSize } from './lib/image-size.js';
+import { PAGES as PAGE_MEDIA, checkPageMedia } from './lib/page-media-core.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -86,6 +87,15 @@ if (!candidateBuild) work.media = work.media.filter((m) => m.rights === 'approve
 if (rightsPending.length) console.log(`Rights gate: ${rightsPending.length} media record(s) awaiting James's rights/consent ${candidateBuild ? 'INCLUDED in dist-candidates/ (local owner review only)' : 'excluded'}.`);
 if (mediaErrors.length) { console.error('Media metadata errors:\n - ' + mediaErrors.join('\n - ')); process.exit(1); }
 
+// Page Media (content/page-media/<page>.json, /admin → Page Media): checked against the rights-approved library, the
+// film loops that exist (/v/<id>-loop.mp4) and the committed phone stills; a bad choice stops the build with the reason.
+const pageMedia = Object.fromEntries(await Promise.all(PAGE_MEDIA.map(async (pg) => [pg.file, existsSync(join(root, 'content/page-media', `${pg.file}.json`)) ? JSON.parse(await readFile(join(root, 'content/page-media', `${pg.file}.json`), 'utf8')) : null])));
+const loopIds = new Set(Object.keys(mediaAssets.files || {}).map((f) => f.match(/^\/v\/([\w-]+)-loop\.mp4$/)?.[1]).filter(Boolean));
+const pmLib = { media: new Map(work.media.map((m) => [m.id, m])), loops: loopIds, heroLoops: new Set([...loopIds].filter((id) => existsSync(join(root, 'static/images/hero', `${id}-phone.webp`)))), fileExists };
+const pmCheck = checkPageMedia(pageMedia, pmLib);
+for (const w of pmCheck.warnings) console.warn(`Page Media note: ${w}`);
+if (pmCheck.errors.length) { console.error('Page Media errors (fix them in /admin → Page Media; the site keeps the previous version until then):\n - ' + pmCheck.errors.join('\n - ')); process.exit(1); }
+
 const isApproved = (r) => (r.approval ?? r.rights ?? 'approved') === 'approved';
 // Media also needs published !== false: new Drive additions stay out of production until checked.
 const visible = (r) => reviewMode || (isApproved(r) && r.published !== false);
@@ -122,7 +132,7 @@ if (!reviewMode && !prodCheck) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.
 if (!pages['/field-notes']) {
@@ -216,6 +226,21 @@ for (const f of await readdir(join(out, 'assets'))) {
     if (m.type === 'image' && m.src) { const u = served(m, small(m.src)); if (u) thumbs.photos[m.id] = u; }
     else { const u = served(m, still(m) && small(still(m))); if (u) thumbs.films[m.id] = u; }
   }
+  // Card details the dashboard lists under each thumbnail (service label and what the site actually does with it), and
+  // a playable first frame for films that have no still image (Codex CMS audit, Oct 13 2026).
+  const catName = Object.fromEntries(work.taxonomy.category.map((c) => [c.id, c.label]));
+  thumbs.meta = { photos: {}, films: {}, projects: {} }; thumbs.filmFrames = {};
+  const statusOf = (m) => (m.rights !== 'approved' ? 'Held: rights not cleared, not on the site'
+    : m.replacement?.status === 'pending' ? 'On the review site; waiting for its replacement before launch'
+      : m.published === false ? 'Hidden'
+        : m.type === 'video' && m.dialogue !== false && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? 'Shown; captions not checked yet (needed before launch)' : 'Shown');
+  for (const m of everything.media) {
+    if (m.fromProject) continue;
+    thumbs.meta[m.type === 'image' ? 'photos' : 'films'][m.id] = { cat: catName[m.category] || '', status: statusOf(m) };
+    if (m.type === 'video' && !thumbs.films[m.id] && m.src && m.rights === 'approved' && /\.mp4$/.test(m.src)) thumbs.filmFrames[m.id] = `${m.src}#t=${m.posterTime ?? 1}`;
+  }
+  for (const m of (reviewMode ? (everything.importing || []) : [])) thumbs.meta.films[m.id] = { cat: catName[m.category] || '', status: m.import?.state === 'failed' ? 'Import from Google Drive failed: open it to see why' : 'Importing from Google Drive' };
+  for (const p of everything.projects) thumbs.meta.projects[p.slug] = { cat: catName[p.category] || '', status: p.reviewOnly ? 'Review-only test' : p.published === false ? 'Draft' : 'Published' };
   for (const p of everything.projects) {
     const img = everything.media.find((m) => m.project === p.slug && m.type === 'image' && m.src);
     const film = everything.media.find((m) => m.project === p.slug && m.type !== 'image' && still(m));
@@ -230,8 +255,27 @@ for (const f of await readdir(join(out, 'assets'))) {
     seen.add(m.src);
     thumbs.pick.push({ src: m.src, thumb: small(m.src), alt: m.alt || '', label: m.title || m.id, cat: m.category || '', service: m.service || [] });
   }
-  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
+  // Page Media picker: every photo, film and film loop the sections can use, each with a preview (rights-approved only;
+  // production lists only what the public site shows).
+  const pickMedia = [];
+  // Film loops that have no library record of their own (cut by hand for one place), named for the picker.
+  const LOOP_TITLES = { 'cs-ifcu-clip': 'Island Federal podcast short (playing excerpt)', 'agent-expertise-hero': 'Agent on camera with a listing (playing excerpt)', 'cs-demo-reel-silent': 'LI Creator Studios demo reel, no sound (playing excerpt)', 'revivaluxe-silent': 'RevivaLuxe brand film, no sound (playing excerpt)' };
+  const sourceTitle = Object.fromEntries((JSON.parse(await readFile(join(root, 'content/media-sources.json'), 'utf8')).items || []).map((it) => [it.id, it.file || '']));
+  const projTitle = Object.fromEntries(work.projects.map((p) => [p.slug, p.title]));
+  for (const m of work.media) {
+    if (testOnly.has(m.project) || (!reviewMode && m.published === false)) continue;
+    const thumb = m.type === 'image' ? small(m.src) : still(m) ? small(still(m)) : null;
+    pickMedia.push({ id: m.id, kind: m.type === 'image' ? 'photo' : 'film', title: m.title || m.id, alt: m.alt || '', cat: m.category || '', catLabel: catName[m.category] || '',
+      thumb, frame: !thumb && m.src && /\.mp4$/.test(m.src) ? `${m.src}#t=${m.posterTime ?? 1}` : null, still: m.type === 'image' || !!m.poster,
+      loop: loopIds.has(m.id), hero: pmLib.heroLoops.has(m.id), hidden: m.published === false, project: m.fromProject ? projTitle[m.project] || '' : '' });
+  }
+  for (const id of loopIds) if (!pickMedia.some((x) => x.id === id)) {
+    pickMedia.push({ id, kind: 'loop', title: LOOP_TITLES[id] || (sourceTitle[id] || id).replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' '), alt: '', cat: '', catLabel: 'Playing excerpt', thumb: `/v/${id}.webp`, loop: true, hero: pmLib.heroLoops.has(id), still: false });
+  }
+  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_MEDIA = ${safe(pickMedia)};\nwindow.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
+  // The dashboard checks Page Media choices with the same rules as the build.
+  await cp(join(root, 'src/lib/page-media-core.js'), join(out, 'admin/page-media-core.js'));
   await cp(join(root, 'src/admin/preview.css'), join(out, 'admin/preview.css'));
 }
 
