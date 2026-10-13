@@ -27,7 +27,7 @@
   "summary": "This is a test",
   "heroFocal": "center",
   "client": "Test Test",
-  "published": true,
+  "published": false,
   "heroAlt": "This is a test of a test",
   "blurbApproved": false,
   "goal": "The goal of this project is to test the site",
