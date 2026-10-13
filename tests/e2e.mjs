@@ -1094,7 +1094,10 @@ await check('RevivaLuxe: silent film loop only, copy matches visible media', asy
   await p.goto(base + '/commercial/revivaluxe');
   const text = await p.textContent('main');
   assert(!/brand film/i.test(text.replace(/RevivaLuxe brand film, no sound[^]*?interior/g, '')), 'film wording beyond the visible loop');
-  assert(/Service film/.test(await p.textContent('.project__facts')), 'Delivered names the film (James, Sep 28)');
+  // James, Sep 28 2026: the facts name the film. Since James's Oct 4 commit 90a2da6 (services selectable), Delivered lists his
+  // standard services and the specifics sit under Special work, so check both in his own words rather than the old list.
+  const facts = Object.fromEntries(await p.locator('.project__facts > div').evaluateAll((ds) => ds.map((d) => [d.querySelector('dt').textContent.trim(), d.querySelector('dd').textContent.trim()])));
+  assert(/Video & Film/.test(facts.Delivered || '') && /\ba service film\b/.test(facts['Special work'] || ''), 'Delivered and Special work name the film: ' + JSON.stringify(facts));
   await p.context().close();
   const rm = await newPage(undefined, { reducedMotion: 'reduce' });
   await rm.goto(base + '/commercial'); await rm.locator('#case-study').scrollIntoViewIfNeeded(); await rm.waitForTimeout(800);
