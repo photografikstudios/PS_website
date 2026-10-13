@@ -18,7 +18,10 @@ export function buildPages(ctx) {
   // Review-only test projects (James's dashboard "Test", Codex Session 57 review): their own page exists on review builds
   // with a note, but they never appear as ordinary work in Home or service galleries, project lists or related work.
   const testOnly = new Set(work.projects.filter((p) => p.reviewOnly === true).map((p) => p.slug));
-  const media = work.media.filter((m) => visible(m) && m.category !== 'about' && m.gallery !== false && !testOnly.has(m.project));
+  // Review-only variant (Oct 13 2026, for James's decision): old podcast clips awaiting replacement left out, with four
+  // slots swapped to already approved Creator media. Built only as /_variants/podcast-omit/* on review builds.
+  const omitIds = ctx.variant?.omitPendingReplacements ? new Set(work.media.filter((m) => m.replacement?.status === 'pending').map((m) => m.id)) : new Set();
+  const media = work.media.filter((m) => visible(m) && m.category !== 'about' && m.gallery !== false && !testOnly.has(m.project) && !omitIds.has(m.id));
   const catLabel = Object.fromEntries(work.taxonomy.category.map((c) => [c.id, c.label]));
   const svcLabel = Object.fromEntries(work.taxonomy.service.map((c) => [c.id, c.label]));
   const pkg = Object.fromEntries(pricing.packages.map((p) => [p.id, p]));
@@ -227,7 +230,7 @@ export function buildPages(ctx) {
         { href: '/real-estate', vid: 're-hamptons-calm', n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, film, drone, twilight, floor plans and agent content, planned for each listing.', go: 'Explore Real Estate' },
         { href: '/architecture-design', vid: 'arch-yankee-barn-film', n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film of finished work for builders, architects and designers.', go: 'Explore Architecture &amp; Design' },
         { href: '/commercial', vid: 'biz-rachel-lynch-pools', n: '03 / Business & brand', t: 'Brand films and content', x: 'Project-based and recurring production, without building an in-house team.', go: 'Explore Commercial' },
-        { href: '/creator-studios', vid: 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews and educational content.', go: 'Explore Creator Studios' },
+        { href: '/creator-studios', vid: omitIds.has('cs-jm2-architecture') ? 'cs-demo-reel' : 'cs-jm2-architecture', n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews and educational content.', go: 'Explore Creator Studios' },
       ], (c) => `
       <a class="path reveal" href="${c.href}">
         <span class="path__img">${ambient(c.vid)}</span>
@@ -893,7 +896,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     <div class="story-guide">
       <div class="story-guide__item reveal">${archFig(archPairIds.photo, { sizes: '(min-width: 1000px) 30vw, 100vw', cls: 'story-guide__fig' })}<p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
       <div class="story-guide__item reveal">${archVideo ? `<a class="story-guide__film" href="?type=video#portfolio" data-track="gallery_filter" data-track-location="arch_story_film"><span class="still still--horizontal"><img src="${esc(galThumb(archVideo))}" alt="" loading="lazy" decoding="async">${playIcon}</span><span class="story-guide__filmcap">Watch the ${esc(archVideo.project && projectBySlug[archVideo.project] ? projectBySlug[archVideo.project].title : archVideo.title.split(':')[0])} film below</span></a>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
-      <div class="story-guide__item reveal">${(() => { const m = allMediaById['cs-jm2-architecture']; return m?.poster ? `<figure class="story-guide__fig story-guide__fig--person"><span class="still still--horizontal">${img(m.poster, { alt: 'A JM2 Architecture founder speaking on camera, from a podcast clip', sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })()}<p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
+      <div class="story-guide__item reveal">${omitIds.has('cs-jm2-architecture') ? (() => { const m = allMediaById['cs-ph-dan-dan-conversation']; return m ? `<figure class="story-guide__fig story-guide__fig--person"><span class="still still--horizontal">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })() : ''}${omitIds.has('cs-jm2-architecture') ? '' : (() => { const m = allMediaById['cs-jm2-architecture']; return m?.poster ? `<figure class="story-guide__fig story-guide__fig--person"><span class="still still--horizontal">${img(m.poster, { alt: 'A JM2 Architecture founder speaking on camera, from a podcast clip', sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })()}<p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
     </div>
     <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
   </div>
@@ -1129,13 +1132,17 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   const csById = Object.fromEntries(media.filter((m) => m.category === 'creator-studios').map((m) => [m.id, m]));
   const csFig = (id, sizes = '(min-width: 900px) 40vw, 100vw') => { const m = csById[id]; return m ? `<figure class="cs-fig cs-fig--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</figure>` : ''; };
   // Opening section: three current vertical examples, quietly looping in place (muted excerpts, 25 s each).
-  const csLoops = [
+  const csLoops = omitIds.size ? [
+    ['cs-ifcu-clip', 'Island Federal podcast short, muted excerpt'],
+    ['img:ph-dan-dan'],
+    ['img:cs-ph-solo-couch'],
+  ] : [
     ['cs-ifcu-clip', 'Island Federal podcast short, muted excerpt'],
     ['cs-noah-knows-short', 'Noah Knows podcast short, muted excerpt'],
     ['cs-jm2-architecture', 'JM2 Architecture on the podcast, muted excerpt'],
   ];
   // Formats (James, Sep 28 2026): a photo above each block, matched to what the block describes.
-  const csFormatImg = { podcasts: 'cs-ph-cc-onsite', multicam: 'cs-ph-hedgestone-switch', longform: 'ph-noah-knows', solo: 'cs-ph-solo-bts', short: 'cs-tick', planned: 'creator-still' };
+  const csFormatImg = { podcasts: 'cs-ph-cc-onsite', multicam: 'cs-ph-hedgestone-switch', longform: 'ph-noah-knows', solo: 'cs-ph-solo-bts', short: omitIds.has('cs-tick') ? 'ph-network-effect' : 'cs-tick', planned: 'creator-still' };
   const csFormatFig = (key) => {
     const m = csById[csFormatImg[key]]; if (!m) return '';
     const src = m.type === 'video' ? m.poster : m.src;
@@ -1180,7 +1187,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <ul class="cs-points"><li><strong>The person.</strong> Where you came from and why you do this work.</li><li><strong>The purpose.</strong> The standard you hold your work to.</li><li><strong>The expertise.</strong> The questions you answer every week, explained properly.</li></ul>
       <div class="actions">${csStart('creator_story', 'Book a Session')}<a class="btn btn--outline" href="#sessions" data-track="pricing_click" data-track-location="creator_story">See Pricing</a></div>
     </div>
-    <div class="cs-pair__media cs-loops" role="group" aria-label="Examples of podcast shorts made with clients">${join(csLoops, ([id, label]) => `<div class="cs-loop">${ambient(id, { label })}</div>`)}</div>
+    <div class="cs-pair__media cs-loops" role="group" aria-label="${omitIds.size ? 'Examples of podcast and studio sessions with clients' : 'Examples of podcast shorts made with clients'}">${join(csLoops, ([id, label]) => (id.startsWith('img:') ? (() => { const m = csById[id.slice(4)]; return m ? `<div class="cs-loop">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 200px, 33vw' })}</div>` : ''; })() : `<div class="cs-loop">${ambient(id, { label })}</div>`))}</div>
   </div>
 </section>
 

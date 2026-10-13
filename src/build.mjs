@@ -149,6 +149,22 @@ for (const [route, page] of Object.entries(pages)) {
   if (route !== '/404') routes.push(route);
 }
 
+// Review builds only (Oct 13 2026, for James's decision): the same pages with the three old podcast clips awaiting
+// replacement left out and four slots swapped to approved Creator media. Not in the sitemap; review pages are noindex.
+if (reviewMode) {
+  const variantPages = buildPages({ ...ctx, variant: { omitPendingReplacements: true } });
+  const note = '<div class="review-bar" role="note" style="background:#7a3b2a"><strong>Variant for James</strong> · Old podcast clips (JM2 Architecture, Noah Knows, The Tick) left out; four slots use approved Creator media. Compare with the live review pages.</div>';
+  for (const route of ['/', '/creator-studios', '/creator-studios/sessions', '/architecture-design']) {
+    const page = variantPages[route]; if (!page) continue;
+    const pageSeo = page.seo || seo[route] || seo['/'];
+    let html = layout(ctx, { route, body: page.body, seo: pageSeo, scripts: page.scripts, dark: page.dark, overlay: page.overlay, ogType: page.ogType, articleDates: page.articleDates, jsonLd: null });
+    html = html.replace(/(<body[^>]*>)/, `$1\n${note}`);
+    const file = `_variants/podcast-omit${route === '/' ? '/index' : route}.html`;
+    await mkdir(dirname(join(out, file)), { recursive: true });
+    await writeFile(join(out, file), html);
+  }
+}
+
 // Committed media (owner-supplied stills, and legacy assets once committed) are served at the same path.
 if (existsSync(join(root, 'static'))) await cp(join(root, 'static'), out, { recursive: true });
 

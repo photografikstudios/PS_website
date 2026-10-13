@@ -323,6 +323,26 @@ await check('a11y: no aria-label on role-less div/span/p on any page; native-con
   await p.context().close();
 });
 
+// Oct 13 2026: review-only variant for James's decision (old podcast clips left out, four slots swapped to approved
+// Creator media). The live review pages keep the old clips until he decides; the variant is noindex and not in the sitemap.
+await check('podcast-omit variant: no old clip anywhere, four slots swapped, players still work; live pages unchanged', async () => {
+  const p = await newPage();
+  const OLD = /cs-jm2-architecture|cs-noah-knows-short|cs-tick/;
+  for (const r of ['/', '/creator-studios', '/creator-studios/sessions', '/architecture-design']) {
+    await p.goto(base + '/_variants/podcast-omit' + (r === '/' ? '/' : r));
+    const html = await p.content();
+    assert(!OLD.test(html), 'old clip in variant ' + r);
+    assert(await p.locator('meta[name=robots][content*=noindex]').count() === 1 && /Variant for James/.test(html), 'variant labelled and noindex ' + r);
+  }
+  await p.goto(base + '/_variants/podcast-omit/creator-studios');
+  assert(await p.locator('.cs-loops .cs-loop').count() === 3 && await p.locator('.cs-loops video').count() === 1 && await p.locator('.cs-loops img').count() === 2, 'loops: Island Federal + two stills');
+  const sm = await (await fetch(base + '/sitemap.xml')).text();
+  assert(!/_variants/.test(sm), 'variant not in sitemap');
+  await p.goto(base + '/creator-studios');
+  assert(OLD.test(await p.content()), 'live review page unchanged until James decides');
+  await p.context().close();
+});
+
 // James, Oct 13 2026: GA4 on the existing stream. Review previews send nothing unless ?ga_debug=1 (then debug_mode +
 // traffic_type internal). No form personal data reaches GA; a failed send is a draft, never inquiry_submit.
 await check('GA4: review preview silent by default; opt-in debug hits carry no personal data and truthful inquiry events', async () => {
