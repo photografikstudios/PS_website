@@ -1127,6 +1127,23 @@ await check('galleries: media only, no captions, no piece counts, plain Load mor
   await p.context().close();
 });
 
+// Oct 12 2026, iPhone 15 Pro Safari (iPhone Mirroring): lightbox arrows pinned 14px from the bottom sat under Safari's floating
+// toolbar. On phones they stay vertically centred, clear of the bottom 110px, and still step between items.
+await check('phone lightbox: previous/next arrows clear of the browser toolbar zone and working', async () => {
+  const p = await newPage({ width: 390, height: 844 });
+  await p.goto(base + '/');
+  await p.selectOption('#sw-kind', 'image');
+  await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
+  await p.waitForSelector('dialog[open]');
+  const boxes = await p.locator('dialog[open] .lightbox__nav:not([hidden])').evaluateAll((es) => es.map((e) => e.getBoundingClientRect().bottom));
+  assert(boxes.length === 2 && boxes.every((b) => b <= 844 - 110), 'arrow bottoms ' + boxes.map(Math.round).join(','));
+  const before = await p.locator('dialog[open] img').getAttribute('src');
+  await p.locator('dialog[open] .lightbox__nav--next').click();
+  await p.waitForTimeout(300);
+  assert((await p.locator('dialog[open] img').getAttribute('src')) !== before, 'next arrow steps to another photo');
+  await p.context().close();
+});
+
 // James, Sep 28 2026 (chat): Commercial property media price sheet, and RevivaLuxe goal and approach in his words.
 await check('Commercial: property media prices, add-ons and portfolio rates; RevivaLuxe case study wording', async () => {
   for (const vp of [{ width: 1280, height: 900 }, { width: 375, height: 812 }]) {

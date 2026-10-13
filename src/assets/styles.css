@@ -611,7 +611,8 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 /* James, Sep 28 2026: galleries show the media only. The viewer's title and position stay for screen readers. */
 .lightbox__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .lightbox__bar { justify-content: flex-end; }
-@media (max-width: 620px) { .lightbox__stage { padding: 0 8px; } .lightbox__nav { top: auto; bottom: 14px; margin: 0; } .lightbox__caption { padding-bottom: 76px; } }
+/* Phones: arrows stay vertically centred. At bottom: 14px iPhone Safari's floating toolbar covered them (checked on an iPhone 15 Pro, Oct 12). */
+@media (max-width: 620px) { .lightbox__stage { padding: 0 8px; } .lightbox__nav { width: 44px; height: 44px; margin-top: -22px; } }
 
 /* ---------- Compare what's included (/real-estate#compare) ---------- */
 .section-head__links { display: flex; flex-wrap: wrap; gap: 12px 28px; }
