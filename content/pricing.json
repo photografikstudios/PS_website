@@ -959,7 +959,9 @@
       "group": "addons",
       "name": "Drone photography only",
       "amount": 300,
-      "approval": "approved"
+      "approval": "approved",
+      "detail": "Standard drone photography booked on its own.",
+      "note": "James, Oct 13 2026 (Codex chat): \"Standard drone is $300, to add on to existing shoot its $275.\""
     },
     {
       "id": "aerial-video",
@@ -980,7 +982,18 @@
       "group": "addons",
       "name": "Add drone photography to a shoot",
       "amount": 275,
-      "approval": "approved"
+      "approval": "approved",
+      "detail": "Standard drone photography added to an existing shoot.",
+      "note": "James, Oct 13 2026 (Codex chat): \"Standard drone is $300, to add on to existing shoot its $275.\""
+    },
+    {
+      "id": "twilight-drone-package",
+      "group": "addons",
+      "name": "Add twilight drone photography to a twilight package",
+      "amount": 350,
+      "detail": "Drone photography added to a twilight package booking.",
+      "approval": "approved",
+      "note": "James, Oct 13 2026 (Codex chat): \"The $350 add drone is for adding twilight drone photography to our twilight packages.\" HDPH lists it as \"Add Drone\" $350. Separate from the $400 Twilight drone item, which keeps its own HDPH listing and scope."
     },
     {
       "id": "twilight-drone",
@@ -1046,7 +1059,7 @@
     }
   ],
   "releaseApproved": false,
-  "_release": "Prices mirror HD Photo Hub (James: HDPH is the authority). Sep 25 2026: James confirmed the 17,501 to 20,501 package bands, the Luxury 12,501 tier and the final 25,000/25,500 configuration are correct as configured in HDPH; they are mirrored exactly and must not be adjusted by assumption. Keep releaseApproved false until every website price and inclusion has been compared to HDPH and signed off; production builds fail while false. | James, Sep 30 2026 (Wednesday pass, items 1, 2, 25): Real Estate prices, package structure, contents and square-footage logic are approved as configured; no creative or owner sign-off remains. Vye is independently verifying the square-footage tiers; releaseApproved stays false only for that check (dev-only; never shown on production). Change numbers only if Vye finds a discrepancy.",
+  "_release": "Prices mirror HD Photo Hub's standard pricing (James: HDPH is the authority). | James, Sep 30 2026 (Wednesday pass, items 1, 2, 25): Real Estate prices, package structure, contents and square-footage logic are approved as configured. | James, Oct 13 2026 (Codex chat): \"for now disregard the tiers, all pricing on the site is based on the standard pricing. disregard the elliman pricing as well.\" The square-footage tier verification and Elliman pricing are no longer holds (amounts match the live public order form, 212/212, Oct 12; HDPH boundary quirks are HDPH-side and do not change site amounts). releaseApproved now stands only for James's final public launch approval: production builds stay blocked until he gives it. It is not a pricing hold.",
   "features": {
     "_readme": "Inclusion vocabulary. Package cards and the Compare tool both render from each record's 'features', so the two cannot drift. Values: true = included; a string = included with that note. Only list what HD Photo Hub confirms.",
     "interior": "Interior photography",
@@ -1212,10 +1225,10 @@
     ]
   },
   "vyeVerification": {
-    "status": "pending",
+    "status": "waived",
     "scope": "Independent accuracy check of every package, service and add-on price across the square-footage tiers against HD Photo Hub.",
     "requestedBy": "James, Sep 30 2026",
-    "result": null,
+    "result": "Waived by James, Oct 13 2026: \"for now disregard the tiers, all pricing on the site is based on the standard pricing.\" Claude's Oct 12 read of the live HDPH order form matched all 212 standard tier amounts.",
     "_readme": "Dev-only tracking. Set status to 'verified' with the date and any discrepancies after Vye's check; then James or Codex may set releaseApproved true."
   }
 }

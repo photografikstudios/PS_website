@@ -688,7 +688,7 @@ ${fnTeaser('real-estate')}
     </div>
 
     <div class="pricing-notes">
-      <p><strong>About these prices.</strong> These are calculated from the size tiers in our booking portal, HD Photo Hub, and are confirmed there at checkout. ${needsApproval({ approval: pricing.releaseApproved ? 'approved' : 'pending' }, 'Dev-only: prices, tiers and inclusions approved by James (Sep 30). Vye is independently checking the square-footage tiers against HD Photo Hub before launch.')} They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
+      <p><strong>About these prices.</strong> These are calculated from the size tiers in our booking portal, HD Photo Hub, and are confirmed there at checkout. They are base prices, not an all-in total: travel fees and sales tax are added at checkout where they apply. Rental use, commercial property and non-standard licensing are quoted separately.</p>
       <p>Homes over ${pricing.maxSqft.toLocaleString('en-US')} square feet: <a href="/contact?type=real-estate-large">request a custom quote</a>.</p>
       <p>You will confirm property size, package and date in our booking portal, HD Photo Hub. ${bookBtn('pricing_notes', 'Go to booking', 'link-arrow')}</p>
     </div>

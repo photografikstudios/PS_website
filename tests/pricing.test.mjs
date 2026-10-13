@@ -85,3 +85,14 @@ test('2,800 sq ft matches HD Photo Hub for every item', () => {
   const expected = { 'luxury-media': 2140, 'signature': 3155, 'social-media': 1220, 'listing-starter': 795, 'photography': 305, 'photo-floor-plan': 520, 'floor-plan': 275, 'exterior-drone': 400, 'twilight': 500, 'video-one': 750, 'video-both': 1430 };
   for (const [id, amt] of Object.entries(expected)) assert.equal(at(id, 2800).amount, amt, id);
 });
+
+test('drone scopes (James, Oct 13 2026): $300 standalone, $275 added to a shoot, $350 added to a twilight package', async () => {
+  const P = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../content/pricing.json', import.meta.url), 'utf8'));
+  const f = Object.fromEntries(P.fixed.map((x) => [x.id, x]));
+  assert.equal(f['aerial-photos'].amount, 300); assert.match(f['aerial-photos'].detail, /on its own/);
+  assert.equal(f['aerial-addon'].amount, 275); assert.match(f['aerial-addon'].detail, /existing shoot/);
+  assert.equal(f['twilight-drone-package'].amount, 350); assert.match(f['twilight-drone-package'].name, /twilight package/);
+  assert.equal(f['twilight-drone'].amount, 400, 'the separately listed $400 item is unchanged');
+  assert.equal(P.vyeVerification.status, 'waived');
+  assert.equal(P.releaseApproved, false, 'still blocked on James\'s final public launch approval');
+});

@@ -93,7 +93,7 @@ const visible = (r) => reviewMode || (isApproved(r) && r.published !== false);
 if (!reviewMode && !prodCheck) {
   const pending = pricing.packages.filter((r) => !isApproved(r)).map((r) => r.name);
   if (pricing.releaseApproved !== true) {
-    console.error('Production build blocked: content/pricing.json "releaseApproved" is not true. James approved the prices, tiers and inclusions on Sep 30; Vye’s square-footage verification against HD Photo Hub must be recorded first.');
+    console.error('Production build blocked: content/pricing.json "releaseApproved" is not true. Prices are approved (James, Sep 30; standard pricing basis, Oct 13). It stays false until James gives final public launch approval.');
     process.exit(1);
   }
   if (legal.ready !== true) {
@@ -108,7 +108,11 @@ if (!reviewMode && !prodCheck) {
   // WCAG 1.2.2: published clips with speech need captions (a VTT track or burned-in) before launch.
   const uncaptioned = work.media.filter((m) => m.type === 'video' && m.published !== false && m.dialogue !== false && (!m.captions || (m.captions !== 'burned-in' && m.captionsStatus !== 'approved'))).map((m) => m.id);
   if (uncaptioned.length) {
-    console.error(`Production build blocked: video with speech (or unconfirmed speech) lacking approved captions: ${uncaptioned.join(', ')}.\nAdd a captions .vtt and set "captionsStatus": "approved" once proofread (or "burned-in"), or set "dialogue": false after checking the audio.`);
+    // James, Oct 13 2026: clips being replaced are reported as such (no proofreading asked), never as approved.
+    const replacing = uncaptioned.filter((id) => work.media.find((m) => m.id === id).replacement?.status === 'pending');
+    const toProof = uncaptioned.filter((id) => !replacing.includes(id));
+    if (replacing.length) console.error(`Production build blocked: clips awaiting replacement (James, Oct 13): ${replacing.join(', ')}. Install the received replacement with checked captions, or record James's decision to hide the clip.`);
+    if (toProof.length) console.error(`Production build blocked: video with speech (or unconfirmed speech) lacking approved captions: ${toProof.join(', ')}.\nAdd a captions .vtt and set "captionsStatus": "approved" once proofread (or "burned-in"), or set "dialogue": false after checking the audio.`);
     process.exit(1);
   }
   if (pending.length) {
