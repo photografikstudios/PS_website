@@ -304,6 +304,25 @@ await check('contact: required-field errors, then mailto fallback without email 
   await p.context().close();
 });
 
+// Oct 13 2026 accessibility follow-up: axe aria-prohibited-attr (an aria-label on a plain div is ignored by screen
+// readers) and the keyboard walk (native-control videos had no focus ring).
+await check('a11y: no aria-label on role-less div/span/p on any page; native-control video shows a focus ring', async () => {
+  const p = await newPage();
+  const sm = await (await fetch(base + '/sitemap.xml')).text();
+  const paths = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname).concat(['/contact']);
+  const bad = [];
+  for (const path of paths) {
+    await p.goto(base + path);
+    const found = await p.evaluate(() => [...document.querySelectorAll('div[aria-label]:not([role]), span[aria-label]:not([role]), p[aria-label]:not([role])')].map((e) => e.className || e.tagName));
+    if (found.length) bad.push(path + ': ' + found.join(','));
+  }
+  assert(bad.length === 0, 'role-less aria-label: ' + bad.join(' | '));
+  await p.goto(base + '/creator-studios');
+  await p.focus('video.cs-space-reel__video');
+  assert(await p.evaluate(() => getComputedStyle(document.activeElement).outlineStyle) === 'solid', 'video focus ring');
+  await p.context().close();
+});
+
 // James, Oct 13 2026: GA4 on the existing stream. Review previews send nothing unless ?ga_debug=1 (then debug_mode +
 // traffic_type internal). No form personal data reaches GA; a failed send is a draft, never inquiry_submit.
 await check('GA4: review preview silent by default; opt-in debug hits carry no personal data and truthful inquiry events', async () => {

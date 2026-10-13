@@ -760,7 +760,7 @@ ${acWhy()}
 </section>
 <section class="section ac-split" id="portfolio" aria-labelledby="ac-q-h">
   <div class="wrap ac-split__grid">
-    <div class="ac-split__examples" aria-label="Agent content examples">
+    <div class="ac-split__examples" role="group" aria-label="Agent content examples">
       <p class="eyebrow">Examples</p>
       <div class="ac-examples">${join(agentVids.filter((m) => m !== acLead), (m) => `<div class="ac-example">${videoPlayer(m, { sizes: '(min-width: 900px) 18vw, 45vw' })}</div>`)}</div>
     </div>

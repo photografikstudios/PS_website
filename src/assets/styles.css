@@ -1130,3 +1130,6 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .fn-gallery .fn-figure { margin: 0; }
 .fn-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
 @media (max-width: 520px) { .fn-gallery { grid-template-columns: 1fr; } }
+/* Oct 13 keyboard walk: native-control videos showed no focus ring (Chrome does not apply :focus-visible to <video>). */
+video[controls]:focus { outline: 2px solid var(--rust); outline-offset: 3px; }
+.on-dark video[controls]:focus, .page--dark video[controls]:focus { outline-color: var(--ivory); }
