@@ -1,13 +1,17 @@
 import { esc, attrs, join } from './lib/html.js';
 
-// Google Analytics 4 (James, Oct 13 2026): production only, and only with a well-formed Measurement ID in content/site.json.
+// Google Analytics 4 (James, Oct 13 2026; existing stream G-BT3BZQBFS5). Production: loads for every visitor.
+// Review previews: loads only after ?ga_debug=1 in that tab, as debug_mode + traffic_type=internal test traffic.
 export const GA4_ID = /^G-[A-Z0-9]{4,16}$/;
 export function ga4Tag(site, reviewMode) {
   const id = site.analytics?.ga4MeasurementId || '';
-  if (reviewMode || !id) return '';
+  if (!id) return '';
   if (!GA4_ID.test(id)) throw new Error(`content/site.json analytics.ga4MeasurementId "${id}" is not a GA4 Measurement ID (G-XXXXXXXXXX)`);
-  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
+  if (!reviewMode) return `<script async src="https://www.googletagmanager.com/gtag/js?id=${id}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${id}');</script>`;
+  return `<script>(function(){try{if(/[?&]ga_debug=1(&|$)/.test(location.search))sessionStorage.setItem('pgk_ga_debug','1');if(sessionStorage.getItem('pgk_ga_debug')!=='1')return}catch(e){return}
+window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','${id}',{debug_mode:true,traffic_type:'internal'});
+var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${id}';document.head.appendChild(s)})();</script>`;
 }
 
 export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = false, overlay = false, ogType = 'website', articleDates = null }) {
@@ -50,7 +54,7 @@ ${join([].concat(jsonLd || []), (j) => `<script type="application/ld+json">${JSO
 </head>
 <body class="${[dark ? 'page--dark' : '', overlay ? 'has-overlay' : '', reviewMode ? 'has-review-bar' : ''].join(' ').trim()}">
 <a class="skip" href="#main">Skip to content</a>
-${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</strong> · Not live<span class="review-bar__long">. Real estate square-footage tiers are with Vye for an accuracy check; items tagged <span class="needs-approval">Needs approval</span> are still awaiting sign-off</span>.</div>` : ''}
+${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</strong> · Not live<span class="review-bar__long">. Items tagged <span class="needs-approval">Needs approval</span> are still awaiting sign-off</span>.</div>` : ''}
 <header class="site-header">
   <div class="wrap site-header__inner">
     <a class="brand" href="/" aria-label="Photografik Studios, home">

@@ -139,7 +139,9 @@
     }
   },
   "analytics": {
-    "_readme": "James, Oct 13 2026: Google Analytics 4. Paste the GA4 Measurement ID (G-XXXXXXXXXX) here. It loads only in production builds (never on review previews), and the site's existing events (book_click, inquiry_submit, inquiry_draft_prepared, gallery and project clicks) are sent to it. Empty = no analytics.",
-    "ga4MeasurementId": ""
+    "_readme": "Google Analytics 4, existing Photografik web stream (James, Oct 13 2026; stream read by Codex in GA: account 203030935, property 376436984, stream 5220249519 \"photografikstudios.com - GA4\"). Production builds load it for every visitor. Review previews load nothing unless a tester opens a page with ?ga_debug=1 (kept for that browser tab only): those hits carry debug_mode and traffic_type=internal and come from the vercel.app hostname, so they show in DebugView and can be told apart from photografikstudios.com traffic. Events send allow-listed, non-personal properties only.",
+    "ga4MeasurementId": "G-BT3BZQBFS5",
+    "ga4PropertyId": "376436984",
+    "ga4StreamId": "5220249519"
   }
 }

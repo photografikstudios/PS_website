@@ -6,9 +6,26 @@
 export function track(name, props = {}) {
   const payload = { event: name, ...props, page: location.pathname };
   (window.dataLayer = window.dataLayer || []).push(payload);
-  // GA4 (production only, when configured): the same event name and properties, no personal data.
-  if (typeof window.gtag === 'function') { const { event, ...params } = payload; window.gtag('event', event, params); }
   window.dispatchEvent(new CustomEvent('pgk:track', { detail: payload }));
+  // GA4 (when loaded): the same event name with an allow-listed set of non-personal properties. Form fields (name,
+  // email, phone, brief text) are never read here; anything that looks like an email or phone number is dropped, and
+  // links are reduced to host + path. book_click is a click to the booking portal, not a completed booking;
+  // inquiry_submit fires only when the server accepted the brief; inquiry_draft_prepared is the unsent fallback.
+  if (typeof window.gtag === 'function') window.gtag('event', name, gaParams(payload));
+}
+const GA_KEYS = new Set(['page', 'location', 'package', 'href', 'video', 'tab', 'where', 'filter', 'kind', 'category', 'type', 'pkg', 'seg', 'results', 'shown', 'view', 'options', 'form', 'field', 'item', 'delivery', 'over']);
+export function gaParams(payload, origin = location.origin) {
+  const out = {};
+  for (const [k, v] of Object.entries(payload)) {
+    if (!GA_KEYS.has(k) || v == null || v === '') continue;
+    let val = typeof v === 'number' || typeof v === 'boolean' ? v : String(v).slice(0, 200);
+    if (k === 'href') {
+      try { const u = new URL(val, origin); val = /^https?:$/.test(u.protocol) ? (u.origin === origin ? u.pathname : u.host + u.pathname) : u.protocol.replace(':', ''); } catch { continue; }
+    }
+    if (typeof val === 'string' && (/@/.test(val) || /(?:\+?\d[\s().-]?){7,}/.test(val))) continue;
+    out[k] = typeof val === 'string' ? val.slice(0, 100) : val;
+  }
+  return out;
 }
 window.pgkTrack = track;
 

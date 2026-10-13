@@ -315,14 +315,18 @@ test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned,
   assert.equal(hits, '', 'excluded property ids appear in: ' + hits);
 });
 
-test('GA4: production only, valid Measurement ID only, events forwarded', async () => {
+test('GA4: existing stream in production; review previews only on ?ga_debug=1 as internal debug traffic', async () => {
   const { ga4Tag } = await import('../src/layout.js');
+  assert.equal(site.analytics.ga4MeasurementId, 'G-BT3BZQBFS5', 'existing Photografik stream (James, Oct 13)');
   assert.equal(ga4Tag({ analytics: { ga4MeasurementId: '' } }, false), '', 'no ID, no tag');
-  assert.equal(ga4Tag({ analytics: { ga4MeasurementId: 'G-ABC123XYZ' } }, true), '', 'review previews never load GA');
-  const tag = ga4Tag({ analytics: { ga4MeasurementId: 'G-ABC123XYZ' } }, false);
-  assert.match(tag, /googletagmanager\.com\/gtag\/js\?id=G-ABC123XYZ/);
-  assert.match(tag, /gtag\('config','G-ABC123XYZ'\)/);
+  const prod = ga4Tag(site, false);
+  assert.match(prod, /googletagmanager\.com\/gtag\/js\?id=G-BT3BZQBFS5"/);
+  assert.match(prod, /gtag\('config','G-BT3BZQBFS5'\)/);
+  assert.ok(!/debug_mode|traffic_type/.test(prod), 'production hits are normal traffic');
+  const review = ga4Tag(site, true);
+  assert.ok(!/<script async src=/.test(review), 'review never loads GA unconditionally');
+  assert.match(review, /ga_debug=1/); assert.match(review, /debug_mode:true,traffic_type:'internal'/);
   assert.throws(() => ga4Tag({ analytics: { ga4MeasurementId: 'UA-1234-1' } }, false), /not a GA4 Measurement ID/);
   const js = readFileSync(join(root, 'src/assets/site.js'), 'utf8');
-  assert.match(js, /window\.gtag\('event', event, params\)/, 'track() forwards each event to GA4');
+  assert.match(js, /window\.gtag\('event', name, gaParams\(payload\)\)/, 'track() forwards allow-listed params to GA4');
 });

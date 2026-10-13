@@ -304,6 +304,36 @@ await check('contact: required-field errors, then mailto fallback without email 
   await p.context().close();
 });
 
+// James, Oct 13 2026: GA4 on the existing stream. Review previews send nothing unless ?ga_debug=1 (then debug_mode +
+// traffic_type internal). No form personal data reaches GA; a failed send is a draft, never inquiry_submit.
+await check('GA4: review preview silent by default; opt-in debug hits carry no personal data and truthful inquiry events', async () => {
+  const quiet = await newPage();
+  const gaReq = []; quiet.on('request', (r) => { if (/google-analytics|googletagmanager/.test(r.url())) gaReq.push(r.url()); });
+  await quiet.goto(base + '/contact');
+  assert(await quiet.evaluate(() => typeof window.gtag) === 'undefined' && gaReq.length === 0, 'no GA on a review preview by default');
+  await quiet.context().close();
+  const p = await newPage();
+  await p.route(/googletagmanager\.com|google-analytics\.com/, (r) => r.abort()); // never send test hits from CI
+  await p.goto(base + '/contact?ga_debug=1');
+  const cfg = await p.evaluate(() => (window.dataLayer || []).filter((a) => a && a[0] === 'config').map((a) => [a[1], a[2]]));
+  assert(cfg.length === 1 && cfg[0][0] === 'G-BT3BZQBFS5' && cfg[0][1].debug_mode === true && cfg[0][1].traffic_type === 'internal', 'debug config ' + JSON.stringify(cfg));
+  await p.fill('#i-name', 'Pat Privatename');
+  await p.fill('#i-email', 'pat.private@example.com');
+  await p.selectOption('#i-type', 'other');
+  await p.click('#more-details summary').catch(() => {});
+  await p.fill('#i-phone', '631 555 0199').catch(() => {});
+  await p.fill('#i-deliverables', 'Secret brief text 631-555-0199').catch(() => {});
+  await p.click('#inquiry button[type=submit]');
+  await p.waitForSelector('#form-fallback:not([hidden])');
+  await p.click('#fallback-mailto', { modifiers: [] }).catch(() => {});
+  const hits = await p.evaluate(() => (window.dataLayer || []).filter((a) => a && a[0] === 'event').map((a) => [a[1], a[2]]));
+  const names = hits.map((h) => h[0]);
+  assert(names.includes('inquiry_draft_prepared') && !names.includes('inquiry_submit'), 'draft is not a submission: ' + names.join());
+  const blob = JSON.stringify(hits);
+  assert(!/Privatename|pat\.private|example\.com|555|Secret brief/.test(blob), 'no personal data in GA hits: ' + blob);
+  await p.context().close();
+});
+
 await check('contact: first view is short; extra questions are optional and collapsed', async () => {
   const p = await newPage();
   await p.goto(base + '/contact');
