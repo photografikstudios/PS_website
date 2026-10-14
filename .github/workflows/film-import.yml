@@ -47,7 +47,7 @@ jobs:
             git fetch -q origin "$BR" && git reset -q --hard "origin/$BR"
             node scripts/import-films.mjs apply "$RUNNER_TEMP/film-out"
             if [ -z "$(git status --porcelain)" ]; then echo "Nothing to record."; exit 0; fi
-            git add content/media content/media-assets.json content/poster-assets.json content/media-sources.json static/v static/images/posters-sm
+            git add -A content/media content/media-assets.json content/poster-assets.json content/media-sources.json static/v static/images/posters-sm static/images/hero
             git commit -q -m "Dashboard: film import from Google Drive" -m "$(cat "$RUNNER_TEMP/film-out/summary.txt")"
             if git push -q origin "HEAD:$BR"; then exit 0; fi
             echo "A save landed at the same moment; trying again on top of it."; sleep $((i * 5))

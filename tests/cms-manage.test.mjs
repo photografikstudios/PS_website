@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { PAGES, checkPageMedia, pageMediaRefs } from '../src/lib/page-media-core.js';
-import { whereUsed, planDeletion } from '../src/lib/usage-core.js';
+import { whereUsed, planDeletion, uploadUsage, planFileDeletion } from '../src/lib/usage-core.js';
 import { parseNote, withName } from '../src/lib/github-repo.js';
 import { loadWork } from '../src/lib/work-load.js';
 import { makeFileExists } from '../src/lib/field-notes-load.js';
@@ -146,9 +146,10 @@ test('delete plan: exact name, only unshared files, never anything in use', asyn
 });
 
 // ---------- api/cms-manage.js against a fake GitHub ----------
-function fakeGitHub(files, { refStatus = 200 } = {}) {
+function fakeGitHub(files, { refStatus = 200, parentFiles, deletion } = {}) {
   const head = 'a'.repeat(40); const calls = [];
-  const blobOid = (p) => (p in files ? 'b' + Buffer.from(p).toString('hex').slice(0, 39) : null);
+  const at = (sha) => (parentFiles && sha === 'e'.repeat(40) ? parentFiles : files);
+  const blobOid = (p, fs = files) => (p in fs ? 'b' + Buffer.from(p).toString('hex').slice(0, 39) : null);
   globalThis.fetch = async (url, opts = {}) => {
     const u = new URL(url); const body = opts.body ? JSON.parse(opts.body) : null; calls.push({ method: opts.method || 'GET', path: u.pathname, body });
     const json = (status, v) => new Response(JSON.stringify(v), { status, headers: { 'content-type': 'application/json' } });
@@ -156,11 +157,11 @@ function fakeGitHub(files, { refStatus = 200 } = {}) {
     if (u.pathname === '/graphql') {
       const data = {};
       for (const m of body.query.matchAll(/(\w+): object\(expression: "([0-9a-f]{40}):([^"]+)"\)/g)) {
-        const [, alias, , p] = m;
-        const kids = Object.keys(files).filter((f) => f.startsWith(p + '/'));
-        if (/\{ oid \}/.test(body.query.slice(m.index, m.index + m[0].length + 12))) data[alias] = blobOid(p) ? { oid: blobOid(p) } : null;
-        else if (kids.length) data[alias] = { entries: kids.map((f) => ({ name: f.slice(p.length + 1), type: 'blob', object: { text: files[f] } })) };
-        else data[alias] = p in files ? { text: files[p] } : null;
+        const [, alias, sha, p] = m; const fs = at(sha);
+        const kids = Object.keys(fs).filter((f) => f.startsWith(p + '/'));
+        if (/\{ oid \}/.test(body.query.slice(m.index, m.index + m[0].length + 12))) data[alias] = blobOid(p, fs) ? { oid: blobOid(p, fs) } : null;
+        else if (kids.length) data[alias] = { entries: kids.map((f) => ({ name: f.slice(p.length + 1), type: 'blob', object: { text: fs[f], byteSize: fs[f].length } })) };
+        else data[alias] = p in fs ? { text: fs[p] } : null;
       }
       return json(200, { data: { repository: data } });
     }
@@ -168,6 +169,7 @@ function fakeGitHub(files, { refStatus = 200 } = {}) {
     const del = u.pathname.match(/\/commits\/([0-9a-f]{40})$/);
     if (del && !u.pathname.includes('/git/')) {
       const dashboard = del[1].startsWith('d');
+      if (deletion && dashboard) return json(200, { commit: { message: deletion.message }, parents: [{ sha: 'e'.repeat(40) }], files: deletion.files.map((filename) => ({ filename, status: 'removed' })) });
       return json(200, { commit: { message: dashboard ? 'Dashboard: delete photo “QA”' : 'Some other change' }, parents: [{ sha: 'e'.repeat(40) }], files: [{ filename: 'content/media/qa-restored.json', status: 'removed' }] });
     }
     if (u.pathname.endsWith('/git/trees')) return json(201, { sha: 'u'.repeat(40) });
@@ -177,9 +179,9 @@ function fakeGitHub(files, { refStatus = 200 } = {}) {
   };
   return { head, calls };
 }
-async function call(body, { token = 'gho_' + 'x'.repeat(36), files, refStatus } = {}) {
+async function call(body, { token = 'gho_' + 'x'.repeat(36), files, refStatus, parentFiles, deletion } = {}) {
   process.env.VERCEL_GIT_REPO_OWNER = 'photografikstudios'; process.env.VERCEL_GIT_REPO_SLUG = 'PS_website'; process.env.VERCEL_GIT_COMMIT_REF = 'redesign/2027-preview';
-  const gh = fakeGitHub(files, { refStatus });
+  const gh = fakeGitHub(files, { refStatus, parentFiles, deletion });
   const { default: handler } = await import('../api/cms-manage.js');
   const res = { statusCode: 0, headers: {}, setHeader(k, v) { this.headers[k] = v; }, end(t) { this.body = JSON.parse(t); } };
   await handler({ method: 'POST', headers: token ? { authorization: `Bearer ${token}` } : {}, body }, res);
@@ -364,4 +366,88 @@ test('Codex follow-up: projects chosen in Page Media are protected; large and em
   const c = (status, conclusion, at) => ({ name: 'Vercel', app: { slug: 'vercel' }, status, conclusion, completed_at: at, started_at: at });
   assert.equal(pickBuildState([], [c('completed', 'failure', '2026-10-13T20:00:00Z'), c('completed', 'success', '2026-10-13T20:09:00Z')]).state, 'success');
   assert.equal(pickBuildState([{ context: 'other-ci', state: 'failure' }], []).state, 'unknown', 'only Vercel reports count');
+  // Codex, 9e06705 review: a skipped or neutral Vercel check is not evidence of a build.
+  assert.equal(pickBuildState([], [{ name: 'Vercel', app: { slug: 'vercel' }, status: 'completed', conclusion: 'skipped', completed_at: '2026-10-13T20:00:00Z' }]).state, 'unknown');
+  assert.equal(pickBuildState([], [c('completed', 'neutral', '2026-10-13T20:00:00Z')]).state, 'unknown');
+  assert.equal(pickBuildState([], [c('completed', 'failure', '2026-10-13T20:00:00Z'), c('completed', 'skipped', '2026-10-13T20:09:00Z')]).state, 'unknown', 'a later skip hides nothing: still no build evidence');
+  assert.equal(pickBuildState([s('success', '2026-10-13T20:05:00Z')], [c('completed', 'skipped', '2026-10-13T20:09:00Z')]).state, 'success', 'a real success elsewhere still counts');
+});
+
+// ---------- Codex final-bundle review of 9e06705: files uploaded straight to a page ----------
+// A Page Media upload is only { src, alt }: no Photos record. Synthetic, disposable file names only.
+const QA_UPLOAD = '/images/library/qa-direct-upload-5f5f5f5f5f.jpg';
+const onContact = (files, value) => ({ ...files, 'content/page-media/contact.json': JSON.stringify({ ...JSON.parse(files['content/page-media/contact.json']), introMedia: value }) });
+
+test('uploaded files: an upload used by a page, a project, an article or a photo is refused; pinned files too; exact file name', async () => {
+  const base = withSynthetic(await diskFiles());
+  const placed = repoFrom(onContact(base, { src: QA_UPLOAD, alt: 'QA' }));
+  const u = uploadUsage(QA_UPLOAD + '?v=2', placed);
+  assert.equal(u.removable, false); assert.match(u.shared.join(), /Page Media › .*contact/i);
+  assert.match(planFileDeletion({ path: QA_UPLOAD, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, placed).errors.join(), /still used: Page Media/);
+  // Taken off the page and saved: unused, so it can go once its exact file name is typed.
+  const off = repoFrom(onContact(base, null));
+  assert.equal(uploadUsage(QA_UPLOAD, off).removable, true);
+  assert.match(planFileDeletion({ path: QA_UPLOAD, confirm: 'qa-direct-upload' }, off).errors.join(), /Type the file name exactly: qa-direct-upload-5f5f5f5f5f.jpg/);
+  assert.deepEqual(planFileDeletion({ path: QA_UPLOAD, confirm: ' qa-direct-upload-5f5f5f5f5f.jpg ' }, off).paths, ['static' + QA_UPLOAD]);
+  // Other users of a file: a project's upload, a library photo's file, a captioned article image.
+  assert.match(uploadUsage('/images/projects/qa-project-own-2222222222.jpg', off).shared.join(), /Project “QA project”/);
+  assert.match(uploadUsage('/images/library/qa-unused-photo-0a1b2c3d4e.jpg', off).shared.join(), /Photo “QA unused photo”/);
+  const withNote = { ...base, 'content/field-notes/qa-note.md': `{\n  "title": "QA note",\n  "published": false\n}\n![A caption](${encodeURI(QA_UPLOAD)}?w=800#x "Title")\n` };
+  assert.match(uploadUsage(QA_UPLOAD, repoFrom(withNote)).shared.join(), /Field Note “QA note”/);
+  // Site files the build pins, and anything outside the upload folders, are never offered.
+  const pinned = { ...off, pins: new Set([...off.pins, QA_UPLOAD]) };
+  assert.equal(uploadUsage(QA_UPLOAD, pinned).removable, false);
+  assert.match(planFileDeletion({ path: QA_UPLOAD, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, pinned).errors.join(), /protected site file/);
+  for (const p of ['/v/home-listings-twilight.webp', '/images/library/../../content/pricing.json', '/images/library/sub/x.jpg', '/captions/x.vtt']) {
+    assert.match(planFileDeletion({ path: p, confirm: p.split('/').pop() }, off).errors.join(), /Only photos uploaded in the dashboard/);
+  }
+});
+
+test('uploaded files workflow: upload on a page, take it off, find it, delete it, Undo puts it back (fake GitHub)', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    const base = { ...withSynthetic(await diskFiles()), ['static' + QA_UPLOAD]: 'jpegbytes' };
+    // 1. Uploaded straight to Contact: listed as in use, and deleting it is refused without writing.
+    const placed = onContact(base, { src: QA_UPLOAD, alt: 'QA' });
+    const list1 = await call({ action: 'files' }, { files: placed });
+    assert.equal(list1.status, 200); const row1 = list1.body.files.find((f) => f.path === QA_UPLOAD);
+    assert.ok(row1 && !row1.removable && /Page Media/.test(row1.shared.join()), JSON.stringify(row1));
+    const refused = await call({ action: 'deleteFile', path: QA_UPLOAD, head: list1.body.head, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, { files: placed });
+    assert.equal(refused.status, 409); assert.match(refused.body.message, /still used/); assert.ok(!refused.gh.calls.some((c) => c.method !== 'GET' && c.path !== '/graphql'));
+    // 2. Taken off the page and saved: listed first, as not used anywhere.
+    const off = onContact(base, null);
+    const list2 = await call({ action: 'files' }, { files: off });
+    assert.equal(list2.body.files[0].removable, true);
+    assert.ok(list2.body.files.find((f) => f.path === QA_UPLOAD).removable);
+    assert.equal(list2.body.files.find((f) => f.path === QA_UPLOAD).bytes, 'jpegbytes'.length);
+    // James's own content stays protected or merely listed: his Test project's uploads are in use.
+    assert.ok(list2.body.files.filter((f) => f.path.startsWith('/images/projects/test-')).every((f) => !f.removable));
+    // 3. Stale list, wrong name and paths outside the upload folders: refused without writing.
+    const stale = await call({ action: 'deleteFile', path: QA_UPLOAD, head: 'f'.repeat(40), confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, { files: off });
+    assert.equal(stale.status, 409); assert.ok(stale.body.changed);
+    const wrong = await call({ action: 'deleteFile', path: QA_UPLOAD, head: list2.body.head, confirm: 'qa' }, { files: off });
+    assert.equal(wrong.status, 409); assert.match(wrong.body.message, /Type the file name exactly/);
+    for (const path of ['/v/x.mp4', 'content/pricing.json', '/images/library/../x.jpg']) assert.equal((await call({ action: 'deleteFile', path, head: list2.body.head, confirm: 'x' }, { files: off })).status, 400);
+    for (const r of [stale, wrong]) assert.ok(!r.gh.calls.some((c) => c.method === 'PATCH'));
+    // 4. Deleted: one tree removing exactly that file, one commit Undo recognises, a non-forced fast-forward.
+    const ok = await call({ action: 'deleteFile', path: QA_UPLOAD, head: list2.body.head, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, { files: off });
+    assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    assert.deepEqual(ok.gh.calls.find((c) => c.path.endsWith('/git/trees')).body.tree.map((t) => [t.path, t.sha]), [['static' + QA_UPLOAD, null]]);
+    const commit = ok.gh.calls.find((c) => c.path.endsWith('/git/commits') && c.method === 'POST');
+    assert.match(commit.body.message, /^Dashboard: delete uploaded file “qa-direct-upload-5f5f5f5f5f.jpg”/);
+    assert.equal(ok.gh.calls.find((c) => c.method === 'PATCH').body.force, false);
+    const race = await call({ action: 'deleteFile', path: QA_UPLOAD, head: list2.body.head, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, { files: off, refStatus: 422 });
+    assert.equal(race.status, 409); assert.match(race.body.message, /Nothing was deleted/);
+    // 5. Undo: the file is absent now and present in the deletion's parent, so it is put back with its old content.
+    const gone = { ...off }; delete gone['static' + QA_UPLOAD];
+    const deletion = { message: commit.body.message, files: ['static' + QA_UPLOAD] };
+    const undo = await call({ action: 'restore', commit: 'd'.repeat(40) }, { files: gone, parentFiles: off, deletion });
+    assert.equal(undo.status, 200, JSON.stringify(undo.body)); assert.deepEqual(undo.body.restored, ['static' + QA_UPLOAD]);
+    const tree = undo.gh.calls.find((c) => c.path.endsWith('/git/trees')).body.tree;
+    assert.equal(tree.length, 1); assert.equal(tree[0].path, 'static' + QA_UPLOAD); assert.ok(tree[0].sha);
+    assert.equal(undo.gh.calls.find((c) => c.method === 'PATCH').body.force, false);
+    // Uploaded again under the same name meanwhile: Undo refuses rather than overwrite it.
+    const again = await call({ action: 'restore', commit: 'd'.repeat(40) }, { files: off, parentFiles: off, deletion });
+    assert.equal(again.status, 409); assert.match(again.body.message, /same name exists again/);
+  } finally { globalThis.fetch = realFetch; }
 });

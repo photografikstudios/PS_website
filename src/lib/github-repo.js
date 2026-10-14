@@ -72,3 +72,13 @@ export async function pathsExist(token, owner, name, oid, paths) {
   const data = await graphql(token, `query($o: String!, $n: String!) { repository(owner: $o, name: $n) { ${q} } }`, { o: owner, n: name });
   return Object.fromEntries(paths.map((p, i) => [p, data.repository[`f${i}`] ? data.repository[`f${i}`].oid : null]));
 }
+
+/** Picture files in the dashboard's upload folders at `oid` (names only). */
+export async function listUploads(token, owner, name, oid) {
+  const dirs = ['library', 'projects', 'field-notes'];
+  const q = dirs.map((d, i) => `d${i}: object(expression: ${JSON.stringify(`${oid}:static/images/${d}`)}) { ... on Tree { entries { name type object { ... on Blob { byteSize } } } } }`).join('\n');
+  const data = await graphql(token, `query($o: String!, $n: String!) { repository(owner: $o, name: $n) { ${q} } }`, { o: owner, n: name });
+  const out = [];
+  dirs.forEach((d, i) => { for (const e of (data.repository[`d${i}`] && data.repository[`d${i}`].entries) || []) if (e.type === 'blob') out.push({ path: `/images/${d}/${e.name}`, bytes: e.object && e.object.byteSize }); });
+  return out;
+}

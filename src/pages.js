@@ -9,7 +9,11 @@ import { fileURLToPath } from 'node:url';
 const arrow = '<span aria-hidden="true">→</span>';
 
 export function buildPages(ctx) {
-  const { site, pricing, work, offers, faqs, testimonials, pageText, img, videoPlayer, needsApproval, visible, ambient, reviewMode } = ctx;
+  const { site, pricing, work, offers, faqs, testimonials, pageText, img, videoPlayer, needsApproval, visible, reviewMode } = ctx;
+  // A replaced film keeps its id (and every page placement) but plays fresh files named <id>-rN (record.asset), so a
+  // returning visitor's cached copy of the old footage is never reused.
+  const assetOf = (id) => work.media.find((m) => m.id === id)?.asset || id;
+  const ambient = (id, opts) => ctx.ambient(assetOf(id), opts);
   const booking = site.destinations.booking.href;
   const bookBtn = (loc, label = 'Book a Shoot', cls = 'btn btn--solid') =>
     `<a class="${cls}" href="${booking}" data-track="book_click" data-track-location="${loc}">${label}</a>`;
@@ -128,7 +132,7 @@ export function buildPages(ctx) {
   // the full 1280px poster. Oct 13 2026: on phones the full posters cost ~0.7 MB for Home's six default film cards, and the
   // Beachfront card's lazy poster (same file as the desktop hero still) sometimes arrived before load.
   const posterFull = (m) => (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080));
-  const cardPoster = (m) => { const p = `/images/posters-sm/${m.id}.webp`; return existsSync(fileURLToPath(new URL(`../static${p}`, import.meta.url))) ? p : posterFull(m); };
+  const cardPoster = (m) => { const p = `/images/posters-sm/${m.asset || m.id}.webp`; return existsSync(fileURLToPath(new URL(`../static${p}`, import.meta.url))) ? p : posterFull(m); };
   const galThumb = (m) => (m.type === 'video' ? cardPoster(m) : (m.thumb || ctx.optimized(m.src, 1080)));
   const galFull = (m) => (m.type === 'video' ? ctx.mediaUrl(m.src) : ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
   const galleryItem = (m) => ({

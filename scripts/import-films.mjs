@@ -85,7 +85,14 @@ async function encode(id, src, rec, out) {
     run(['-ss', '0', '-t', String(loop[1]), '-i', src, '-an', '-vf', `${vertical ? 'scale=540:-2' : 'scale=-2:540'}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264',
       '-preset', 'veryfast', '-crf', '28', '-maxrate', '1500k', '-bufsize', '6000k', '-movflags', '+faststart', join(out, 'static/v', `${id}-loop.mp4`)]);
   }
-  return { orientation: vertical ? 'vertical' : 'horizontal', duration: Math.round(d), width: w, height: h, posterAt: at, loop };
+  // A film used as a page's moving background also needs its phone still (a 640×720 centre crop of the poster).
+  let phone = false;
+  if (rec.heroStill) {
+    await mkdir(join(out, 'static/images/hero'), { recursive: true });
+    run(['-i', poster, '-vf', 'scale=-2:720:flags=lanczos,crop=640:720', '-c:v', 'libwebp', '-quality', '78', join(out, 'static/images/hero', `${id}-phone.webp`)]);
+    phone = true;
+  }
+  return { orientation: vertical ? 'vertical' : 'horizontal', duration: Math.round(d), width: w, height: h, posterAt: at, loop, phone };
 }
 
 /** The import settings a run worked from: if any of them changes while it encodes, its output is not used. */
@@ -117,7 +124,10 @@ export async function encodeWaiting(out, { now = new Date().toISOString() } = {}
     try {
       if (!driveId) throw new Error('Paste the Google Drive link of the film file (it looks like drive.google.com/file/d/…). A folder link will not work.');
       try { await download(driveId, src); } catch (e) { if (e instanceof TooBig) throw new Error('The file is larger than 200 MB. Export a smaller finished version (for example 1080p H.264) and try again.'); throw e; }
-      results.push({ id, ...settingsOf(rec), driveId, state: 'ready', meta: await encode(id, src, rec, out), at: now });
+      // A film that already plays as an excerpt somewhere keeps having one after a replacement.
+      const hadLoop = existsSync(join(root, 'static/v', `${rec.asset || id}-loop.mp4`));
+      const hadPhone = existsSync(join(root, 'static/images/hero', `${rec.asset || id}-phone.webp`));
+      results.push({ id, ...settingsOf(rec), driveId, state: 'ready', meta: await encode(id, src, { ...rec, makeLoop: rec.makeLoop || hadLoop, heroStill: hadPhone }, out), at: now });
     } catch (e) {
       results.push({ id, ...settingsOf(rec), driveId, state: 'failed', message: String(e.message || e).slice(0, 400), at: now });
     } finally { await rm(src, { force: true }); }
@@ -145,31 +155,47 @@ export async function applyResults(out) {
       rec.import = { state: 'failed', at: r.at, message: r.message };
     } else {
       const { meta } = r; const id = r.id;
-      const names = [`${id}.mp4`, `${id}.webp`, ...(meta.loop ? [`${id}-loop.mp4`] : [])];
+      // Fresh file names for every replacement (Codex review of 9e06705): /v/ files are cached for a week, so a new
+      // copy under the old name could keep playing the old footage for returning visitors. A first import uses the
+      // film's id; each replacement uses <id>-r2, -r3… The record id, and every page placement, stay the same.
+      const prev = rec.src ? (rec.asset || id) : null;
+      const base = prev ? `${id}-r${(Number((String(rec.asset || '').match(/-r(\d+)$/) || [])[1]) || 1) + 1}` : id;
+      const outNames = [[`${id}.mp4`, `${base}.mp4`], [`${id}.webp`, `${base}.webp`], ...(meta.loop ? [[`${id}-loop.mp4`, `${base}-loop.mp4`]] : [])];
       await mkdir(join(root, 'static/v'), { recursive: true }); await mkdir(join(root, 'static/images/posters-sm'), { recursive: true });
-      for (const n of names) await writeFile(join(root, 'static/v', n), await readFile(join(out, 'static/v', n)));
-      await writeFile(join(root, 'static/images/posters-sm', `${id}.webp`), await readFile(join(out, 'static/images/posters-sm', `${id}.webp`)));
-      // Pins and manifests, exactly as the committed media expects them.
+      for (const [from, to] of outNames) await writeFile(join(root, 'static/v', to), await readFile(join(out, 'static/v', from)));
+      await writeFile(join(root, 'static/images/posters-sm', `${base}.webp`), await readFile(join(out, 'static/images/posters-sm', `${id}.webp`)));
+      if (meta.phone) { await mkdir(join(root, 'static/images/hero'), { recursive: true }); await writeFile(join(root, 'static/images/hero', `${base}-phone.webp`), await readFile(join(out, 'static/images/hero', `${id}-phone.webp`))); }
+      // Pins and manifests, exactly as the committed media expects them; the replaced copy's files leave in the same commit.
       const assets = await readJson('content/media-assets.json');
-      for (const n of names) assets.files[`/v/${n}`] = await pin(join(root, 'static/v', n));
+      const posters = await readJson('content/poster-assets.json');
       const manifest = JSON.parse(await readFile(join(root, 'static/v/manifest.json'), 'utf8'));
-      manifest[id] = { orientation: meta.orientation, duration: meta.duration, width: meta.width, height: meta.height };
+      const sources = await readJson('content/media-sources.json');
+      if (prev && prev !== base) {
+        for (const n of [`${prev}.mp4`, `${prev}.webp`, `${prev}-loop.mp4`]) {
+          if (assets.files[`/v/${n}`]) { delete assets.files[`/v/${n}`]; await rm(join(root, 'static/v', n), { force: true }); }
+        }
+        if (posters.files[`/images/posters-sm/${prev}.webp`]) { delete posters.files[`/images/posters-sm/${prev}.webp`]; await rm(join(root, 'static/images/posters-sm', `${prev}.webp`), { force: true }); }
+        delete manifest[prev];
+        if (meta.phone) await rm(join(root, 'static/images/hero', `${prev}-phone.webp`), { force: true });
+        sources.items = sources.items.filter((it) => it.id !== prev);
+      }
+      for (const [, to] of outNames) assets.files[`/v/${to}`] = await pin(join(root, 'static/v', to));
+      manifest[base] = { orientation: meta.orientation, duration: meta.duration, width: meta.width, height: meta.height };
       await writeFile(join(root, 'static/v/manifest.json'), JSON.stringify(manifest));
       assets.files['/v/manifest.json'] = await pin(join(root, 'static/v/manifest.json'));
       assets.count = Object.keys(assets.files).length;
       assets.totalBytes = Object.values(assets.files).reduce((a, x) => a + x.bytes, 0);
       assets.aggregate = createHash('sha256').update(aggregateOf(assets.files)).digest('hex');
       await writeJson('content/media-assets.json', assets);
-      const posters = await readJson('content/poster-assets.json');
-      posters.files[`/images/posters-sm/${id}.webp`] = await pin(join(root, 'static/images/posters-sm', `${id}.webp`));
+      posters.files[`/images/posters-sm/${base}.webp`] = await pin(join(root, 'static/images/posters-sm', `${base}.webp`));
       await writeJson('content/poster-assets.json', posters);
-      const sources = await readJson('content/media-sources.json');
-      sources.items = sources.items.filter((it) => it.id !== id);
-      sources.items.push({ id, drive: r.driveId, posterAt: meta.posterAt, ...(meta.loop ? { loop: meta.loop } : {}), _note: `Added from the dashboard (Add film from Google Drive), ${r.at.slice(0, 10)}. The original stays in Drive.` });
+      sources.items = sources.items.filter((it) => it.id !== base);
+      sources.items.push({ id: base, drive: r.driveId, posterAt: meta.posterAt, ...(meta.loop ? { loop: meta.loop } : {}), _note: `${prev ? `Replacement for “${id}”` : 'Added'} from the dashboard (Add film from Google Drive), ${r.at.slice(0, 10)}. The original stays in Drive.` });
       await writeJson('content/media-sources.json', sources);
       delete rec.makeLoop;
-      Object.assign(rec, { src: `/v/${id}.mp4`, poster: `/v/${id}.webp`, orientation: meta.orientation, duration: meta.duration, source: 'drive',
-        import: { state: 'ready', at: r.at, message: `Imported from Google Drive (${meta.width}×${meta.height}, ${meta.duration} s). The original stays in Drive.` } });
+      if (base !== id) rec.asset = base; else delete rec.asset;
+      Object.assign(rec, { src: `/v/${base}.mp4`, poster: `/v/${base}.webp`, orientation: meta.orientation, duration: meta.duration, source: 'drive',
+        import: { state: 'ready', at: r.at, message: `${prev ? 'Replaced with a new copy' : 'Imported'} from Google Drive (${meta.width}×${meta.height}, ${meta.duration} s). The original stays in Drive.` } });
     }
     await writeFile(file, JSON.stringify(rec, null, 2) + '\n');
     applied.push(r);

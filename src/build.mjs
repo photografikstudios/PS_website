@@ -91,7 +91,10 @@ if (mediaErrors.length) { console.error('Media metadata errors:\n - ' + mediaErr
 // film loops that exist (/v/<id>-loop.mp4) and the committed phone stills; a bad choice stops the build with the reason.
 const pageMedia = Object.fromEntries(await Promise.all(PAGE_MEDIA.map(async (pg) => [pg.file, existsSync(join(root, 'content/page-media', `${pg.file}.json`)) ? JSON.parse(await readFile(join(root, 'content/page-media', `${pg.file}.json`), 'utf8')) : null])));
 const loopIds = new Set(Object.keys(mediaAssets.files || {}).map((f) => f.match(/^\/v\/([\w-]+)-loop\.mp4$/)?.[1]).filter(Boolean));
-const pmLib = { media: new Map(work.media.map((m) => [m.id, m])), projects: new Map(work.projects.map((p) => [p.slug, p])), loops: loopIds, heroLoops: new Set([...loopIds].filter((id) => existsSync(join(root, 'static/images/hero', `${id}-phone.webp`)))), fileExists };
+// A replaced film plays its fresh files (<id>-rN, record.asset); its own id stays the name page sections use.
+for (const m of work.media) if (m.asset && loopIds.has(m.asset)) loopIds.add(m.id);
+const loopFile = (id) => work.media.find((m) => m.id === id)?.asset || id;
+const pmLib = { media: new Map(work.media.map((m) => [m.id, m])), projects: new Map(work.projects.map((p) => [p.slug, p])), loops: loopIds, heroLoops: new Set([...loopIds].filter((id) => existsSync(join(root, 'static/images/hero', `${loopFile(id)}-phone.webp`)))), fileExists };
 const pmCheck = checkPageMedia(pageMedia, pmLib);
 for (const w of pmCheck.warnings) console.warn(`Page Media note: ${w}`);
 if (pmCheck.errors.length) { console.error('Page Media errors (fix them in /admin → Page Media; the site keeps the previous version until then):\n - ' + pmCheck.errors.join('\n - ')); process.exit(1); }
@@ -270,7 +273,8 @@ for (const f of await readdir(join(out, 'assets'))) {
       thumb, frame: !thumb && m.src && /\.mp4$/.test(m.src) ? `${m.src}#t=${m.posterTime ?? 1}` : null, still: m.type === 'image' || !!m.poster,
       loop: loopIds.has(m.id), hero: pmLib.heroLoops.has(m.id), hidden: m.published === false, project: m.fromProject ? projTitle[m.project] || '' : '' });
   }
-  for (const id of loopIds) if (!pickMedia.some((x) => x.id === id)) {
+  const assetNames = new Set(work.media.map((m) => m.asset).filter(Boolean));
+  for (const id of loopIds) if (!pickMedia.some((x) => x.id === id) && !assetNames.has(id)) {
     pickMedia.push({ id, kind: 'loop', title: LOOP_TITLES[id] || (sourceTitle[id] || id).replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' '), alt: '', cat: '', catLabel: 'Playing excerpt', thumb: `/v/${id}.webp`, loop: true, hero: pmLib.heroLoops.has(id), still: false });
   }
   // Projects for the Commercial gallery choices (published ones only in production).

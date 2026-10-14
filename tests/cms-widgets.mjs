@@ -91,7 +91,7 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); 
 const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
 // Routes added later win in Playwright, so the catch-all page goes first.
 await page.route('http://pgk.test/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' }));
-const manageCalls = []; let buildReply = { state: 'pending' };
+const manageCalls = []; let buildReply = { state: 'pending' }; const uploadsHead = '9'.repeat(40);
 await page.route('**/api/cms-manage', async (route) => {
   const b = JSON.parse(route.request().postData()); manageCalls.push(b);
   const head = 'a'.repeat(40);
@@ -101,6 +101,11 @@ await page.route('**/api/cms-manage', async (route) => {
   if (b.action === 'check') return reply(200, { ok: true, head, name: 'QA unused photo', blocking: [], notes: [], auto: ['Home: Selected work'], files: [{ path: '/images/library/qa.jpg', shared: [], pinned: false, removable: true }, { path: '/images/library/shared.jpg', shared: ['Photo “Other”'], pinned: false, removable: false }] });
   if (b.action === 'delete') return reply(200, { ok: true, commit: 'c'.repeat(40), removed: ['content/media/qa-unused-photo.json', 'static/images/library/qa.jpg'], message: 'Deleted photo “QA unused photo”.' });
   if (b.action === 'restore') return reply(200, { ok: true, commit: 'r'.repeat(40), restored: [], message: 'Restored.' });
+  if (b.action === 'files') return reply(200, { ok: true, head: uploadsHead, files: [
+    { path: '/images/library/qa-direct-upload-5f5f5f5f5f.jpg', shared: [], pinned: false, removable: true, bytes: 1200 },
+    { path: '/images/library/qa-on-a-page.jpg', shared: ['Page Media › Send a Project Brief (contact): Above the form'], pinned: false, removable: false, bytes: 900 },
+  ] });
+  if (b.action === 'deleteFile') return reply(200, { ok: true, commit: 'd'.repeat(40), removed: ['static' + b.path], message: 'Deleted the file ' + b.path.split('/').pop() + '.' });
   return reply(400, { ok: false });
 });
 let statusReply = { commit: 'b'.repeat(40), builtAt: '2026-10-13T19:00:00Z', mode: 'review', held: [], reviewOnly: [{ collection: 'projects', id: '0123456789abcdef' }] };
@@ -355,6 +360,39 @@ await check('Page Media gallery: leave out on this page only, own selection with
 });
 
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-1280.png'), fullPage: true });
+await check('Uploaded files: an upload taken off every page is found, deleted only by its exact name, and Undo puts it back; Escape returns focus', async () => {
+  const link = page.locator('.pgk-slot__note .pgk-linkbtn').first();
+  assert.match(await page.locator('.pgk-slot__note').first().innerText(), /A photo uploaded straight to this page is a file of its own/);
+  assert.ok(!/open it in Photos/i.test(await page.locator('body').innerText()), 'no misleading Photos wording');
+  await link.focus(); await link.click();
+  const dlg = page.getByRole('dialog', { name: 'Uploaded files' });
+  await dlg.getByText('1 not used · 1 in use or protected').waitFor();
+  assert.match(await dlg.innerText(), /qa-on-a-page\.jpg Used in: Page Media › Send a Project Brief/);
+  assert.equal(await dlg.getByRole('button', { name: 'Delete qa-on-a-page.jpg' }).count(), 0, 'a file in use offers no delete');
+  await dlg.getByRole('button', { name: 'Delete qa-direct-upload-5f5f5f5f5f.jpg' }).click();
+  const box = dlg.getByRole('textbox', { name: 'Type the file name to confirm' });
+  await box.waitFor(); assert.ok(await box.evaluate((e) => e === document.activeElement), 'focus moves to the name box');
+  const go = dlg.getByRole('button', { name: 'Delete for good' });
+  await box.fill('qa-direct-upload'); assert.equal(await go.isDisabled(), true);
+  await page.keyboard.press('Escape'); await page.waitForTimeout(30);
+  assert.equal(await dlg.count(), 1, 'Escape first only cancels the confirm'); assert.ok(!manageCalls.some((c) => c.action === 'deleteFile'), 'cancel sends nothing');
+  await dlg.getByRole('button', { name: 'Delete qa-direct-upload-5f5f5f5f5f.jpg' }).click();
+  await box.fill('qa-direct-upload-5f5f5f5f5f.jpg'); await go.click();
+  await dlg.getByText('Deleted the file qa-direct-upload-5f5f5f5f5f.jpg.').waitFor();
+  const sent = manageCalls.filter((c) => c.action === 'deleteFile').pop();
+  assert.deepEqual([sent.path, sent.head, sent.confirm], ['/images/library/qa-direct-upload-5f5f5f5f5f.jpg', uploadsHead, 'qa-direct-upload-5f5f5f5f5f.jpg']);
+  const undo = dlg.getByRole('button', { name: 'Undo deleting qa-direct-upload-5f5f5f5f5f.jpg' });
+  assert.ok(await undo.evaluate((e) => e === document.activeElement), 'focus moves to Undo');
+  for (let i = 0; i < 8; i++) await page.keyboard.press('Tab');
+  assert.ok(await dlg.evaluate((d) => d.contains(document.activeElement)), 'Tab stays inside');
+  await undo.click();
+  await dlg.getByText('Restored qa-direct-upload-5f5f5f5f5f.jpg.').waitFor();
+  assert.equal(manageCalls.filter((c) => c.action === 'restore').pop().commit, 'd'.repeat(40));
+  await page.keyboard.press('Escape'); await page.waitForTimeout(30);
+  assert.equal(await dlg.count(), 0);
+  assert.ok(await link.evaluate((e) => e === document.activeElement), 'focus returns to the Uploaded files link: ' + await page.evaluate(() => document.activeElement.outerHTML.slice(0, 120) + ' ' + document.querySelectorAll('.pgk-slot__note .pgk-linkbtn').length));
+});
+
 await check('Bottom note: the review-only test note is one line, opens for details, can be hidden; a held project stays; neither covers the save pill', async () => {
   const bar = page.locator('.pgk-statusbar');
   await bar.waitFor();

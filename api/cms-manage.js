@@ -11,8 +11,8 @@
 //  - Undo restores exactly the files one dashboard deletion removed, from that commit's parent, if they are still absent.
 //  - It acts with the signed-in editor's own GitHub token (sent by the dashboard); GitHub enforces write access.
 //    The token is never logged or stored.
-import { branchHead, readRepo, pathsExist, gh } from '../src/lib/github-repo.js';
-import { whereUsed, planDeletion, displayName, COLLECTIONS, KEY } from '../src/lib/usage-core.js';
+import { branchHead, readRepo, pathsExist, gh, listUploads } from '../src/lib/github-repo.js';
+import { whereUsed, planDeletion, displayName, COLLECTIONS, KEY, uploadUsage, planFileDeletion, UPLOAD_PATH } from '../src/lib/usage-core.js';
 
 const send = (res, status, body) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json; charset=utf-8'); res.setHeader('Cache-Control', 'no-store'); res.end(JSON.stringify(body)); };
 const ALLOWED_DELETE = /^(content\/(media|projects)\/[a-z0-9][a-z0-9-]*\.json|content\/field-notes\/[a-z0-9][a-z0-9-]*\.md|static\/images\/(library|projects|field-notes)\/[^/]+)$/;
@@ -32,6 +32,9 @@ export default async function handler(req, res) {
     // Saved vs on the site: the dashboard compares this with the commit the review site was built from (/admin/status.json).
     // A save alone does not mean a build started or worked: the build state is what Vercel reported on that commit.
     if (action === 'head') { const head = await branchHead(token, owner, name, branch); return send(res, 200, { ok: true, head, branch, build: await buildState(token, owner, name, head) }); }
+    // Uploaded files (a photo uploaded straight to a page has no Photos record): list them with who uses each, and
+    // delete one that nothing uses, with the same fresh checks, typed name, single commit and Undo as everything else.
+    if (action === 'files' || action === 'deleteFile') return await uploads(res, token, owner, name, branch, body);
     if (!COLLECTIONS[collection] || !KEY.test(String(key || ''))) return send(res, 400, { ok: false, message: 'This kind of item cannot be checked here.' });
     const head = await branchHead(token, owner, name, branch);
     const repo = await readRepo(token, owner, name, head);
@@ -64,6 +67,31 @@ export default async function handler(req, res) {
   }
 }
 
+async function uploads(res, token, owner, name, branch, body) {
+  const head = await branchHead(token, owner, name, branch);
+  const repo = await readRepo(token, owner, name, head);
+  if (body.action === 'files') {
+    const files = (await listUploads(token, owner, name, head)).map((f) => ({ ...uploadUsage(f.path, repo), bytes: f.bytes }));
+    files.sort((a, b) => (b.removable - a.removable) || a.path.localeCompare(b.path));
+    return send(res, 200, { ok: true, head, files });
+  }
+  if (typeof body.path !== 'string' || !UPLOAD_PATH.test(body.path)) return send(res, 400, { ok: false, message: 'Only photos uploaded in the dashboard can be deleted here.' });
+  if (body.head !== head) return send(res, 409, { ok: false, changed: true, message: 'Something was saved since you checked. Check again before deleting.' });
+  const plan = planFileDeletion({ path: body.path, confirm: body.confirm }, repo);
+  if (plan.errors.length) return send(res, 409, { ok: false, message: plan.errors.join(' '), ...(plan.usage || {}) });
+  if (!plan.paths.every((p) => ALLOWED_DELETE.test(p))) return send(res, 400, { ok: false, message: 'That file cannot be deleted here.' });
+  const exist = await pathsExist(token, owner, name, head, plan.paths);
+  if (!exist[plan.paths[0]]) return send(res, 409, { ok: false, message: 'That file is already gone. Reload the list.' });
+  const commit = (await gh(token, `/repos/${owner}/${name}/git/commits/${head}`)).json;
+  const tree = await gh(token, `/repos/${owner}/${name}/git/trees`, { method: 'POST', body: { base_tree: commit.tree.sha, tree: plan.paths.map((p) => ({ path: p, mode: '100644', type: 'blob', sha: null })) } });
+  if (!tree.ok) return send(res, 502, { ok: false, message: 'GitHub refused the change. Nothing was deleted.' });
+  const made = await gh(token, `/repos/${owner}/${name}/git/commits`, { method: 'POST', body: { message: `${MESSAGE} uploaded file “${plan.name}”\n\nRemoved: ${plan.paths.join(', ')}\nUndo from the dashboard, or restore it from this commit's parent.`, tree: tree.json.sha, parents: [head] } });
+  if (!made.ok) return send(res, 502, { ok: false, message: 'GitHub refused the change. Nothing was deleted.' });
+  const moved = await gh(token, `/repos/${owner}/${name}/git/refs/heads/${branch.split('/').map(encodeURIComponent).join('/')}`, { method: 'PATCH', body: { sha: made.json.sha, force: false } });
+  if (!moved.ok) return send(res, moved.status === 422 ? 409 : 502, { ok: false, changed: moved.status === 422, message: moved.status === 422 ? 'Something was saved at the same moment. Nothing was deleted; check again.' : 'GitHub refused the change. Nothing was deleted.' });
+  return send(res, 200, { ok: true, commit: made.json.sha, removed: plan.paths, message: `Deleted the file ${plan.name}.` });
+}
+
 /** What Vercel reported on a commit: 'success', 'pending', 'failure' or 'unknown' (nothing reported yet), with its link. */
 async function buildState(token, owner, name, sha) {
   const [st, cr] = await Promise.all([gh(token, `/repos/${owner}/${name}/commits/${sha}/statuses?per_page=100`), gh(token, `/repos/${owner}/${name}/commits/${sha}/check-runs?per_page=100`)]);
@@ -77,10 +105,12 @@ export function pickBuildState(statuses, checkRuns) {
   const latest = new Map();
   const keep = (key, r) => { const prev = latest.get(key); if (!prev || String(r.at || '') > String(prev.at || '')) latest.set(key, r); };
   for (const x of statuses) if (/vercel/i.test(x.context || '')) keep(`s:${x.context}`, { state: x.state === 'success' ? 'success' : x.state === 'pending' ? 'pending' : 'failure', url: x.target_url, at: x.updated_at || x.created_at });
-  for (const x of checkRuns) if (/vercel/i.test(`${x.name} ${x.app && x.app.slug}`)) keep(`c:${x.name}`, { state: x.status !== 'completed' ? 'pending' : ['success', 'neutral', 'skipped'].includes(x.conclusion) ? 'success' : 'failure', url: x.details_url || x.html_url, at: x.completed_at || x.started_at });
+  // A skipped, neutral or cancelled check is not a build: it says nothing about whether the site was deployed.
+  for (const x of checkRuns) if (/vercel/i.test(`${x.name} ${x.app && x.app.slug}`)) keep(`c:${x.name}`, { state: x.status !== 'completed' ? 'pending' : x.conclusion === 'success' ? 'success' : ['neutral', 'skipped', 'cancelled', 'stale'].includes(x.conclusion) ? 'unknown' : 'failure', url: x.details_url || x.html_url, at: x.completed_at || x.started_at });
   if (!latest.size) return { state: 'unknown' };
-  const rank = { failure: 3, pending: 2, success: 1 };
-  return [...latest.values()].sort((a, b) => rank[b.state] - rank[a.state])[0];
+  const rank = { failure: 4, pending: 3, success: 2, unknown: 1 };
+  const top = [...latest.values()].sort((a, b) => rank[b.state] - rank[a.state])[0];
+  return top.state === 'unknown' ? { state: 'unknown' } : top;
 }
 
 /** Undo one dashboard deletion: put back the files it removed, if they are still absent, as a new commit. */

@@ -104,7 +104,8 @@ test('film import on the latest branch: owner edits made during the import are k
   assert.equal(applied['qa-b'].state, 'skipped'); assert.equal((await read('qa-b')).import.state, 'waiting', 'the new link waits for the next run');
   assert.equal(applied['qa-c'].state, 'skipped'); assert.equal((await read('qa-c')).import.message, 'done', 'not imported twice');
   assert.equal(applied['qa-d'].state, 'skipped', 'poster frame changed during encoding: old output not used'); assert.equal((await read('qa-d')).import.state, 'waiting');
-  assert.equal((await read('qa-e')).import.state, 'ready', 'replacement recorded'); assert.equal((await read('qa-e')).src, '/v/qa-e.mp4');
+  assert.equal((await read('qa-e')).import.state, 'ready', 'replacement recorded');
+  assert.equal((await read('qa-e')).src, '/v/qa-e-r2.mp4', 'a replacement gets fresh file names'); assert.equal((await read('qa-e')).asset, 'qa-e-r2');
   const assets = JSON.parse(await readFile(join(dir, 'content/media-assets.json'), 'utf8'));
   assert.ok(assets.files['/v/qa-a.mp4'] && !assets.files['/v/qa-b.mp4'] && !assets.files['/v/qa-c.mp4'], 'only the recorded film is pinned');
 });
@@ -118,4 +119,65 @@ test('loader: a film being replaced keeps playing its current copy; a new film a
   await writeFile(join(dir, 'content/media/qa-replacing.json'), JSON.stringify({ ...base, title: 'Replacing', src: '/v/qa-replacing.mp4', poster: '/v/qa-replacing.webp', import: { state: 'retry' } }));
   const w = await loadWork(dir);
   assert.ok(!w.media.some((m) => m.id === 'qa-new')); assert.ok(w.media.some((m) => m.id === 'qa-replacing'));
+});
+
+test('replacement on a real page: fresh names for film, excerpt, poster and card poster; old files leave; returning visitors cannot get the old copy', { skip: !hasFfmpeg && 'ffmpeg not installed', timeout: 300000 }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pgk-film-replace-'));
+  for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
+  const env = { ...process.env, VERCEL_GIT_COMMIT_SHA: 'replace0' };
+  const build = () => execFileSync('node', ['src/build.mjs'], { cwd: dir, env, stdio: 'pipe' });
+  const html = async () => (await Promise.all(['index.html', 'creator-studios.html', 'creator-studios/sessions.html', 'architecture-design.html'].map((f) => readFile(join(dir, 'dist', f), 'utf8')))).join('\n');
+  build();
+  const before = await html();
+  const id = 'cs-podcast-ep23-short';
+  for (const u of [`/v/${id}-loop.mp4`, `/v/${id}.mp4`, `/v/${id}.webp`, `/images/posters-sm/${id}.webp`]) assert.ok(before.includes(u), 'before: ' + u);
+  // James replaces the film with a new export (a synthetic one here) and saves; the import runs.
+  const drive = join(dir, 'drive'); await mkdir(drive);
+  const rec = JSON.parse(await readFile(join(dir, 'content/media', `${id}.json`), 'utf8'));
+  const driveId = rec.drive.match(/file\/d\/([\w-]+)/)[1];
+  execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1080x1920:rate=25', '-f', 'lavfi', '-i', 'sine=frequency=330', '-t', '6', '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-f', 'mp4', join(drive, driveId)]);
+  rec.import = { state: 'retry' }; await writeFile(join(dir, 'content/media', `${id}.json`), JSON.stringify(rec, null, 2));
+  process.env.FILM_IMPORT_ROOT = dir; process.env.FILM_IMPORT_LOCAL_DIR = drive;
+  const { importFilms } = await import(`../scripts/import-films.mjs?replace=${Date.now()}`);
+  assert.deepEqual((await importFilms()).map((r) => r.state), ['ready']);
+  delete process.env.FILM_IMPORT_ROOT; delete process.env.FILM_IMPORT_LOCAL_DIR;
+  const after = JSON.parse(await readFile(join(dir, 'content/media', `${id}.json`), 'utf8'));
+  assert.equal(after.asset, `${id}-r2`); assert.equal(after.src, `/v/${id}-r2.mp4`); assert.equal(after.title, rec.title, 'record and its text unchanged');
+  // Pins, manifest and sources stay consistent: the media check passes and the old files are gone.
+  execFileSync('node', ['scripts/media-check.mjs'], { cwd: dir, stdio: 'pipe' });
+  for (const f of [`static/v/${id}.mp4`, `static/v/${id}-loop.mp4`, `static/images/posters-sm/${id}.webp`]) assert.ok(!existsSync(join(dir, f)), 'old file removed: ' + f);
+  build();
+  const now = await html();
+  for (const u of [`/v/${id}-r2-loop.mp4`, `/v/${id}-r2.mp4`, `/v/${id}-r2.webp`, `/images/posters-sm/${id}-r2.webp`]) assert.ok(now.includes(u), 'after: ' + u);
+  for (const u of [`/v/${id}-loop.mp4"`, `/v/${id}.mp4"`, `/v/${id}.webp"`, `/images/posters-sm/${id}.webp"`]) assert.ok(!now.includes(u), 'no page still asks for the old copy: ' + u);
+  assert.ok(now.includes(`data-id="${id}"`), 'same film id on the page');
+  // A second replacement moves on to -r3.
+  const r2 = JSON.parse(await readFile(join(dir, 'content/media', `${id}.json`), 'utf8')); r2.import = { state: 'retry' };
+  await writeFile(join(dir, 'content/media', `${id}.json`), JSON.stringify(r2, null, 2));
+  process.env.FILM_IMPORT_ROOT = dir; process.env.FILM_IMPORT_LOCAL_DIR = drive;
+  const again = await import(`../scripts/import-films.mjs?replace2=${Date.now()}`); await again.importFilms();
+  delete process.env.FILM_IMPORT_ROOT; delete process.env.FILM_IMPORT_LOCAL_DIR;
+  assert.equal(JSON.parse(await readFile(join(dir, 'content/media', `${id}.json`), 'utf8')).asset, `${id}-r3`);
+  execFileSync('node', ['scripts/media-check.mjs'], { cwd: dir, stdio: 'pipe' });
+  assert.ok(!existsSync(join(dir, `static/v/${id}-r2.mp4`)));
+});
+
+test('replacing a film used as a moving background also makes its phone still, so the page still builds', { skip: !hasFfmpeg && 'ffmpeg not installed', timeout: 300000 }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pgk-film-hero-'));
+  for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
+  const id = 're-hamptons-calm'; // the Real Estate hero and a Home path tile
+  const drive = join(dir, 'drive'); await mkdir(drive);
+  const link = 'QAheroReplaceAAAAAAAAAAAAAAAAA1';
+  execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1920x1080:rate=25', '-t', '5', '-c:v', 'libx264', '-f', 'mp4', join(drive, link)]);
+  const p = join(dir, 'content/media', `${id}.json`); const rec = JSON.parse(await readFile(p, 'utf8'));
+  Object.assign(rec, { drive: `https://drive.google.com/file/d/${link}/view`, import: { state: 'retry' } }); await writeFile(p, JSON.stringify(rec, null, 2));
+  process.env.FILM_IMPORT_ROOT = dir; process.env.FILM_IMPORT_LOCAL_DIR = drive;
+  const { importFilms } = await import(`../scripts/import-films.mjs?hero=${Date.now()}`);
+  assert.deepEqual((await importFilms()).map((r) => r.state), ['ready']);
+  delete process.env.FILM_IMPORT_ROOT; delete process.env.FILM_IMPORT_LOCAL_DIR;
+  assert.ok(existsSync(join(dir, `static/images/hero/${id}-r2-phone.webp`)) && existsSync(join(dir, `static/v/${id}-r2-loop.mp4`)));
+  execFileSync('node', ['scripts/media-check.mjs'], { cwd: dir, stdio: 'pipe' });
+  execFileSync('node', ['src/build.mjs'], { cwd: dir, env: { ...process.env, VERCEL_GIT_COMMIT_SHA: 'hero0000' }, stdio: 'pipe' });
+  const re = await readFile(join(dir, 'dist', 'real-estate.html'), 'utf8');
+  assert.ok(re.includes(`/images/hero/${id}-r2-phone.webp`) && re.includes(`/v/${id}-r2-loop.mp4`) && !re.includes(`/v/${id}-loop.mp4"`));
 });

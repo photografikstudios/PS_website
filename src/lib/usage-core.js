@@ -214,3 +214,25 @@ export function planDeletion({ collection, key, confirm, files = [] }, repo) {
   if (errors.length) return { errors, usage };
   return { errors: [], usage, name: displayName(collection, rec), paths: [c.path(key), ...files.map((f) => `static${f}`)] };
 }
+
+// ---------- Uploaded files (Codex review of 9e06705: a photo uploaded straight to a page has no Photos record) ----------
+export const UPLOAD_PATH = /^\/images\/(library|projects|field-notes)\/[^/]+\.(jpe?g|png|webp|gif|avif)$/i;
+/** Who uses one uploaded file, on the branch's current files. Pinned site files are never removable. */
+export function uploadUsage(path, repo) {
+  const p = sitePath(path);
+  const shared = fileRefs(p, repo, null);
+  const pinned = (repo.pins && repo.pins.has(p)) || (repo.posterPins && repo.posterPins.has(p));
+  return { path: p, shared, pinned, removable: UPLOAD_PATH.test(p) && !shared.length && !pinned };
+}
+/** Deleting one unused upload: exact file name typed, nothing uses it, not pinned, inside the upload folders. */
+export function planFileDeletion({ path, confirm }, repo) {
+  const p = sitePath(path);
+  if (!UPLOAD_PATH.test(p)) return { errors: ['Only photos uploaded in the dashboard can be deleted here.'] };
+  const u = uploadUsage(p, repo);
+  const errors = [];
+  if (u.shared.length) errors.push('It is still used: ' + u.shared.join('; ') + '.');
+  if (u.pinned) errors.push('It is a protected site file.');
+  const fileName = p.split('/').pop();
+  if (String(confirm || '').trim() !== fileName) errors.push(`Type the file name exactly: ${fileName}`);
+  return errors.length ? { errors, usage: u } : { errors: [], usage: u, name: fileName, paths: [`static${p}`] };
+}

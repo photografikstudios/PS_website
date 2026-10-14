@@ -303,7 +303,9 @@
       var link = document.createElement('a'); link.href = '#/collections/projects'; link.textContent = 'Open Projects and use Photos → Upload photos';
       link.onclick = function () { var close = dialog.querySelector('button[aria-label="Close"]'); if (close) close.click(); };
       note.appendChild(link);
-      note.appendChild(document.createTextNode(' Files are deleted together with the photo, film, project or article that uses them (open it, then “Where it is used, and delete”), so nothing still on the site can lose its picture here.'));
+      note.appendChild(document.createTextNode(' Deleting is not done in this window, so nothing still on the site can lose its picture. To delete a file nothing uses any more: '));
+      var up = document.createElement('button'); up.type = 'button'; up.className = 'pgk-linkbtn'; up.textContent = 'Uploaded files'; up.onclick = function () { window.pgkOpenUploads(); };
+      note.appendChild(up); note.appendChild(document.createTextNode('. Photos, films, projects and articles are deleted from their own page (“Where it is used, and delete”).'));
       dialog.insertBefore(note, dialog.children[1] || null);
     }
     if (dialog) Array.prototype.forEach.call(dialog.querySelectorAll('button'), function (b) { if (/^\s*delete( selected)?\s*$/i.test(b.textContent)) b.style.display = 'none'; });
@@ -630,7 +632,7 @@
           h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.setState({ picking: 'add' }); } }, arr.length ? 'Add from library' : 'Choose from library'),
           takesFiles(accepts) ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: this.state.busy, onClick: function () { self.inAdd.click(); } }, this.state.busy ? 'Uploading…' : 'Upload a photo') : null,
           takesFiles(accepts) ? fileInput(null) : null) : null,
-        h('p', { className: 'pgk-slot__note' }, 'Taking something off this page leaves it in the library. To delete a photo or film for good, open it in Photos or Films.'),
+        h('p', { className: 'pgk-slot__note' }, 'Taking something off this page never deletes it. Photos and films from the library stay in Photos and Films. A photo uploaded straight to this page is a file of its own: when it is off every page and saved, delete it under ', h('button', { type: 'button', className: 'pgk-linkbtn', onClick: function () { window.pgkOpenUploads(); } }, 'Uploaded files'), '.'),
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
         this.state.picking !== null ? h(LibraryPicker, { accepts: accepts, multiple: multi && this.state.picking === 'add', onClose: function () { self.setState({ picking: null }); }, onPick: function (ids) { self.pickDone(ids); } }) : null);
     },
@@ -735,6 +737,7 @@
       var f = this.props.field; var route = f.get('route'); var auto = (f.get('automatic') && f.get('automatic').toJS) ? f.get('automatic').toJS() : [];
       return h('div', { className: 'pgk-note', id: this.props.forID },
         h('p', {}, h('a', { href: window.location.origin + route, target: '_blank', rel: 'noopener' }, 'Open this page on the review site ↗'), ' ', h('span', { className: 'pgk-note__state' }, siteState.text())),
+        h('p', {}, 'Photos uploaded to this page that nothing uses any more can be deleted under ', h('button', { type: 'button', className: 'pgk-linkbtn', onClick: function () { window.pgkOpenUploads(); } }, 'Uploaded files'), '.'),
         auto.length ? h('div', {}, h('p', { className: 'pgk-note__h' }, 'Fills itself (changed elsewhere):'), h('ul', {}, auto.map(function (a, i) { return h('li', { key: i }, h('strong', {}, a[0] + ': '), a[1] + ' ', h('a', { href: a[2] }, 'Open')); }))) : null);
     },
   });
@@ -753,6 +756,89 @@
       .then(function (r) { return r.json().catch(function () { return { ok: false, message: 'The site did not answer. Try again in a minute.' }; }).then(function (j) { j.status = r.status; return j; }); })
       .catch(function () { return { ok: false, message: 'No connection. Nothing was changed.' }; });
   }
+
+  // ---------- Uploaded files: find one nothing uses any more, delete it after checking, Undo (Codex review of 9e06705) ----------
+  // A photo uploaded straight to a page section is a file of its own (no Photos record). Once it is off every page and
+  // saved, it is listed here as not used; deleting it checks the branch's latest files again and can be undone.
+  window.pgkOpenUploads = function () {
+    var o = document.activeElement; var opener = o && o !== document.body ? { el: o, text: (o.textContent || '').trim(), scope: o.closest && o.closest('[id]') ? o.closest('[id]').id : null } : null;
+    var wrap = document.createElement('div'); wrap.className = 'pgk-modal'; wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true'); wrap.setAttribute('aria-labelledby', 'pgk-up-h');
+    var box = document.createElement('div'); box.className = 'pgk-modal__box'; wrap.appendChild(box);
+    var state = { files: null, head: null, open: null, typed: '', busy: false, msg: '', done: {} };
+    function close() {
+      document.removeEventListener('keydown', onKey, true); wrap.remove();
+      if (!opener) return;
+      // If the page redrew the button that opened this, find the same button again in the same place.
+      var back = document.contains(opener.el) ? opener.el : opener.scope && document.getElementById(opener.scope) ? Array.prototype.find.call(document.getElementById(opener.scope).querySelectorAll('button'), function (b) { return (b.textContent || '').trim() === opener.text; }) : null;
+      if (back && back.focus) back.focus();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (state.open && !state.busy) { state.open = null; draw(); } else if (!state.busy) close(); return; }
+      if (e.key !== 'Tab') return;
+      var f = Array.prototype.filter.call(wrap.querySelectorAll(FOCUSABLE), function (x) { return x.getClientRects().length; });
+      if (!f.length) return; var first = f[0], last = f[f.length - 1], at = document.activeElement;
+      if (!wrap.contains(at)) { e.preventDefault(); first.focus(); } else if (e.shiftKey && at === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
+    }
+    document.addEventListener('keydown', onKey, true);
+    var el = function (tag, attrs, kids) { var n = document.createElement(tag); Object.keys(attrs || {}).forEach(function (k) { if (k === 'text') n.textContent = attrs[k]; else if (k.indexOf('on') === 0) n.addEventListener(k.slice(2), attrs[k]); else n.setAttribute(k, attrs[k]); }); (kids || []).forEach(function (c) { if (c) n.appendChild(c); }); return n; };
+    function load() {
+      state.files = null; state.msg = ''; draw();
+      manage({ action: 'files' }).then(function (r) { if (r.ok) { state.files = r.files; state.head = r.head; } else state.msg = r.message || 'The list could not be loaded.'; draw(); });
+    }
+    function del(f) {
+      state.busy = true; draw();
+      manage({ action: 'deleteFile', path: f.path, head: state.head, confirm: state.typed }).then(function (r) {
+        state.busy = false;
+        if (r.ok) { state.done[f.path] = r.commit; state.head = r.commit; state.open = null; state.focus = 'Undo deleting ' + f.path.split('/').pop(); state.msg = r.message + ' The review site updates in a few minutes.'; }
+        else { state.msg = r.message || 'Nothing was deleted.'; if (r.changed) { load(); return; } }
+        draw();
+      });
+    }
+    function undo(f) {
+      state.busy = true; draw();
+      manage({ action: 'restore', commit: state.done[f.path] }).then(function (r) { state.busy = false; if (r.ok) { delete state.done[f.path]; state.head = r.commit; state.focus = 'Delete ' + f.path.split('/').pop(); state.msg = 'Restored ' + f.path.split('/').pop() + '.'; } else state.msg = r.message || 'Nothing was restored.'; draw(); });
+    }
+    function draw() {
+      var focusName = state.focus || (document.activeElement && wrap.contains(document.activeElement) ? (document.activeElement.getAttribute('aria-label') || document.activeElement.textContent) : null); state.focus = null;
+      box.innerHTML = '';
+      var body = el('div', { class: 'pgk-modal__body' });
+      body.appendChild(el('h2', { id: 'pgk-up-h', text: 'Uploaded files' }));
+      body.appendChild(el('p', { text: 'Photos uploaded straight to a page section, a project or an article. A file that nothing uses any more can be deleted here; anything still used, or protected, is kept. Save page changes first: this list reads the latest saved version.' }));
+      if (state.msg) body.appendChild(el('p', { class: 'pgk-msg', role: 'status', text: state.msg }));
+      if (!state.files) body.appendChild(el('p', { role: 'status', text: 'Checking every page, project, article and library record…' }));
+      else {
+        var unused = state.files.filter(function (f) { return f.removable || state.done[f.path]; });
+        body.appendChild(el('p', { class: 'pgk-gallery__count', text: unused.length + ' not used · ' + (state.files.length - unused.length) + ' in use or protected' }));
+        var list = el('ol', { class: 'pgk-gallery__list' });
+        state.files.forEach(function (f) {
+          var nameOf = f.path.split('/').pop(); var gone = !!state.done[f.path];
+          var img = el('img', { class: 'pgk-thumb', src: f.path, alt: '', loading: 'lazy' }); img.onerror = function () { if (!this.dataset.tried) { this.dataset.tried = '1'; this.src = repoRaw + f.path; } };
+          var info = el('div', { class: 'pgk-row__fields' }, [
+            el('p', { class: 'pgk-row__title' }, [el('strong', { text: nameOf }), document.createTextNode(' '), el('span', { text: gone ? 'Deleted' : f.removable ? 'Not used anywhere' : f.pinned ? 'Protected site file' : 'Used in: ' + f.shared.join('; ') })]),
+          ]);
+          if (state.open === f.path) {
+            var input = el('input', { type: 'text', 'aria-label': 'Type the file name to confirm' }); input.value = state.typed;
+            input.addEventListener('input', function () { state.typed = input.value; btn.disabled = state.busy || state.typed.trim() !== nameOf; });
+            var btn = el('button', { type: 'button', class: 'pgk-btn pgk-btn--danger', text: state.busy ? 'Deleting…' : 'Delete for good', onclick: function () { del(f); } }); btn.disabled = state.busy || state.typed.trim() !== nameOf;
+            info.appendChild(el('label', { class: 'pgk-confirm' }, [el('span', { text: 'Type the file name to confirm: ' + nameOf }), input]));
+            info.appendChild(el('div', { class: 'pgk-gallery__bar' }, [btn, el('button', { type: 'button', class: 'pgk-btn pgk-btn--quiet', text: 'Cancel', onclick: function () { state.open = null; draw(); } })]));
+            setTimeout(function () { input.focus(); }, 0);
+          }
+          var tools = el('div', { class: 'pgk-row__tools' }, [
+            gone ? el('button', { type: 'button', class: 'pgk-btn pgk-btn--quiet pgk-btn--small', 'aria-label': 'Undo deleting ' + nameOf, text: 'Undo', onclick: function () { undo(f); } })
+              : f.removable && state.open !== f.path ? el('button', { type: 'button', class: 'pgk-btn pgk-btn--quiet pgk-btn--small', 'aria-label': 'Delete ' + nameOf, text: 'Delete…', onclick: function () { state.open = f.path; state.typed = ''; state.msg = ''; draw(); } }) : null,
+          ]);
+          list.appendChild(el('li', { class: 'pgk-row' + (gone ? ' pgk-row--out' : '') }, [img, info, tools]));
+        });
+        body.appendChild(list);
+      }
+      body.appendChild(el('div', { class: 'pgk-gallery__bar' }, [el('button', { type: 'button', class: 'pgk-btn pgk-btn--quiet', text: 'Check again', onclick: load }), el('button', { type: 'button', class: 'pgk-btn', text: 'Close', onclick: close })]));
+      box.appendChild(body);
+      if (focusName) { var again = Array.prototype.find.call(box.querySelectorAll('button, input'), function (b) { return (b.getAttribute('aria-label') || b.textContent) === focusName; }); if (again) again.focus(); }
+    }
+    document.body.appendChild(wrap); load();
+    setTimeout(function () { var b = wrap.querySelector('button'); if (b && !wrap.contains(document.activeElement)) b.focus(); }, 0);
+  };
 
   // ---------- Saved vs on the site (Codex CMS audit #9) ----------
   // Compares the branch's latest commit (what Save wrote) with the commit the review site was built from.
@@ -1040,6 +1126,7 @@
     '.pgk-files { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dfe3e8; border-radius: 6px; } .pgk-files label { display: block; margin: 4px 0; }',
     '.pgk-confirm { display: block; margin: 0 0 12px; } .pgk-confirm span { display: block; margin-bottom: 6px; } .pgk-confirm input { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',
     '.pgk-captions .pgk-radio { display: block; margin: 4px 0; }',
+    '.pgk-linkbtn { border: 0; background: none; padding: 0; font: inherit; color: #176277; font-weight: 600; text-decoration: underline; cursor: pointer; }',
     '.pgk-files .pgk-radio { display: block; margin: 4px 0; } .pgk-row--out { opacity: .55; }',
     '.pgk-sitepill--failed { background: #fef3f2 !important; border-color: #fecdca !important; color: #912018 !important; } .pgk-sitepill a { color: inherit; font-weight: 600; }',
     '.pgk-sitepill { position: fixed; left: 12px; bottom: 12px; z-index: 390; margin: 0; padding: 6px 12px; border-radius: 999px; background: #ecfdf3; border: 1px solid #abefc6; color: #05603a; font-size: 12px; } .pgk-sitepill--busy { background: #fffaeb; border-color: #fedf89; color: #7a4a00; }',
