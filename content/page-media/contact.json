@@ -1,7 +1,4 @@
 {
   "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
-  "introMedia": {
-    "src": "/images/library/above-the-form-3df6f80f72.webp",
-    "alt": "Disposable CMS review copy of a timber-frame great room; remove after testing."
-  }
+  "introMedia": null
 }
