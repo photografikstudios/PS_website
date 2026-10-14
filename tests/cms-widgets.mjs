@@ -45,6 +45,9 @@ function renderNode(v, path) {
     if (k === 'ref') { if (typeof val === 'function') val(el); continue; }
     if (k === 'className') el.className = val;
     else if (k === 'style' && typeof val === 'object') Object.assign(el.style, val);
+    // A rebuilt <video> fires a fresh load error on every redraw here (React keeps the element), which would redraw for
+    // ever; the preview's fallback is not what these checks are about.
+    else if (k === 'onError' && v.type === 'video') continue;
     else if (k.startsWith('on') && typeof val === 'function') {
       const ev = k === 'onChange' ? (['SELECT'].includes(el.tagName) || ['checkbox', 'radio', 'file'].includes(v.props.type) ? 'change' : 'input') : k.slice(2).toLowerCase();
       el.addEventListener(ev, val);
@@ -56,9 +59,21 @@ function renderNode(v, path) {
   return el;
 }
 const wrap = (x) => (x !== null && typeof x === 'object' ? { get: (k) => wrap(x[k]), getIn: (p) => p.reduce((a, k) => (a == null ? a : a[k]), x) && wrap(p.reduce((a, k) => (a == null ? a : a[k]), x)), toJS: () => JSON.parse(JSON.stringify(x)), _raw: x } : x);
-window.mountWidget = function (name, { field, value, entry, collection }) {
+// Two behaviours of the real Decap 3.16.3 that the acceptance walk on 94d5fb1 hit (opt in with decap: { stored }):
+// - A control's props.entry, as its isValid sees it on Save, keeps the sibling values from when the control's own value
+//   last changed (observed in real Decap 3.16.3 on Oct 14, with and without the control's own shouldComponentUpdate).
+// - Its draft reducer sets hasChanged = !storedCopies.some((copy) => Immutable.is(draft.data, copy.data)); the copies can
+//   include the version from before the last save. Immutable keeps null, undefined and a missing key apart.
+const immEq = (a, b) => {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  const ka = Object.keys(a); const kb = Object.keys(b);
+  return ka.length === kb.length && ka.every((k) => Object.prototype.hasOwnProperty.call(b, k) && immEq(a[k], b[k]));
+};
+window.mountWidget = function (name, { field, value, entry, collection, decap }) {
   const host = document.createElement('div'); host.className = 'host-' + name; document.body.appendChild(host);
-  const state = { value };
+  const state = { value, entry: Object.assign({ data: {} }, entry) };
   const Ctrl = window.__registered[name];
   const m = { id: name + '#' + mounts.length, state, draw() {
     // React keeps the focused element across updates; this stand-in rebuilds the DOM, so it puts focus back on the
@@ -66,8 +81,11 @@ window.mountWidget = function (name, { field, value, entry, collection }) {
     const a = document.activeElement; const keyOf = (el) => (el.getAttribute('aria-label') || el.textContent.trim()) + '|' + el.tagName;
     const focusKey = a && host.contains(a) ? keyOf(a) : null;
     host.innerHTML = '';
+    let entryProp = wrap(state.entry);
+    if (decap && m.instance && m.lastValue === state.value) entryProp = m.lastEntry;
+    m.lastValue = state.value; m.lastEntry = entryProp;
     const props = { value: state.value, onChange: (v) => { state.value = v && v.toJS ? v.toJS() : v; schedule(); }, field: wrap(field), forID: m.id.replace('#', '-'),
-      entry: wrap(Object.assign({ data: {} }, entry)), collection: wrap({ name: collection }), getAsset: (p) => p, onPersistMedia: (file) => Promise.resolve({ payload: { path: 'static/images/library/' + file.name } }) };
+      entry: entryProp, collection: wrap({ name: collection }), getAsset: (p) => p, onPersistMedia: (file) => Promise.resolve({ payload: { path: 'static/images/library/' + file.name } }) };
     drawn = new Set();
     host.appendChild(renderNode(h(Ctrl, props), m.id));
     // Like React: components that were not drawn this time are unmounted.
@@ -79,6 +97,12 @@ window.mountWidget = function (name, { field, value, entry, collection }) {
     if (focusKey) { const again = Array.prototype.find.call(host.querySelectorAll('button, input, select, a'), (el) => keyOf(el) === focusKey); if (again) again.focus(); }
     m.instance = instances.get(m.id + ':');
   } };
+  // Another field of the same entry was edited: Decap re-renders every control with the new entry.
+  m.setSibling = (k, v) => { state.entry = Object.assign({}, state.entry, { data: Object.assign({}, state.entry.data, { [k]: v }) }); schedule(); };
+  m.data = () => Object.assign({}, state.entry.data, { [field.name]: state.value });
+  m.hasChanged = () => !((decap && decap.stored) || []).some((copy) => immEq(m.data(), copy));
+  m.savedJson = () => JSON.parse(JSON.stringify(m.data())); // what Save writes to the file
+  m.unmount = () => { mounts = mounts.filter((x) => x !== m); for (const [k, inst] of [...instances]) if (k.startsWith(m.id + ':')) { if (inst.componentWillUnmount) inst.componentWillUnmount(); instances.delete(k); } host.remove(); };
   mounts.push(m); m.draw(); return m;
 };
 window.CMS = { registerWidget: (n, c) => { window.__registered[n] = c; }, registerPreviewTemplate() {}, registerPreviewStyle() {}, registerEditorComponent() {}, registerLocale() {}, registerEventListener() {}, init() {} };
@@ -129,12 +153,12 @@ const slotField = async (file, key) => {
   return cfg.collections.find((c) => c.name === 'page-media').files.find((f) => f.name === file).fields.find((x) => x.name === key);
 };
 const results = [];
-const check = async (name, fn) => { console.log('… ' + name); try { await fn(); results.push(['ok', name]); } catch (e) { results.push(['FAIL', name, e.message]); } };
+const check = async (name, fn) => { console.log('… ' + name); try { await fn(); results.push(['ok', name]); } catch (e) { results.push(['FAIL', name, e.message.slice(0, 900)]); } };
 const valid = (cls) => page.evaluate((c) => { const m = window.__mounts?.[c]; return null; }, cls);
 
 await check('registered widgets', async () => {
   const names = await page.evaluate(() => Object.keys(window.__registered).sort());
-  for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
+  for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-drive', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
 });
 
 await check('Page Media single required section: shows the item, cannot be emptied, replace from the library', async () => {
@@ -187,7 +211,7 @@ await check('Page Media optional section on a text-only page: empty by default, 
   const v = await page.evaluate(() => window.__slot3.state.value);
   assert.ok(v && v.media, JSON.stringify(v));
   await host.getByRole('button', { name: 'Take off this page' }).click(); await page.waitForTimeout(30);
-  assert.equal(await page.evaluate(() => window.__slot3.state.value), null, 'removed from the page, nothing deleted');
+  assert.equal(await page.evaluate(() => window.__slot3.state.value), undefined, 'removed from the page (no value), nothing deleted');
 });
 
 await check('Where it is used: an in-use photo lists its places and cannot be deleted', async () => {
@@ -256,6 +280,67 @@ await check('Film from Google Drive: new film starts waiting; failed shows the r
   await ready.getByRole('button', { name: 'Replace or re-import from Google Drive' }).click(); await page.waitForTimeout(50);
   assert.deepEqual(await page.evaluate(() => window.__f7.state.value), { state: 'retry' });
   assert.match(await page.locator('.host-pgk-film-status').last().innerText(), /keeps playing the current copy/);
+});
+
+await check('Decap 3.16.3 behaviour: taking the photo off an optional section after an earlier save can be saved; Save writes no key; reopened it is empty', async () => {
+  // Codex, 94d5fb1: Contact started empty, a photo was uploaded and saved, then Take off this page left Save off.
+  const field = await slotField('contact', 'introMedia'); const base = await pm('contact');
+  const photo = { src: '/images/library/qa-above-the-form-0000000000.webp', alt: 'QA disposable photo' };
+  const before = { ...base, introMedia: null }; const saved = { ...base, introMedia: photo };
+  await page.evaluate(({ field, photo, before, saved }) => { window.__c1 = window.mountWidget('pgk-slot', { field, value: photo, entry: { slug: 'contact', data: saved }, collection: 'page-media', decap: { stored: [before, saved] } }); }, { field, photo, before, saved });
+  const host = page.locator('.host-pgk-slot').last();
+  assert.equal(await page.evaluate(() => window.__c1.hasChanged()), false, 'just saved');
+  await host.getByRole('button', { name: 'Take off this page' }).click(); await page.waitForTimeout(50);
+  assert.equal(await page.evaluate(() => window.__c1.hasChanged()), true, 'Save is offered after Take off this page');
+  assert.equal(await page.evaluate(() => window.__c1.instance.isValid()), true);
+  const written = await page.evaluate(() => window.__c1.savedJson());
+  assert.ok(!('introMedia' in written), 'the file leaves the section out: ' + JSON.stringify(written));
+  // Reopened from the saved file: empty, and the build's own check accepts it.
+  await page.evaluate(({ field, written }) => { window.__c2 = window.mountWidget('pgk-slot', { field, value: written.introMedia, entry: { slug: 'contact', data: written }, collection: 'page-media' }); }, { field, written });
+  assert.match(await page.locator('.host-pgk-slot').last().innerText(), /Nothing is shown here|Empty|Upload|library/i);
+  const { checkPageMedia } = await import(join(root, 'src/lib/page-media-core.js'));
+  const all = Object.fromEntries(await Promise.all(['about', 'agency-partnerships', 'agent-content', 'architecture-design', 'commercial', 'contact', 'creator-studios', 'field-notes', 'home', 'real-estate-pricing', 'real-estate'].map(async (f) => [f, await pm(f)])));
+  all.contact = written;
+  const res = checkPageMedia(all, { media: new Map(), loops: new Set(), heroLoops: new Set(), projects: new Set(), fileExists: () => true });
+  assert.ok(!res.errors.some((e) => /contact/i.test(e)), res.errors.filter((e) => /contact/i.test(e)).join('; '));
+  // The same applies to galleries going back to Automatic and the case study going back to Automatic.
+  const gfield = await slotField('home', 'selectedWork');
+  const custom = { mode: 'automatic', exclude: ['cs-demo-reel'] };
+  await page.evaluate(({ gfield, custom }) => { window.__g9 = window.mountWidget('pgk-gallery-slot', { field: gfield, value: custom, entry: { slug: 'home', data: { selectedWork: custom } }, collection: 'page-media', decap: { stored: [{ selectedWork: null }, { selectedWork: custom }] } }); }, { gfield, custom });
+  await page.locator('.host-pgk-gallery-slot').last().getByRole('button', { name: 'Put back' }).first().click(); await page.waitForTimeout(50);
+  assert.equal(await page.evaluate(() => window.__g9.hasChanged()), true, 'Put back the last left-out item is saveable');
+  assert.ok(!('selectedWork' in await page.evaluate(() => window.__g9.savedJson())));
+  await page.evaluate(() => { window.__c1.unmount(); window.__c2.unmount(); window.__g9.unmount(); });
+});
+
+await check('Decap 3.16.3 behaviour: a Drive link typed after the film form opened is the one checked on Save (new film and re-import)', async () => {
+  const link = 'https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view';
+  // New film: Codex filled the form with James's valid link; Save refused it because the check read the form as opened.
+  await page.evaluate(() => { window.__n1 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: undefined, entry: { newRecord: true, data: { title: 'QA CMS Drive import 2026-10-14' } }, collection: 'films', decap: { stored: [] } }); });
+  await page.waitForTimeout(60);
+  assert.match((await page.evaluate(() => window.__n1.instance.isValid())).error.message, /Paste the Google Drive link/, 'empty link is refused');
+  await page.evaluate(() => { window.__d1 = window.mountWidget('pgk-drive', { field: { name: 'drive' }, value: '', entry: { newRecord: true, data: {} }, collection: 'films' }); });
+  for (const [k, v] of [['service', ['podcast']], ['category', 'creator-studios'], ['published', false], ['captions', 'burned-in'], ['makeLoop', true], ['drive', link]]) await page.evaluate(([k, v]) => window.__n1.setSibling(k, v), [k, v]);
+  await page.waitForTimeout(60);
+  assert.match((await page.evaluate(() => window.__n1.instance.isValid())).error.message, /Paste the Google Drive link/, 'the form as it opened is not what counts');
+  await page.locator('.host-pgk-drive').last().locator('input').fill(link); await page.waitForTimeout(60);
+  assert.equal(await page.evaluate(() => window.__n1.instance.isValid()), true, 'the valid link typed into the form is accepted');
+  assert.deepEqual(await page.evaluate(() => window.__n1.state.value), { state: 'waiting' }, 'saved as waiting, so the import starts');
+  await page.locator('.host-pgk-drive').last().locator('input').fill('https://drive.google.com/drive/folders/abc'); await page.waitForTimeout(60);
+  assert.match((await page.evaluate(() => window.__n1.instance.isValid())).error.message, /Paste the Google Drive link/, 'a folder link is still refused');
+  // Ready film: Replace, then a new link and a new poster frame typed afterwards.
+  await page.evaluate(() => { window.__d1.unmount(); window.__d2 = window.mountWidget('pgk-drive', { field: { name: 'drive' }, value: '', entry: { slug: 'qa-ready-2', data: {} }, collection: 'films' }); });
+  await page.evaluate((link) => { window.__r1 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'ready', message: 'Imported.' }, entry: { slug: 'qa-ready-2', data: { src: '/v/qa-ready-2.mp4', rights: 'approved', published: false, drive: '' } }, collection: 'films', decap: { stored: [] } }); }, link);
+  const r = page.locator('.host-pgk-film-status').last();
+  assert.equal(await page.evaluate(() => window.__r1.instance.isValid()), true, 'a ready film saves without a link when nothing is re-imported');
+  await r.getByRole('button', { name: /^Replace/ }).evaluate((b) => b.click()); await page.waitForTimeout(60);
+  assert.match((await page.evaluate(() => window.__r1.instance.isValid())).error.message, /Paste the Google Drive link/);
+  await page.evaluate(() => window.__r1.setSibling('posterTime', 4.5));
+  await page.locator('.host-pgk-drive').last().locator('input').fill(link.replace('/view', '/view?usp=sharing')); await page.waitForTimeout(60);
+  assert.equal(await page.evaluate(() => window.__r1.instance.isValid()), true, 're-import with the link typed after Replace');
+  await page.evaluate(() => { window.__n1.unmount(); window.__r1.unmount(); window.__d2.unmount(); });
+  assert.match((await page.evaluate(() => { window.__r2 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'retry' }, entry: { slug: 'qa-x', data: { drive: '' } }, collection: 'films' }); return window.__r2.instance.isValid(); })).error.message, /Paste the Google Drive link/, 'with no Drive field on screen, the saved value counts');
+  await page.evaluate(() => window.__r2.unmount());
 });
 
 await check('Captions: a file that is not WebVTT is refused with a reason', async () => {
@@ -340,7 +425,7 @@ await check('Page Media gallery: leave out on this page only, own selection with
   let v = await page.evaluate(() => window.__g1.state.value);
   assert.equal(v.mode, 'automatic'); assert.equal(v.exclude.length, 1);
   await host.getByRole('button', { name: 'Put back' }).click(); await page.waitForTimeout(30);
-  assert.equal(await page.evaluate(() => window.__g1.state.value), null, 'nothing left out: plain Automatic again');
+  assert.equal(await page.evaluate(() => window.__g1.state.value), undefined, 'nothing left out: plain Automatic again (no value)');
   await host.getByLabel(/My own selection/).click(); await page.waitForTimeout(30);
   v = await page.evaluate(() => window.__g1.state.value);
   assert.equal(v.mode, 'custom'); assert.ok(v.items.length > 20, 'starts from what Automatic shows');
@@ -351,7 +436,7 @@ await check('Page Media gallery: leave out on this page only, own selection with
   await host.getByRole('button', { name: 'Take off this page' }).first().evaluate((b) => b.click()); await page.waitForTimeout(30);
   assert.equal((await page.evaluate(() => window.__g1.state.value)).items[0].media, first);
   await host.getByLabel(/Automatic: /).click(); await page.waitForTimeout(30);
-  assert.equal(await page.evaluate(() => window.__g1.state.value), null);
+  assert.equal(await page.evaluate(() => window.__g1.state.value), undefined);
   // Commercial case study: a project, or Automatic.
   const cf = await slotField('commercial', 'caseStudy');
   await page.evaluate(({ cf }) => { window.__g2 = window.mountWidget('pgk-gallery-slot', { field: cf, value: null, entry: {}, collection: 'page-media' }); }, { cf });
@@ -371,7 +456,8 @@ await check('Uploaded files: an upload taken off every page is found, deleted on
   assert.equal(await dlg.getByRole('button', { name: 'Delete qa-on-a-page.jpg' }).count(), 0, 'a file in use offers no delete');
   await dlg.getByRole('button', { name: 'Delete qa-direct-upload-5f5f5f5f5f.jpg' }).click();
   const box = dlg.getByRole('textbox', { name: 'Type the file name to confirm' });
-  await box.waitFor(); assert.ok(await box.evaluate((e) => e === document.activeElement), 'focus moves to the name box');
+  await box.waitFor(); await page.waitForFunction(() => document.activeElement && document.activeElement.getAttribute('aria-label') === 'Type the file name to confirm', null, { timeout: 2000 }).catch(() => {});
+  assert.ok(await box.evaluate((e) => e === document.activeElement), 'focus moves to the name box');
   const go = dlg.getByRole('button', { name: 'Delete for good' });
   await box.fill('qa-direct-upload'); assert.equal(await go.isDisabled(), true);
   await page.keyboard.press('Escape'); await page.waitForTimeout(30);
@@ -390,7 +476,8 @@ await check('Uploaded files: an upload taken off every page is found, deleted on
   assert.equal(manageCalls.filter((c) => c.action === 'restore').pop().commit, 'd'.repeat(40));
   await page.keyboard.press('Escape'); await page.waitForTimeout(30);
   assert.equal(await dlg.count(), 0);
-  assert.ok(await link.evaluate((e) => e === document.activeElement), 'focus returns to the Uploaded files link: ' + await page.evaluate(() => document.activeElement.outerHTML.slice(0, 120) + ' ' + document.querySelectorAll('.pgk-slot__note .pgk-linkbtn').length));
+  // The stand-in redraws the DOM, so compare the place, not the element: the Uploaded files link of the same section.
+  assert.ok(await page.evaluate(() => { const a = document.activeElement; const l = document.querySelector('.pgk-slot__note .pgk-linkbtn'); return !!a && a.matches('.pgk-slot__note .pgk-linkbtn') && a.closest('[id]') === l.closest('[id]'); }), 'focus returns to the Uploaded files link');
 });
 
 await check('Bottom note: the review-only test note is one line, opens for details, can be hidden; a held project stays; neither covers the save pill', async () => {

@@ -74,6 +74,12 @@ test('Page Media: the committed choices pass, and each rule refuses what it shou
   assert.match(bad((x) => { x['architecture-design'].designDetail = [...x['architecture-design'].designDetail, { media: 'ph-dan-dan' }]; }), /no more than 4/);
   assert.match(bad((x) => { x.contact.introMedia = { src: '/images/library/missing.jpg', alt: 'x' }; }), /is missing/);
   assert.equal(bad((x) => { x.contact.introMedia = null; x.about.teamMedia = { media: 'cs-demo-reel' }; }), '', 'optional sections take a photo or a film, or stay empty');
+  // Codex acceptance of 94d5fb1: an emptied section is saved by leaving its key out of the file (the dashboard writes
+  // "no value" so Decap sees the change). Every optional section and gallery accepts that; required ones still refuse.
+  for (const p of PAGES) for (const sl of p.slots) {
+    const msg = bad((x) => { delete x[p.file][sl.key]; });
+    if (sl.required) assert.match(msg, /cannot be empty/, `${p.file}.${sl.key} is required`); else assert.equal(msg, '', `${p.file}.${sl.key} left out`);
+  }
 });
 
 test('Page Media: a changed choice changes the built page; removing it again restores the page byte for byte', { timeout: 120000 }, async () => {
@@ -100,6 +106,13 @@ test('Page Media: a changed choice changes the built page; removing it again res
   for (const f of ['commercial', 'creator-studios', 'contact']) await cp(join(root, 'content/page-media', `${f}.json`), join(dir, 'content/page-media', `${f}.json`));
   build();
   assert.equal(await page('commercial.html'), before.com); assert.equal(await page('creator-studios.html'), before.cs); assert.equal(await page('contact.html'), before.contact);
+  // Emptied in the dashboard (the key is left out of the file): the same page as an empty section.
+  await edit('contact', (v) => { delete v.introMedia; });
+  await edit('home', (v) => { delete v.selectedWork; });
+  await edit('commercial', (v) => { delete v.caseStudy; delete v.clientWork; });
+  build();
+  assert.equal(await page('contact.html'), before.contact, 'Contact with no introMedia key'); assert.equal(await page('commercial.html'), before.com, 'Commercial with Automatic galleries left out');
+  for (const f of ['commercial', 'home', 'contact']) await cp(join(root, 'content/page-media', `${f}.json`), join(dir, 'content/page-media', `${f}.json`));
   // A broken choice stops the build with a plain reason (the live site keeps the previous version).
   await edit('home', (v) => { v.hero = null; });
   assert.throws(build, (e) => /Page Media Home, Top of the page: moving background: choose an item; this section cannot be empty/.test(String(e.stderr)));
@@ -371,6 +384,14 @@ test('Codex follow-up: projects chosen in Page Media are protected; large and em
   assert.equal(pickBuildState([], [c('completed', 'neutral', '2026-10-13T20:00:00Z')]).state, 'unknown');
   assert.equal(pickBuildState([], [c('completed', 'failure', '2026-10-13T20:00:00Z'), c('completed', 'skipped', '2026-10-13T20:09:00Z')]).state, 'unknown', 'a later skip hides nothing: still no build evidence');
   assert.equal(pickBuildState([s('success', '2026-10-13T20:05:00Z')], [c('completed', 'skipped', '2026-10-13T20:09:00Z')]).state, 'success', 'a real success elsewhere still counts');
+  // Codex acceptance of 94d5fb1 (commit f352438): Vercel status success plus a failed "Vercel Preview Comments" check
+  // (details https://vercel.com/github) showed "Site update failed" while the deployment was READY.
+  const comments = (conclusion, at = '2026-10-14T13:02:00Z') => ({ name: 'Vercel Preview Comments', app: { slug: 'vercel' }, status: 'completed', conclusion, details_url: 'https://vercel.com/github', completed_at: at });
+  assert.equal(pickBuildState([s('success', '2026-10-14T13:01:00Z')], [comments('failure')]).state, 'success', 'a comments check is not the deployment');
+  assert.equal(pickBuildState([], [comments('failure')]).state, 'unknown', 'comments alone say nothing about the build');
+  assert.equal(pickBuildState([s('pending', '2026-10-14T13:01:00Z')], [comments('success')]).state, 'pending', 'a passing comments check is not a finished build either');
+  assert.equal(pickBuildState([s('failure', '2026-10-14T13:01:00Z')], [comments('success')]).state, 'failure', 'a real failed deployment still shows');
+  assert.equal(pickBuildState([s('success', '2026-10-14T13:01:00Z', 'Vercel Preview Comments')], []).state, 'unknown', 'also as a status context');
 });
 
 // ---------- Codex final-bundle review of 9e06705: files uploaded straight to a page ----------

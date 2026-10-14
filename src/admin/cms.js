@@ -338,6 +338,12 @@
   window.__pgkDecorate = decorateCards; // for the dashboard tests
 
   // ---------- Dialogs: keyboard focus stays inside, Escape closes, focus returns to the button that opened it ----------
+  // Emptying a field writes “no value” (undefined), never null (Codex acceptance of 94d5fb1). Decap marks the entry as
+  // changed only while its data differs from every copy of the entry it holds, and the copy it holds from before an
+  // earlier save can be the empty one (null): clearing back to null then looked unchanged, Save stayed off and the
+  // photo came back on reload. JSON files never contain undefined, so an emptied field always differs from any saved
+  // copy; on Save the key is simply left out of the file, which the site and its checks read as empty.
+  var CLEARED = void 0;
   var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
   var Modal = createClass({
     componentDidMount: function () {
@@ -570,7 +576,7 @@
     getInitialState: function () { return { picking: null, busy: false, msgs: [] }; },
     f: function (k) { return this.props.field.get(k); },
     items: function () { return asItems(this.props.value).map(function (x) { return Object.assign({}, x); }); },
-    set: function (arr) { this.props.onChange(this.f('multiple') ? arr : (arr[0] || null)); },
+    set: function (arr) { this.props.onChange(arr.length ? (this.f('multiple') ? arr : arr[0]) : CLEARED); },
     isValid: function () {
       var self = this; var arr = this.items(); var errs = [];
       if (this.f('mustHave') && !arr.length) errs.push('This section cannot be empty: choose a replacement instead of taking it off.');
@@ -688,13 +694,13 @@
         return h('div', { className: 'pgk-slot', id: this.props.forID },
           h('p', { className: 'pgk-slot__kind' }, 'Automatic: ' + this.f('auto')),
           h('label', { className: 'pgk-confirm' }, h('span', {}, 'Project shown as the case study'),
-            h('select', { value: v && v.hide ? '-' : v && v.project ? v.project : '', onChange: function (e) { var x = e.target.value; self.props.onChange(x === '-' ? { hide: true } : x ? { project: x } : null); } },
+            h('select', { value: v && v.hide ? '-' : v && v.project ? v.project : '', onChange: function (e) { var x = e.target.value; self.props.onChange(x === '-' ? { hide: true } : x ? { project: x } : CLEARED); } },
               h('option', { value: '' }, 'Automatic'), h('option', { value: '-' }, 'No case study on this page'), PROJECTS.filter(function (p) { return p.cat === 'commercial'; }).map(function (p) { return h('option', { key: p.slug, value: p.slug }, p.title + (p.hidden ? ' (draft)' : '')); }))));
       }
       var custom = v && v.mode === 'custom';
       var exclude = (v && v.exclude) || [];
       var radio = function (mode, label) { return h('label', { className: 'pgk-radio' }, h('input', { type: 'radio', name: self.props.forID + '-mode', checked: (mode === 'custom') === !!custom, onChange: function () {
-        if (mode === 'automatic') self.props.onChange(exclude.length ? { mode: 'automatic', exclude: exclude } : null);
+        if (mode === 'automatic') self.props.onChange(exclude.length ? { mode: 'automatic', exclude: exclude } : CLEARED);
         else self.setCustom(self.auto().filter(function (id) { return exclude.indexOf(id) < 0; }).map(function (id) { return self.item(id); }));
       } }), ' ' + label); };
       var list = custom ? (v.items || []).map(function (it) { return self.idOf(it); }) : this.auto();
@@ -715,7 +721,7 @@
               custom ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () { var items = v.items.slice(); items.splice(i, 1); self.setCustom(items); } }, 'Take off this page')
                 : h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () {
                   var ex = out ? exclude.filter(function (x) { return x !== id; }) : exclude.concat([id]);
-                  self.props.onChange(ex.length ? { mode: 'automatic', exclude: ex } : null);
+                  self.props.onChange(ex.length ? { mode: 'automatic', exclude: ex } : CLEARED);
                 } }, out ? 'Put back' : 'Leave out on this page')));
         })),
         !custom && list.length > shown.length ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ showAll: true }); } }, 'Show all ' + list.length) : null,
@@ -970,11 +976,15 @@
     // A new film, or a film asked to be (re)imported, cannot be saved without the Drive link of the film file.
     isValid: function () {
       var v = this.val(); var asked = this.isNew() || (v && (v.state === 'waiting' || v.state === 'retry'));
-      if (asked && !/^https:\/\/drive\.google\.com\/(file\/d\/|open\?id=|uc\?id=)[\w-]{20,}/.test(String(this.data('drive') || ''))) return { error: { type: 'custom', message: 'Paste the Google Drive link of the film file (drive.google.com/file/d/…) before saving.' } };
+      if (asked && !/^https:\/\/drive\.google\.com\/(file\/d\/|open\?id=|uc\?id=)[\w-]{20,}/.test(String(this.drive() || ''))) return { error: { type: 'custom', message: 'Paste the Google Drive link of the film file (drive.google.com/file/d/…) before saving.' } };
       return true;
     },
     val: function () { var v = this.props.value; return v && v.toJS ? v.toJS() : v; },
     data: function (k) { var v = this.props.entry && this.props.entry.getIn(['data', k]); return v && v.toJS ? v.toJS() : v; },
+    // The Drive link as it is in the form now. In the real Decap 3.16.3 editor, props.entry inside isValid still held the
+    // form as it was when this field last changed (Codex acceptance of 94d5fb1: James's valid link was refused), so the
+    // Drive field reports its own current value here (pgk-drive below).
+    drive: function () { return Object.prototype.hasOwnProperty.call(LIVE, 'drive') ? LIVE.drive : this.data('drive'); },
     // The import runs in GitHub Actions (film-import.yml); its latest run says whether it is working on it right now.
     // Follows this film, not just the latest run on the branch (Codex CMS review): the saved record itself (has the
     // import recorded ready or failed since this form was opened?), then the import run started by the commit that
@@ -1038,6 +1048,20 @@
   });
   CMS.registerWidget('pgk-film-status', FilmStatus);
 
+  // The film's Google Drive link: Decap's own text field, which also tells the film status check what is typed now.
+  var LIVE = {};
+  var StringWidget = CMS.getWidget && CMS.getWidget('string');
+  var DriveControl = createClass({
+    componentWillUnmount: function () { delete LIVE.drive; },
+    render: function () {
+      var v = this.props.value; LIVE.drive = v == null ? '' : String(v);
+      if (StringWidget && StringWidget.control) return h(StringWidget.control, this.props);
+      var self = this;
+      return h('input', { type: 'text', id: this.props.forID, className: this.props.classNameWrapper, value: LIVE.drive, onChange: function (e) { self.props.onChange(e.target.value); }, onFocus: this.props.setActiveStyle, onBlur: this.props.setInactiveStyle });
+    },
+  });
+  CMS.registerWidget('pgk-drive', DriveControl, StringWidget && StringWidget.preview);
+
   // Captions: none yet, burned into the video, or a .vtt file uploaded here.
   var CaptionsControl = createClass({
     getInitialState: function () { return { msg: '', busy: false }; },
@@ -1053,7 +1077,7 @@
     },
     render: function () {
       var self = this; var v = this.props.value || null; var mode = !v ? 'none' : v === 'burned-in' ? 'burned' : 'file';
-      var radio = function (val, label) { return h('label', { className: 'pgk-radio' }, h('input', { type: 'radio', name: self.props.forID, checked: mode === val, onChange: function () { if (val === 'none') self.props.onChange(null); else if (val === 'burned') self.props.onChange('burned-in'); else self.input.click(); } }), ' ' + label); };
+      var radio = function (val, label) { return h('label', { className: 'pgk-radio' }, h('input', { type: 'radio', name: self.props.forID, checked: mode === val, onChange: function () { if (val === 'none') self.props.onChange(CLEARED); else if (val === 'burned') self.props.onChange('burned-in'); else self.input.click(); } }), ' ' + label); };
       return h('div', { id: this.props.forID, className: 'pgk-captions' },
         radio('none', 'No captions yet'), radio('burned', 'Captions are burned into the video'), radio('file', 'Caption file (.vtt)'),
         mode === 'file' ? h('p', { className: 'pgk-gallery__count' }, String(v).split('/').pop(), ' ', h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () { self.input.click(); } }, 'Replace file')) : null,

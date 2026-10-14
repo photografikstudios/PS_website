@@ -104,9 +104,13 @@ async function buildState(token, owner, name, sha) {
 export function pickBuildState(statuses, checkRuns) {
   const latest = new Map();
   const keep = (key, r) => { const prev = latest.get(key); if (!prev || String(r.at || '') > String(prev.at || '')) latest.set(key, r); };
-  for (const x of statuses) if (/vercel/i.test(x.context || '')) keep(`s:${x.context}`, { state: x.state === 'success' ? 'success' : x.state === 'pending' ? 'pending' : 'failure', url: x.target_url, at: x.updated_at || x.created_at });
+  // Only reports about the deployment itself count. Vercel also runs side integrations, such as "Vercel Preview
+  // Comments", whose failures say nothing about the build (Codex acceptance of 94d5fb1: a failed comments check showed
+  // "Site update failed" while the deployment was READY).
+  const ancillary = (s) => /comment/i.test(s || '');
+  for (const x of statuses) if (/vercel/i.test(x.context || '') && !ancillary(x.context)) keep(`s:${x.context}`, { state: x.state === 'success' ? 'success' : x.state === 'pending' ? 'pending' : 'failure', url: x.target_url, at: x.updated_at || x.created_at });
   // A skipped, neutral or cancelled check is not a build: it says nothing about whether the site was deployed.
-  for (const x of checkRuns) if (/vercel/i.test(`${x.name} ${x.app && x.app.slug}`)) keep(`c:${x.name}`, { state: x.status !== 'completed' ? 'pending' : x.conclusion === 'success' ? 'success' : ['neutral', 'skipped', 'cancelled', 'stale'].includes(x.conclusion) ? 'unknown' : 'failure', url: x.details_url || x.html_url, at: x.completed_at || x.started_at });
+  for (const x of checkRuns) if (/vercel/i.test(`${x.name} ${x.app && x.app.slug}`) && !ancillary(x.name)) keep(`c:${x.name}`, { state: x.status !== 'completed' ? 'pending' : x.conclusion === 'success' ? 'success' : ['neutral', 'skipped', 'cancelled', 'stale'].includes(x.conclusion) ? 'unknown' : 'failure', url: x.details_url || x.html_url, at: x.completed_at || x.started_at });
   if (!latest.size) return { state: 'unknown' };
   const rank = { failure: 4, pending: 3, success: 2, unknown: 1 };
   const top = [...latest.values()].sort((a, b) => rank[b.state] - rank[a.state])[0];
