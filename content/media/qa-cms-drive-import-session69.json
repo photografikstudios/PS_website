@@ -1,0 +1,24 @@
+{
+  "sortPriority": 0,
+  "import": {
+    "state": "waiting"
+  },
+  "alt": "Disposable draft-only CMS acceptance copy of the owner-approved podcast replacement. Remove after import and reimport testing.",
+  "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view",
+  "captions": "burned-in",
+  "featured": false,
+  "published": false,
+  "packageIds": [],
+  "makeLoop": true,
+  "service": [
+    "studio"
+  ],
+  "rights": "approved",
+  "dialogue": true,
+  "title": "QA CMS Drive import Session69",
+  "posterTime": 3,
+  "type": "video",
+  "source": "drive",
+  "category": "creator-studios",
+  "captionsStatus": "machine-draft"
+}
