@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "In-house V2",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/1SMGfG0XjzdwySBPG3pSj10R2lSSHkePn/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "creator-studios",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3080
+}

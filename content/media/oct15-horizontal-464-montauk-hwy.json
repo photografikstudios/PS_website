@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "Horizontal 464 Montauk Hwy",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/1uLtqLcsfNPZVyCtSZ_VV7pdN-hJss6cf/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "real-estate",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3100
+}

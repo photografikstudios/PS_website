@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "Captions Reel 772 Pulaski rd",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/1glYlFvapXwqMjgi3O2F8F_HwB7YoPbtY/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "real-estate",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3060
+}

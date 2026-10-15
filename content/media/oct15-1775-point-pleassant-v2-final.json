@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "1775 Point Pleassant V2 Final",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/1dH9SNJgJzj0s7TC9RsTiTEcKqd0IcNDu/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "real-estate",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3050
+}

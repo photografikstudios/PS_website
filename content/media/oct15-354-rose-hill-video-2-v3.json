@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "354 Rose Hill Video 2 v3",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/18rhmknaptc6Y3To_46uWo5VZuW1yd8eO/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "real-estate",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3140
+}

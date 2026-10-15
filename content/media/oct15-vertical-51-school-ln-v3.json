@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "Vertical 51 School Ln v3",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/1_GYwnWt_Fv5JroBbpjOP3cgGO8IzS7dn/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "real-estate",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3180
+}

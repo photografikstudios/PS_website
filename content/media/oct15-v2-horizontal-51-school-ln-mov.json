@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "v2 Horizontal 51 School Ln.mov",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/1GCBlKWVJRuiVfekHL4QPbb1b_wthR75W/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "real-estate",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3170
+}

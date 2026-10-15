@@ -1,0 +1,29 @@
+{
+  "type": "video",
+  "title": "Stair Install Horizontal 60s",
+  "published": false,
+  "drive": "https://drive.google.com/file/d/1QWznKsa3I28hVaPQuVThYTsqO1-sV4Aw/view?usp=drivesdk",
+  "import": {
+    "state": "waiting"
+  },
+  "makeLoop": true,
+  "posterTime": 3,
+  "alt": "",
+  "project": null,
+  "category": "architecture-design",
+  "service": [
+    "video"
+  ],
+  "location": null,
+  "client": null,
+  "dialogue": true,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "featured": false,
+  "rights": "approved",
+  "source": "drive",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 3160
+}
