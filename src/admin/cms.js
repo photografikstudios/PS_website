@@ -1308,6 +1308,8 @@
     '.pgk-files { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dfe3e8; border-radius: 6px; } .pgk-files label { display: block; margin: 4px 0; }',
     '.pgk-confirm { display: block; margin: 0 0 12px; } .pgk-confirm span { display: block; margin-bottom: 6px; } .pgk-confirm input { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',
     '.pgk-captions .pgk-radio { display: block; margin: 4px 0; }',
+    // Decap's Media overlay is 99999; guidance opened from it must be above that overlay.
+    '#pgk-video-help { z-index: 100001; }',
     '.pgk-media-video { margin: 10px 24px 0; padding: 12px 14px; background: #fff6e8; border-radius: 6px; font-size: 14px; color: #3d2f14; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; } .pgk-steps { margin: 8px 0 14px 20px; padding: 0; line-height: 1.5; } .pgk-steps li { margin: 4px 0; } a.pgk-btn { display: inline-flex; align-items: center; text-decoration: none; }',
     '.pgk-linkbtn { border: 0; background: none; padding: 0; font: inherit; color: #176277; font-weight: 600; text-decoration: underline; cursor: pointer; }',
     '.pgk-files .pgk-radio { display: block; margin: 4px 0; } .pgk-row--out { opacity: .55; }',
