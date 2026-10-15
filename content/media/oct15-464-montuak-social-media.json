@@ -4,9 +4,10 @@
   "published": false,
   "drive": "https://drive.google.com/file/d/17QTQ63wlFKOWkW7qHmuoadu7hf3sjyrD/view?usp=drivesdk",
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T13:32:41.604Z",
+    "message": "Imported from Google Drive (2160×3840, 45 s). The original stays in Drive."
   },
-  "makeLoop": true,
   "posterTime": 3,
   "alt": "",
   "project": null,
@@ -25,5 +26,9 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "order": 3090
+  "order": 3090,
+  "src": "/v/oct15-464-montuak-social-media.mp4",
+  "poster": "/v/oct15-464-montuak-social-media.webp",
+  "orientation": "vertical",
+  "duration": 45
 }

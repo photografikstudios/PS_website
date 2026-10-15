@@ -4,9 +4,10 @@
   "published": false,
   "drive": "https://drive.google.com/file/d/1b7mr3BTjgyFC8VtQMXHJOQxqpG9ogLDK/view?usp=drivesdk",
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T13:32:41.604Z",
+    "message": "Imported from Google Drive (1080×1920, 35 s). The original stays in Drive."
   },
-  "makeLoop": true,
   "posterTime": 3,
   "alt": "",
   "project": null,
@@ -25,5 +26,9 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "order": 3150
+  "order": 3150,
+  "src": "/v/oct15-stair-install-reel-2-30s.mp4",
+  "poster": "/v/oct15-stair-install-reel-2-30s.webp",
+  "orientation": "vertical",
+  "duration": 35
 }

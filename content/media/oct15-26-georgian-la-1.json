@@ -4,9 +4,10 @@
   "published": false,
   "drive": "https://drive.google.com/file/d/17qoC9gZXQmMHmdcGThRY_5VgX5QxVU2F/view?usp=drivesdk",
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T13:32:41.604Z",
+    "message": "Imported from Google Drive (1920×1080, 78 s). The original stays in Drive."
   },
-  "makeLoop": true,
   "posterTime": 3,
   "alt": "",
   "project": null,
@@ -25,5 +26,9 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "order": 3070
+  "order": 3070,
+  "src": "/v/oct15-26-georgian-la-1.mp4",
+  "poster": "/v/oct15-26-georgian-la-1.webp",
+  "orientation": "horizontal",
+  "duration": 78
 }

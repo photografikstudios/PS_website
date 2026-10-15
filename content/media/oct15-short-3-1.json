@@ -4,9 +4,10 @@
   "published": false,
   "drive": "https://drive.google.com/file/d/1qZXkfHFynIipPJY_-YfIqiGbtSh2SDlb/view?usp=drivesdk",
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T13:32:41.604Z",
+    "message": "Imported from Google Drive (1080×1920, 30 s). The original stays in Drive."
   },
-  "makeLoop": true,
   "posterTime": 3,
   "alt": "",
   "project": null,
@@ -26,5 +27,9 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "order": 3040
+  "order": 3040,
+  "src": "/v/oct15-short-3-1.mp4",
+  "poster": "/v/oct15-short-3-1.webp",
+  "orientation": "vertical",
+  "duration": 30
 }

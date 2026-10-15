@@ -2,9 +2,9 @@
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "static/v (Session 59: 252 existing pins verified unchanged; 52 Sunday-pack WebP files and manifest.json added)",
   "recordedAt": "2026-10-12",
-  "count": 308,
-  "totalBytes": 352620119,
-  "aggregate": "acb4c59abeb3215941b9c530b3d7276e98c51d145c95042a923e6f6145428e56",
+  "count": 368,
+  "totalBytes": 559341302,
+  "aggregate": "95ebeba112ef5f302bd868120b99ffa6910df8ac0dee73de89363c97d7c61968",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1223,8 +1223,8 @@
       "sha256": "9a8cb2c06a0b3d321755762777a7be7087aa02574ffb639694f1401187b048ac"
     },
     "/v/manifest.json": {
-      "bytes": 12144,
-      "sha256": "109ac4ba1794659083864a1b56a0ec8dc233439649f5bb934e4a149b4575c2f4"
+      "bytes": 14144,
+      "sha256": "0d09e871d66d1ea005588ff6de831bf788ecdcc6fa727364cb8aad30283ec5ce"
     },
     "/v/cs-podcast-ep23-short.mp4": {
       "bytes": 1646300,
@@ -1237,6 +1237,246 @@
     "/v/cs-podcast-ep23-short-loop.mp4": {
       "bytes": 717701,
       "sha256": "0c07c471bfa7e296663a44e638b77033e30e8a7be67c871a016f64b7a379f572"
+    },
+    "/v/oct15-1750-hobart-rd-vertical-v3.mp4": {
+      "bytes": 10539529,
+      "sha256": "09a1c79859eb5ded7209038411d40f7de9b2493720f09c2dedac3ace7acf0625"
+    },
+    "/v/oct15-1750-hobart-rd-vertical-v3.webp": {
+      "bytes": 158010,
+      "sha256": "2335a373066cf699310c0c0816a33e5fd07102429d54f14a4c7f380419d57afa"
+    },
+    "/v/oct15-1750-hobart-rd-vertical-v3-loop.mp4": {
+      "bytes": 2084237,
+      "sha256": "32639602d988166f21aed6335f97566b51e9a094eb845fb9d9e831b5953aed99"
+    },
+    "/v/oct15-1775-point-pleassant-v2-final.mp4": {
+      "bytes": 13635922,
+      "sha256": "7d2511eef4db9bbf4d41b05fd2c0ebf69c57e28589c81889b9b845417a0b27f8"
+    },
+    "/v/oct15-1775-point-pleassant-v2-final.webp": {
+      "bytes": 129202,
+      "sha256": "4cb2c859f623da9e4a5b979ad00c25d69c72bde4c669809da4b9f80f0867765f"
+    },
+    "/v/oct15-1775-point-pleassant-v2-final-loop.mp4": {
+      "bytes": 2873938,
+      "sha256": "cd9fbfe5fad7992a55c442bb73fff195c4f56a093af9dae6399ca1eb43fc0958"
+    },
+    "/v/oct15-26-georgian-la-1.mp4": {
+      "bytes": 8613341,
+      "sha256": "04952382cafcb18717884a6fa8137fdad8db0a5bab15cc9f63fb66a2944b5d43"
+    },
+    "/v/oct15-26-georgian-la-1.webp": {
+      "bytes": 86874,
+      "sha256": "9a0085dee21c98e0f59036511be529aaf8537fb0f5fbc8f1ca6a45b7efb5d84a"
+    },
+    "/v/oct15-26-georgian-la-1-loop.mp4": {
+      "bytes": 1498260,
+      "sha256": "226a9967215b503fc495b5278141a42fc3ff1f248fa1d623de8cf915b3ac74f6"
+    },
+    "/v/oct15-26-sunset-ave-v3.mp4": {
+      "bytes": 14773853,
+      "sha256": "30b88a5c79d9197c7bd81803e7e39a4c40da0d87bfcdbc89957e609785ba0932"
+    },
+    "/v/oct15-26-sunset-ave-v3.webp": {
+      "bytes": 115736,
+      "sha256": "e2eca2bfdfde9cf85513dbab23b8d22ceddd95a46efe98cc2a150a23c49c16e7"
+    },
+    "/v/oct15-26-sunset-ave-v3-loop.mp4": {
+      "bytes": 2261405,
+      "sha256": "86abcb76ebc95a4ff8fae0d8bab87cd61e8801ea5a98d924f5bed1a2458e3e29"
+    },
+    "/v/oct15-354-rose-hill-before-and-after-video.mp4": {
+      "bytes": 6732012,
+      "sha256": "c223be0837310d8ab8192da15cc03b0f99ad5da74f3c83cc83dab85f8344c19e"
+    },
+    "/v/oct15-354-rose-hill-before-and-after-video.webp": {
+      "bytes": 37816,
+      "sha256": "3378e3e05fc40c0994b2f4a3ca6e5ebf34fb0e472ddcd12048b1357bb8d062bb"
+    },
+    "/v/oct15-354-rose-hill-before-and-after-video-loop.mp4": {
+      "bytes": 1069269,
+      "sha256": "c2b866055ddf690a731c9054ebf2f4ae7e8c7af5da6ae7dd898924094881cc75"
+    },
+    "/v/oct15-354-rose-hill-video-2-v3.mp4": {
+      "bytes": 7682763,
+      "sha256": "b86914dc4244fc7373c1fac65300b0744c0376de10926bb29b75d86fba31e70d"
+    },
+    "/v/oct15-354-rose-hill-video-2-v3.webp": {
+      "bytes": 18508,
+      "sha256": "cc5b2530245dbc403fe2d060b262c808ae0a60d3ba672eb51b1952f487228e5c"
+    },
+    "/v/oct15-354-rose-hill-video-2-v3-loop.mp4": {
+      "bytes": 802692,
+      "sha256": "8e3361e3cea8881c030142cd10ed87b175528b93442337e8d814fea6c1ca2540"
+    },
+    "/v/oct15-464-montuak-social-media.mp4": {
+      "bytes": 9461779,
+      "sha256": "345abddd3fc8d0bd18a0e9f6b2e52b4686a0182280b257b8988d29428bbfc866"
+    },
+    "/v/oct15-464-montuak-social-media.webp": {
+      "bytes": 81622,
+      "sha256": "be4383b59e7316ff1ded70d0ea49202311c6404b7a20a1e0f75ce15576255f6e"
+    },
+    "/v/oct15-464-montuak-social-media-loop.mp4": {
+      "bytes": 2960849,
+      "sha256": "4cb2e5384fcfd44e16061ee9de43f08c8d4c2dfb825d8b523c5a56d0c522c8fd"
+    },
+    "/v/oct15-captions-reel-772-pulaski-rd.mp4": {
+      "bytes": 8937833,
+      "sha256": "052ddbf5606622a5e6559d9ceecebdd28048005497fa8bf86b78f62154a6c5f8"
+    },
+    "/v/oct15-captions-reel-772-pulaski-rd.webp": {
+      "bytes": 40328,
+      "sha256": "d9713b7a16c188e9a6a97db5139be513454049cccecfd693a12af0966f16ffb7"
+    },
+    "/v/oct15-captions-reel-772-pulaski-rd-loop.mp4": {
+      "bytes": 1668645,
+      "sha256": "669b4b029170ac81b8cd8fd8cbbb63c058c2b57131955fb9ac22a125b63cd82c"
+    },
+    "/v/oct15-cl-podcast-ep-16-shorts-2-1.mp4": {
+      "bytes": 3108334,
+      "sha256": "9febb7568fb67ebf82b66e0509b3b1ed860e82381b58b3395ff112af10508db3"
+    },
+    "/v/oct15-cl-podcast-ep-16-shorts-2-1.webp": {
+      "bytes": 61396,
+      "sha256": "4e1138f549025cc0ea547f5d84809a8c35ffd06ef27a11c33dc318596720c94c"
+    },
+    "/v/oct15-cl-podcast-ep-16-shorts-2-1-loop.mp4": {
+      "bytes": 1308155,
+      "sha256": "6775af4a92397a6292420dabe2c75fd3cfec091d5ccb60a70fb05b70408682c4"
+    },
+    "/v/oct15-horizontal-41-niamogue-ln.mp4": {
+      "bytes": 15006088,
+      "sha256": "9e2c28d9ec06ec58ac07173b30b85f9acaa38dd02854487717daa5766a80bdfc"
+    },
+    "/v/oct15-horizontal-41-niamogue-ln.webp": {
+      "bytes": 141442,
+      "sha256": "65ad7153fb93511b745bf8cb651f8fd3486b28c5a958e258a90cc8fd8dcbe188"
+    },
+    "/v/oct15-horizontal-41-niamogue-ln-loop.mp4": {
+      "bytes": 2964870,
+      "sha256": "4f7fa6bf36e1f27f1b2faa8ad8d9c1e1a51506653370447729b1351ef7ecdd75"
+    },
+    "/v/oct15-horizontal-464-montauk-hwy.mp4": {
+      "bytes": 15305216,
+      "sha256": "e234b840e8102bb4de8d260ae44c8705debe82b31577187eda8c43356758a070"
+    },
+    "/v/oct15-horizontal-464-montauk-hwy.webp": {
+      "bytes": 50142,
+      "sha256": "21246a3b526376f75675f6f9ebd25087a1a785813e70e8c02969daa9fc1719b4"
+    },
+    "/v/oct15-horizontal-464-montauk-hwy-loop.mp4": {
+      "bytes": 2303905,
+      "sha256": "d9ea0f7dcc959fbe7d1fc91dde614e6220b382e8ff3122904572cd86a215ddad"
+    },
+    "/v/oct15-ifcu-ep2-clip6-1.mp4": {
+      "bytes": 3141550,
+      "sha256": "bc847d233594941a67dd9edebe8a3484202cf88fb25779e30d0366434453419e"
+    },
+    "/v/oct15-ifcu-ep2-clip6-1.webp": {
+      "bytes": 62056,
+      "sha256": "a54cb0b9dae91180d85b19444f0d56e46451c84dc43f592cb25f57fdcf779abe"
+    },
+    "/v/oct15-ifcu-ep2-clip6-1-loop.mp4": {
+      "bytes": 984925,
+      "sha256": "39b0fdb73d199d851ab94d548a8d327f4352bb489d340e558d7becd8d03a01d3"
+    },
+    "/v/oct15-in-house-v2.mp4": {
+      "bytes": 3041038,
+      "sha256": "79c7b3d919d97a78cda1e2f31681e4da77e040882e835349c700413d4dd6f4b8"
+    },
+    "/v/oct15-in-house-v2.webp": {
+      "bytes": 21418,
+      "sha256": "dbd5aa9e445f6da7cc19529009a7b162c26134650e5ef4448d4b2b49d619ea0a"
+    },
+    "/v/oct15-in-house-v2-loop.mp4": {
+      "bytes": 957921,
+      "sha256": "ae97dbafeea46db07af7a807681c9089e839d40a1eac8510ee8eaecc2ce972d7"
+    },
+    "/v/oct15-short-3-1.mp4": {
+      "bytes": 2690914,
+      "sha256": "9d52b95235f45943d5b6f01645e0c7961b922742d64cb1a1234b7fffbd69036d"
+    },
+    "/v/oct15-short-3-1.webp": {
+      "bytes": 25792,
+      "sha256": "a19d4867fdaa7e042bbd8ed36f240315a433647d5fee89d639136552de2b1450"
+    },
+    "/v/oct15-short-3-1-loop.mp4": {
+      "bytes": 1077701,
+      "sha256": "a8b699ab0a5902993662e2139aa4daf21a749352570e603f05c3b960c104b80f"
+    },
+    "/v/oct15-short-4-1.mp4": {
+      "bytes": 4305056,
+      "sha256": "cb66b4577a353161409f60d30dc00096617561d98c6e75d6a6e8ac0843f06827"
+    },
+    "/v/oct15-short-4-1.webp": {
+      "bytes": 38306,
+      "sha256": "1df41cf79d5c6042fcb6f26bdb37c97eb97670b667f07360048f963b26a9371e"
+    },
+    "/v/oct15-short-4-1-loop.mp4": {
+      "bytes": 1077761,
+      "sha256": "fc17c35c108cdefa33d68274e343e54be9ddcabc637547d91051b24f7a173ac7"
+    },
+    "/v/oct15-short-cc-ep-20-clip-7.mp4": {
+      "bytes": 2232604,
+      "sha256": "dcadd79df20ae70b63b4ddda0620eda5b7351f7ea83f958b6a717cafc08defa8"
+    },
+    "/v/oct15-short-cc-ep-20-clip-7.webp": {
+      "bytes": 31228,
+      "sha256": "862b9e6aaa1079240fb52849fadce1843d1c3d26994bd08d97e8da663ebbd49d"
+    },
+    "/v/oct15-short-cc-ep-20-clip-7-loop.mp4": {
+      "bytes": 954072,
+      "sha256": "3c33b16bee0827fc6a8ea85ce1b44af8cfedfed61f4b5facb6618f25da5e5ef4"
+    },
+    "/v/oct15-stair-install-horizontal-60s.mp4": {
+      "bytes": 9576313,
+      "sha256": "e0a58063be30132f16245ab6446094445345d11ecd8d2c5ea86835bf3f9c8dca"
+    },
+    "/v/oct15-stair-install-horizontal-60s.webp": {
+      "bytes": 62642,
+      "sha256": "5e0b0fee961192600a291aead15bf88b51e8bba4d6efdeec98e0c1325bcd6102"
+    },
+    "/v/oct15-stair-install-horizontal-60s-loop.mp4": {
+      "bytes": 2585954,
+      "sha256": "ed21fec853311b6f6161f0a9545d8e409d5e52fec67a30ed49d73563d2fdf6eb"
+    },
+    "/v/oct15-stair-install-reel-2-30s.mp4": {
+      "bytes": 5093105,
+      "sha256": "7cb00362c8eebe710101220c965c18df9b374dc3cff6e5d46458c34f45380e0a"
+    },
+    "/v/oct15-stair-install-reel-2-30s.webp": {
+      "bytes": 31376,
+      "sha256": "4bef080def3d2b9b03bbf26f2881cf782ddc41014ef7cc8198634048f3290c2a"
+    },
+    "/v/oct15-stair-install-reel-2-30s-loop.mp4": {
+      "bytes": 2110243,
+      "sha256": "ad6a24f1101f5631ed67f9b53370c517bd55f9670b414fa84be17ef8a8ee9503"
+    },
+    "/v/oct15-v2-horizontal-51-school-ln-mov.mp4": {
+      "bytes": 15588513,
+      "sha256": "e99a42fa95b066ddd1a4ee468fddf1ad75c5b646a4e0848b4f98e90f6c7aefa8"
+    },
+    "/v/oct15-v2-horizontal-51-school-ln-mov.webp": {
+      "bytes": 82870,
+      "sha256": "3e5637bf4094fc2ee50a09b12f116dc5c0f1d3c120bd1cb76e2ff49f6bfc67b6"
+    },
+    "/v/oct15-v2-horizontal-51-school-ln-mov-loop.mp4": {
+      "bytes": 1755393,
+      "sha256": "4a65f13ecfb0482c36ca3865e85d6f9d2878aea47e0740f7f6dde88b92d25cea"
+    },
+    "/v/oct15-vertical-51-school-ln-v3.mp4": {
+      "bytes": 10517103,
+      "sha256": "4ae097726b9d519479b4d091c337e88df9fec6836461b752fb6249776c63357f"
+    },
+    "/v/oct15-vertical-51-school-ln-v3.webp": {
+      "bytes": 28522,
+      "sha256": "68994b27c8eb3902162069f045b206b24304876093f5d4483d194cc7cd8a15b5"
+    },
+    "/v/oct15-vertical-51-school-ln-v3-loop.mp4": {
+      "bytes": 2130836,
+      "sha256": "7b67bdaf39e76588a7cb3ea807ece8848a840cfa5258ec5df23e5c50102949ad"
     }
   }
 }

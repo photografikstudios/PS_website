@@ -83,6 +83,86 @@
     "/images/posters-sm/cs-podcast-ep23-short.webp": {
       "bytes": 11806,
       "sha256": "602fcfd994b4843d698995d189de95fedc97c69e0e3b1d5770d7672a7550c5fb"
+    },
+    "/images/posters-sm/oct15-1750-hobart-rd-vertical-v3.webp": {
+      "bytes": 51674,
+      "sha256": "44fffa60deff24fbb2b7f67e1fc9d181cdfd6bf14dc41b035c78cf67fe3ad830"
+    },
+    "/images/posters-sm/oct15-1775-point-pleassant-v2-final.webp": {
+      "bytes": 45192,
+      "sha256": "eaf85bb07079b39d114fe5194462ebcebe86ea44361e748ff5c1e13d7d546908"
+    },
+    "/images/posters-sm/oct15-26-georgian-la-1.webp": {
+      "bytes": 29536,
+      "sha256": "38cf409000f3485984b0f505df95c1853746a02103f5b57a0c257661b23c2a85"
+    },
+    "/images/posters-sm/oct15-26-sunset-ave-v3.webp": {
+      "bytes": 39352,
+      "sha256": "aa95ec31fdeca2f7437339a4fda20aa4801fbc43f133336e2a882c973e3f30a0"
+    },
+    "/images/posters-sm/oct15-354-rose-hill-before-and-after-video.webp": {
+      "bytes": 15664,
+      "sha256": "4e94a83a2f6b70f95e87e35d04ec8eceab7315ca0f3ef244139436163b72cf3d"
+    },
+    "/images/posters-sm/oct15-354-rose-hill-video-2-v3.webp": {
+      "bytes": 7346,
+      "sha256": "f70813dd96e2a8c1890593532cf63a2f230108e72cc12985c437f38e91a41bcf"
+    },
+    "/images/posters-sm/oct15-464-montuak-social-media.webp": {
+      "bytes": 30126,
+      "sha256": "29fd1e983089a1f0596e2d85fd605d814120fb9023f17bfe576133dacb6fd028"
+    },
+    "/images/posters-sm/oct15-captions-reel-772-pulaski-rd.webp": {
+      "bytes": 17238,
+      "sha256": "7c613dcce6a90bd4c330508a3c06cca28f3d2defb2718a7e5b4ad66b8716f004"
+    },
+    "/images/posters-sm/oct15-cl-podcast-ep-16-shorts-2-1.webp": {
+      "bytes": 24882,
+      "sha256": "8cd7a1c68456bfd278c7adeb7f4e0a67768ce0ddefd1c4705d978bb988d43e1b"
+    },
+    "/images/posters-sm/oct15-horizontal-41-niamogue-ln.webp": {
+      "bytes": 45204,
+      "sha256": "d4a1549ece81f922c96c9f831488e0e3edafd619a6514fc5791769c6137c7847"
+    },
+    "/images/posters-sm/oct15-horizontal-464-montauk-hwy.webp": {
+      "bytes": 18614,
+      "sha256": "83a27c14a40f36a2b285e94423833c78b996a073958dbe1ddda99cd2a8ebbbf6"
+    },
+    "/images/posters-sm/oct15-ifcu-ep2-clip6-1.webp": {
+      "bytes": 21752,
+      "sha256": "06cccfb3ff700b002427a72c4f796b970f4073a11ed6f35b816917021af8d713"
+    },
+    "/images/posters-sm/oct15-in-house-v2.webp": {
+      "bytes": 9494,
+      "sha256": "f93467ce8d425f5598aaff3a04d4d1e1d742eec57c2858af873e73e672cec357"
+    },
+    "/images/posters-sm/oct15-short-3-1.webp": {
+      "bytes": 11368,
+      "sha256": "627a9ed8bcf3332fd9853ac1149ff34145a4c0828dbc473c93c40c1d1849dacd"
+    },
+    "/images/posters-sm/oct15-short-4-1.webp": {
+      "bytes": 14658,
+      "sha256": "beef407ef13f24127643a902edda8df7c4716fb58ece2754dc4f1b2b1c444e51"
+    },
+    "/images/posters-sm/oct15-short-cc-ep-20-clip-7.webp": {
+      "bytes": 12930,
+      "sha256": "7cd746de72e554ae3b58c426f57d11cb6a935dd7815f4f27c2a26a3158706f39"
+    },
+    "/images/posters-sm/oct15-stair-install-horizontal-60s.webp": {
+      "bytes": 26514,
+      "sha256": "6d3a065d4832bda0ed4f34544974ffd4b53a9c6261abf1d4d1040f71e3923a90"
+    },
+    "/images/posters-sm/oct15-stair-install-reel-2-30s.webp": {
+      "bytes": 12808,
+      "sha256": "d269bdf0da63c75d6f0eff4d2735fde75b9b619a19abc83e5e9faaae7ae097b3"
+    },
+    "/images/posters-sm/oct15-v2-horizontal-51-school-ln-mov.webp": {
+      "bytes": 26510,
+      "sha256": "3117ee1a144e7b8be6628ebe5c36dcdf0eaddcf4e8bde406d0218154be9efa2f"
+    },
+    "/images/posters-sm/oct15-vertical-51-school-ln-v3.webp": {
+      "bytes": 11190,
+      "sha256": "5b01f94b3f2a8cadf0a071b6f658002234565029eb9f2af9950bddfd7eec0cd4"
     }
   }
 }

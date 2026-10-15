@@ -4,9 +4,10 @@
   "published": false,
   "drive": "https://drive.google.com/file/d/18rhmknaptc6Y3To_46uWo5VZuW1yd8eO/view?usp=drivesdk",
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T13:32:41.604Z",
+    "message": "Imported from Google Drive (1080×1920, 92 s). The original stays in Drive."
   },
-  "makeLoop": true,
   "posterTime": 3,
   "alt": "",
   "project": null,
@@ -25,5 +26,9 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "order": 3140
+  "order": 3140,
+  "src": "/v/oct15-354-rose-hill-video-2-v3.mp4",
+  "poster": "/v/oct15-354-rose-hill-video-2-v3.webp",
+  "orientation": "vertical",
+  "duration": 92
 }

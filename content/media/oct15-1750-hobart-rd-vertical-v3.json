@@ -4,9 +4,10 @@
   "published": false,
   "drive": "https://drive.google.com/file/d/1mcAiO7k5qH_sRCTNx0GPN5xAgDDCKGb8/view?usp=drivesdk",
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T13:32:41.604Z",
+    "message": "Imported from Google Drive (2160×3840, 60 s). The original stays in Drive."
   },
-  "makeLoop": true,
   "posterTime": 3,
   "alt": "",
   "project": null,
@@ -25,5 +26,9 @@
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
-  "order": 3190
+  "order": 3190,
+  "src": "/v/oct15-1750-hobart-rd-vertical-v3.mp4",
+  "poster": "/v/oct15-1750-hobart-rd-vertical-v3.webp",
+  "orientation": "vertical",
+  "duration": 60
 }
