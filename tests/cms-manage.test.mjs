@@ -61,7 +61,8 @@ test('Page Media: the committed choices pass, and each rule refuses what it shou
   const pm = Object.fromEntries(await Promise.all(PAGES.map(async (p) => [p.file, await readJson(`content/page-media/${p.file}.json`)])));
   assert.deepEqual(checkPageMedia(pm, lib).errors, []);
   // Every inventory section is present in its file, and the counts match the pages.
-  for (const p of PAGES) for (const s of p.slots) assert.ok(s.key in pm[p.file], `${p.file}.${s.key}`);
+  // (an optional section emptied in the dashboard is saved by leaving its key out, as James's Contact save of Oct 14 did)
+  for (const p of PAGES) for (const s of p.slots) assert.ok(s.key in pm[p.file] || !s.required, `${p.file}.${s.key}`);
   assert.ok(pageMediaRefs(pm).length >= 60, 'sections across every page');
   const bad = (edit) => { const x = structuredClone(pm); edit(x); return checkPageMedia(x, lib).errors.join(' | '); };
   assert.match(bad((x) => { x.home.hero = null; }), /cannot be empty/);

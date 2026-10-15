@@ -52,9 +52,9 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
 
   // ---------- Projects ----------
   const projectFields = [
-    { name: 'title', label: 'Project name', widget: 'string', pattern: max(80, 'name'), hint: 'Usually the client, builder or designer, e.g. “Yankee Barn Builders”. No street addresses.' },
+    { name: 'title', label: 'Project name', widget: 'pgk-live', inner: 'string', pattern: max(80, 'name'), hint: 'Usually the client, builder or designer, e.g. “Yankee Barn Builders”. No street addresses.' },
     { name: 'published', label: 'Published', widget: 'pgk-publish', default: false, required: false, hint: hint.published },
-    { name: 'category', label: 'Service', widget: 'select', options: workCats, hint: 'Which service page and gallery the project belongs to. Do not change it after publishing (the web address depends on it).' },
+    { name: 'category', label: 'Service', widget: 'pgk-live', inner: 'select', options: workCats, hint: 'Which service page and gallery the project belongs to. Do not change it after publishing (the web address depends on it).' },
     { name: 'shortTitle', label: 'Short name for cards', widget: 'string', required: false, pattern: max(40, 'short name') },
     { name: 'client', label: 'Client name shown', widget: 'string', required: false, hint: 'Leave empty if the client has not agreed to be named.' },
     { name: 'location', label: 'Town or area', widget: 'string', required: false, hint: hint.location },
@@ -62,13 +62,13 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'segmentSource', label: 'segmentSource', widget: 'hidden', required: false },
     { name: 'services', label: 'Services delivered', widget: 'select', multiple: true, required: false, options: services, hint: 'Choose every standard type delivered. These same types are used by the gallery filters; the Service field above chooses the project gallery.' },
     { name: 'serviceDetails', label: 'Special work or client details', widget: 'text', required: false, pattern: max(300, 'special work description'), hint: 'Optional: describe unusual deliverables or a special client brief in your own words. This appears separately on the project page and does not create a new gallery filter.' },
-    { name: 'summary', label: 'Short description', widget: 'text', required: false, pattern: max(200, 'description'), hint: 'One sentence for cards and search results.' },
-    { name: 'story', label: 'Story / goal', widget: 'text', required: false, pattern: max(700, 'story'), hint: 'The paragraph under the project name: what the work was for and how it was planned.' },
+    { name: 'summary', label: 'Short description', widget: 'pgk-live', inner: 'text', required: false, pattern: max(200, 'description'), hint: 'One sentence for cards and search results.' },
+    { name: 'story', label: 'Story / goal', widget: 'pgk-live', inner: 'text', required: false, pattern: max(700, 'story'), hint: 'The paragraph under the project name: what the work was for and how it was planned.' },
     { name: 'goal', label: 'Goal (Commercial only)', widget: 'text', required: false },
     { name: 'blurbApproved', label: 'Client approved this wording (Commercial only)', widget: 'boolean', required: false, hint: 'Commercial project texts show only after the client has approved them.' },
     { name: 'delivered', label: 'delivered', widget: 'hidden', required: false },
     { name: 'hero', label: 'Main image', widget: 'pgk-photo', required: false, ...projectMedia, hint: `Optional: without one, the first photo or film below leads the page. ${imageHint}` },
-    { name: 'heroAlt', label: 'Main image description (alt text)', widget: 'string', required: false, hint: hint.alt },
+    { name: 'heroAlt', label: 'Main image description (alt text)', widget: 'pgk-live', inner: 'string', required: false, hint: hint.alt },
     { name: 'heroFocal', label: 'Main image focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
     { name: 'heroOrientation', label: 'Main image shape', widget: 'select', required: false, default: 'auto', options: ORIENT },
     { name: 'photos', label: 'Photos', widget: 'pgk-gallery', required: false, default: [], ...projectMedia, hint: `Choose several photos at once, then describe each one. Use the arrows to change the order. Photos already on the site for this project are in the Photos section. ${imageHint}` },

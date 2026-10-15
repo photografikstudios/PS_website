@@ -105,8 +105,8 @@ window.mountWidget = function (name, { field, value, entry, collection, decap })
   m.unmount = () => { mounts = mounts.filter((x) => x !== m); for (const [k, inst] of [...instances]) if (k.startsWith(m.id + ':')) { if (inst.componentWillUnmount) inst.componentWillUnmount(); instances.delete(k); } host.remove(); };
   mounts.push(m); m.draw(); return m;
 };
-window.CMS = { registerWidget: (n, c) => { window.__registered[n] = c; }, registerPreviewTemplate() {}, registerPreviewStyle() {}, registerEditorComponent() {}, registerLocale() {}, registerEventListener() {}, init() {} };
-window.h = h; window.createClass = createClass;
+window.CMS = { registerWidget: (n, c) => { window.__registered[n] = c; }, registerPreviewTemplate() {}, registerPreviewStyle() {}, registerEditorComponent() {}, registerLocale() {}, registerEventListener(l) { (window.__events = window.__events || {})[l.name] = l.handler; }, init() {} };
+window.h = h; window.createClass = createClass; window.__wrapForTest = (x) => wrap(x);
 localStorage.setItem('decap-cms-user', JSON.stringify({ token: 'gho_${'x'.repeat(36)}', backendName: 'github' }));
 `;
 
@@ -135,9 +135,20 @@ await page.route('**/api/cms-manage', async (route) => {
 let statusReply = { commit: 'b'.repeat(40), builtAt: '2026-10-13T19:00:00Z', mode: 'review', held: [], reviewOnly: [{ collection: 'projects', id: '0123456789abcdef' }] };
 await page.route('**/admin/status.json*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(statusReply) }));
 // GitHub, as the film form asks it: the saved record, the commit that saved it, and the import run of that commit.
+// A film's history on the branch, for following an import in the same open form (films whose slug starts "qa-life").
+// commits: newest first; recs: the record at each commit; runs: import runs by the commit that started them.
+const life = { commits: [], recs: {}, runs: {}, calls: 0 };
 await page.route('https://api.github.com/**', (r) => {
   const u = r.request().url(); const j = (v) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(v) });
-  if (/\/contents\/content\/media\/qa-film-done\.json/.test(u)) return j({ type: 'video', import: { state: 'ready' } });
+  if (/qa-life/.test(decodeURIComponent(u)) || Object.keys(life.recs).some((sha) => u.includes(sha))) {
+    life.calls++;
+    const ref = (u.match(/[?&]ref=([0-9a-f]{40})/) || [])[1];
+    if (/\/contents\//.test(u)) return ref && life.recs[ref] ? j(life.recs[ref]) : r.fulfill({ status: 404, body: '{}' });
+    if (/\/commits\?/.test(u)) return j(life.commits.map((c) => ({ sha: c.sha, commit: { committer: { date: c.date } } })));
+    const sha = (u.match(/head_sha=([0-9a-f]{40})/) || [])[1];
+    if (sha) return j({ workflow_runs: life.runs[sha] ? [life.runs[sha]] : [] });
+    return j({});
+  }
   if (/\/contents\//.test(u)) return j({ type: 'video', import: { state: 'waiting' } });
   if (/\/commits\?/.test(u)) return j([{ sha: 'f'.repeat(40), commit: { committer: { date: new Date().toISOString() } } }]);
   if (/head_sha=f{40}/.test(u)) return j({ workflow_runs: [{ status: 'in_progress', created_at: '2026-10-13T19:20:00Z' }] });
@@ -158,7 +169,7 @@ const valid = (cls) => page.evaluate((c) => { const m = window.__mounts?.[c]; re
 
 await check('registered widgets', async () => {
   const names = await page.evaluate(() => Object.keys(window.__registered).sort());
-  for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-drive', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
+  for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-drive', 'pgk-live', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
 });
 
 await check('Page Media single required section: shows the item, cannot be emptied, replace from the library', async () => {
@@ -264,8 +275,11 @@ await check('Film from Google Drive: new film starts waiting; failed shows the r
   await page.evaluate(() => { window.__f3 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'waiting' }, entry: { slug: 'qa-film-2', data: { drive: 'https://drive.google.com/file/d/x/view' } }, collection: 'films' }); });
   await page.locator('.host-pgk-film-status').nth(2).getByText('Importing from Google Drive now').waitFor();
   // The import recorded its result while the form was open: say so and offer Reload.
-  await page.evaluate(() => { window.__f5 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'waiting' }, entry: { slug: 'qa-film-done', data: { drive: 'https://drive.google.com/file/d/x/view' } }, collection: 'films' }); });
-  await page.locator('.host-pgk-film-status').last().getByText('The import has finished.').waitFor();
+  // Opened while waiting, and the import has since recorded Ready in a later commit: say so here and offer Reload.
+  Object.assign(life, { commits: [{ sha: 'b'.repeat(40), date: new Date().toISOString() }, { sha: 'c'.repeat(40), date: new Date(Date.now() - 60000).toISOString() }],
+    recs: { ['b'.repeat(40)]: { type: 'video', src: '/v/qa-life-done.mp4', import: { state: 'ready', message: 'Imported from Google Drive.' } }, ['c'.repeat(40)]: { type: 'video', import: { state: 'waiting' } } }, runs: {} });
+  await page.evaluate(() => { window.__f5 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'waiting' }, entry: { slug: 'qa-life-done', data: { drive: 'https://drive.google.com/file/d/x/view' } }, collection: 'films' }); });
+  await page.locator('.host-pgk-film-status').last().getByText('Ready: the new copy is in place.').waitFor();
   assert.equal(await page.locator('.host-pgk-film-status').last().getByRole('button', { name: 'Reload' }).count(), 1);
   await page.evaluate(() => { window.__f4 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: undefined, entry: { slug: 'cs-jm2-architecture', data: { src: '/v/cs-jm2-architecture.mp4', rights: 'approved', published: false } }, collection: 'films' }); });
   assert.match(await page.locator('.host-pgk-film-status').last().innerText(), /Hidden: not on the site/);
@@ -341,6 +355,132 @@ await check('Decap 3.16.3 behaviour: a Drive link typed after the film form open
   await page.evaluate(() => { window.__n1.unmount(); window.__r1.unmount(); window.__d2.unmount(); });
   assert.match((await page.evaluate(() => { window.__r2 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'retry' }, entry: { slug: 'qa-x', data: { drive: '' } }, collection: 'films' }); return window.__r2.instance.isValid(); })).error.message, /Paste the Google Drive link/, 'with no Drive field on screen, the saved value counts');
   await page.evaluate(() => window.__r2.unmount());
+});
+
+await check('Film import in the same open form: Ready → Replace → Save follows this request; the old Ready never counts; success and failure show here', async () => {
+  const sha = (c) => c.repeat(40); const t = (min) => new Date(Date.now() + min * 60000).toISOString();
+  const link = 'https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view';
+  const ready0 = { type: 'video', title: 'QA life', src: '/v/qa-life.mp4', poster: '/v/qa-life.webp', drive: link, import: { state: 'ready', at: t(-60), message: 'Imported.' } };
+  Object.assign(life, { commits: [{ sha: sha('1'), date: t(-60) }], recs: { [sha('1')]: ready0 }, runs: {} });
+  await page.evaluate(() => { window.__pgkFilmPollMs = 600000; });
+  await page.evaluate((rec) => { window.__L1 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: rec.import, entry: { slug: 'qa-life', data: rec }, collection: 'films' }); window.__L1d = window.mountWidget('pgk-drive', { field: { name: 'drive' }, value: rec.drive, entry: { slug: 'qa-life', data: rec }, collection: 'films' }); }, ready0);
+  const host = page.locator('.host-pgk-film-status').last();
+  await host.getByRole('button', { name: 'Replace or re-import from Google Drive' }).evaluate((b) => b.click()); await page.waitForTimeout(120);
+  assert.deepEqual(await page.evaluate(() => window.__L1.state.value), { state: 'retry' });
+  assert.match(await host.innerText(), /Not saved yet/, 'nothing is followed before Save');
+  assert.match(await host.innerText(), /Paste the new Drive link below/, 'the link field is below');
+  // Saved, but GitHub's list still shows only the old Ready revision (a cache): keep waiting, never "finished".
+  await page.evaluate((link) => window.__events.postSave({ entry: window.__wrapForTest({ slug: 'qa-life', data: { import: { state: 'retry' }, drive: link, posterTime: 5 } }) }), link);
+  await page.waitForTimeout(150);
+  assert.ok(!/Ready: the new copy|finished/i.test(await host.innerText()), 'old Ready is not the result: ' + await host.innerText());
+  assert.match(await host.innerText(), /Waiting to import/);
+  // The save commit appears, then its run starts.
+  life.commits.unshift({ sha: sha('2'), date: t(0) }); life.recs[sha('2')] = { ...ready0, drive: link, posterTime: 5, import: { state: 'retry' } };
+  life.runs[sha('2')] = { status: 'in_progress', created_at: t(0), run_started_at: t(0) };
+  await page.evaluate(() => window.__L1.instance.pollNow()); await page.waitForTimeout(150);
+  assert.match(await host.innerText(), /Importing from Google Drive now/);
+  assert.equal(await page.evaluate(() => window.__L1.instance.isValid()), true, 'other edits can still be saved while it imports');
+  // The import records Ready in a later commit: shown in this form, with the new copy, and saving is held until reload.
+  life.runs[sha('2')] = { status: 'completed', conclusion: 'success', updated_at: t(1) };
+  life.commits.unshift({ sha: sha('3'), date: t(2) }); life.recs[sha('3')] = { ...ready0, src: '/v/qa-life-r2.mp4', poster: '/v/qa-life-r2.webp', asset: 'qa-life-r2', posterTime: 5, import: { state: 'ready', at: t(1), message: 'Replaced with a new copy from Google Drive (1280×720, 21 s).' } };
+  await page.evaluate(() => window.__L1.instance.pollNow()); await page.waitForTimeout(150);
+  assert.match(await host.innerText(), /Ready: the new copy is in place\. Replaced with a new copy/);
+  assert.equal(await host.locator('video').getAttribute('src'), '/v/qa-life-r2.mp4');
+  assert.equal(await host.getByRole('button', { name: 'Reload' }).count(), 1);
+  assert.match((await page.evaluate(() => window.__L1.instance.isValid())).error.message, /Reload this page before saving again/);
+  const calls = life.calls; await page.waitForTimeout(200); assert.equal(life.calls, calls, 'following stops once finished');
+  await page.evaluate(() => { window.__L1.unmount(); window.__L1d.unmount(); });
+
+  // Failure, same form: Retry → Save → the import records Failed → its reason and Retry show here.
+  const ready1 = life.recs[sha('3')];
+  await page.evaluate((rec) => { window.__L2 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: rec.import, entry: { slug: 'qa-life', data: rec }, collection: 'films' }); window.__L2d = window.mountWidget('pgk-drive', { field: { name: 'drive' }, value: rec.drive, entry: { slug: 'qa-life', data: rec }, collection: 'films' }); }, ready1);
+  const host2 = page.locator('.host-pgk-film-status').last();
+  await host2.getByRole('button', { name: 'Replace or re-import from Google Drive' }).evaluate((b) => b.click()); await page.waitForTimeout(120);
+  await page.evaluate((link) => window.__events.postSave({ entry: window.__wrapForTest({ slug: 'qa-life', data: { import: { state: 'retry' }, drive: link } }) }), link);
+  life.commits.unshift({ sha: sha('4'), date: t(3) }); life.recs[sha('4')] = { ...ready1, import: { state: 'retry' } };
+  life.commits.unshift({ sha: sha('5'), date: t(4) }); life.recs[sha('5')] = { ...ready1, import: { state: 'failed', at: t(4), message: 'Google Drive refused the download: the file is not shared “Anyone with the link can view”.' } };
+  await page.evaluate(() => window.__L2.instance.pollNow()); await page.waitForTimeout(150);
+  assert.match(await host2.innerText(), /The import did not work\. Google Drive refused the download/);
+  assert.equal(await host2.getByRole('button', { name: 'Retry import' }).count(), 1);
+  assert.equal((await page.evaluate(() => window.__L2.state.value)).state, 'failed');
+  // Unmounted while following: no further requests.
+  await host2.getByRole('button', { name: 'Retry import' }).evaluate((b) => b.click()); await page.waitForTimeout(80);
+  await page.evaluate((link) => window.__events.postSave({ entry: window.__wrapForTest({ slug: 'qa-life', data: { import: { state: 'retry' }, drive: link } }) }), link);
+  await page.waitForTimeout(150); await page.evaluate(() => { window.__L2.unmount(); window.__L2d.unmount(); });
+  const after = life.calls; await page.evaluate(() => { window.__pgkFilmPollMs = 30; }); await page.waitForTimeout(250);
+  assert.equal(life.calls, after, 'no polling after the form closes');
+  await page.evaluate(() => { window.__pgkFilmPollMs = 600000; });
+});
+
+await check('Project Published: a description corrected after switching Published on saves without switching again; a missing one still blocks', async () => {
+  const photos = [{ image: '/images/projects/qa-pub-1111111111.jpg', alt: '' }];
+  const data = { title: 'QA publish', category: 'commercial', summary: 'One line.', story: 'A story.', photos };
+  await page.evaluate((data) => {
+    window.__P1 = window.mountWidget('pgk-publish', { field: { name: 'published' }, value: false, entry: { slug: 'qa-publish', data }, collection: 'projects', decap: { stored: [] } });
+    window.__P1g = window.mountWidget('pgk-gallery', { field: { name: 'photos', media_folder: '/static/images/projects', public_folder: '/images/projects' }, value: data.photos, entry: { slug: 'qa-publish', data }, collection: 'projects' });
+  }, data);
+  await page.locator('.host-pgk-publish').last().getByRole('switch').check(); await page.waitForTimeout(60);
+  assert.match((await page.evaluate(() => window.__P1.instance.isValid())).error.message, /describe photo 1/);
+  // The description is written after the switch (Decap still hands the switch the form from when it was turned on).
+  await page.locator('.host-pgk-gallery').last().locator('input[type="text"]').first().fill('Front of the QA building at dusk'); await page.waitForTimeout(60);
+  await page.evaluate(() => window.__P1.setSibling('photos', window.__P1g.state.value));
+  assert.equal(await page.evaluate(() => window.__P1.instance.isValid()), true, 'saves without switching Published again');
+  await page.locator('.host-pgk-gallery').last().locator('input[type="text"]').first().fill(''); await page.waitForTimeout(60);
+  assert.match((await page.evaluate(() => window.__P1.instance.isValid())).error.message, /describe photo 1/, 'removing it again blocks again');
+  // The other inputs it needs are current too (the project name field reports itself).
+  await page.evaluate(() => { window.__P1t = window.mountWidget('pgk-live', { field: { name: 'title', inner: 'string' }, value: 'QA publish', entry: {}, collection: 'projects' }); });
+  await page.locator('.host-pgk-live').last().locator('input').fill(''); await page.waitForTimeout(60);
+  assert.match((await page.evaluate(() => window.__P1.instance.isValid())).error.message, /add a project name/);
+  await page.evaluate(() => { window.__P1.unmount(); window.__P1g.unmount(); window.__P1t.unmount(); });
+});
+
+await check('Videos from the computer never reach Decap’s upload: stopped before it reads them, with the Google Drive route; photos and .vtt still upload', async () => {
+  // A stand-in for Decap's Media assets dialog: its upload input, and a listener on the page root standing in for
+  // Decap/React reading the chosen file (that read is what overflowed for James's video).
+  await page.evaluate(() => {
+    const d = document.createElement('div'); d.setAttribute('role', 'dialog'); d.id = 'qa-media';
+    d.innerHTML = '<h1>Media assets</h1><div class="qa-bar"><label><span>Upload</span><input type="file" id="qa-media-input" multiple hidden></label><button type="button" aria-label="Close">Close</button></div>';
+    document.body.appendChild(d); window.__persisted = [];
+    document.body.addEventListener('change', (e) => { if (e.target.id === 'qa-media-input') window.__persisted.push(...[...e.target.files].map((f) => f.name)); });
+    document.body.addEventListener('drop', (e) => { if (e.target.closest && e.target.closest('#qa-media')) { e.preventDefault(); window.__persisted.push(...[...e.dataTransfer.files].map((f) => 'drop:' + f.name)); } });
+    window.__pgkDecorate();
+  });
+  await page.waitForTimeout(150);
+  const dlg = page.locator('#qa-media');
+  assert.match(await dlg.innerText(), /Add a video from Google Drive/);
+  assert.match(await dlg.innerText(), /Upload a photo or file/);
+  assert.equal(await page.locator('#qa-media-input').getAttribute('accept'), 'image/*,.pdf,.vtt,text/vtt');
+  const input = page.locator('#qa-media-input');
+  const mp4 = { name: 'drafther-ep-1-final.mp4', mimeType: 'video/mp4', buffer: Buffer.alloc(64 * 1024) };
+  await input.setInputFiles(mp4); await page.waitForTimeout(80);
+  assert.deepEqual(await page.evaluate(() => window.__persisted), [], 'the video never reached the upload');
+  const help = page.getByRole('dialog', { name: 'Add videos from Google Drive' });
+  assert.match(await help.innerText(), /“drafther-ep-1-final\.mp4” is a video, so it was not uploaded here\. Videos are too large/);
+  assert.match(await help.innerText(), /Podcast Clips folder in Google Drive[\s\S]*Anyone with the link[\s\S]*Films → New Film/);
+  assert.equal(await help.getByRole('link', { name: 'Open the Podcast Clips folder' }).getAttribute('href'), 'https://drive.google.com/drive/folders/1GvCxSc15_ewOlikI7bD8UnRJumJK-gkN');
+  assert.equal(await help.getByRole('link', { name: 'Go to Films → New Film' }).getAttribute('href'), '#/collections/films/new');
+  assert.equal(await page.evaluate(() => document.getElementById('qa-media-input').value), '', 'the choice is cleared');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(50); assert.equal(await help.count(), 0);
+  // A .mov a browser reports with no type, and a mixed selection: both stopped as a whole.
+  await input.setInputFiles({ name: 'IMG_0420.MOV', mimeType: '', buffer: Buffer.alloc(1024) }); await page.waitForTimeout(80);
+  await input.setInputFiles([{ name: 'kitchen.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(1024) }, { name: 'tour.m4v', mimeType: 'video/x-m4v', buffer: Buffer.alloc(1024) }]); await page.waitForTimeout(80);
+  assert.deepEqual(await page.evaluate(() => window.__persisted), []);
+  assert.match(await help.innerText(), /choose the photos again without the video/);
+  await help.getByRole('button', { name: 'Close' }).click();
+  // Photos and captions files go through as before.
+  await input.setInputFiles({ name: 'kitchen.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(1024) }); await page.waitForTimeout(50);
+  await input.setInputFiles({ name: 'agent-on-camera.vtt', mimeType: 'text/vtt', buffer: Buffer.from('WEBVTT\n') }); await page.waitForTimeout(50);
+  assert.deepEqual(await page.evaluate(() => window.__persisted), ['kitchen.jpg', 'agent-on-camera.vtt']);
+  // Dropped on the dialog: the same check.
+  await page.evaluate(() => { const dt = new DataTransfer(); dt.items.add(new File([new Uint8Array(1024)], 'walkthrough.mp4', { type: 'video/mp4' })); document.querySelector('#qa-media h1').dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt })); });
+  await page.waitForTimeout(80);
+  assert.deepEqual(await page.evaluate(() => window.__persisted), ['kitchen.jpg', 'agent-on-camera.vtt'], 'a dropped video is stopped too');
+  await help.getByRole('button', { name: 'Close' }).click();
+  // The button in the dialog opens the same steps.
+  await dlg.getByRole('button', { name: 'Add a video from Google Drive' }).click();
+  assert.match(await help.innerText(), /Videos are too large for this upload/);
+  await help.getByRole('button', { name: 'Close' }).click();
+  await page.evaluate(() => document.getElementById('qa-media').remove());
 });
 
 await check('Captions: a file that is not WebVTT is refused with a reason', async () => {

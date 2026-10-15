@@ -175,8 +175,16 @@
   var toArr = function (v) { return !v ? [] : v.toJS ? v.toJS() : Array.isArray(v) ? v.map(function (x) { return Object.assign({}, x); }) : []; };
 
   // Several photos in one action: thumbnails, a description for each, focus, move up/down, remove.
+  // What is in the form right now, reported by the fields themselves. In the real Decap 3.16.3 editor a widget's
+  // props.entry, as its isValid sees it on Save, still holds the form as it was when that widget's own value last
+  // changed (Codex acceptance, Oct 14), so checks that depend on other fields read them here. Each field writes its
+  // value when it draws (Decap redraws a field whenever its own value changes) and removes it when it goes away.
+  var LIVE = {};
+  var liveSet = function (field, value) { var k = field && field.get && field.get('name'); if (k) LIVE[k] = value; };
+  var liveDrop = function (field) { var k = field && field.get && field.get('name'); if (k) delete LIVE[k]; };
   var GalleryControl = createClass({
     getInitialState: function () { return { busy: false, msgs: [], sizes: {} }; },
+    componentWillUnmount: function () { liveDrop(this.props.field); },
     pick: function () { this.input && this.input.click(); },
     onFiles: function (e) {
       var self = this; var files = e.target.files; self.setState({ busy: true, msgs: [] });
@@ -193,7 +201,7 @@
       this.props.onChange(arr);
     },
     render: function () {
-      var self = this; var arr = toArr(this.props.value); var id = this.props.forID;
+      var self = this; var arr = toArr(this.props.value); var id = this.props.forID; liveSet(this.props.field, arr);
       return h('div', { className: 'pgk-gallery', id: id },
         h('div', { className: 'pgk-gallery__bar' },
           h('button', { type: 'button', className: 'pgk-btn', onClick: this.pick, disabled: this.state.busy }, this.state.busy ? 'Adding photos…' : arr.length ? 'Upload more photos' : 'Upload photos'),
@@ -224,6 +232,7 @@
   // One photo (main image, hero, Field Notes hero): same upload path and thumbnails as the gallery.
   var PhotoControl = createClass({
     getInitialState: function () { return { busy: false, msgs: [] }; },
+    componentWillUnmount: function () { liveDrop(this.props.field); },
     onFiles: function (e) {
       var self = this; self.setState({ busy: true, msgs: [] });
       addFiles(this.props, [e.target.files[0]].filter(Boolean)).then(function (r) { if (r.paths[0]) self.props.onChange(r.paths[0]); self.setState({ busy: false, msgs: r.msgs }); })
@@ -231,7 +240,7 @@
       e.target.value = '';
     },
     render: function () {
-      var self = this; var v = this.props.value || '';
+      var self = this; var v = this.props.value || ''; liveSet(this.props.field, v);
       return h('div', { className: 'pgk-photo', id: this.props.forID },
         h(Thumb, { src: thumbFor(v, this.props.getAsset, this.props.field), path: v }),
         h('div', { className: 'pgk-gallery__bar' },
@@ -297,6 +306,17 @@
     // Decap's separate Media dialog uploads one file at a time. Point batch work to the Project photo picker,
     // which saves several photos with their descriptions and gallery types in a single project update.
     var dialog = mediaDialog();
+    if (dialog && !dialog.querySelector('#pgk-media-video')) {
+      // Videos are never uploaded here (James, Oct 14: a finished video chosen from his computer failed with “failed to
+      // persist media: allocation size overflow”). They come from Google Drive through Films → New Film.
+      var vid = document.createElement('div'); vid.id = 'pgk-media-video'; vid.className = 'pgk-media-video';
+      var vb = document.createElement('button'); vb.type = 'button'; vb.className = 'pgk-btn'; vb.textContent = 'Add a video from Google Drive';
+      vb.onclick = function () { window.pgkVideoHelp(); };
+      vid.appendChild(vb); vid.appendChild(document.createTextNode(' This window is for photos and small files. Videos go to Google Drive first, then Films → New Film.'));
+      dialog.insertBefore(vid, dialog.children[1] || null);
+    }
+    if (dialog) Array.prototype.forEach.call(dialog.querySelectorAll('input[type="file"]'), function (i) { if (i.getAttribute('accept') !== MEDIA_ACCEPT) i.setAttribute('accept', MEDIA_ACCEPT); });
+    if (dialog) Array.prototype.forEach.call(dialog.querySelectorAll('label span, button'), function (b) { if (/^\s*upload\s*$/i.test(b.textContent) && !b.children.length) b.textContent = 'Upload a photo or file'; });
     if (dialog && !dialog.querySelector('#pgk-media-help')) {
       var note = document.createElement('p'); note.id = 'pgk-media-help'; note.className = 'pgk-media-help';
       note.appendChild(document.createTextNode('Adding several images to a project? '));
@@ -310,6 +330,60 @@
     }
     if (dialog) Array.prototype.forEach.call(dialog.querySelectorAll('button'), function (b) { if (/^\s*delete( selected)?\s*$/i.test(b.textContent)) b.style.display = 'none'; });
   }
+  // ---------- Videos never enter the dashboard's own upload ----------
+  // Decap reads an uploaded file whole into the browser to send it to GitHub; a finished video is far too large for that
+  // (and for the repository). Every file chooser and drop on the dashboard is checked first, before Decap sees it:
+  // a video is stopped there and the Google Drive route is shown instead. Photos, captions (.vtt) and PDFs pass.
+  var MEDIA_ACCEPT = 'image/*,.pdf,.vtt,text/vtt';
+  var VIDEO_EXT = /\.(mp4|m4v|mov|qt|webm|avi|mkv|wmv|flv|mpe?g|mpg4|3gp|3g2|mts|m2ts|ogv|hevc|mxf|r3d|braw|prores)$/i;
+  var DRIVE_CLIPS = 'https://drive.google.com/drive/folders/1GvCxSc15_ewOlikI7bD8UnRJumJK-gkN';
+  function isVideoFile(f) { return !!f && ((!!f.type && /^video\//i.test(f.type)) || VIDEO_EXT.test(f.name || '')); }
+  function videosIn(list) { return Array.prototype.filter.call(list || [], isVideoFile); }
+  function stopVideos(e, files, after) {
+    var v = videosIn(files); if (!v.length) return false;
+    var name = v[0].name; var others = (files.length || 0) - v.length; // read before the choice is cleared
+    e.preventDefault(); e.stopImmediatePropagation(); if (after) after();
+    window.pgkVideoHelp(name, others);
+    return true;
+  }
+  window.addEventListener('change', function (e) {
+    var t = e.target; if (!t || t.tagName !== 'INPUT' || t.type !== 'file') return;
+    stopVideos(e, t.files, function () { try { t.value = ''; } catch (x) { /* some browsers refuse; the change never reached Decap */ } });
+  }, true);
+  window.addEventListener('drop', function (e) { stopVideos(e, e.dataTransfer && e.dataTransfer.files); }, true);
+  window.pgkVideoHelp = function (name, others) {
+    var old = document.getElementById('pgk-video-help'); if (old) old.remove();
+    var opener = document.activeElement;
+    var wrap = document.createElement('div'); wrap.className = 'pgk-modal'; wrap.id = 'pgk-video-help'; wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true'); wrap.setAttribute('aria-labelledby', 'pgk-video-h');
+    var box = document.createElement('div'); box.className = 'pgk-modal__box pgk-modal__box--narrow'; wrap.appendChild(box);
+    var body = document.createElement('div'); body.className = 'pgk-modal__body'; box.appendChild(body);
+    var add = function (tag, text, attrs) { var n = document.createElement(tag); if (text) n.textContent = text; Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); }); return n; };
+    body.appendChild(add('h2', 'Add videos from Google Drive', { id: 'pgk-video-h' }));
+    if (name) body.appendChild(add('p', '“' + name + '” is a video, so it was not uploaded here' + (others ? ' (nothing from this selection was; choose the photos again without the video)' : '') + '. Videos are too large for this upload. The site makes its own web copies from the original in your Google Drive, so the original stays there.', { class: 'pgk-msg', role: 'status' }));
+    else body.appendChild(add('p', 'Videos are too large for this upload. The site makes its own web copies from the original in your Google Drive, so the original stays there.'));
+    var ol = add('ol', null, { class: 'pgk-steps' });
+    ['Put the finished video in your Podcast Clips folder in Google Drive (drag it from your computer into the folder, or New → File upload).',
+      'In Drive, right-click the video → Share → set “Anyone with the link” can view → Copy link.',
+      'Here, open Films → New Film, paste the link, add the title and service, then Save. The film appears in a few minutes, as a draft until you switch Published on.'].forEach(function (t) { ol.appendChild(add('li', t)); });
+    body.appendChild(ol);
+    var bar = add('div', null, { class: 'pgk-gallery__bar' });
+    var folder = add('a', 'Open the Podcast Clips folder', { href: DRIVE_CLIPS, target: '_blank', rel: 'noopener', class: 'pgk-btn' });
+    var film = add('a', 'Go to Films → New Film', { href: '#/collections/films/new', class: 'pgk-btn' });
+    var close = add('button', 'Close', { type: 'button', class: 'pgk-btn pgk-btn--quiet' });
+    bar.appendChild(folder); bar.appendChild(film); bar.appendChild(close); body.appendChild(bar);
+    function shut() { document.removeEventListener('keydown', onKey, true); wrap.remove(); if (opener && opener.focus && document.contains(opener)) opener.focus(); }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); shut(); return; }
+      if (e.key !== 'Tab') return;
+      var f = Array.prototype.filter.call(wrap.querySelectorAll(FOCUSABLE), function (x) { return x.getClientRects().length; }); if (!f.length) return;
+      var first = f[0], last = f[f.length - 1], at = document.activeElement;
+      if (!wrap.contains(at)) { e.preventDefault(); first.focus(); } else if (e.shiftKey && at === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
+    }
+    close.onclick = shut;
+    film.onclick = function () { shut(); var md = mediaDialog(); var x = md && md.querySelector('button[aria-label="Close"]'); if (x) x.click(); };
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(wrap); setTimeout(function () { folder.focus(); }, 0);
+  };
   function mediaDialog() { return Array.prototype.find.call(document.querySelectorAll('[role="dialog"]'), function (d) { return d.querySelector('h1') && /^(Media assets|Images)$/.test(d.querySelector('h1').textContent.trim()); }); }
   // Raw file deletion in Decap's Media dialog is switched off: it cannot tell whether a page still uses the file.
   document.addEventListener('click', function (e) {
@@ -487,7 +561,10 @@
     componentWillUnmount: function () { var self = this; siteStatus.subs = siteStatus.subs.filter(function (f) { return f !== self.sub; }); },
     isValid: function () {
       if (this.props.value !== true || !this.props.entry || (this.props.collection && this.props.collection.get('name')) !== 'projects') return true;
-      var probs = publishProblems(this.props.entry.get('data'));
+      // Current form values where the field reports them (a description corrected after switching Published on counts
+      // without switching it again); the entry as Decap passed it otherwise.
+      var saved = this.props.entry.get('data');
+      var probs = publishProblems({ get: function (k) { return Object.prototype.hasOwnProperty.call(LIVE, k) ? LIVE[k] : saved && saved.get(k); } });
       return probs.length ? { error: { type: 'custom', message: 'Published is on, but the site would hold this project back. Before saving: ' + probs.join('; ') + '. Or switch Published off to save it as a draft.' } } : true;
     },
     render: function () {
@@ -965,16 +1042,97 @@
   CMS.registerWidget('pgk-manage', ManageControl);
 
   // ---------- Films from Google Drive: status, retry and a playable preview ----------
+  // The film forms on screen, so a Save can start following its import in the same open form (Codex acceptance of
+  // bce18af: Ready → Replace → Save stayed on "Waiting" after the import had finished, until the page was reloaded).
+  var FILM_FORMS = [];
+  var pendingState = function (v) { return !!(v && (v.state === 'waiting' || v.state === 'retry')); };
+  if (CMS.registerEventListener) CMS.registerEventListener({ name: 'postSave', handler: function (o) {
+    var e = o && o.entry; var data = e && e.get && e.get('data');
+    var imp = data && data.get && data.get('import'); imp = imp && imp.toJS ? imp.toJS() : imp;
+    if (!pendingState(imp)) return;
+    var drive = data.get('drive');
+    FILM_FORMS.forEach(function (f) { if (pendingState(f.val())) f.follow(e.get('slug'), { savedAt: Date.now(), drive: drive == null ? '' : String(drive) }); });
+  } });
+  var POLL_MS = function () { return window.__pgkFilmPollMs || 15000; };
   var FilmStatus = createClass({
     getInitialState: function () { return { run: null }; },
     componentDidMount: function () {
+      FILM_FORMS.push(this);
       if (this.isNew() && !this.props.value) this.props.onChange({ state: 'waiting' });
-      var v = this.val(); if (v && (v.state === 'waiting' || v.state === 'retry') && !this.isNew()) this.pollRun();
+      // Opened while an import is pending: follow it from the newest pending revision of this film.
+      if (pendingState(this.val()) && !this.isNew()) this.follow(this.props.entry.get('slug'), {});
     },
-    componentWillUnmount: function () { clearTimeout(this.timer); },
+    componentWillUnmount: function () { this.stop(); var self = this; FILM_FORMS = FILM_FORMS.filter(function (f) { return f !== self; }); },
+    stop: function () { clearTimeout(this.timer); this.gen = (this.gen || 0) + 1; this.track = null; },
+    // Replace (or Retry) pressed: nothing is followed until it is saved. The revisions that exist now are noted, so the
+    // film's earlier Ready record can never be taken for the result of this new request.
+    ask: function () {
+      var self = this; this.stop(); this.known = null; this.setState({ run: null, finished: null, result: null, checked: false, savedAt: null });
+      this.props.onChange({ state: 'retry' });
+      var slug = this.props.entry && this.props.entry.get('slug'); if (!slug) return;
+      this.gh('/commits?sha=' + encodeURIComponent(config.backend.branch) + '&path=' + encodeURIComponent('content/media/' + slug + '.json') + '&per_page=20').then(function (cs) { if (cs) self.known = cs.map(function (c) { return c.sha; }); });
+    },
+    gh: function (path, raw) {
+      var t = ghToken(); var hd = Object.assign(raw ? { Accept: 'application/vnd.github.raw+json' } : {}, t ? { Authorization: 'Bearer ' + t } : {});
+      return fetch('https://api.github.com/repos/' + config.backend.repo + path, { headers: hd, cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    },
+    follow: function (slug, opts) {
+      if (!slug) return;
+      this.stop(); var gen = this.gen;
+      this.track = { slug: slug, savedAt: opts.savedAt || null, drive: opts.drive, known: opts.savedAt ? this.known : null, request: null, recs: {} };
+      this.setState({ run: null, finished: null, result: null, checked: false, savedAt: null });
+      this.poll(gen);
+    },
+    pollNow: function () { if (this.track) this.poll(this.gen); }, // for the dashboard tests
+    // One look at GitHub. The request is the newest revision of this film's file that asks for an import (waiting or
+    // retry), saved by this Save when one was made here: newer than the revisions noted at Replace, no older than the
+    // Save, with the same Drive link. The import counts as finished only when a later revision records Ready or Failed.
+    // Every record is read at its own commit, so a slow GitHub cache only delays the answer, never fakes it.
+    poll: function (gen) {
+      var self = this; var tr = this.track; if (!tr || gen !== this.gen) return;
+      var path = 'content/media/' + tr.slug + '.json';
+      var rec = function (sha) { return tr.recs[sha] ? Promise.resolve(tr.recs[sha]) : self.gh('/contents/' + path + '?ref=' + sha, true).then(function (r) { tr.recs[sha] = r || {}; return tr.recs[sha]; }); };
+      var dateOf = function (c) { return c && c.commit && c.commit.committer && c.commit.committer.date; };
+      this.gh('/commits?sha=' + encodeURIComponent(config.backend.branch) + '&path=' + encodeURIComponent(path) + '&per_page=10').then(function (cs) {
+        if (gen !== self.gen) return null; cs = cs || [];
+        var find = function (i) {
+          if (tr.request || i >= cs.length) return Promise.resolve();
+          var c = cs[i];
+          if (tr.known && tr.known.indexOf(c.sha) >= 0) return Promise.resolve();
+          if (tr.savedAt && new Date(dateOf(c)).getTime() < tr.savedAt - 120000) return Promise.resolve();
+          return rec(c.sha).then(function (r) {
+            if (pendingState(r && r.import) && (tr.drive === undefined || String(r.drive || '') === tr.drive)) tr.request = { sha: c.sha, date: dateOf(c) };
+            else return find(i + 1);
+          });
+        };
+        return find(0).then(function () {
+          if (gen !== self.gen) return null;
+          if (!tr.request) { self.setState({ checked: true }); return null; }
+          var newest = cs[0];
+          var later = newest && newest.sha !== tr.request.sha && new Date(dateOf(newest)) >= new Date(tr.request.date);
+          return (later ? rec(newest.sha) : Promise.resolve(null)).then(function (r) {
+            if (gen !== self.gen) return null;
+            var st = r && r.import && r.import.state;
+            if (st === 'ready' || st === 'failed') return self.done(r);
+            return self.gh('/actions/workflows/film-import.yml/runs?head_sha=' + tr.request.sha + '&per_page=5').then(function (j) {
+              if (gen !== self.gen) return;
+              self.setState({ run: (j && j.workflow_runs && j.workflow_runs[0]) || null, savedAt: tr.request.date, checked: true });
+            });
+          });
+        });
+      }).then(function () { if (gen === self.gen && self.track) self.timer = setTimeout(function () { self.poll(gen); }, POLL_MS()); });
+    },
+    // The import recorded its result. Failed: shown here with Retry (the form now holds that result). Ready: the film's
+    // files changed, so this form must be reloaded before it is saved again (it still holds the old file names).
+    done: function (r) {
+      this.stop();
+      if (r.import.state === 'failed') { this.setState({ finished: null, result: null }); this.props.onChange(r.import); return; }
+      this.setState({ finished: 'ready', result: r });
+    },
     isNew: function () { return !!(this.props.entry && this.props.entry.get('newRecord')); },
     // A new film, or a film asked to be (re)imported, cannot be saved without the Drive link of the film file.
     isValid: function () {
+      if (this.state.finished === 'ready') return { error: { type: 'custom', message: 'The new copy of this film is ready and its files changed. Reload this page before saving again, so nothing puts the old file names back. Copy any text you changed here first.' } };
       var v = this.val(); var asked = this.isNew() || (v && (v.state === 'waiting' || v.state === 'retry'));
       if (asked && !/^https:\/\/drive\.google\.com\/(file\/d\/|open\?id=|uc\?id=)[\w-]{20,}/.test(String(this.drive() || ''))) return { error: { type: 'custom', message: 'Paste the Google Drive link of the film file (drive.google.com/file/d/…) before saving.' } };
       return true;
@@ -985,31 +1143,11 @@
     // form as it was when this field last changed (Codex acceptance of 94d5fb1: James's valid link was refused), so the
     // Drive field reports its own current value here (pgk-drive below).
     drive: function () { return Object.prototype.hasOwnProperty.call(LIVE, 'drive') ? LIVE.drive : this.data('drive'); },
-    // The import runs in GitHub Actions (film-import.yml); its latest run says whether it is working on it right now.
-    // Follows this film, not just the latest run on the branch (Codex CMS review): the saved record itself (has the
-    // import recorded ready or failed since this form was opened?), then the import run started by the commit that
-    // saved this film.
-    pollRun: function () {
-      var self = this; var t = ghToken(); var hd = t ? { Authorization: 'Bearer ' + t } : {};
-      var api = 'https://api.github.com/repos/' + config.backend.repo; var br = encodeURIComponent(config.backend.branch);
-      var path = 'content/media/' + this.props.entry.get('slug') + '.json';
-      var json = function (r) { return r.ok ? r.json() : null; };
-      fetch(api + '/contents/' + path + '?ref=' + br, { headers: Object.assign({ Accept: 'application/vnd.github.raw+json' }, hd), cache: 'no-store' }).then(json).then(function (rec) {
-        var saved = rec && rec.import && rec.import.state;
-        if (saved === 'ready' || saved === 'failed') { self.setState({ finished: saved }); return null; }
-        return fetch(api + '/commits?sha=' + br + '&path=' + encodeURIComponent(path) + '&per_page=1', { headers: hd }).then(json).then(function (cs) {
-          var c = cs && cs[0]; if (!c) return null;
-          return fetch(api + '/actions/workflows/film-import.yml/runs?head_sha=' + c.sha + '&per_page=5', { headers: hd }).then(json).then(function (j) {
-            self.setState({ run: (j && j.workflow_runs && j.workflow_runs[0]) || null, savedAt: c.commit && c.commit.committer && c.commit.committer.date, checked: true });
-          });
-        });
-      }).catch(function () { /* the plain waiting text stays */ }).then(function () { if (!self.state.finished) self.timer = setTimeout(self.pollRun, 30000); });
-    },
     render: function () {
       var self = this; var v = this.val(); var src = this.data('src'); var slug = this.props.entry && this.props.entry.get('slug');
       var box = function (cls, kids) { return h('div', { className: 'pgk-film pgk-film--' + cls, id: self.props.forID, role: 'status' }, kids); };
       if (this.isNew()) return box('new', [h('p', { key: 1 }, h('strong', {}, 'Add a film from Google Drive. '), 'Paste the Drive link below, fill in the title and service, then Save. The site then makes the web copies it plays (a 720p film, a poster and a small card poster): usually a few minutes for a short film. The original stays in your Drive.'), h('p', { key: 2 }, 'The film stays a draft until you switch Published on. Finished exports under 200 MB, shared “Anyone with the link can view”.')]);
-      var replace = function (label) { return h('div', { key: 'r', className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.props.onChange({ state: 'retry' }); } }, label)); };
+      var replace = function (label) { return h('div', { key: 'r', className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: self.ask }, label)); };
       var asked = v && (v.state === 'waiting' || v.state === 'retry');
       if (!v || (!asked && v.state !== 'failed' && !this.data('drive') && src)) {
         // A film already on the site: say what the site actually does with it.
@@ -1022,17 +1160,22 @@
       }
       if (v.state === 'ready') return box('ready', [h('p', { key: 1 }, h('strong', {}, 'Ready. '), v.message || 'Imported from Google Drive.'), h(FilmPreview, { key: 2, src: src || '/v/' + slug + '.mp4', poster: this.data('poster') }),
         h('p', { key: 3, className: 'pgk-gallery__count' }, 'Editing the title, description or captions never re-imports the film. To use a new export, or new poster or excerpt settings:'), replace('Replace or re-import from Google Drive')]);
-      if (v.state === 'failed') return box('failed', [h('p', { key: 1 }, h('strong', {}, 'The import did not work. '), v.message || ''), h('div', { key: 2, className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.props.onChange({ state: 'retry' }); } }, 'Retry import'), h('span', { className: 'pgk-gallery__count' }, 'Then press Save. Fix the link or the sharing in Drive first if the message says so.'))]);
+      if (v.state === 'failed') return box('failed', [h('p', { key: 1 }, h('strong', {}, 'The import did not work. '), v.message || ''), h('div', { key: 2, className: 'pgk-gallery__bar' }, h('button', { type: 'button', className: 'pgk-btn', onClick: self.ask }, 'Retry import'), h('span', { className: 'pgk-gallery__count' }, 'Then press Save. Fix the link or the sharing in Drive first if the message says so.'))]);
       var st = this.state; var run = st.run;
-      if (st.finished) return box(st.finished === 'ready' ? 'ready' : 'failed', [h('p', { key: 1 }, h('strong', {}, st.finished === 'ready' ? 'The import has finished. ' : 'The import has finished, but it did not work. '), 'Reload to see the result here.'), h('button', { key: 2, type: 'button', className: 'pgk-btn', onClick: function () { location.reload(); } }, 'Reload')]);
-      var retry = h('button', { key: 3, type: 'button', className: 'pgk-btn', onClick: function () { self.props.onChange({ state: 'retry' }); } }, 'Retry import');
+      if (st.finished === 'ready') { var res = st.result || {};
+        return box('ready', [h('p', { key: 1 }, h('strong', {}, 'Ready: the new copy is in place. '), (res.import && res.import.message) || ''), res.src ? h(FilmPreview, { key: 2, src: res.src, poster: res.poster }) : null,
+          h('p', { key: 3, className: 'pgk-gallery__count' }, 'Reload this page before saving anything else on this film (copy any text you changed here first).'), h('button', { key: 4, type: 'button', className: 'pgk-btn', onClick: function () { location.reload(); } }, 'Reload')]); }
+      var retry = h('button', { key: 3, type: 'button', className: 'pgk-btn', onClick: self.ask }, 'Retry import');
       var line; var showRetry = false;
-      if (run && (run.status === 'queued' || run.status === 'in_progress' || run.status === 'waiting')) line = [h('strong', { key: 'a' }, 'Importing from Google Drive now. '), 'Started ' + when(run.run_started_at || run.created_at) + '. A short film usually takes a few minutes.'];
+      var ranAgo = run && run.updated_at ? Date.now() - new Date(run.updated_at).getTime() : 0;
+      if (!this.track && !this.isNew()) line = [h('strong', { key: 'a' }, 'Not saved yet. '), 'Press Save to start the import.'];
+      else if (run && (run.status === 'queued' || run.status === 'in_progress' || run.status === 'waiting')) line = [h('strong', { key: 'a' }, 'Importing from Google Drive now. '), 'Started ' + when(run.run_started_at || run.created_at) + '. A short film usually takes a few minutes.'];
+      else if (run && run.status === 'completed' && run.conclusion === 'success' && ranAgo < 3 * 60000) line = [h('strong', { key: 'a' }, 'The import finished. '), 'Checking that it recorded this film…'];
       else if (run && run.status === 'completed' && run.conclusion === 'success') { line = [h('strong', { key: 'a' }, 'The import ran but did not record this film. '), 'It may have been changed while it was importing. Press Retry import, then Save.']; showRetry = true; }
       else if (run && run.status === 'completed') { line = [h('strong', { key: 'a' }, 'The import stopped with an error before it could report here. '), 'Press Retry import, then Save. If it happens again, the import step needs a look. ', run.html_url ? h('a', { key: 'b', href: run.html_url, target: '_blank', rel: 'noopener' }, 'Details') : null]; showRetry = true; }
       else if (st.checked && st.savedAt && Date.now() - new Date(st.savedAt).getTime() > 10 * 60000) line = [h('strong', { key: 'a' }, 'The import has not started. '), 'It was saved ' + when(st.savedAt) + ' and no import has run for it. GitHub Actions may not be running for this site; ask for it to be checked.'];
       else line = [h('strong', { key: 'a' }, 'Waiting to import from Google Drive. '), 'It starts within a minute or two of saving.'];
-      var replacing = src && asked ? h('p', { key: 0 }, h('strong', {}, 'Replacing this film. '), 'Paste the new Drive link above if it is a new file (or keep it to re-import with new poster or excerpt settings), then Save. The site keeps playing the current copy until the new one is ready.') : null;
+      var replacing = src && asked ? h('p', { key: 0 }, h('strong', {}, 'Replacing this film. '), 'Paste the new Drive link below if it is a new file (or keep it to re-import with new poster or excerpt settings), then Save. The site keeps playing the current copy until the new one is ready.') : null;
       return box('waiting', [replacing, h('p', { key: 1 }, line), showRetry ? retry : null]);
     },
   });
@@ -1049,7 +1192,6 @@
   CMS.registerWidget('pgk-film-status', FilmStatus);
 
   // The film's Google Drive link: Decap's own text field, which also tells the film status check what is typed now.
-  var LIVE = {};
   var StringWidget = CMS.getWidget && CMS.getWidget('string');
   var DriveControl = createClass({
     componentWillUnmount: function () { delete LIVE.drive; },
@@ -1061,6 +1203,22 @@
     },
   });
   CMS.registerWidget('pgk-drive', DriveControl, StringWidget && StringWidget.preview);
+
+  // Decap's own string, text or select field (named by the field's `inner` setting) that also reports its current value,
+  // for the project fields the Published check needs (name, service, description, story, main image description).
+  var LiveControl = createClass({
+    componentWillUnmount: function () { liveDrop(this.props.field); },
+    render: function () {
+      var self = this; var inner = this.props.field.get('inner') || 'string'; liveSet(this.props.field, this.props.value);
+      var w = CMS.getWidget && CMS.getWidget(inner);
+      if (w && w.control) return h(w.control, this.props);
+      var v = this.props.value == null ? '' : this.props.value; var change = function (e) { self.props.onChange(e.target.value); };
+      if (inner === 'select') return h('select', { id: this.props.forID, value: v, onChange: change }, h('option', { value: '' }, ''), (this.props.field.get('options') || []).map(function (o) { o = o && o.toJS ? o.toJS() : o; var val = typeof o === 'object' ? o.value : o; return h('option', { key: val, value: val }, typeof o === 'object' ? o.label : o); }));
+      return h(inner === 'text' ? 'textarea' : 'input', { type: inner === 'text' ? undefined : 'text', id: this.props.forID, value: v, onChange: change });
+    },
+  });
+  var LivePreview = function (props) { var w = CMS.getWidget && CMS.getWidget((props.field && props.field.get('inner')) || 'string'); return w && w.preview ? h(w.preview, props) : h('div', {}, props.value == null ? '' : String(props.value)); };
+  CMS.registerWidget('pgk-live', LiveControl, LivePreview);
 
   // Captions: none yet, burned into the video, or a .vtt file uploaded here.
   var CaptionsControl = createClass({
@@ -1150,6 +1308,7 @@
     '.pgk-files { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dfe3e8; border-radius: 6px; } .pgk-files label { display: block; margin: 4px 0; }',
     '.pgk-confirm { display: block; margin: 0 0 12px; } .pgk-confirm span { display: block; margin-bottom: 6px; } .pgk-confirm input { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',
     '.pgk-captions .pgk-radio { display: block; margin: 4px 0; }',
+    '.pgk-media-video { margin: 10px 24px 0; padding: 12px 14px; background: #fff6e8; border-radius: 6px; font-size: 14px; color: #3d2f14; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; } .pgk-steps { margin: 8px 0 14px 20px; padding: 0; line-height: 1.5; } .pgk-steps li { margin: 4px 0; } a.pgk-btn { display: inline-flex; align-items: center; text-decoration: none; }',
     '.pgk-linkbtn { border: 0; background: none; padding: 0; font: inherit; color: #176277; font-weight: 600; text-decoration: underline; cursor: pointer; }',
     '.pgk-files .pgk-radio { display: block; margin: 4px 0; } .pgk-row--out { opacity: .55; }',
     '.pgk-sitepill--failed { background: #fef3f2 !important; border-color: #fecdca !important; color: #912018 !important; } .pgk-sitepill a { color: inherit; font-weight: 600; }',
