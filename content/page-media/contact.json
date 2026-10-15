@@ -1,4 +1,6 @@
 {
   "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
-  "introMedia": null
+  "introMedia": {
+    "media": "re26-oceanfront-aerial"
+  }
 }
