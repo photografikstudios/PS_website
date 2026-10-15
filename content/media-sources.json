@@ -996,14 +996,14 @@
       "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-13. The original stays in Drive."
     },
     {
-      "id": "qa-cms-drive-import-session69",
+      "id": "qa-cms-drive-import-session69-r2",
       "drive": "1EbGdv-zpesjU69VLtemNIcRZyryzueF4",
-      "posterAt": 3,
+      "posterAt": 5,
       "loop": [
         0,
         23
       ],
-      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-15. The original stays in Drive."
+      "_note": "Replacement for “qa-cms-drive-import-session69” from the dashboard (Add film from Google Drive), 2026-10-15. The original stays in Drive."
     }
   ],
   "docs": [

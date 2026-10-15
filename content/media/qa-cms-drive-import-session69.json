@@ -1,12 +1,14 @@
 {
   "sortPriority": 0,
-  "src": "/v/qa-cms-drive-import-session69.mp4",
+  "src": "/v/qa-cms-drive-import-session69-r2.mp4",
   "import": {
-    "state": "retry"
+    "state": "ready",
+    "at": "2026-10-15T00:51:44.141Z",
+    "message": "Replaced with a new copy from Google Drive (1080×1920, 23 s). The original stays in Drive."
   },
   "alt": "Disposable draft-only CMS acceptance copy of the owner-approved podcast replacement. Remove after import and reimport testing.",
   "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view?usp=sharing",
-  "poster": "/v/qa-cms-drive-import-session69.webp",
+  "poster": "/v/qa-cms-drive-import-session69-r2.webp",
   "captions": "burned-in",
   "featured": false,
   "published": false,
@@ -23,5 +25,6 @@
   "type": "video",
   "source": "drive",
   "category": "creator-studios",
-  "captionsStatus": "machine-draft"
+  "captionsStatus": "machine-draft",
+  "asset": "qa-cms-drive-import-session69-r2"
 }
