@@ -106,7 +106,7 @@ window.mountWidget = function (name, { field, value, entry, collection, decap })
   mounts.push(m); m.draw(); return m;
 };
 window.CMS = { registerWidget: (n, c) => { window.__registered[n] = c; }, registerPreviewTemplate() {}, registerPreviewStyle() {}, registerEditorComponent() {}, registerLocale() {}, registerEventListener(l) { (window.__events = window.__events || {})[l.name] = l.handler; }, init() {} };
-window.h = h; window.createClass = createClass; window.__wrapForTest = (x) => wrap(x);
+window.h = h; window.createClass = createClass; window.__unmountNamed = (name) => mounts.filter((m) => m.id.startsWith(name + '#')).forEach((m) => m.unmount()); window.__wrapForTest = (x) => wrap(x);
 localStorage.setItem('decap-cms-user', JSON.stringify({ token: 'gho_${'x'.repeat(36)}', backendName: 'github' }));
 `;
 
@@ -377,13 +377,12 @@ await check('Film import in the same open form: Ready → Replace → Save follo
   // The save commit appears, then its run starts.
   life.commits.unshift({ sha: sha('2'), date: t(0) }); life.recs[sha('2')] = { ...ready0, drive: link, posterTime: 5, import: { state: 'retry' } };
   life.runs[sha('2')] = { status: 'in_progress', created_at: t(0), run_started_at: t(0) };
-  await page.evaluate(() => window.__L1.instance.pollNow()); await page.waitForTimeout(150);
-  assert.match(await host.innerText(), /Importing from Google Drive now/);
+  await page.evaluate(() => window.__L1.instance.pollNow()); await host.getByText('Importing from Google Drive now').waitFor({ timeout: 4000 });
   assert.equal(await page.evaluate(() => window.__L1.instance.isValid()), true, 'other edits can still be saved while it imports');
   // The import records Ready in a later commit: shown in this form, with the new copy, and saving is held until reload.
   life.runs[sha('2')] = { status: 'completed', conclusion: 'success', updated_at: t(1) };
   life.commits.unshift({ sha: sha('3'), date: t(2) }); life.recs[sha('3')] = { ...ready0, src: '/v/qa-life-r2.mp4', poster: '/v/qa-life-r2.webp', asset: 'qa-life-r2', posterTime: 5, import: { state: 'ready', at: t(1), message: 'Replaced with a new copy from Google Drive (1280×720, 21 s).' } };
-  await page.evaluate(() => window.__L1.instance.pollNow()); await page.waitForTimeout(150);
+  await page.evaluate(() => window.__L1.instance.pollNow()); await host.getByText('Ready: the new copy is in place.').waitFor({ timeout: 4000 });
   assert.match(await host.innerText(), /Ready: the new copy is in place\. Replaced with a new copy/);
   assert.equal(await host.locator('video').getAttribute('src'), '/v/qa-life-r2.mp4');
   assert.equal(await host.getByRole('button', { name: 'Reload' }).count(), 1);
@@ -399,7 +398,7 @@ await check('Film import in the same open form: Ready → Replace → Save follo
   await page.evaluate((link) => window.__events.postSave({ entry: window.__wrapForTest({ slug: 'qa-life', data: { import: { state: 'retry' }, drive: link } }) }), link);
   life.commits.unshift({ sha: sha('4'), date: t(3) }); life.recs[sha('4')] = { ...ready1, import: { state: 'retry' } };
   life.commits.unshift({ sha: sha('5'), date: t(4) }); life.recs[sha('5')] = { ...ready1, import: { state: 'failed', at: t(4), message: 'Google Drive refused the download: the file is not shared “Anyone with the link can view”.' } };
-  await page.evaluate(() => window.__L2.instance.pollNow()); await page.waitForTimeout(150);
+  await page.evaluate(() => window.__L2.instance.pollNow()); await host2.getByText('The import did not work.').waitFor({ timeout: 4000 });
   assert.match(await host2.innerText(), /The import did not work\. Google Drive refused the download/);
   assert.equal(await host2.getByRole('button', { name: 'Retry import' }).count(), 1);
   assert.equal((await page.evaluate(() => window.__L2.state.value)).state, 'failed');
@@ -415,6 +414,8 @@ await check('Film import in the same open form: Ready → Replace → Save follo
 await check('Project Published: a description corrected after switching Published on saves without switching again; a missing one still blocks', async () => {
   const photos = [{ image: '/images/projects/qa-pub-1111111111.jpg', alt: '' }];
   const data = { title: 'QA publish', category: 'commercial', summary: 'One line.', story: 'A story.', photos };
+  // Only one project form is open in Decap; here earlier tests left other Photos fields on the page.
+  await page.evaluate(() => window.__unmountNamed('pgk-gallery'));
   await page.evaluate((data) => {
     window.__P1 = window.mountWidget('pgk-publish', { field: { name: 'published' }, value: false, entry: { slug: 'qa-publish', data }, collection: 'projects', decap: { stored: [] } });
     window.__P1g = window.mountWidget('pgk-gallery', { field: { name: 'photos', media_folder: '/static/images/projects', public_folder: '/images/projects' }, value: data.photos, entry: { slug: 'qa-publish', data }, collection: 'projects' });
@@ -424,12 +425,15 @@ await check('Project Published: a description corrected after switching Publishe
   // The description is written after the switch (Decap still hands the switch the form from when it was turned on).
   await page.locator('.host-pgk-gallery').last().locator('input[type="text"]').first().fill('Front of the QA building at dusk'); await page.waitForTimeout(60);
   await page.evaluate(() => window.__P1.setSibling('photos', window.__P1g.state.value));
+  await page.waitForFunction(() => window.__P1.instance.isValid() === true, null, { timeout: 3000 }).catch(() => {});
   assert.equal(await page.evaluate(() => window.__P1.instance.isValid()), true, 'saves without switching Published again');
   await page.locator('.host-pgk-gallery').last().locator('input[type="text"]').first().fill(''); await page.waitForTimeout(60);
+  await page.waitForFunction(() => window.__P1.instance.isValid() !== true, null, { timeout: 3000 }).catch(() => {});
   assert.match((await page.evaluate(() => window.__P1.instance.isValid())).error.message, /describe photo 1/, 'removing it again blocks again');
   // The other inputs it needs are current too (the project name field reports itself).
   await page.evaluate(() => { window.__P1t = window.mountWidget('pgk-live', { field: { name: 'title', inner: 'string' }, value: 'QA publish', entry: {}, collection: 'projects' }); });
-  await page.locator('.host-pgk-live').last().locator('input').fill(''); await page.waitForTimeout(60);
+  await page.locator('.host-pgk-live').last().locator('input').fill(''); await page.waitForTimeout(150);
+  await page.waitForFunction(() => window.__P1.instance.isValid() !== true, null, { timeout: 3000 }).catch(() => {});
   assert.match((await page.evaluate(() => window.__P1.instance.isValid())).error.message, /add a project name/);
   await page.evaluate(() => { window.__P1.unmount(); window.__P1g.unmount(); window.__P1t.unmount(); });
 });
@@ -491,6 +495,17 @@ await check('Captions: a file that is not WebVTT is refused with a reason', asyn
   await host.locator('input[type=file]').setInputFiles({ name: 'ok.vtt', mimeType: 'text/vtt', buffer: Buffer.from('WEBVTT\n\n00:00.000 --> 00:01.000\nHi\n') });
   await page.waitForTimeout(100);
   assert.equal(await page.evaluate(() => window.__c1.state.value), '/captions/qa-film.vtt');
+});
+
+await check('Card thumbnail that fails (a cached 404 from an import in progress): one retry at a fresh address, then the plain broken style', async () => {
+  // Every card image here fails to decode (the test server answers with a page), which exercises the retry branch.
+  const id = await page.evaluate(() => Object.keys(window.PHOTOGRAFIK_THUMBS.films).find((k) => /^oct15-/.test(k)) || Object.keys(window.PHOTOGRAFIK_THUMBS.films)[0]);
+  await page.evaluate((id) => { const d = document.createElement('div'); d.id = 'qa-cards'; d.innerHTML = '<a class="css-9-GridCardLink" href="#/collections/films/entries/' + id + '"><div class="css-9-CardBody"><h2>QA</h2></div></a>'; document.body.appendChild(d); window.__pgkDecorate(); }, id);
+  const img = page.locator('#qa-cards img.pgk-card-thumb');
+  await page.waitForFunction(() => { const i = document.querySelector('#qa-cards img.pgk-card-thumb'); return i && i.classList.contains('pgk-card-thumb--broken'); }, null, { timeout: 5000 });
+  assert.equal(await img.getAttribute('data-pgk-retried'), '1', 'retried once');
+  assert.equal(await img.getAttribute('src'), null, 'then given up, no endless retries');
+  await page.evaluate(() => document.getElementById('qa-cards').remove());
 });
 
 await check('Collection cards: the picture sits before Decap’s card body (grid) and beside the title (list), with plain labels', async () => {

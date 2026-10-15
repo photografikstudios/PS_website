@@ -33,20 +33,26 @@ const withSynthetic = (w) => {
   return qa;
 };
 
-test('portfolio: 13 original projects and 155 media records (128 + 26 from the Oct 11 owner pack + the Oct 13 JM2 replacement), one file each, names match ids, no load errors', async () => {
+test('portfolio: 13 original projects and 175 media records (128 + 26 from the Oct 11 owner pack + the Oct 13 JM2 replacement + 20 owner Drive videos of Oct 15), one file each, names match ids, no load errors', async () => {
   // Projects James adds in the dashboard (no fixed path) sit beside the 13 originals and carry their photos inline.
   assert.deepEqual(work.loadErrors, []);
   const originals = work.projects.filter((p) => p.path);
   assert.equal(originals.length, 13);
-  assert.equal(work.media.filter((m) => !m.fromProject).length, 155);
+  assert.equal(work.media.filter((m) => !m.fromProject).length, 175);
   assert.equal((await readdir(join(root, 'content/projects'))).length, work.projects.length);
-  assert.equal((await readdir(join(root, 'content/media'))).length, 155);
+  assert.equal((await readdir(join(root, 'content/media'))).length, 175);
+  // James's 20 Drive videos of Oct 15 are owner assets, imported as hidden drafts with no page placement yet.
+  const oct15 = work.media.filter((m) => /^oct15-/.test(m.id));
+  assert.equal(oct15.length, 20);
+  assert.ok(oct15.every((m) => m.type === 'video' && m.published === false && m.import && m.import.state === 'ready'), 'hidden, imported drafts');
   assert.ok(originals.every((p) => p.published === true), 'original projects are explicitly published');
   const w = await read('content/work.json');
   assert.ok(!('projects' in w) && !('media' in w) && w.taxonomy, 'work.json keeps only the taxonomy');
   // file order is preserved through `order`
   const library = work.media.filter((m) => !m.fromProject);
-  assert.deepEqual(library.map((m) => m.order), library.map((_, i) => (i + 1) * 10));
+  // (the Oct 15 owner videos start at 3000, leaving room before them, so orders rise but are not all 10 apart)
+  const orders = library.map((m) => m.order);
+  assert.ok(orders.every((o, i) => Number.isInteger(o) && (i === 0 || o > orders[i - 1])), 'orders rise in file order: ' + orders.join(','));
 });
 
 test('content checks: the current site passes; published problems are errors, draft problems are warnings', () => {

@@ -1,7 +1,7 @@
 // Add film from Google Drive: the import step on synthetic films in a throwaway copy (never the real content).
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, cp, writeFile, readFile, truncate } from 'node:fs/promises';
+import { mkdtemp, mkdir, cp, writeFile, readFile, truncate, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -10,6 +10,10 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
+// Each throwaway site copy is about 1 GB (it includes the films); remove them when the file's tests end.
+const temps = [];
+const tempDir = async (prefix) => { const d = await mkdtemp(join(tmpdir(), prefix)); temps.push(d); return d; };
+after(() => Promise.all(temps.map((d) => rm(d, { recursive: true, force: true }))));
 let hasFfmpeg = true; try { execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' }); } catch { hasFfmpeg = false; }
 
 test('Drive links: file links and ids are read; folders and other links are refused', async () => {
@@ -23,7 +27,7 @@ test('Drive links: file links and ids are read; folders and other links are refu
 });
 
 test('film import: a synthetic Drive film becomes pinned web copies and a ready draft; private, oversized and folder links fail with a reason', { skip: !hasFfmpeg && 'ffmpeg not installed', timeout: 120000 }, async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'pgk-film-'));
+  const dir = await tempDir('pgk-film-');
   await mkdir(join(dir, 'content/media'), { recursive: true });
   await mkdir(join(dir, 'static/v'), { recursive: true });
   for (const f of ['media-assets.json', 'poster-assets.json', 'media-sources.json']) await cp(join(root, 'content', f), join(dir, 'content', f));
@@ -74,7 +78,7 @@ test('loader: a film still importing (or failed) never reaches the site', async 
 });
 
 test('film import on the latest branch: owner edits made during the import are kept; changed links and finished films are skipped', { skip: !hasFfmpeg && 'ffmpeg not installed', timeout: 120000 }, async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'pgk-film-race-'));
+  const dir = await tempDir('pgk-film-race-');
   await mkdir(join(dir, 'content/media'), { recursive: true }); await mkdir(join(dir, 'static/v'), { recursive: true });
   for (const f of ['media-assets.json', 'poster-assets.json', 'media-sources.json']) await cp(join(root, 'content', f), join(dir, 'content', f));
   await cp(join(root, 'static/v/manifest.json'), join(dir, 'static/v/manifest.json'));
@@ -112,7 +116,7 @@ test('film import on the latest branch: owner edits made during the import are k
 
 test('loader: a film being replaced keeps playing its current copy; a new film appears only when ready', async () => {
   const { loadWork } = await import('../src/lib/work-load.js');
-  const dir = await mkdtemp(join(tmpdir(), 'pgk-film-load-'));
+  const dir = await tempDir('pgk-film-load-');
   for (const d of ['content']) await cp(join(root, d), join(dir, d), { recursive: true });
   const base = { type: 'video', category: 'real-estate', service: ['video'], rights: 'approved', packageIds: [], capturedYear: null, published: true, drive: 'https://drive.google.com/file/d/QAloadAAAAAAAAAAAAAAAAAAAAAA1/view' };
   await writeFile(join(dir, 'content/media/qa-new.json'), JSON.stringify({ ...base, title: 'New', import: { state: 'waiting' } }));
@@ -122,7 +126,7 @@ test('loader: a film being replaced keeps playing its current copy; a new film a
 });
 
 test('replacement on a real page: fresh names for film, excerpt, poster and card poster; old files leave; returning visitors cannot get the old copy', { skip: !hasFfmpeg && 'ffmpeg not installed', timeout: 300000 }, async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'pgk-film-replace-'));
+  const dir = await tempDir('pgk-film-replace-');
   for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
   const env = { ...process.env, VERCEL_GIT_COMMIT_SHA: 'replace0' };
   const build = () => execFileSync('node', ['src/build.mjs'], { cwd: dir, env, stdio: 'pipe' });
@@ -163,7 +167,7 @@ test('replacement on a real page: fresh names for film, excerpt, poster and card
 });
 
 test('replacing a film used as a moving background also makes its phone still, so the page still builds', { skip: !hasFfmpeg && 'ffmpeg not installed', timeout: 300000 }, async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'pgk-film-hero-'));
+  const dir = await tempDir('pgk-film-hero-');
   for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
   const id = 're-hamptons-calm'; // the Real Estate hero and a Home path tile
   const drive = join(dir, 'drive'); await mkdir(drive);
