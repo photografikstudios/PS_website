@@ -2,9 +2,9 @@
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "static/v (Session 59: 252 existing pins verified unchanged; 52 Sunday-pack WebP files and manifest.json added)",
   "recordedAt": "2026-10-12",
-  "count": 308,
-  "totalBytes": 352620119,
-  "aggregate": "acb4c59abeb3215941b9c530b3d7276e98c51d145c95042a923e6f6145428e56",
+  "count": 311,
+  "totalBytes": 355016986,
+  "aggregate": "14b8d26a27e6b00ea52adacd1fa1878a7edf85034f6792084e1c725c94cc2978",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1223,8 +1223,8 @@
       "sha256": "9a8cb2c06a0b3d321755762777a7be7087aa02574ffb639694f1401187b048ac"
     },
     "/v/manifest.json": {
-      "bytes": 12144,
-      "sha256": "109ac4ba1794659083864a1b56a0ec8dc233439649f5bb934e4a149b4575c2f4"
+      "bytes": 12244,
+      "sha256": "dc12d89ea83634e16b88a1c5a1020c90465f7c3243b108bf859a55c774990407"
     },
     "/v/cs-podcast-ep23-short.mp4": {
       "bytes": 1646300,
@@ -1237,6 +1237,18 @@
     "/v/cs-podcast-ep23-short-loop.mp4": {
       "bytes": 717701,
       "sha256": "0c07c471bfa7e296663a44e638b77033e30e8a7be67c871a016f64b7a379f572"
+    },
+    "/v/qa-cms-drive-import-session69.mp4": {
+      "bytes": 1647338,
+      "sha256": "4813c8ce471ad91341da88d478338edbbe64fec1472ba6ccf74ead00a0113400"
+    },
+    "/v/qa-cms-drive-import-session69.webp": {
+      "bytes": 31320,
+      "sha256": "f1ba615140fc8899d072885ac30c3185776c11f1e0c55d079ac954be235c59ca"
+    },
+    "/v/qa-cms-drive-import-session69-loop.mp4": {
+      "bytes": 718109,
+      "sha256": "58e10163ae14dec7fc170dd0b49319ff67f49dd70bd30e2cc5e549594afe58ca"
     }
   }
 }

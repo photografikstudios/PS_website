@@ -1,7 +1,9 @@
 {
   "sortPriority": 0,
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T00:49:32.971Z",
+    "message": "Imported from Google Drive (1080×1920, 23 s). The original stays in Drive."
   },
   "alt": "Disposable draft-only CMS acceptance copy of the owner-approved podcast replacement. Remove after import and reimport testing.",
   "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view",
@@ -9,7 +11,6 @@
   "featured": false,
   "published": false,
   "packageIds": [],
-  "makeLoop": true,
   "service": [
     "studio"
   ],
@@ -20,5 +21,9 @@
   "type": "video",
   "source": "drive",
   "category": "creator-studios",
-  "captionsStatus": "machine-draft"
+  "captionsStatus": "machine-draft",
+  "src": "/v/qa-cms-drive-import-session69.mp4",
+  "poster": "/v/qa-cms-drive-import-session69.webp",
+  "orientation": "vertical",
+  "duration": 23
 }

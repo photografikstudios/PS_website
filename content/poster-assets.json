@@ -83,6 +83,10 @@
     "/images/posters-sm/cs-podcast-ep23-short.webp": {
       "bytes": 11806,
       "sha256": "602fcfd994b4843d698995d189de95fedc97c69e0e3b1d5770d7672a7550c5fb"
+    },
+    "/images/posters-sm/qa-cms-drive-import-session69.webp": {
+      "bytes": 13258,
+      "sha256": "376a5ae08a7243f9fc8771369f215f8316a4b637b6a4924ccb4778663eef2e5a"
     }
   }
 }
