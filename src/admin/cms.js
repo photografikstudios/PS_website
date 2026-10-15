@@ -290,7 +290,11 @@
       var body = cardBodyOf(a); var grid = !!body;
       var want = cardThumb(mm[1], slug); var frame = mm[1] === 'films' ? siteThumbs.filmFrames[slug] : null;
       var el;
-      if (want) { el = document.createElement('img'); el.src = want; el.alt = ''; el.loading = 'lazy'; el.onerror = function () { this.classList.add('pgk-card-thumb--broken'); this.removeAttribute('src'); }; }
+      if (want) { el = document.createElement('img'); el.src = want; el.alt = ''; el.loading = 'lazy'; el.onerror = function () {
+        // A poster requested while its import was finishing may have a cached 404. Retry once at a fresh URL.
+        if (!this.dataset.pgkRetried) { this.dataset.pgkRetried = '1'; this.src += (this.src.indexOf('?') >= 0 ? '&' : '?') + 'pgk-preview=' + Date.now(); return; }
+        this.classList.add('pgk-card-thumb--broken'); this.removeAttribute('src');
+      }; }
       else if (frame) { el = document.createElement('video'); el.src = frame; el.muted = true; el.preload = 'metadata'; el.setAttribute('playsinline', ''); el.setAttribute('aria-hidden', 'true'); el.tabIndex = -1; }
       else { el = document.createElement('div'); el.textContent = mm[1] === 'films' ? 'No still image for this film yet' : 'New: preview after the next site update'; el.className = 'pgk-card-thumb--none'; }
       el.classList.add('pgk-card-thumb', grid ? 'pgk-card-thumb--grid' : 'pgk-card-thumb--list');
