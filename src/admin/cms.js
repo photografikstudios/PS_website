@@ -276,6 +276,12 @@
   var siteThumbs = window.PHOTOGRAFIK_THUMBS || { photos: {}, films: {}, projects: {}, pick: [], meta: {}, filmFrames: {} };
   siteThumbs.meta = siteThumbs.meta || {}; siteThumbs.filmFrames = siteThumbs.filmFrames || {};
   function cardThumb(col, slug) { var m = siteThumbs[col] || {}; return m[slug] || null; }
+  function retryCachedThumb(img) {
+    if (img.dataset.pgkRetried) return false;
+    img.dataset.pgkRetried = '1';
+    img.src += (img.src.indexOf('?') >= 0 ? '&' : '?') + 'pgk-preview=' + Date.now();
+    return true;
+  }
   var cardBodyOf = function (a) { return a.querySelector('[class*="CardBody"]'); };
   function decorateCards() {
     var links = document.querySelectorAll('a[href*="/collections/"][href*="/entries/"]');
@@ -292,7 +298,7 @@
       var el;
       if (want) { el = document.createElement('img'); el.src = want; el.alt = ''; el.loading = 'lazy'; el.onerror = function () {
         // A poster requested while its import was finishing may have a cached 404. Retry once at a fresh URL.
-        if (!this.dataset.pgkRetried) { this.dataset.pgkRetried = '1'; this.src += (this.src.indexOf('?') >= 0 ? '&' : '?') + 'pgk-preview=' + Date.now(); return; }
+        if (retryCachedThumb(this)) return;
         this.classList.add('pgk-card-thumb--broken'); this.removeAttribute('src');
       }; }
       else if (frame) { el = document.createElement('video'); el.src = frame; el.muted = true; el.preload = 'metadata'; el.setAttribute('playsinline', ''); el.setAttribute('aria-hidden', 'true'); el.tabIndex = -1; }
@@ -616,7 +622,7 @@
   function MediaThumb(p) {
     var m = p.item && p.item.media ? mediaById[p.item.media] : null;
     if (p.item && p.item.src) return h(Thumb, { src: thumbFor(p.item.src), path: p.item.src, alt: '' });
-    if (m && m.thumb) return h('img', { className: 'pgk-thumb', src: m.thumb, alt: '' });
+    if (m && m.thumb) return h('img', { className: 'pgk-thumb', src: m.thumb, alt: '', onError: function (e) { retryCachedThumb(e.currentTarget); } });
     if (m && m.frame) return h('video', { className: 'pgk-thumb', src: m.frame, muted: true, preload: 'metadata', playsInline: true, 'aria-hidden': true, tabIndex: -1 });
     return h('div', { className: 'pgk-thumb pgk-thumb--missing' }, m ? 'No preview' : 'Not in the library');
   }
