@@ -1,7 +1,9 @@
 {
   "sortPriority": 0,
   "import": {
-    "state": "waiting"
+    "state": "ready",
+    "at": "2026-10-15T08:33:38.694Z",
+    "message": "Imported from Google Drive (1080×1920, 23 s). The original stays in Drive."
   },
   "alt": "Disposable draft-only import and reimport acceptance copy; remove after testing.",
   "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view",
@@ -9,7 +11,6 @@
   "featured": false,
   "published": false,
   "packageIds": [],
-  "makeLoop": true,
   "service": [
     "studio"
   ],
@@ -20,5 +21,9 @@
   "type": "video",
   "source": "drive",
   "category": "creator-studios",
-  "captionsStatus": "machine-draft"
+  "captionsStatus": "machine-draft",
+  "src": "/v/qa-cms-session70-film.mp4",
+  "poster": "/v/qa-cms-session70-film.webp",
+  "orientation": "vertical",
+  "duration": 23
 }
