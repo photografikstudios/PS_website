@@ -1,9 +1,9 @@
 {
   "sortPriority": 0,
   "import": {
-    "state": "waiting"
+    "state": "retry"
   },
-  "drive": "https://drive.google.com/file/d/0000000000000000000000000000/view",
+  "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view",
   "featured": false,
   "published": false,
   "packageIds": [],
