@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { PAGES, checkPageMedia, pageMediaRefs } from '../src/lib/page-media-core.js';
 import { whereUsed, planDeletion, uploadUsage, planFileDeletion } from '../src/lib/usage-core.js';
 import { parseNote, withName } from '../src/lib/github-repo.js';
-import { loadWork } from '../src/lib/work-load.js';
+import { loadWork, expandProjectPhotos } from '../src/lib/work-load.js';
 import { makeFileExists } from '../src/lib/field-notes-load.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -472,4 +472,17 @@ test('uploaded files workflow: upload on a page, take it off, find it, delete it
     const again = await call({ action: 'restore', commit: 'd'.repeat(40) }, { files: off, parentFiles: off, deletion });
     assert.equal(again.status, 409); assert.match(again.body.message, /same name exists again/);
   } finally { globalThis.fetch = realFetch; }
+});
+
+
+test('Page Media usage recognizes inline project photos without making them deletable records', async () => {
+  const repo = repoFrom(await diskFiles());
+  const project = { slug: 'qa-inline-usage', title: 'Inline usage test', category: 'real-estate', published: true, rights: 'approved', photos: [{ image: '/images/projects/qa-inline-usage.webp', alt: 'Test interior' }] };
+  repo.projects.push(project);
+  const photo = expandProjectPhotos('/nonexistent', project)[0];
+  repo.pageMedia.contact = { introMedia: { media: photo.id } };
+  const usage = whereUsed({ collection: 'photos', key: photo.id }, repo);
+  assert.ok(usage.blocking.some((x) => /Page Media/.test(x.text)));
+  assert.ok(usage.notes.some((x) => /Inline usage test/.test(x)));
+  assert.ok(planDeletion({ collection: 'photos', key: photo.id, confirm: photo.title }, repo).errors.length, 'derived photo is not a deletable standalone record');
 });

@@ -116,7 +116,8 @@ export function whereUsed(target, repo) {
   const { collection, key } = target;
   const blocking = []; const notes = [];
   let rec = null;
-  if (collection === 'photos' || collection === 'films') rec = repo.media.find((m) => m.id === key);
+  if (collection === 'photos' || collection === 'films') rec = repo.media.find((m) => m.id === key)
+    || (collection === 'photos' ? assemble(repo).media.find((m) => m.id === key && m.fromProject) : null); // usage only: project photos have no standalone record
   else if (collection === 'projects') rec = repo.projects.find((p) => p.slug === key);
   else if (collection === 'field-notes') rec = repo.notes.find((n) => n.slug === key || n.file === `${key}.md`);
   if (!rec) return { blocking: [{ text: 'This item could not be found in the latest saved version of the site. Reload the dashboard and try again.' }], notes, files: [], auto: [] };
