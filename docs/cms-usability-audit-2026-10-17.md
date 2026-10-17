@@ -26,3 +26,25 @@ Baseline: a5aeb05403caa4464c73f31f68c5bce7f3e23427, redesign/2027-preview. Inclu
 ## Verification required
 
 Unit and widget suites; real Decap draft/import/error, Field Note edit/reopen/preview, Page Media selection/undo, deployment feedback; protected login behavior. Keep implementation, test stand-in, real editor and READY preview evidence distinct.
+
+## Implemented pass
+
+- Flat, named form sections and jump links; Film essentials first; original field names and hidden metadata retained.
+- Show on site / Hidden draft controls. Film visibility request is refused before import readiness; the existing rights/caption/build gates remain.
+- Gallery placement actions keep exact integer values and offer reset/Undo. Project list order explicitly uses the opposite direction.
+- Featured designation is explicitly described as a retained flag, with a direct Home Selected work management link. Existing thumbnail/order control is reused.
+- Previously shown project categories are locked in the current saved editor/build snapshot, with a reviewed redirect explanation.
+- Testimonial display toggle and earlier/later actions use the same optional integer. No quotations or approvals changed.
+- Page/section/required/device context, preview link, and fresh authenticated where-used lookup beside a selected Page Media item.
+- Clearer Git-saved versus built versus website-confirmed feedback; immediate status check after Save; validation/saving state; import instructions no longer require GitHub Actions knowledge.
+- Protected sign-in help at /admin/login.html, inline guidance, callback return link, and same-origin/same-opener token handshake. Vercel metadata confirms all_except_custom_domains protection and main production branch. No protection/permissions/secrets changed.
+
+## Local gates
+
+- Unit tests: 80/80 Pass; no failures, cancellations or skips.
+- CMS widget browser stand-in: 25/25 Pass; no page errors. Includes existing import/retry, current-draft project checks, captions, checked delete/Undo, keyboard, phone layout plus ordering preservation, testimonial visibility, category lock and Film readiness.
+- Review build: 31 pages Pass before adding the temporary article fixture.
+- Test harness fixed to accept a component returning null, as React does; test fixtures isolated so phone footer checks do not obscure later desktop controls. Copy assertions updated to the intentionally reordered Drive field.
+- Browser test runtime lives under /private/tmp; no dependency/runtime change committed.
+
+Primary API reference: [Decap CMS event hooks](https://decapcms.org/docs/registering-events/). Real editor evidence and cleanup will be recorded separately; the stand-in is not a signed-in acceptance test.

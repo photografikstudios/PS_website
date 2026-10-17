@@ -39,7 +39,7 @@
       (window.PHOTOGRAFIK_CATEGORIES || []).forEach(function (c) { cats[c.value] = c.label; });
       return h('article', { className: 'fn-article' },
         h('div', { className: 'wrap fn-narrow', style: { paddingTop: '32px' } },
-          get('published') ? null : h('p', { className: 'fn-draft' }, h('strong', {}, 'Draft, not published. '), 'This article stays off the live site until Published is switched on.'),
+          get('published') ? null : h('p', { className: 'fn-draft' }, h('strong', {}, 'Draft, not published. '), 'This article stays off the live site until Show on site is requested, saved and validated.'),
           h('p', { className: 'fn-crumbs' }, 'Field Notes / ' + (cats[get('category')] || '')),
           h('h1', { className: 'display fn-article__title' }, get('title') || 'Untitled'),
           h('p', { className: 'fn-answer' }, get('answer') || get('excerpt') || ''),
@@ -65,7 +65,7 @@
       var services = (get('services') || []).toJS ? get('services').toJS() : (get('services') || []);
       var warn = [];
       // Historic records that were never cleared keep their pending state (set before Oct 2 2026); say so plainly.
-      if (get('rights') === 'pending') warn.push('This older project was never cleared to show. Ask us to clear it before switching Published on.');
+      if (get('rights') === 'pending') warn.push('This older project was never cleared to show. Ask us to clear it before requesting Show on site.');
       photos.forEach(function (p, i) { if (!p.alt) warn.push('Photo ' + (i + 1) + ' needs a description.'); });
       if (get('hero') && !get('heroAlt')) warn.push('The main image needs a description.');
       var fig = function (src, alt, focal, key) {
@@ -74,7 +74,7 @@
       };
       return h('article', { className: 'project dash-project' },
         h('div', { className: 'wrap', style: { paddingTop: '32px' } },
-          get('published') ? null : h('p', { className: 'fn-draft' }, h('strong', {}, 'Draft, not published. '), 'The preview site shows it with this note; the live site leaves it out until Published is switched on.'),
+          get('published') ? null : h('p', { className: 'fn-draft' }, h('strong', {}, 'Draft, not published. '), 'The preview site shows it with this note; the live site leaves it out until Show on site is requested, saved and validated.'),
           warn.length ? h('ul', { className: 'dash-warn' }, warn.map(function (w, i) { return h('li', { key: i }, w); })) : null,
           h('p', { className: 'eyebrow' }, (catLabels[get('category')] || '') + (get('location') ? ' · ' + get('location') : '')),
           h('h1', { className: 'display' }, get('title') || 'Untitled project'),
@@ -374,7 +374,7 @@
     var ol = add('ol', null, { class: 'pgk-steps' });
     ['Put the finished video in your Podcast Clips folder in Google Drive (drag it from your computer into the folder, or New → File upload).',
       'In Drive, right-click the video → Share → set “Anyone with the link” can view → Copy link.',
-      'Here, open Films → New Film, paste the link, add the title and service, then Save. The film appears in a few minutes, as a draft until you switch Published on.'].forEach(function (t) { ol.appendChild(add('li', t)); });
+      'Here, open Films → New Film, paste the link, add the title and service, then Save. The film appears in a few minutes, as a hidden draft. Wait for Ready, then choose Show on site and Save.'].forEach(function (t) { ol.appendChild(add('li', t)); });
     body.appendChild(ol);
     var bar = add('div', null, { class: 'pgk-gallery__bar' });
     var folder = add('a', 'Open the Podcast Clips folder', { href: DRIVE_CLIPS, target: '_blank', rel: 'noopener', class: 'pgk-btn' });
@@ -531,7 +531,7 @@
     var d = siteStatus.data; if (!d) return;
     var parts = [];
     var n = (d.held || []).length; var t = (d.reviewOnly || []).length;
-    if (n) parts.push('<p class="pgk-statusbar__held"><strong>' + n + (n === 1 ? ' project is' : ' projects are') + ' not on the site.</strong> Published is on, but the last build held ' + (n === 1 ? 'it' : 'them') + ' back as a draft. In Projects ' + (n === 1 ? 'it is' : 'they are') + ' marked “Held”; the form says what to fix.</p>');
+    if (n) parts.push('<p class="pgk-statusbar__held"><strong>' + n + (n === 1 ? ' project is' : ' projects are') + ' not on the site.</strong> Show on site was requested, but the last build held ' + (n === 1 ? 'it' : 'them') + ' back as a draft. In Projects ' + (n === 1 ? 'it is' : 'they are') + ' marked “Held”; the form says what to fix.</p>');
     var showTest = t && !testNoteHidden(t) && bar.getAttribute('data-test-hidden') !== '1';
     if (showTest) parts.push('<div class="pgk-statusbar__test"><details><summary>' + t + (t === 1 ? ' review-only test project' : ' review-only test projects') + '</summary><p>Marked “Review-only test” in Projects: shown on the review site with a note, never built for the live site.</p></details><button type="button" class="pgk-statusbar__x" aria-label="Hide this note">×</button></div>');
     bar.innerHTML = parts.join('') + (parts.length ? '<details class="pgk-statusbar__meta"><summary>Details</summary><p>From the ' + esc(d.mode === 'production' ? 'live' : 'review') + ' build ' + esc(shortSha(d.commit)) + ', ' + esc(when(d.builtAt)) + '. A save usually takes a few minutes to appear.</p></details>' : '');
@@ -575,7 +575,7 @@
       // without switching it again); the entry as Decap passed it otherwise.
       var saved = this.props.entry.get('data');
       var probs = publishProblems({ get: function (k) { return Object.prototype.hasOwnProperty.call(LIVE, k) ? LIVE[k] : saved && saved.get(k); } });
-      return probs.length ? { error: { type: 'custom', message: 'Published is on, but the site would hold this project back. Before saving: ' + probs.join('; ') + '. Or switch Published off to save it as a draft.' } } : true;
+      return probs.length ? { error: { type: 'custom', message: 'Show on site is requested, but the site would hold this project back. Before saving: ' + probs.join('; ') + '. Or switch Show on site off to keep a hidden draft.' } } : true;
     },
     render: function () {
       var self = this; var on = this.props.value === true; var d = siteStatus.data;
@@ -1127,7 +1127,7 @@
             : h('p', {}, h('strong', {}, 'Not chosen for any page section, project or article.')),
           (info.auto || []).length ? h('p', {}, 'Shown automatically in: ' + info.auto.join('; ') + '. Deleting it simply takes it out of ' + (info.auto.length === 1 ? 'that' : 'those') + '; nothing else changes.') : !used.length ? h('p', { className: 'pgk-manage__note' }, 'It does not appear anywhere on the site right now.') : null,
           (info.notes || []).map(function (n, i) { return h('p', { key: i, className: 'pgk-manage__note' }, n); }),
-          this.col() === 'photos' || this.col() === 'films' ? h('p', { className: 'pgk-manage__note' }, 'To take it off the site but keep it, switch Published off instead of deleting.') : null,
+          this.col() === 'photos' || this.col() === 'films' ? h('p', { className: 'pgk-manage__note' }, 'To take it off the site but keep it, switch Show on site off instead of deleting.') : null,
           h('div', { className: 'pgk-gallery__bar' },
             h('button', { type: 'button', className: 'pgk-btn pgk-btn--danger', onClick: function () { self.setState({ open: true, typed: '', err: '', done: null }); } }, 'Delete this ' + word + '…'),
             h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.check }, 'Check again'))) : null,

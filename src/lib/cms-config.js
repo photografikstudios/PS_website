@@ -174,9 +174,9 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         description: 'Portfolio projects for every service. Choose Show on site when the photos are described and the project is ready to show.',
         folder: 'content/projects', create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/projects', public_folder: '/images/projects',
-        summary: "{{title}} · {{published | ternary('Published', 'Draft')}}",
+        summary: "{{title}} · {{published | ternary('Show requested', 'Hidden draft')}}",
         sortable_fields: ['order', 'title', 'category'],
-        view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Published', field: 'published', pattern: true }, ...catFilters],
+        view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Show on site', field: 'published', pattern: true }, ...catFilters],
         view_groups: [{ label: 'Service', field: 'category' }],
         preview_path: '{{fields.category}}/{{slug}}',
         fields: [...arrange(projectFields, [
@@ -277,8 +277,8 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         description: 'Articles for photografikstudios.com/field-notes. Choose “Show on site” only when the article is ready: drafts stay off the site, the Field Notes list and the sitemap.',
         folder: 'content/field-notes', create: true, delete: false, extension: 'md', format: 'json-frontmatter',
         media_folder: '/static/images/field-notes', public_folder: '/images/field-notes',
-        slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{date}} · {{published | ternary('Published', 'Draft')}}",
-        sortable_fields: ['date', 'title', 'category'], view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Published', field: 'published', pattern: true }],
+        slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{date}} · {{published | ternary('Show requested', 'Hidden draft')}}",
+        sortable_fields: ['date', 'title', 'category'], view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Show on site', field: 'published', pattern: true }],
         preview_path: 'field-notes/{{slug}}',
         fields: arrange([
           { name: 'title', label: 'Title', widget: 'string', pattern: max(110, 'title') },
