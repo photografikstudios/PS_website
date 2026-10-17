@@ -2,9 +2,9 @@
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "static/v (Session 59: 252 existing pins verified unchanged; 52 Sunday-pack WebP files and manifest.json added)",
   "recordedAt": "2026-10-12",
-  "count": 368,
-  "totalBytes": 559341302,
-  "aggregate": "95ebeba112ef5f302bd868120b99ffa6910df8ac0dee73de89363c97d7c61968",
+  "count": 370,
+  "totalBytes": 561020052,
+  "aggregate": "86491d81bb4e9c6ac512d2503897e1230cc2571ec34dcfa2f3fbc2e809ef277c",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1223,8 +1223,8 @@
       "sha256": "9a8cb2c06a0b3d321755762777a7be7087aa02574ffb639694f1401187b048ac"
     },
     "/v/manifest.json": {
-      "bytes": 14144,
-      "sha256": "0d09e871d66d1ea005588ff6de831bf788ecdcc6fa727364cb8aad30283ec5ce"
+      "bytes": 14236,
+      "sha256": "f316b6c51862968557691d18873f55a451000c4da96c2280c3327dae8165be59"
     },
     "/v/cs-podcast-ep23-short.mp4": {
       "bytes": 1646300,
@@ -1477,6 +1477,14 @@
     "/v/oct15-vertical-51-school-ln-v3-loop.mp4": {
       "bytes": 2130836,
       "sha256": "7b67bdaf39e76588a7cb3ea807ece8848a840cfa5258ec5df23e5c50102949ad"
+    },
+    "/v/qa-cms-usability-film.mp4": {
+      "bytes": 1647338,
+      "sha256": "4813c8ce471ad91341da88d478338edbbe64fec1472ba6ccf74ead00a0113400"
+    },
+    "/v/qa-cms-usability-film.webp": {
+      "bytes": 31320,
+      "sha256": "f1ba615140fc8899d072885ac30c3185776c11f1e0c55d079ac954be235c59ca"
     }
   }
 }

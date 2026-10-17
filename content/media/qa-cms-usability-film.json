@@ -1,7 +1,9 @@
 {
   "sortPriority": 0,
   "import": {
-    "state": "retry"
+    "state": "ready",
+    "at": "2026-10-17T20:08:32.443Z",
+    "message": "Imported from Google Drive (1080×1920, 23 s). The original stays in Drive."
   },
   "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view",
   "featured": false,
@@ -17,5 +19,9 @@
   "type": "video",
   "source": "drive",
   "category": "creator-studios",
-  "captionsStatus": "machine-draft"
+  "captionsStatus": "machine-draft",
+  "src": "/v/qa-cms-usability-film.mp4",
+  "poster": "/v/qa-cms-usability-film.webp",
+  "orientation": "vertical",
+  "duration": 23
 }
