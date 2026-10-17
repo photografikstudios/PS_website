@@ -1,0 +1,21 @@
+{
+  "sortPriority": 0,
+  "import": {
+    "state": "waiting"
+  },
+  "drive": "https://drive.google.com/file/d/0000000000000000000000000000/view",
+  "featured": false,
+  "published": false,
+  "packageIds": [],
+  "service": [
+    "video"
+  ],
+  "rights": "approved",
+  "dialogue": true,
+  "title": "QA CMS usability film",
+  "posterTime": 3,
+  "type": "video",
+  "source": "drive",
+  "category": "creator-studios",
+  "captionsStatus": "machine-draft"
+}
