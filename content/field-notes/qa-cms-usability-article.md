@@ -5,7 +5,7 @@
   "slug": "qa-cms-usability-article",
   "legacyUrls": [],
   "approvedBy": "Review test only; never publish",
-  "published": false,
+  "published": true,
   "date": "2026-09-30",
   "heroAlt": "Beachfront estate film",
   "cta": {
