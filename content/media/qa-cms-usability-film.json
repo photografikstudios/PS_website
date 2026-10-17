@@ -1,11 +1,9 @@
 {
   "sortPriority": 0,
   "import": {
-    "state": "failed",
-    "at": "2026-10-17T20:06:44.800Z",
-    "message": "Google Drive did not hand over the file. It is probably private: in Drive, choose Share → “Anyone with the link can view”, then press Retry import. (The dashboard never changes sharing for you.)"
+    "state": "retry"
   },
-  "drive": "https://drive.google.com/file/d/0000000000000000000000000000/view",
+  "drive": "https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view",
   "featured": false,
   "published": false,
   "packageIds": [],
