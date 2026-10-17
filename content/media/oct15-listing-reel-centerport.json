@@ -1,6 +1,6 @@
 {
   "sortPriority": 1,
-  "src": "/v/oct15-captions-reel-772-pulaski-rd.mp4",
+  "src": "/v/oct15-listing-reel-centerport.mp4",
   "import": {
     "state": "ready",
     "at": "2026-10-15T13:32:41.604Z",
@@ -9,7 +9,7 @@
   "alt": "",
   "drive": "https://drive.google.com/file/d/1glYlFvapXwqMjgi3O2F8F_HwB7YoPbtY/view?usp=drivesdk",
   "client": null,
-  "poster": "/v/oct15-captions-reel-772-pulaski-rd.webp",
+  "poster": "/v/oct15-listing-reel-centerport.webp",
   "captions": null,
   "featured": true,
   "published": true,

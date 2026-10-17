@@ -2,7 +2,7 @@
   "_readme": "640px film card posters (Oct 13 2026), derived from each film's pinned /v/<id>.webp poster (Pillow LANCZOS, WebP q74). Cards use these; players and lightboxes keep the full poster. Checked by scripts/media-check.mjs.",
   "count": 19,
   "totalBytes": 600556,
-  "aggregate": "2185957b6adfb87d8f04546c4ce93b1008769be81b2a115ef0d001a6a36699fb",
+  "aggregate": "9241d72289b661ffa0dfab0be310eb2982be687670da6fc4f4c77d2af47e3a87",
   "files": {
     "/images/posters-sm/arch-yankee-barn-film.webp": {
       "bytes": 44742,
@@ -108,11 +108,11 @@
       "bytes": 7346,
       "sha256": "f70813dd96e2a8c1890593532cf63a2f230108e72cc12985c437f38e91a41bcf"
     },
-    "/images/posters-sm/oct15-464-montuak-social-media.webp": {
+    "/images/posters-sm/oct15-listing-reel-westhampton.webp": {
       "bytes": 30126,
       "sha256": "29fd1e983089a1f0596e2d85fd605d814120fb9023f17bfe576133dacb6fd028"
     },
-    "/images/posters-sm/oct15-captions-reel-772-pulaski-rd.webp": {
+    "/images/posters-sm/oct15-listing-reel-centerport.webp": {
       "bytes": 17238,
       "sha256": "7c613dcce6a90bd4c330508a3c06cca28f3d2defb2718a7e5b4ad66b8716f004"
     },

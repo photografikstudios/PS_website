@@ -1613,9 +1613,11 @@ await check('no street addresses in any page, caption, alt text, URL or media fi
   for (const f of files) {
     const rel = f.slice(dist.length);
     if (/hedges|woodland|two-holes|hawthorne|exchange|penniman|dune-|dartmouth/i.test(rel.replace(/hedgestone/g, ''))) hits.push('file ' + rel);
-    if (/\.(html|xml|json|txt|vtt)$/.test(f)) { const m = (await readFile(f, 'utf8')).match(addr); if (m) hits.push(`${rel}: ${m[0]}`); }
+    // Oct 17: list every distinct address per file (not only the first), so one title cannot hide the others.
+    if (/\.(html|xml|json|txt|vtt)$/.test(f)) for (const m of new Set([...(await readFile(f, 'utf8')).matchAll(new RegExp(addr.source, 'g'))].map((x) => x[0]))) hits.push(`${rel}: ${m}`);
   }
-  assert(hits.length === 0, hits.slice(0, 8).join(' | '));
+  const distinct = [...new Set(hits.map((h) => h.replace(/^.*: /, '')))];
+  assert(hits.length === 0, `${distinct.length} distinct: ${distinct.join(', ')} | ${hits.slice(0, 8).join(' | ')}`);
 });
 
 // Codex, Sep 29 2026 (Session 39): Home mobile LCP, legacy /work query, Real Estate order, one package note.

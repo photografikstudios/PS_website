@@ -3,8 +3,8 @@
   "recordedFrom": "static/v (Session 59: 252 existing pins verified unchanged; 52 Sunday-pack WebP files and manifest.json added)",
   "recordedAt": "2026-10-12",
   "count": 370,
-  "totalBytes": 560100417,
-  "aggregate": "c73e93f375c720bd3d56e08b2af7a66a21da211781ee884aa5e36a802180b4fa",
+  "totalBytes": 560100412,
+  "aggregate": "b870635e30cedcbd5f05d120d53035d552a9e9141fb4fb5a7382fffdb02f1d4b",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1223,8 +1223,8 @@
       "sha256": "9a8cb2c06a0b3d321755762777a7be7087aa02574ffb639694f1401187b048ac"
     },
     "/v/manifest.json": {
-      "bytes": 14235,
-      "sha256": "675aac0704f3efe443496a8bbfde9110a4b6ca28d1ecf7eea84f30bf3e0f33f7"
+      "bytes": 14230,
+      "sha256": "a7d3a2d04ca65cca98521a8e8801180e42d6d7bc3c9b03fa8541f28aad0ab07c"
     },
     "/v/cs-podcast-ep23-short.mp4": {
       "bytes": 1646300,
@@ -1310,27 +1310,27 @@
       "bytes": 802692,
       "sha256": "8e3361e3cea8881c030142cd10ed87b175528b93442337e8d814fea6c1ca2540"
     },
-    "/v/oct15-464-montuak-social-media.mp4": {
+    "/v/oct15-listing-reel-westhampton.mp4": {
       "bytes": 9461779,
       "sha256": "345abddd3fc8d0bd18a0e9f6b2e52b4686a0182280b257b8988d29428bbfc866"
     },
-    "/v/oct15-464-montuak-social-media.webp": {
+    "/v/oct15-listing-reel-westhampton.webp": {
       "bytes": 81622,
       "sha256": "be4383b59e7316ff1ded70d0ea49202311c6404b7a20a1e0f75ce15576255f6e"
     },
-    "/v/oct15-464-montuak-social-media-loop.mp4": {
+    "/v/oct15-listing-reel-westhampton-loop.mp4": {
       "bytes": 2960849,
       "sha256": "4cb2e5384fcfd44e16061ee9de43f08c8d4c2dfb825d8b523c5a56d0c522c8fd"
     },
-    "/v/oct15-captions-reel-772-pulaski-rd.mp4": {
+    "/v/oct15-listing-reel-centerport.mp4": {
       "bytes": 8937833,
       "sha256": "052ddbf5606622a5e6559d9ceecebdd28048005497fa8bf86b78f62154a6c5f8"
     },
-    "/v/oct15-captions-reel-772-pulaski-rd.webp": {
+    "/v/oct15-listing-reel-centerport.webp": {
       "bytes": 40328,
       "sha256": "d9713b7a16c188e9a6a97db5139be513454049cccecfd693a12af0966f16ffb7"
     },
-    "/v/oct15-captions-reel-772-pulaski-rd-loop.mp4": {
+    "/v/oct15-listing-reel-centerport-loop.mp4": {
       "bytes": 1668645,
       "sha256": "669b4b029170ac81b8cd8fd8cbbb63c058c2b57131955fb9ac22a125b63cd82c"
     },

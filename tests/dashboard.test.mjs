@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir, mkdtemp, mkdir, writeFile, cp } from 'node:fs/promises';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -301,6 +301,26 @@ test('production build: no review-only or draft project name, photo or reason in
     if (p.hero) assert.ok(!cfg.includes(p.hero), `${p.hero} not in config.js`);
   }
   assert.ok(!existsSync(join(out, 'architecture-design/test.html')), 'no Test page in production');
+});
+
+// James, Sep 27 2026: no street addresses on the public site, including media URLs and file names. Drive imports take
+// the Drive file name as their id, so a film shown under an approved title could still publish "772-pulaski-rd" in its
+// /v/ path (Oct 17). This checks every public page and file production would serve as text, so every linked URL.
+test('production build: no street address in any public page or in the media URLs and file names it links', () => {
+  const out = join(root, 'dist-prodcheck');
+  execFileSync(process.execPath, ['src/build.mjs'], { cwd: root, env: { ...process.env, PRODUCTION_VISIBILITY_CHECK: '1', VERCEL: '', VERCEL_ENV: '', CI: '' }, stdio: 'pipe' });
+  const suffix = '(?:ln|lane|la|rd|road|st|street|ave|avenue|hwy|highway|dr|drive|ct|court|pl|place|way|path|blvd|boulevard)';
+  const street = new RegExp(`\\b\\d{1,5}[- ][a-z]+(?:[- ][a-z]+)*[- ]${suffix}\\b|\\b\\d{1,5}[- ](?:montauk|montuak|pulaski|sunset|school|niamogue|hobart|point[- ]pleas+ant|georgian|rose[- ]hill)\\b`, 'gi');
+  const hits = new Set();
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]));
+  // Pages, sitemap, robots and captions. /admin (noindex) lists hidden drafts on purpose so they can be chosen, and
+  // v/manifest.json names every committed file; both are noted in the handoff rather than tested here.
+  for (const f of walk(out)) {
+    const rel = f.slice(out.length + 1);
+    if (rel.startsWith('admin/')) continue;
+    if (/\.(html|xml|txt|vtt)$/.test(f)) for (const m of readFileSync(f, 'utf8').matchAll(street)) hits.add(`${rel}: ${m[0]}`);
+  }
+  assert.deepEqual([...hits].slice(0, 12), []);
 });
 
 test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned, street-free, town from HDPH, uncredited, excluded property absent', async () => {
