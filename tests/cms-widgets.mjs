@@ -28,6 +28,7 @@ function schedule() { if (pending) return; pending = true; setTimeout(() => { pe
 const BOOL = ['disabled', 'hidden', 'multiple', 'muted', 'controls', 'checked', 'autoFocus', 'playsInline'];
 let drawn = null; let newlyMounted = [];
 function renderNode(v, path) {
+  if (v == null || v === false || v === true) return document.createTextNode(''); // React permits components to return null
   if (typeof v === 'string' || typeof v === 'number') return document.createTextNode(String(v));
   if (Array.isArray(v)) { const f = document.createDocumentFragment(); v.forEach((c, i) => f.appendChild(renderNode(c, path + '.' + i))); return f; }
   if (typeof v.type === 'function') {
@@ -279,10 +280,10 @@ await check('Film from Google Drive: new film starts waiting; failed shows the r
   Object.assign(life, { commits: [{ sha: 'b'.repeat(40), date: new Date().toISOString() }, { sha: 'c'.repeat(40), date: new Date(Date.now() - 60000).toISOString() }],
     recs: { ['b'.repeat(40)]: { type: 'video', src: '/v/qa-life-done.mp4', import: { state: 'ready', message: 'Imported from Google Drive.' } }, ['c'.repeat(40)]: { type: 'video', import: { state: 'waiting' } } }, runs: {} });
   await page.evaluate(() => { window.__f5 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: { state: 'waiting' }, entry: { slug: 'qa-life-done', data: { drive: 'https://drive.google.com/file/d/x/view' } }, collection: 'films' }); });
-  await page.locator('.host-pgk-film-status').last().getByText('Ready: the new copy is in place.').waitFor();
+  await page.locator('.host-pgk-film-status').last().getByText('Ready: the new files are saved.').waitFor();
   assert.equal(await page.locator('.host-pgk-film-status').last().getByRole('button', { name: 'Reload' }).count(), 1);
   await page.evaluate(() => { window.__f4 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: undefined, entry: { slug: 'cs-jm2-architecture', data: { src: '/v/cs-jm2-architecture.mp4', rights: 'approved', published: false } }, collection: 'films' }); });
-  assert.match(await page.locator('.host-pgk-film-status').last().innerText(), /Hidden: not on the site/);
+  assert.match(await page.locator('.host-pgk-film-status').last().innerText(), /Hidden draft: production leaves it out/);
   // A new film cannot be saved without the Drive link of the file; a ready film offers Replace or re-import.
   assert.match((await page.evaluate(() => window.__f1.instance.isValid())).error.message, /Paste the Google Drive link/);
   await page.evaluate(() => { window.__f6 = window.mountWidget('pgk-film-status', { field: { name: 'import' }, value: undefined, entry: { newRecord: true, data: { title: 'QA', drive: 'https://drive.google.com/file/d/1EbGdv-zpesjU69VLtemNIcRZyryzueF4/view' } }, collection: 'films' }); });
@@ -368,7 +369,7 @@ await check('Film import in the same open form: Ready → Replace → Save follo
   await host.getByRole('button', { name: 'Replace or re-import from Google Drive' }).evaluate((b) => b.click()); await page.waitForTimeout(120);
   assert.deepEqual(await page.evaluate(() => window.__L1.state.value), { state: 'retry' });
   assert.match(await host.innerText(), /Not saved yet/, 'nothing is followed before Save');
-  assert.match(await host.innerText(), /Paste the new Drive link below/, 'the link field is below');
+  assert.match(await host.innerText(), /Paste the new Drive link above/, 'the link field is above the status');
   // Saved, but GitHub's list still shows only the old Ready revision (a cache): keep waiting, never "finished".
   await page.evaluate((link) => window.__events.postSave({ entry: window.__wrapForTest({ slug: 'qa-life', data: { import: { state: 'retry' }, drive: link, posterTime: 5 } }) }), link);
   await page.waitForTimeout(150);
@@ -382,8 +383,8 @@ await check('Film import in the same open form: Ready → Replace → Save follo
   // The import records Ready in a later commit: shown in this form, with the new copy, and saving is held until reload.
   life.runs[sha('2')] = { status: 'completed', conclusion: 'success', updated_at: t(1) };
   life.commits.unshift({ sha: sha('3'), date: t(2) }); life.recs[sha('3')] = { ...ready0, src: '/v/qa-life-r2.mp4', poster: '/v/qa-life-r2.webp', asset: 'qa-life-r2', posterTime: 5, import: { state: 'ready', at: t(1), message: 'Replaced with a new copy from Google Drive (1280×720, 21 s).' } };
-  await page.evaluate(() => window.__L1.instance.pollNow()); await host.getByText('Ready: the new copy is in place.').waitFor({ timeout: 4000 });
-  assert.match(await host.innerText(), /Ready: the new copy is in place\. Replaced with a new copy/);
+  await page.evaluate(() => window.__L1.instance.pollNow()); await host.getByText('Ready: the new files are saved.').waitFor({ timeout: 4000 });
+  assert.match(await host.innerText(), /Ready: the new files are saved\. Replaced with a new copy/);
   assert.equal(await host.locator('video').getAttribute('src'), '/v/qa-life-r2.mp4');
   assert.equal(await host.getByRole('button', { name: 'Reload' }).count(), 1);
   assert.match((await page.evaluate(() => window.__L1.instance.isValid())).error.message, /Reload this page before saving again/);
@@ -599,6 +600,7 @@ await check('Page Media gallery: leave out on this page only, own selection with
   assert.deepEqual(await page.evaluate(() => window.__g2.state.value), { project: 'torella-pools' });
 });
 
+
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-1280.png'), fullPage: true });
 await check('Uploaded files: an upload taken off every page is found, deleted only by its exact name, and Undo puts it back; Escape returns focus', async () => {
   const link = page.locator('.pgk-slot__note .pgk-linkbtn').first();
@@ -635,6 +637,46 @@ await check('Uploaded files: an upload taken off every page is found, deleted on
   assert.ok(await page.evaluate(() => { const a = document.activeElement; const l = document.querySelector('.pgk-slot__note .pgk-linkbtn'); return !!a && a.matches('.pgk-slot__note .pgk-linkbtn') && a.closest('[id]') === l.closest('[id]'); }), 'focus returns to the Uploaded files link');
 });
 
+await check('Placement actions retain integers, reverse priority direction, and undo without touching siblings', async () => {
+  await page.evaluate(() => { window.__order = window.mountWidget('pgk-placement', { field: { name: 'sortPriority' }, value: 37, entry: { data: { title: 'Unchanged' } } }); });
+  const host = page.locator('.host-pgk-placement').last();
+  await host.getByRole('button', { name: 'Move higher in galleries' }).click();
+  await page.waitForFunction(() => window.__order.state.value === 47);
+  await host.getByRole('button', { name: 'Normal placement', exact: true }).click();
+  await page.waitForFunction(() => window.__order.state.value === 0);
+  await host.getByRole('button', { name: 'Undo placement change' }).click();
+  await page.waitForFunction(() => window.__order.state.value === 37);
+  assert.equal(await page.evaluate(() => window.__order.state.entry.data.title), 'Unchanged');
+  await page.evaluate(() => { window.__order.unmount(); window.__order2 = window.mountWidget('pgk-placement', { field: { name: 'order', direction: 'ascending' }, value: 37, entry: {} }); });
+  await page.locator('.host-pgk-placement').last().getByRole('button', { name: 'Earlier in project lists' }).click();
+  await page.waitForFunction(() => window.__order2.state.value === 27);
+  await page.evaluate(() => window.__order2.unmount());
+});
+await check('Testimonial visibility preserves exact order when toggled off/on, with quote untouched', async () => {
+  await page.evaluate(() => { window.__review = window.mountWidget('pgk-review-display', { field: { name: 'featured' }, value: 7, entry: { data: { quote: 'Exact quotation.', approval: 'approved' } } }); });
+  const host = page.locator('.host-pgk-review-display').last();
+  await host.getByRole('switch').uncheck(); await page.waitForFunction(() => window.__review.state.value === undefined);
+  await host.getByRole('switch').check(); await page.waitForFunction(() => window.__review.state.value === 7);
+  await host.getByRole('button', { name: 'Move earlier' }).click(); await page.waitForFunction(() => window.__review.state.value === 6);
+  assert.deepEqual(await page.evaluate(() => window.__review.state.entry.data), { quote: 'Exact quotation.', approval: 'approved' });
+  await page.evaluate(() => window.__review.unmount());
+});
+await check('Category URL protection blocks changing a previously shown project; drafts remain editable', async () => {
+  await page.evaluate(() => { window.PHOTOGRAFIK_PROJECTS.push({ slug: 'qa-url-lock', cat: 'commercial', hidden: false }); window.__category = window.mountWidget('pgk-category', { field: { name: 'category', options: [{ label: 'Commercial', value: 'commercial' }] }, value: 'architecture-design', entry: { slug: 'qa-url-lock' } }); });
+  const host = page.locator('.host-pgk-category').last();
+  assert.equal(await host.getByRole('combobox').isDisabled(), true);
+  assert.match((await page.evaluate(() => window.__category.instance.isValid())).error.message, /reviewed redirect/);
+  await page.evaluate(() => { window.__category.unmount(); window.__draftcat = window.mountWidget('pgk-category', { field: { name: 'category', options: [] }, value: 'commercial', entry: { newRecord: true } }); });
+  assert.equal(await page.locator('.host-pgk-category').last().getByRole('combobox').isEnabled(), true);
+  await page.evaluate(() => window.__draftcat.unmount());
+});
+await check('New Film visibility cannot bypass import readiness, and never asserts a completed publish', async () => {
+  await page.evaluate(() => { window.__vis = window.mountWidget('pgk-visibility', { field: { name: 'published' }, value: true, entry: { newRecord: true, data: {} }, collection: 'films' }); });
+  assert.match((await page.evaluate(() => window.__vis.instance.isValid())).error.message, /hidden draft first/);
+  assert.match(await page.locator('.host-pgk-visibility').last().innerText(), /does not confirm publication/);
+  await page.evaluate(() => window.__vis.unmount());
+});
+
 await check('Bottom note: the review-only test note is one line, opens for details, can be hidden; a held project stays; neither covers the save pill', async () => {
   const bar = page.locator('.pgk-statusbar');
   await bar.waitFor();
@@ -657,6 +699,7 @@ await check('Phone width: Page Media rows fit without sideways scrolling', async
   const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   assert.ok(over <= 0, 'overflow ' + over);
 });
+
 
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-390.png'), fullPage: true });
 await browser.close();

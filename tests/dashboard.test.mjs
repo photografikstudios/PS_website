@@ -44,7 +44,7 @@ test('portfolio: 13 original projects and 175 media records (128 + 26 from the O
   // James's 20 Drive videos of Oct 15 are owner assets, imported as hidden drafts with no page placement yet.
   const oct15 = work.media.filter((m) => /^oct15-/.test(m.id));
   assert.equal(oct15.length, 20);
-  assert.ok(oct15.every((m) => m.type === 'video' && m.published === false && m.import && m.import.state === 'ready'), 'hidden, imported drafts');
+  assert.ok(oct15.every((m) => m.type === 'video' && typeof m.published === 'boolean' && m.import && m.import.state === 'ready'), 'imported owner records; editor visibility decisions retained');
   assert.ok(originals.every((p) => p.published === true), 'original projects are explicitly published');
   const w = await read('content/work.json');
   assert.ok(!('projects' in w) && !('media' in w) && w.taxonomy, 'work.json keeps only the taxonomy');
@@ -352,4 +352,28 @@ test('GA4: existing stream in production; review previews only on ?ga_debug=1 as
   assert.throws(() => ga4Tag({ analytics: { ga4MeasurementId: 'UA-1234-1' } }, false), /not a GA4 Measurement ID/);
   const js = readFileSync(join(root, 'src/assets/site.js'), 'utf8');
   assert.match(js, /window\.gtag\('event', name, gaParams\(payload\)\)/, 'track() forwards allow-listed params to GA4');
+});
+
+
+test('usability: flat fields retain data keys, Film essentials come first, sections and controlled editors', () => {
+  const { config } = cmsConfig({ site, fieldNotes, work, branch: 'redesign/2027-preview', repo: 'photografikstudios/PS_website', testimonials });
+  const col = (n) => config.collections.find((c) => c.name === n);
+  const visible = (n) => col(n).fields.filter((f) => f.widget !== 'hidden' && f.widget !== 'pgk-section');
+  assert.deepEqual(visible('films').slice(0, 5).map((f) => f.name), ['title', 'drive', 'category', 'import', 'published']);
+  assert.deepEqual(col('films').fields.filter((f) => f.widget === 'pgk-section').map((f) => f.label), ['Add or update a film', 'Presentation', 'Captions & Accessibility', 'Gallery Placement', 'Advanced']);
+  assert.deepEqual(col('field-notes').fields.filter((f) => f.widget === 'pgk-section').map((f) => f.label), ['Writing', 'Publishing', 'Related content', 'SEO (optional)', 'Advanced']);
+  assert.deepEqual(visible('field-notes').slice(0, 5).map((f) => f.name), ['title', 'category', 'hero', 'heroAlt', 'excerpt']);
+  assert.equal(col('projects').fields.find((f) => f.name === 'category').widget, 'pgk-category');
+  assert.equal(col('projects').fields.find((f) => f.name === 'order').direction, 'ascending');
+  for (const name of ['films', 'photos', 'projects']) assert.equal(col(name).fields.find((f) => f.name === 'sortPriority').widget, 'pgk-placement');
+  const review = col('testimonials').files[0].fields.find((f) => f.name === 'reviews');
+  assert.equal(review.fields.find((f) => f.name === 'featured').widget, 'pgk-review-display');
+  assert.equal(review.fields.find((f) => f.name === 'approval').widget, 'hidden');
+  for (const name of ['projects', 'photos', 'films', 'field-notes']) {
+    const names = col(name).fields.map((f) => f.name); assert.equal(names.length, new Set(names).size, 'no repeated data keys');
+    for (const f of col(name).fields.filter((f) => f.widget === 'pgk-section')) assert.equal(f.default, undefined, 'display-only section has no saved default');
+  }
+  for (const page of col('page-media').files) for (const f of page.fields.filter((f) => f.galleryKey)) {
+    assert.ok(f.pageLabel && f.sectionLabel && f.device, page.name + '.' + f.name);
+  }
 });

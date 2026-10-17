@@ -22,6 +22,15 @@ const hint = {
 
 /** Hidden fields for every key the records have that the form does not show, so saving keeps them. */
 // “Where it is used, and delete” panel (src/admin/cms.js → /api/cms-manage). Saves nothing into the record.
+const section = (name, label, text = '') => ({ name: `_section_${name}`, label, widget: 'pgk-section', required: false, text });
+const arrange = (fields, groups) => {
+  const used = new Set(); const out = [];
+  for (const [name, label, names, text] of groups) {
+    out.push(section(name, label, text));
+    for (const n of names) { const f = fields.find((f) => f.name === n); if (f) { out.push(f); used.add(n); } }
+  }
+  return [...out, ...fields.filter((f) => !used.has(f.name))];
+};
 const MANAGE = { name: '_manage', label: 'Where it is used, and delete', widget: 'pgk-manage', required: false };
 function keep(records, shown) {
   const keys = new Set();
@@ -53,14 +62,14 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   // ---------- Projects ----------
   const projectFields = [
     { name: 'title', label: 'Project name', widget: 'pgk-live', inner: 'string', pattern: max(80, 'name'), hint: 'Usually the client, builder or designer, e.g. “Yankee Barn Builders”. No street addresses.' },
-    { name: 'published', label: 'Published', widget: 'pgk-publish', default: false, required: false, hint: hint.published },
-    { name: 'category', label: 'Service', widget: 'pgk-live', inner: 'select', options: workCats, hint: 'Which service page and gallery the project belongs to. Do not change it after publishing (the web address depends on it).' },
+    { name: 'published', label: 'Show on site', widget: 'pgk-publish', default: false, required: false, hint: 'Off = Hidden draft. On = Show on site after Save, validation and a successful website update. The status at the bottom confirms the website update.' },
+    { name: 'category', label: 'Service page', widget: 'pgk-category', inner: 'select', options: workCats, hint: 'Where visitors find this project. Previously shown projects keep this category to protect their web address; a move needs a reviewed redirect.' },
     { name: 'shortTitle', label: 'Short name for cards', widget: 'string', required: false, pattern: max(40, 'short name') },
     { name: 'client', label: 'Client name shown', widget: 'string', required: false, hint: 'Leave empty if the client has not agreed to be named.' },
     { name: 'location', label: 'Town or area', widget: 'string', required: false, hint: hint.location },
-    { name: 'segments', label: 'Disciplines (Architecture & Design filters)', widget: 'select', multiple: true, required: false, options: segments, hint: 'Only for Architecture & Design: who the work was for (architect, builder, designer…).' },
+    { name: 'segments', label: 'Who the work is for (disciplines)', widget: 'select', multiple: true, required: false, options: segments, hint: 'Only for Architecture & Design: who the work was for (architect, builder, designer…).' },
     { name: 'segmentSource', label: 'segmentSource', widget: 'hidden', required: false },
-    { name: 'services', label: 'Services delivered', widget: 'select', multiple: true, required: false, options: services, hint: 'Choose every standard type delivered. These same types are used by the gallery filters; the Service field above chooses the project gallery.' },
+    { name: 'services', label: 'What we delivered (services)', widget: 'select', multiple: true, required: false, options: services, hint: 'Choose every standard type delivered. These same types are used by the gallery filters; the Service field above chooses the project gallery.' },
     { name: 'serviceDetails', label: 'Special work or client details', widget: 'text', required: false, pattern: max(300, 'special work description'), hint: 'Optional: describe unusual deliverables or a special client brief in your own words. This appears separately on the project page and does not create a new gallery filter.' },
     { name: 'summary', label: 'Short description', widget: 'pgk-live', inner: 'text', required: false, pattern: max(200, 'description'), hint: 'One sentence for cards and search results.' },
     { name: 'story', label: 'Story / goal', widget: 'pgk-live', inner: 'text', required: false, pattern: max(700, 'story'), hint: 'The paragraph under the project name: what the work was for and how it was planned.' },
@@ -80,22 +89,22 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'rightsNote', label: 'rightsNote', widget: 'hidden', required: false },
     // Marks a project used only to try out the dashboard (James's “Test”): review builds show it with a note, production never builds it.
     { name: 'reviewOnly', label: 'reviewOnly', widget: 'hidden', required: false },
-    { name: 'sortPriority', label: 'Show first (0 = normal, higher = earlier)', widget: 'number', value_type: 'int', required: false, default: 0, hint: 'Raises the project’s new photos in the Home and service galleries.' },
-    { name: 'order', label: 'Position in project lists', widget: 'number', value_type: 'int', required: false, hint: 'Lower numbers come first (the original projects use 10, 20, 30…).' },
+    { name: 'sortPriority', label: 'Gallery placement', widget: 'pgk-placement', required: false, default: 0, hint: 'Raises the project’s new photos in the Home and service galleries.' },
+    { name: 'order', label: 'Project list order', widget: 'pgk-placement', direction: 'ascending', required: false, hint: 'Earlier in project lists and when gallery priorities tie. This does not change the separate gallery priority.' },
   ];
   const projectShown = new Set(projectFields.map((f) => f.name));
 
   // ---------- Photos and films (one file per item in content/media) ----------
   const mediaCommon = [
     { name: 'title', label: 'Title', widget: 'string', hint: 'For your reference and the gallery label.' },
-    { name: 'published', label: 'Published', widget: 'boolean', default: false, hint: hint.published },
+    { name: 'published', label: 'Show on site', widget: 'pgk-visibility', default: false, hint: 'Off = Hidden draft. On = Show on site after Save, validation and a successful website update. The status at the bottom confirms the website update.' },
     { name: 'project', label: 'Project', widget: 'relation', collection: 'projects', search_fields: ['title'], value_field: '{{slug}}', display_fields: ['title'], required: false, hint: 'Optional: the project page this belongs to.' },
-    { name: 'category', label: 'Service', widget: 'select', options: workCats },
+    { name: 'category', label: 'Service page', widget: 'select', options: workCats },
     { name: 'service', label: 'Type of work', widget: 'select', multiple: true, options: services },
     { name: 'location', label: 'Town or area', widget: 'string', required: false, hint: hint.location },
     { name: 'client', label: 'Client name shown', widget: 'string', required: false },
-    { name: 'sortPriority', label: 'Show first (0 = normal, higher = earlier)', widget: 'number', value_type: 'int', default: 0, hint: 'Higher numbers move it up in the Home Selected Work and service galleries.' },
-    { name: 'featured', label: 'Featured', widget: 'boolean', required: false, default: false },
+    { name: 'sortPriority', label: 'Gallery placement', widget: 'pgk-placement', default: 0, hint: 'Higher numbers move it up in the Home Selected Work and service galleries.' },
+    { name: 'featured', label: 'Featured designation', widget: 'pgk-featured', required: false, default: false },
   ];
   const photoFields = [
     { name: 'type', label: 'type', widget: 'hidden', default: 'image' },
@@ -118,7 +127,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   const filmFields = [
     { name: 'type', label: 'type', widget: 'hidden', default: 'video' },
     ...mediaCommon.slice(0, 2),
-    { name: 'import', label: 'Film file and status', widget: 'pgk-film-status', required: false },
+    { name: 'import', label: 'Import status & preview', widget: 'pgk-film-status', required: false },
     { name: 'drive', label: 'Google Drive link (new films)', widget: 'pgk-drive', required: false, pattern: ['^(https://drive\\.google\\.com/(file/d/|open\\?id=|uc\\?id=)[\\w-]{20,}[^\\s]*)?$', 'Paste the link of the film file in Google Drive (drive.google.com/file/d/…), not a folder'], hint: 'In Drive: right-click the finished film → Share → Copy link. It must be shared “Anyone with the link can view” (the dashboard never changes sharing). Under 200 MB. Leave empty for films already on the site.' },
     { name: 'makeLoop', label: 'Also make a playing excerpt (new films)', widget: 'boolean', required: false, hint: 'A muted excerpt of up to 25 seconds, so the film can also be a playing example in Page Media sections.' },
     { name: 'alt', label: 'Description of the film', widget: 'string', required: false, hint: 'What the film shows, for screen readers.' },
@@ -162,7 +171,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     collections: [
       {
         name: 'projects', label: 'Projects', label_singular: 'Project',
-        description: 'Portfolio projects for every service. Switch on Published when the photos are described and the project is ready to show.',
+        description: 'Portfolio projects for every service. Choose Show on site when the photos are described and the project is ready to show.',
         folder: 'content/projects', create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/projects', public_folder: '/images/projects',
         summary: "{{title}} · {{published | ternary('Published', 'Draft')}}",
@@ -170,7 +179,13 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Published', field: 'published', pattern: true }, ...catFilters],
         view_groups: [{ label: 'Service', field: 'category' }],
         preview_path: '{{fields.category}}/{{slug}}',
-        fields: [...projectFields, ...keep(work.projects, projectShown), MANAGE],
+        fields: [...arrange(projectFields, [
+          ['details', 'Project Details', ['title', 'category', 'shortTitle', 'client', 'location', 'services', 'segments']],
+          ['story', 'Story & Description', ['summary', 'story', 'serviceDetails', 'goal', 'blurbApproved']],
+          ['media', 'Photography & Films', ['hero', 'heroAlt', 'heroFocal', 'heroOrientation', 'photos', 'films']],
+          ['display', 'Display & Publishing', ['published', 'sortPriority', 'order']],
+          ['advanced', 'Advanced', [], 'Rights and file metadata are preserved automatically. Use the checked panel below for usage, deletion and recovery.'],
+        ]), ...keep(work.projects, projectShown), MANAGE],
       },
       {
         name: 'photos', label: 'Photos', label_singular: 'Photo',
@@ -181,7 +196,12 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         sortable_fields: ['title', 'category', 'sortPriority'],
         view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters, { label: 'Drone photos', field: 'service', pattern: 'drone' }],
         view_groups: [{ label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
-        fields: [...photoFields, ...keep(photos, photoShown), MANAGE],
+        fields: [...arrange(photoFields, [
+          ['photo', 'Photo & Description', ['title', 'src', 'alt', 'category', 'published']],
+          ['presentation', 'Presentation', ['focal', 'orientation']],
+          ['placement', 'Gallery Placement', ['project', 'service', 'location', 'client', 'sortPriority', 'featured']],
+          ['advanced', 'Advanced', [], 'Existing rights and source metadata are kept automatically.'],
+        ]), ...keep(photos, photoShown), MANAGE],
       },
       {
         name: 'films', label: 'Films', label_singular: 'Film',
@@ -191,7 +211,13 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         sortable_fields: ['title', 'category', 'sortPriority'],
         view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters],
         view_groups: [{ label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
-        fields: [...filmFields, ...keep(films, filmShown), MANAGE],
+        fields: [...arrange(filmFields, [
+          ['film', 'Add or update a film', ['title', 'drive', 'category', 'import', 'published'], 'Title → Drive link → service → Save as a hidden draft. Wait for Ready, then choose Show on site and Save. Website updated confirms deployment, not just a saved switch.'],
+          ['presentation', 'Presentation', ['makeLoop', 'posterTime']],
+          ['access', 'Captions & Accessibility', ['alt', 'dialogue', 'captions', 'captionsStatus']],
+          ['placement', 'Gallery Placement', ['project', 'service', 'location', 'client', 'sortPriority', 'featured']],
+          ['advanced', 'Advanced', [], 'Existing rights, source and file metadata are kept automatically. Replace or retry through Import status above.'],
+        ]), ...keep(films, filmShown), MANAGE],
       },
       {
         name: 'page-text', label: 'Page text', label_singular: 'Page text', delete: false,
@@ -216,13 +242,13 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           name: 'testimonials', label: 'Client reviews', file: 'content/testimonials.json',
           fields: [
             { name: '_readme', label: '_readme', widget: 'hidden' }, { name: 'google', label: 'google', widget: 'hidden' }, { name: 'video', label: 'video', widget: 'hidden' },
-            { name: 'reviews', label: 'Reviews', label_singular: 'review', widget: 'list', summary: '{{fields.name}} · {{fields.featured}}', fields: [
+            { name: 'reviews', label: 'Reviews', label_singular: 'review', widget: 'list', summary: '{{fields.name}}', fields: [
               { name: 'name', label: 'Name', widget: 'string' },
               { name: 'org', label: 'Company / role', widget: 'string', required: false },
               { name: 'source', label: 'Source', widget: 'select', options: [{ label: 'Google review', value: 'google' }, { label: 'Website testimonial / written approval', value: 'site' }] },
               { name: 'quote', label: 'Quote (word for word)', widget: 'text', hint: 'Copy it exactly. Shorten only with “…”.' },
               { name: 'excerpt', label: 'Short version for the Home page (optional)', widget: 'text', required: false, hint: 'Only words from the quote, in the same order, with “…” where words are left out. The full quote stays on About.' },
-              { name: 'featured', label: 'Show on About page, position', widget: 'number', value_type: 'int', required: false, hint: '1 = first. Leave empty to keep it in reserve (not shown).' },
+              { name: 'featured', label: 'Display on About', widget: 'pgk-review-display', required: false, hint: 'Keep in reserve or show on About. Earlier/later changes the order among displayed reviews; quotes and approvals stay unchanged.' },
               { name: 'approval', label: 'approval', widget: 'hidden', default: 'approved' },
               { name: 'id', label: 'id', widget: 'hidden', required: false },
               ...keep(testimonials.reviews || [], new Set(['name', 'org', 'source', 'quote', 'excerpt', 'featured', 'approval', 'id'])),
@@ -248,15 +274,15 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
       },
       {
         name: 'field-notes', label: 'Field Notes', label_singular: 'Field Note',
-        description: 'Articles for photografikstudios.com/field-notes. Switch on “Published” only when the article is ready: drafts stay off the site, the Field Notes list and the sitemap.',
+        description: 'Articles for photografikstudios.com/field-notes. Choose “Show on site” only when the article is ready: drafts stay off the site, the Field Notes list and the sitemap.',
         folder: 'content/field-notes', create: true, delete: false, extension: 'md', format: 'json-frontmatter',
         media_folder: '/static/images/field-notes', public_folder: '/images/field-notes',
         slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{date}} · {{published | ternary('Published', 'Draft')}}",
         sortable_fields: ['date', 'title', 'category'], view_filters: [{ label: 'Drafts', field: 'published', pattern: false }, { label: 'Published', field: 'published', pattern: true }],
         preview_path: 'field-notes/{{slug}}',
-        fields: [
+        fields: arrange([
           { name: 'title', label: 'Title', widget: 'string', pattern: max(110, 'title') },
-          { name: 'published', label: 'Published', widget: 'boolean', default: false, required: false, hint: 'Off = draft. Drafts are saved to the site files but never shown publicly.' },
+          { name: 'published', label: 'Show on site', widget: 'pgk-visibility', default: false, required: false, hint: 'Off = draft. Drafts are saved to the site files but never shown publicly.' },
           { name: 'date', label: 'Publish date', ...date, default: '{{now}}' },
           { name: 'updated', label: 'Updated date', ...date, required: false, hint: 'Only if you revise a published article.' },
           { name: 'category', label: 'Category', widget: 'select', options: cats },
@@ -271,7 +297,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'ogImage', label: 'Social sharing image', widget: 'pgk-photo', required: false, ...notesMedia, hint: 'Optional. Defaults to the hero image.' },
           { name: 'slug', label: 'URL name', widget: 'string', required: false, pattern: ['^([a-z0-9]+(-[a-z0-9]+)*)?$', 'Lowercase letters, numbers and single hyphens only'], hint: 'Optional. Leave empty to use the title. Do not change it after publishing.' },
           { name: 'author', label: 'Author', widget: 'string', required: false, default: 'Photografik Studios' },
-          { name: 'featured', label: 'Featured', widget: 'boolean', required: false, default: false },
+          { name: 'featured', label: 'Featured designation', widget: 'pgk-featured', required: false, default: false },
           { name: 'relatedService', label: 'Related service', widget: 'select', required: false, options: servicePages },
           { name: 'cta', label: 'Call to action at the end', widget: 'object', required: false, collapsed: true, fields: [
             { name: 'label', label: 'Button text', widget: 'string', default: 'Send a Project Brief' },
@@ -282,7 +308,13 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'legacyUrls', label: 'Old site addresses', widget: 'hidden', required: false },
           { name: 'sources', label: 'Sources', widget: 'hidden', required: false },
           MANAGE,
-        ],
+        ], [
+          ['writing', 'Writing', ['title', 'category', 'hero', 'heroAlt', 'excerpt', 'answer', 'body', 'photos']],
+          ['publishing', 'Publishing', ['published', 'date', 'updated', 'featured']],
+          ['related', 'Related content', ['relatedService', 'cta']],
+          ['seo', 'SEO (optional)', ['seoTitle', 'seoDescription', 'ogImage']],
+          ['advanced', 'Advanced', ['slug', 'author', '_manage'], 'Keep an existing URL name. A published URL move needs a reviewed redirect.'],
+        ]),
       },
     ],
   };
@@ -294,10 +326,10 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     files: PAGE_MEDIA.map((pg) => ({
       name: pg.file, label: pg.label, file: `content/page-media/${pg.file}.json`,
       fields: [
-        { name: '_about', label: 'About this page', widget: 'pgk-page-note', required: false, route: pg.route, automatic: pg.automatic || [] },
+        { name: '_about', label: 'About this page', widget: 'pgk-page-note', required: false, pageLabel: pg.label, route: pg.route, automatic: pg.automatic || [] },
         ...pg.slots.map((sl) => ({
           name: sl.key, label: sl.label, widget: isGallery(sl) ? 'pgk-gallery-slot' : 'pgk-slot', required: false, accepts: sl.accepts, kind: KINDS[sl.accepts],
-          galleryKey: `${pg.file}.${sl.key}`, auto: sl.auto || '',
+          pageLabel: pg.label, sectionLabel: sl.label, device: sl.accepts === 'heroLoop' ? 'Desktop: muted film; phone: still fallback (motion depends on device and reduced-motion settings).' : 'Desktop and mobile; layout and crop adapt to the screen.', galleryKey: `${pg.file}.${sl.key}`, auto: sl.auto || '',
           multiple: !!sl.list, min: sl.list ? sl.list.min : sl.required ? 1 : 0, max: sl.list ? sl.list.max : 1, mustHave: !!sl.required,
           labelled: !!sl.labelled, altMode: sl.alt || 'library', empty: sl.empty || '', route: pg.route,
           media_folder: '/static/images/library', public_folder: '/images/library',

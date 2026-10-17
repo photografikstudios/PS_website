@@ -284,6 +284,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
   // The dashboard checks Page Media choices with the same rules as the build.
   await cp(join(root, 'src/lib/page-media-core.js'), join(out, 'admin/page-media-core.js'));
+  await cp(join(root, 'src/admin/login.html'), join(out, 'admin/login.html'));
   await cp(join(root, 'src/admin/preview.css'), join(out, 'admin/preview.css'));
 }
 

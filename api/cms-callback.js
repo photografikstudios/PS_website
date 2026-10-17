@@ -4,12 +4,13 @@
 const js = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
 const page = (status, payload, origin) => `<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Signing in…</title></head><body>
 <p>${status === 'success' ? 'Signed in. You can close this window.' : 'Sign-in did not complete. Close this window and try again.'}</p>
+<p><a href="/admin/">Return to the dashboard</a>. If this was a sign-in popup, return to your original dashboard tab.</p>
 <script>
 (function () {
   var origin = ${js(origin)};
   var msg = 'authorization:github:${status}:' + ${js(JSON.stringify(payload))};
   function receive(e) {
-    if (e.origin !== origin) return;
+    if (e.origin !== origin || e.source !== window.opener) return;
     window.removeEventListener('message', receive);
     window.opener.postMessage(msg, origin);
   }
