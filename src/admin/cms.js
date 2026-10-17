@@ -681,7 +681,7 @@
       var self = this; var on = this.props.value === true;
       return h('div', { id: this.props.forID, className: 'pgk-note' },
         h('label', { className: 'pgk-switch' }, h('input', { type: 'checkbox', role: 'switch', checked: on, onChange: function (e) { self.props.onChange(e.target.checked); } }), on ? ' Show on site requested' : ' Hidden draft'),
-        h('p', {}, on ? 'Save, validation and a successful website update are still required. This switch does not confirm publication.' : 'Kept in the library. Production galleries leave hidden items out.'),
+        h('p', {}, on ? 'Save, validation and a successful website update are still required. This switch does not confirm publication.' : 'Saved as a draft. The production site leaves hidden items out.'),
         h('p', { className: 'pgk-slot__note', role: 'status' }, siteState.text()));
     },
   });
