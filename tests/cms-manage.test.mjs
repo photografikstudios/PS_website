@@ -90,7 +90,7 @@ test('Home video choices: all 20 owner imports have a poster-backed hero fallbac
   const recent = work.media.filter(m => m.id.startsWith('oct15-'));
   assert.equal(recent.length, 20);
   for (const m of recent) {
-    assert.ok(loops.has(m.id), m.id); assert.equal(stills[m.asset || m.id], m.poster, m.id);
+    assert.ok(loops.has(m.id), m.id); assert.equal(stills[m.asset || m.id], fileExists(`/images/hero/${m.asset || m.id}-phone.webp`) ? `/images/hero/${m.asset || m.id}-phone.webp` : m.poster, m.id);
     assert.equal(itemProblem({ accepts: 'heroLoop' }, { media: m.id }, { media, loops, heroLoops: new Set(Object.keys(stills)), fileExists }), '');
   }
   const m = { id: 'qa', type: 'video', rights: 'approved', poster: '/v/qa.webp', published: false };

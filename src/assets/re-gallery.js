@@ -50,6 +50,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     v.setAttribute('aria-label', d.title);
     if (d.captions) { const t = document.createElement('track'); Object.assign(t, { kind: 'captions', srclang: 'en', label: 'English', src: d.captions, default: !d.openCaptions }); v.append(t); }
     v.className = 'gcard__video';
+    window.pgkVideoRecovery?.(v);
     v.addEventListener('play', () => pauseAll(v));
     btn.replaceWith(v);
     inlineVideos.add(v);

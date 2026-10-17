@@ -27,6 +27,7 @@ export function createLightbox(dlg, items, { where = 'gallery' } = {}) {
       v.setAttribute('aria-label', d.title);
       if (d.captions) { const t = document.createElement('track'); Object.assign(t, { kind: 'captions', srclang: 'en', label: 'English', src: d.captions, default: !d.openCaptions }); v.append(t); }
       stage.append(v);
+      window.pgkVideoRecovery?.(v);
       v.play().catch(() => {});
       track('video_play', { video: d.id || d.title, where: `${where}_lightbox` });
     } else {

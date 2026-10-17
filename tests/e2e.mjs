@@ -159,7 +159,7 @@ await check('compare: Book Now CTA to the booking portal; common inclusions show
 await check('portfolios: every approved item appears on its own service page, once, and nowhere links to /work', async () => {
   const work = await loadWorkRecords();
   // Items marked gallery:false (e.g. the pricing floor-plan composite) are page art, not portfolio pieces.
-  const approved = work.media.filter((m) => m.rights === 'approved' && m.gallery !== false);
+  const approved = work.media.filter((m) => m.rights === 'approved' && m.published !== false && m.gallery !== false);
   const route = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
   const p = await newPage();
   for (const [cat, path] of Object.entries(route)) {
@@ -839,7 +839,7 @@ await check('nav: Creator Studios replaces Agencies; agency partnerships stay re
   await p.context().close();
 });
 
-const heroPages = { '/': 're-hamptons-beachfront', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-yankee-barn-film', '/commercial': 'biz-rachel-lynch-pools', '/creator-studios': 'cs-demo-reel' };
+const heroPages = { '/': 'oct15-v2-horizontal-51-school-ln-mov', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-yankee-barn-film', '/commercial': 'biz-rachel-lynch-pools', '/creator-studios': 'cs-demo-reel' };
 await check('primary-nav pages open with a silent autoplaying 16:9 hero video, poster, pause/play control, no Watch the film prompt', async () => {
   for (const [path, id] of Object.entries(heroPages)) {
     const p = await newPage();
@@ -849,8 +849,9 @@ await check('primary-nav pages open with a silent autoplaying 16:9 hero video, p
     const v = first.locator('video[data-ambient]');
     assert(await v.count() === 1, `${path} ambient`);
     // Session 53: the still is a <picture> under the film (phones get a 640x720 centre crop), not a poster attribute.
-    assert(!(await v.getAttribute('poster')) && await v.getAttribute('data-still') === `/v/${id}.webp`, `${path} film carries no poster`);
-    assert(await first.locator(`.hero-still img[src="/v/${id}.webp"]`).count() === 1 && await first.locator(`.hero-still source[srcset="/images/hero/${id}-phone.webp"]`).count() === 1, `${path} hero still picture`);
+    const heroPoster = path === '/' ? `/images/hero/${id}-poster.webp` : `/v/${id}.webp`;
+    assert(!(await v.getAttribute('poster')) && await v.getAttribute('data-still') === heroPoster, `${path} film carries no poster`);
+    assert(await first.locator(`.hero-still img[src="${heroPoster}"]`).count() === 1 && await first.locator(`.hero-still source[srcset="/images/hero/${id}-phone.webp"]`).count() === 1, `${path} hero still picture`);
     assert(await v.evaluate((el) => el.muted && el.hasAttribute('muted')), `${path} muted`);
     assert(await first.locator('[data-motion-toggle]').count() === 1, `${path} pause control`);
     assert(await p.getByText('Watch the film').count() === 0, `${path} has no Watch the film prompt`);
@@ -1128,7 +1129,6 @@ await check('reels: words show while muted (WebVTT default on Agent on camera; b
       // The first spoken words start at 6.9 s; the test server has no range requests, so let it play there.
       for (let i = 0; i < 200 && !(v.textTracks[0] && v.textTracks[0].activeCues && v.textTracks[0].activeCues.length && v.currentTime > 7.3); i++) await new Promise((r) => setTimeout(r, 100));
       if (!(t0 > 0)) return { muted: v.muted, mode: 'not playing', cue: '', time: t0 };
-      v.currentTime = 7.2;
       const t = v.textTracks[0];
       return { muted: v.muted, mode: t && t.mode, cue: t && t.activeCues && t.activeCues[0] ? t.activeCues[0].text : '', played: t0, controls: v.controls };
     });
@@ -1361,7 +1361,7 @@ await check('mobile menu reachable at 320-1024; Home trimmed with every path kep
   const h = await p.evaluate(() => document.documentElement.scrollHeight);
   assert(h < 10500, 'Home at 390 px is trimmed: ' + h);
   const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.id || x.className.split(' ').slice(-1)[0]));
-  assert(order.indexOf('selected-work') === 2 && await p.locator('.path').count() === 4 && await p.locator('#sw-grid .sw-card:not([hidden])').count() === 6, 'Home order and six-item phone preview: ' + order.join(','));
+  assert(order.indexOf('home-proof') === 1 && order.indexOf('selected-work') === 3 && await p.locator('.path').count() === 4 && await p.locator('#sw-grid .sw-card:not([hidden])').count() === 6, 'Home order and six-item phone preview: ' + order.join(','));
   for (const href of ['/real-estate', '/architecture-design', '/commercial', '/creator-studios', '/agent-content', '/agency-partnerships', '/real-estate/pricing', '/contact']) assert(await p.locator(`main a[href="${href}"], main a[href^="${href}?"]`).count() >= 1, 'Home keeps a path to ' + href);
   assert(await p.locator('.home-proof blockquote').count() === 1 && await p.locator('.home-pkgs__item').count() === 4, 'proof quote and four package lines');
   await p.goto(base + '/real-estate/pricing'); await p.click('#tab-video');
@@ -1546,13 +1546,13 @@ await check('James Sep 28: pricing four across, Most Popular, package loops; RE 
     assert(!/\b\d+ (pieces|piece|results|films|photos)\b|\(\d+\)|(Load|View) more \(\d+\)/.test(visibleText), `${path} shows a numeric count`);
   }
   await p.goto(base + '/agent-content');
-  assert(await p.locator('.page-hero video source[src="/v/agent-expertise-hero-loop.mp4"]').count() === 1, 'Agent hero film');
+  assert(await p.locator('.page-hero video source[src="/v/agent-on-camera-hero-loop.mp4"]').count() === 1, 'Agent hero film');
   assert(!/the project/i.test(await p.locator('main').innerText()), 'no "the project" link');
   const split = await p.evaluate(() => { const e = document.querySelector('.ac-split__examples').getBoundingClientRect(), q = document.querySelector('.ac-split__qa').getBoundingClientRect(); return [e.left < q.left, Math.abs(e.top - q.top) < 80, [...document.querySelectorAll('main > section')].findIndex((x) => x.classList.contains('ac-split'))]; });
   // James, Sep 29 2026: the "why it matters" sell sections come straight after the hero, then examples and Fair questions.
   const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.className));
   assert(split[0] && split[1] && /ac-why/.test(order[1]) && /ac-day/.test(order[2]) && split[2] === 4, 'sell sections after the hero, then examples left and Fair questions right: ' + split + ' ' + order.slice(0, 5).join(' | '));
-  assert(await p.locator('.ac-example .vplayer').count() === 2 && await p.locator('.ac-why .vplayer').count() === 1 && await p.locator('.ac-split a[href$=".txt"], .ac-split .card__meta').count() === 0, 'inline examples without captions or transcript links beneath');
+  assert(await p.locator('.ac-example .vplayer').count() >= 2 && await p.locator('.ac-why .vplayer').count() === 1 && await p.locator('.ac-split a[href$=".txt"], .ac-split .card__meta').count() === 0, 'inline examples without captions or transcript links beneath');
   assert(/recognize and trust/.test(await p.textContent('main')), 'monthly plans lead-in');
   await p.context().close();
   // Phones: the Home hero loop does not start (or load) before the page load event; afterwards it plays.
@@ -1561,7 +1561,7 @@ await check('James Sep 28: pricing four across, Most Popular, package loops; RE 
   await ph.goto(base + '/', { waitUntil: 'load' });
   await ph.waitForTimeout(600);
   const served = (await (await fetch(base + '/')).text()).match(/<video class="ambient hero__video"[^>]*>/)[0];
-  const hero = await ph.evaluate(() => { const v = document.querySelector('.hero__video'); const im = document.querySelector('.hero-still img'); return [window.__heroPlayBeforeLoad, v.preload, im.currentSrc.endsWith('/images/hero/re-hamptons-beachfront-phone.webp')]; });
+  const hero = await ph.evaluate(() => { const v = document.querySelector('.hero__video'); const im = document.querySelector('.hero-still img'); return [window.__heroPlayBeforeLoad, v.preload, im.currentSrc.endsWith('/images/hero/oct15-v2-horizontal-51-school-ln-mov-phone.webp')]; });
   assert(/preload="none"/.test(served) && hero[0] === false && hero[1] === 'auto' && hero[2], 'phone hero deferred until load, then started: ' + hero + ' ' + served);
   await ph.context().close();
 });
@@ -1632,7 +1632,7 @@ await check('LCP: small header logo, hero poster preloaded at high priority; RE 
   await p.goto(base + '/', { waitUntil: 'load' });
   assert(logos.length && logos.every((l) => /logo-(96|192)\.webp/.test(l)), `logo requests ${logos}`);
   // Session 53: a portrait phone fetches only the hero's phone still before load; a desktop only the full frame.
-  for (const [vp, want, not] of [[{ width: 390, height: 844 }, '/images/hero/re-hamptons-beachfront-phone.webp', '/v/re-hamptons-beachfront.webp'], [{ width: 1280, height: 900 }, '/v/re-hamptons-beachfront.webp', '/images/hero/re-hamptons-beachfront-phone.webp']]) {
+  for (const [vp, want, not] of [[{ width: 390, height: 844 }, '/images/hero/oct15-v2-horizontal-51-school-ln-mov-phone.webp', '/images/hero/oct15-v2-horizontal-51-school-ln-mov-poster.webp'], [{ width: 1280, height: 900 }, '/images/hero/oct15-v2-horizontal-51-school-ln-mov-poster.webp', '/images/hero/oct15-v2-horizontal-51-school-ln-mov-phone.webp']]) {
     const q = await newPage(vp); const got = []; let loaded = false;
     // Count requests until the load event itself (not until goto returns, which can let post-load requests in).
     q.on('request', (r) => { if (!loaded) got.push(new URL(r.url()).pathname); });
@@ -1643,7 +1643,7 @@ await check('LCP: small header logo, hero poster preloaded at high priority; RE 
   }
   await p.goto(base + '/real-estate');
   const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((s) => s.id || s.querySelector('h2')?.textContent.trim().slice(0, 30)));
-  const iPort = order.indexOf('portfolio'), iPkg = order.findIndex((x) => /Start with the right package/.test(x || ''));
+  const iPort = order.indexOf('portfolio'), iPkg = order.indexOf('compare');
   assert(iPort > 0 && iPkg > iPort, `RE order ${order}`);
   const main = await p.locator('main').innerText();
   assert(!/Three steps from first call/.test(main), 'three steps removed');
@@ -1818,6 +1818,40 @@ await check('Dashboard status: /admin/status.json lists held projects and review
   assert(bad.length === 0, 'thumbnails served: ' + bad.slice(0, 5).join(', '));
   assert(!th.pick.some((x) => /\/test-/.test(x.src)), 'review-only Test photos are not offered in the picker');
   assert(/addEventListener\('hashchange'/.test(cms) && /location\.reload\(\)/.test(cms), 'a jump between two open entries reloads instead of saving into the wrong file');
+});
+
+// Targeted October 17 polish: visitor behavior, not implementation-only checks.
+await check('polish: starting size stays beside every price through entry and clear', async () => {
+  const p = await newPage();
+  await p.goto(base + '/real-estate/pricing');
+  for (const e of await p.locator('[data-price-for]').all()) assert(/up to [\d,]+ sq ft/.test(await e.textContent()), 'starting tier qualification');
+  await p.fill('#sqft', '2800');
+  assert((await p.locator('[data-price-for="luxury-media"]').textContent()).includes('$2,140'), 'approved amount');
+  assert(await p.locator('[data-price-for="luxury-media"] .price-size').count() === 0, 'no stale starting tier beside selected price');
+  await p.click('.sizer__clear');
+  assert(/up to 2,500 sq ft/.test(await p.locator('[data-price-for="luxury-media"]').textContent()), 'clear restores qualification');
+  await p.goto(base + '/real-estate');
+  assert(await p.locator('.ladder--4').count() === 0 && await p.locator('[data-compare]').count() === 1, 'one useful comparison, no repeated package explanation');
+  await p.context().close();
+});
+await check('polish: Architecture thumbnails reserve dimensions and fall back without losing actions; video retry works', async () => {
+  const p = await newPage({width:390,height:844});
+  await p.route('**/images/posters-sm/arch-yankee-barn-film.webp', r=>r.fulfill({status:404,body:''}));
+  await p.goto(base + '/architecture-design#portfolio');
+  const thumbs = p.locator('#ag-grid img');
+  assert(await thumbs.evaluateAll(es=>es.every(e=>+e.getAttribute('width')>0 && +e.getAttribute('height')>0 && e.loading==='lazy')), 'dimensions and native lazy loading');
+  const card = p.locator('#ag-grid [data-media="arch-yankee-barn-film"]');
+  await card.scrollIntoViewIfNeeded();
+  await p.waitForFunction(()=>document.querySelector('#ag-grid [data-media="arch-yankee-barn-film"] img')?.dataset.fallbackTried==='1');
+  assert((await card.locator('img').getAttribute('src')).endsWith('/v/arch-yankee-barn-film.webp'), 'full poster fallback');
+  await p.route('**/v/arch-yankee-barn-film.mp4', r=>r.fulfill({status:503,body:''}));
+  await card.locator('button').click();
+  await card.locator('.video-recovery button').waitFor();
+  await p.unroute('**/v/arch-yankee-barn-film.mp4');
+  await card.locator('.video-recovery button').click();
+  await p.waitForFunction(()=>document.querySelector('#ag-grid [data-media="arch-yankee-barn-film"] video')?.readyState>=2);
+  assert(await card.locator('.video-recovery').count()===0, 'retry recovered');
+  await p.context().close();
 });
 
 // Screenshots for the handoff

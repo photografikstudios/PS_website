@@ -20,7 +20,7 @@ export const focalAttr = (f) => (FOCAL[f] ? ` style="object-position: ${FOCAL[f]
 export const HERO_STILL_MEDIA = '(max-width: 700px) and (max-aspect-ratio: 3/5)';
 export const heroPhoneStill = (id) => `/images/hero/${esc(id)}-phone.webp`;
 
-export function createContext({ site, reviewMode, onVercel, heroStills = {} }) {
+export function createContext({ site, reviewMode, onVercel, heroStills = {}, imageInfo = () => null }) {
   const isLocal = (p) => typeof p === 'string' && p.startsWith('/v/');
   const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) || isLocal(p) ? p : site.media.base + p);
 
@@ -33,9 +33,13 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {} }) {
   };
   const srcset = (p, widths = WIDTHS) => (onVercel && !isLocal(p) ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
 
+  const imageDimensions = (p) => { const d = imageInfo(p); return d ? attrs({ width: d.width, height: d.height }) : ''; };
+
   function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height, thumb, focal } = {}) {
     // Build-encoded stills (/v/<id>.webp, 2000px) ship a 900px <id>-sm.webp; let phones pick the small one.
     const local = isLocal(p) && thumb;
+    const size = imageInfo(p);
+    width ??= size?.width; height ??= size?.height;
     return `<img ${attrs({
       src: local ? thumb : optimized(p, 1080), srcset: local ? `${thumb} 900w, ${p} 2000w` : srcset(p, widths), sizes: local || (onVercel && !isLocal(p)) ? sizes : null, alt,
       class: cls || null, loading: eager ? 'eager' : 'lazy', decoding: 'async',
@@ -72,7 +76,7 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {} }) {
    *  Only the hero (eager) carries its poster up front; other posters load as they near the viewport.
    *  Decorative by default (aria-hidden); pass a label when the loop is an example the visitor should know about. */
   function ambient(id, { cls = '', eager = false, label = '' } = {}) {
-    const poster = `/v/${esc(id)}.webp`;
+    const poster = imageInfo(`/images/hero/${id}-poster.webp`) ? `/images/hero/${esc(id)}-poster.webp` : `/v/${esc(id)}.webp`;
     // Hero (eager): the still is a <picture> under the video instead of a poster attribute, so portrait phones load a
     // 640x720 centre crop (what object-fit: cover shows there anyway) rather than the full 1280x720 frame.
     // Prefer that optimized crop; a recent imported film can use its existing checked poster until a crop exists.
@@ -81,5 +85,5 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {} }) {
     <source src="/v/${esc(id)}-loop.mp4" type="video/mp4"></video>`;
   }
 
-  return { mediaUrl, optimized, img, needsApproval, videoPlayer, ambient, isLocal };
+  return { mediaUrl, optimized, imageDimensions, img, needsApproval, videoPlayer, ambient, isLocal };
 }

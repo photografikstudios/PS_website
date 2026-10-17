@@ -1139,3 +1139,25 @@ video[controls]:focus { outline: 2px solid var(--rust); outline-offset: 3px; }
 .pm-extra { margin: 28px 0 0; }
 .pm-extra img { display: block; width: 100%; height: auto; border-radius: 4px; }
 .wrap.narrow > .pm-extra:first-child { margin: 0 0 32px; }
+
+/* October 17 polish: existing proof arrives directly after Home's hero; base-tier limits travel with prices. */
+.home-proof { padding-block: clamp(36px, 5vw, 72px); }
+.price-size { display: block; margin-top: 5px; font: 400 12px/1.5 var(--sans); color: var(--muted); letter-spacing: 0; text-transform: none; }
+.home-pkgs__price .price-size { white-space: nowrap; }
+/* On phones, give the property/agent an unobstructed opening area above the existing hero copy. */
+@media (max-width: 700px) {
+  .hero--video .hero__media, [data-hero-source="agent-on-camera-hero"] .page-hero__media { bottom: auto; height: 48svh; min-height: 300px; }
+  .hero--video .hero__media::after, [data-hero-source="agent-on-camera-hero"] .page-hero__media::after { background: linear-gradient(180deg, rgba(21,24,22,.65), transparent 32%, rgba(21,24,22,.3) 65%, var(--charcoal)); }
+  .hero--video .hero__inner, [data-hero-source="agent-on-camera-hero"] .page-hero__inner { padding-top: max(300px, 40svh); }
+  .hero--video .hero__media img, .hero--video .hero__media video { object-position: 50% 40%; }
+  [data-hero-source="agent-on-camera-hero"] .page-hero__media img,
+  [data-hero-source="agent-on-camera-hero"] .page-hero__media video { object-position: 83% 35%; }
+}
+@media (min-width: 701px) {
+  [data-hero-source="agent-on-camera-hero"] .lede { max-width: 48%; }
+  [data-hero-source="agent-on-camera-hero"] .display { max-width: 55%; }
+}
+.media-fallback { display: grid; place-items: center; background: var(--charcoal-3); color: var(--ivory); }
+.media-fallback::after { content: 'Preview unavailable — open media'; position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; font: 400 13px/1.5 var(--sans); }
+.video-recovery { position: absolute; inset: auto 12px 48px; padding: 12px; background: var(--charcoal); color: var(--ivory); z-index: 3; font-size: 14px; }
+.video-recovery button { display: block; min-height: 44px; margin-top: 8px; color: inherit; text-decoration: underline; }

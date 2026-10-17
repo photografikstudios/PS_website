@@ -30,6 +30,7 @@ export function buildPages(ctx) {
   const svcLabel = Object.fromEntries(work.taxonomy.service.map((c) => [c.id, c.label]));
   const pkg = Object.fromEntries(pricing.packages.map((p) => [p.id, p]));
   const starting = (rec) => formatUSD(resolvePrice(rec, null).amount);
+  const startingSize = (rec) => tierLabel(findTier(rec, 1));
   // James, Sep 28 2026: the Social Media plan carries the "Most Popular" label and the featured treatment.
   const pkgFeatured = (p) => p.badge === 'Most Popular';
   const pkgTag = (p) => p.badge || (p.role === 'Premium' ? 'Premium anchor' : p.role);
@@ -226,6 +227,17 @@ export function buildPages(ctx) {
   ${motionToggle}
 </section>
 
+<section class="section home-proof" aria-labelledby="proof-h">
+  <div class="wrap home-proof__grid">
+    <div>
+      <p class="eyebrow">In our clients' words</p>
+      <h2 class="h2 reveal" id="proof-h">Trusted with the work <em>behind the brand.</em></h2>
+    </div>
+    ${homeQuote ? `<figure class="review review--lead reveal home-proof__quote"><blockquote><p>${esc(homeQuote.excerpt || homeQuote.quote)}</p></blockquote><figcaption><span class="review__name">${esc(homeQuote.name)}</span>${homeQuote.org ? `<span class="review__org">${esc(homeQuote.org)}</span>` : ''}</figcaption></figure>` : ''}
+    <p class="home-proof__more"><a class="link-arrow" href="/about#reviews" data-track="reviews_click" data-track-location="home_proof">More reviews →</a></p>
+  </div>
+</section>
+
 <section class="quick on-dark" aria-label="Book a shoot or send a project brief">
   <div class="wrap quick__grid">
     <article class="quick__tile reveal">
@@ -262,7 +274,7 @@ export function buildPages(ctx) {
     </div>
     <div class="showcase__grid" id="sw-grid">
       ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${i >= homeLimit ? ' hidden' : ''}>
-        <img src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async"${focalAttr(m.focal)}>
+        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${m.type === 'video' ? playIcon : ''}
       </button>`)}
     </div>
@@ -292,16 +304,6 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-<section class="section home-proof" aria-labelledby="proof-h">
-  <div class="wrap home-proof__grid">
-    <div>
-      <p class="eyebrow">In our clients' words</p>
-      <h2 class="h2 reveal" id="proof-h">Trusted with the work <em>behind the brand.</em></h2>
-    </div>
-    ${homeQuote ? `<figure class="review review--lead reveal home-proof__quote"><blockquote><p>${esc(homeQuote.excerpt || homeQuote.quote)}</p></blockquote><figcaption><span class="review__name">${esc(homeQuote.name)}</span>${homeQuote.org ? `<span class="review__org">${esc(homeQuote.org)}</span>` : ''}</figcaption></figure>` : ''}
-    <p class="home-proof__more"><a class="link-arrow" href="/about#reviews" data-track="reviews_click" data-track-location="home_proof">More reviews →</a></p>
-  </div>
-</section>
 
 <section class="section home-pkgs" aria-labelledby="pkg-h">
   <div class="wrap">
@@ -310,7 +312,7 @@ export function buildPages(ctx) {
       <div><h2 class="h2 reveal" id="pkg-h">A starting point for <em>the way you market.</em></h2><p class="lede reveal">Choose a package, then adjust the coverage around the property, the campaign and the way you plan to market it.</p></div>
     </div>
     <ul class="home-pkgs__list" role="list">
-      ${join(pricing.packages.filter(visible), (p) => `<li class="home-pkgs__item${pkgFeatured(p) ? ' is-featured' : ''}"><span class="home-pkgs__name">${esc(p.name)}${pkgFeatured(p) ? ` <span class="home-pkgs__tag">${esc(pkgTag(p))}</span>` : ''}</span><span class="home-pkgs__for">${esc(p.for)}</span><span class="home-pkgs__price">Starting at <strong>${starting(p)}</strong> ${needsApproval(p)}</span></li>`)}
+      ${join(pricing.packages.filter(visible), (p) => `<li class="home-pkgs__item${pkgFeatured(p) ? ' is-featured' : ''}"><span class="home-pkgs__name">${esc(p.name)}${pkgFeatured(p) ? ` <span class="home-pkgs__tag">${esc(pkgTag(p))}</span>` : ''}</span><span class="home-pkgs__for">${esc(p.for)}</span><span class="home-pkgs__price">Starting at <strong>${starting(p)}</strong><small class="price-size">${startingSize(p)}</small> ${needsApproval(p)}</span></li>`)}
     </ul>
     <div class="actions"><a class="btn btn--ink" href="/real-estate/pricing" data-track="pricing_nav" data-track-location="home_packages">Price your listing</a>${bookBtn('home_packages', 'Book a Shoot', 'link-arrow')}</div>
   </div>
@@ -486,7 +488,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
         <thead><tr><td class="cmp__corner"></td>${join(v.recs, (r) => `<th scope="col" data-col="${esc(r.id)}"><span class="cmp__name">${esc(r.name)}</span>${r.role ? `<span class="cmp__role">${esc(r.role === 'Premium' ? 'Premium anchor' : r.role)}</span>` : ''}</th>`)}</tr></thead>
         <tbody>
           <tr class="cmp__row--suits"><th scope="row">Best for</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}">${esc(r.suits)}</td>`)}</tr>
-          <tr class="cmp__row--price"><th scope="row">Price</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}"><span class="cmp__price" data-cmp-price="${esc(r.id)}"><span class="cmp__plabel">Starting at</span> <strong>${starting(r)}</strong></span> ${needsApproval(r)}</td>`)}</tr>
+          <tr class="cmp__row--price"><th scope="row">Price</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}"><span class="cmp__price" data-cmp-price="${esc(r.id)}"><span class="cmp__plabel">Starting at</span> <strong>${starting(r)}</strong><small class="price-size">${startingSize(r)}</small></span> ${needsApproval(r)}</td>`)}</tr>
           ${join(rows, (row) => `<tr><th scope="row">${esc(row.label)}</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}">${cmpCell(r, row)}</td>`)}</tr>`)}
           ${sameMax ? '' : `<tr class="cmp__row--size"><th scope="row">Published sizes</th>${join(v.recs, (r) => `<td data-col="${esc(r.id)}">Up to ${r.max.toLocaleString('en-US')} sq ft</td>`)}</tr>`}
         </tbody>
@@ -530,7 +532,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
   const typeCounts = optionCounts(reFacts, { pkg: '' }, 'type', TYPE_FILTERS.map((t) => t.id));
   const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}"${i >= reBatch ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}">
-        <img src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
+        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${m.type === 'video' ? playIcon : ''}
       </button>
     </article>`;
@@ -605,21 +607,6 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
 
 ${reGallery()}
 
-<section class="section section--tint">
-  <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Packages</p><h2 class="h2 reveal">Start with the right package.</h2></div><div class="section-head__links"><a class="link-arrow" href="#compare">Compare what's included ${arrow}</a><a class="link-arrow" href="/real-estate/pricing">Pricing by property size ${arrow}</a></div></div>
-    <div class="ladder ladder--4">
-      ${join(pricing.packages.filter(visible), (p) => `
-      <div class="ladder__item ${pkgFeatured(p) ? 'ladder__item--featured' : ''}">
-        ${pkgTag(p) ? `<p class="tag">${esc(pkgTag(p))}</p>` : ''}
-        <h3 class="h3">${esc(p.name)}</h3>
-        <p class="small">${esc(p.for)}</p>
-        <p class="price-line">Starting at <strong>${starting(p)}</strong> ${needsApproval(p)}</p>
-      </div>`)}
-    </div>
-  </div>
-</section>
-
 ${compareSection()}
 
 <section class="section section--tint">
@@ -644,7 +631,7 @@ ${fnTeaser('real-estate')}
   // ---------- PRICING ----------
   const priceCell = (rec, hint = true) => {
     const s = resolvePrice(rec, null);
-    return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span></p>
+    return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span><small class="price-size">${startingSize(rec)}</small></p>
       ${hint ? `<p class="pcard__hint" data-hint-for="${esc(rec.id)}">Enter square footage for your price.</p>` : ''}`;
   };
   // James, Sep 28 2026: each package card plays its own muted 25 s loop in place (like the Home tiles), chosen to match
@@ -674,7 +661,7 @@ ${fnTeaser('real-estate')}
   // Session 59: photography, drone and twilight rows use the Oct 11 owner pack (no frame repeats the Real Estate features).
   const svcThumb = Object.fromEntries(Object.entries({ photography: 'rowPhotography', 'photo-floor-plan': 'rowPhotoFloorPlan', 'floor-plan': 'rowFloorPlan', 'exterior-drone': 'rowExteriorDrone', twilight: 'rowTwilight' })
     .map(([svcId, key]) => [svcId, pmv('real-estate-pricing', key)]).filter(([, it]) => it));
-  const rowPrice = (rec) => { const s = resolvePrice(rec, null); return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span></p>`; };
+  const rowPrice = (rec) => { const s = resolvePrice(rec, null); return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span><small class="price-size">${startingSize(rec)}</small></p>`; };
   const rowThumb = (s) => { const it = svcThumb[s.id]; const m = it?.media ? allMediaById[it.media] : null; const src = m ? (m.type === 'video' ? m.poster : m.src) : it?.src; return src ? `<div class="prow__thumb">${img(src, { alt: it.alt || (m ? m.alt || m.title : ''), thumb: m?.thumb, sizes: '(min-width: 700px) 150px, 96px' })}</div>` : ''; };
   const serviceRow = (s) => `<li class="prow${svcThumb[s.id] ? ' prow--thumb' : ''}" data-record="${esc(s.id)}">
       ${rowThumb(s)}<div class="prow__text"><h3 class="prow__name">${esc(s.name)} ${needsApproval(s)}</h3>${s.detail ? `<p class="prow__detail">${esc(s.detail)}</p>` : ''}</div>
@@ -911,7 +898,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     // Photo-only variants start hidden so no project appears twice before the script runs.
     return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${views ? ` data-views="${esc(views.join(' '))}"` : ''}${views && !views.includes('') ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${kind === 'video' ? 'Play' : 'View'} ${esc(pr ? (pr.client || pr.title) : m.title)}">
-        <img src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
+        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${kind === 'video' ? playIcon : ''}
       </button>
     </article>`;

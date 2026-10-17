@@ -83,6 +83,35 @@ if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: 
 }
 
 // ---------- Inline video ----------
+// Card thumbnails can fall back to the full approved still. A missing thumbnail must not hide the media action.
+document.addEventListener('error', (e) => {
+  const image = e.target;
+  if (!(image instanceof HTMLImageElement) || !image.hasAttribute('data-fallback-src')) return;
+  const fallback = image.dataset.fallbackSrc;
+  if (!image.dataset.fallbackTried && fallback && new URL(fallback, location.href).href !== image.src) {
+    image.dataset.fallbackTried = '1'; image.removeAttribute('srcset'); image.src = fallback;
+  } else {
+    image.style.visibility = 'hidden'; image.parentElement.classList.add('media-fallback');
+  }
+}, true);
+
+// Network failures keep the poster and offer an explicit retry instead of leaving a blank player.
+function videoRecovery(v) {
+  if (v.dataset.recovery) return;
+  v.dataset.recovery = '1';
+  let notice;
+  v.addEventListener('error', () => {
+    if (notice?.isConnected) return;
+    notice = document.createElement('div'); notice.className = 'video-recovery'; notice.setAttribute('role', 'status');
+    notice.append('This video could not load. Please try again.');
+    const retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Retry video';
+    retry.addEventListener('click', () => { notice.remove(); v.load(); v.play().catch(() => {}); v.focus(); });
+    notice.append(retry); v.parentElement.append(notice);
+  });
+  v.addEventListener('playing', () => notice?.remove());
+}
+window.pgkVideoRecovery = videoRecovery;
+
 // Videos play inside their own frame. No lightbox, modal, route change or new tab.
 // One video plays at a time; videos pause when scrolled out of view.
 const players = new Set();
@@ -101,6 +130,7 @@ function pauseOthers(current) {
   for (const p of players) {
     if (p === current) continue;
     const v = p.querySelector('video');
+    videoRecovery(v);
     if (!v.paused) v.pause();
   }
 }

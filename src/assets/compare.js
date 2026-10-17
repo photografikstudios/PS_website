@@ -1,5 +1,5 @@
 // "Compare what's included" on /real-estate. Prices use the same tier table and function as the pricing page.
-import { parseSquareFeet, errorMessages, resolvePrice, formatUSD } from './pricing-core.js';
+import { parseSquareFeet, errorMessages, resolvePrice, formatUSD, findTier, tierLabel } from './pricing-core.js';
 // Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
 const track = (name, props) => window.pgkTrack?.(name, props);
 
@@ -81,7 +81,7 @@ if (root) {
   function renderPrices(sqft) {
     for (const el of root.querySelectorAll('[data-cmp-price]')) {
       const s = resolvePrice(byId[el.dataset.cmpPrice], sqft);
-      if (s.kind === 'starting') el.innerHTML = `<span class="cmp__plabel">Starting at</span> <strong>${formatUSD(s.amount)}</strong>`;
+      if (s.kind === 'starting') el.innerHTML = `<span class="cmp__plabel">Starting at</span> <strong>${formatUSD(s.amount)}</strong><small class="price-size">${tierLabel(findTier(byId[el.dataset.cmpPrice], 1))}</small>`;
       else if (s.kind === 'band') el.innerHTML = `<span class="cmp__plabel">${s.band.label}</span> <strong>${formatUSD(s.amount)}</strong>`;
       else el.innerHTML = `<span class="cmp__plabel">Over ${s.max.toLocaleString('en-US')} sq ft</span> <a href="/contact?type=real-estate-large">Custom quote</a>`;
     }

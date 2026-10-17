@@ -1194,6 +1194,12 @@
         25
       ],
       "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-15. The original stays in Drive."
+    },
+    {
+      "id": "agent-on-camera-hero",
+      "source": "/media/photografik-2027/jb-andreassi.mp4",
+      "loopOnly": true,
+      "_note": "October 17 targeted front-end polish: 20\u201329 seconds of the already rights-approved Agent Engine on-camera expertise clip. Silent 1280x720 H.264 excerpt, portrait at right over blurred fill of the same footage. Existing burned captions retained; the complete playable original is unchanged. Poster at excerpt 1 second; phone crop from x=640."
     }
   ],
   "docs": [

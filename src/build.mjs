@@ -136,7 +136,7 @@ if (!reviewMode && !prodCheck) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel, heroStills }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel, heroStills, imageInfo }) };
 ctx.galleryAuto = {}; // filled by buildPages: what each gallery shows automatically today (for the dashboard)
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.

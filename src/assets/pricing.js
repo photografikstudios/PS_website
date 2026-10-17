@@ -1,5 +1,5 @@
 // Square-footage pricing: one structured table drives every card and row.
-import { parseSquareFeet, errorMessages, resolvePrice, formatUSD } from './pricing-core.js';
+import { parseSquareFeet, errorMessages, resolvePrice, formatUSD, findTier, tierLabel } from './pricing-core.js';
 // Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
 const track = (name, props) => window.pgkTrack?.(name, props);
 
@@ -24,7 +24,7 @@ function render(sqft) {
     const card = el.closest('[data-record]');
     card?.classList.toggle('is-custom', s.kind === 'custom');
     if (s.kind === 'starting') {
-      el.innerHTML = `<span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span>`;
+      el.innerHTML = `<span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span><small class="price-size">${tierLabel(findTier(rec, 1))}</small>`;
       if (hint) hint.textContent = 'Enter square footage for your price.';
     } else if (s.kind === 'band') {
       el.innerHTML = `<span class="pcard__label">Price for ${s.band.label}</span> <span class="pcard__amount">${formatUSD(s.amount)}</span>`;
