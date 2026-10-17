@@ -20,7 +20,7 @@ export const focalAttr = (f) => (FOCAL[f] ? ` style="object-position: ${FOCAL[f]
 export const HERO_STILL_MEDIA = '(max-width: 700px) and (max-aspect-ratio: 3/5)';
 export const heroPhoneStill = (id) => `/images/hero/${esc(id)}-phone.webp`;
 
-export function createContext({ site, reviewMode, onVercel }) {
+export function createContext({ site, reviewMode, onVercel, heroStills = {} }) {
   const isLocal = (p) => typeof p === 'string' && p.startsWith('/v/');
   const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) || isLocal(p) ? p : site.media.base + p);
 
@@ -75,8 +75,8 @@ export function createContext({ site, reviewMode, onVercel }) {
     const poster = `/v/${esc(id)}.webp`;
     // Hero (eager): the still is a <picture> under the video instead of a poster attribute, so portrait phones load a
     // 640x720 centre crop (what object-fit: cover shows there anyway) rather than the full 1280x720 frame.
-    // Same pixels on screen, about half the bytes on the LCP path (Session 53, mobile LCP).
-    const still = eager ? `<picture class="hero-still"><source media="${HERO_STILL_MEDIA}" srcset="${heroPhoneStill(id)}" width="640" height="720"><img src="${poster}" alt="" width="1280" height="720" fetchpriority="high"></picture>` : '';
+    // Prefer that optimized crop; a recent imported film can use its existing checked poster until a crop exists.
+    const still = eager ? `<picture class="hero-still"><source media="${HERO_STILL_MEDIA}" srcset="${esc(heroStills[id] || heroPhoneStill(id))}" width="640" height="720"><img src="${poster}" alt="" width="1280" height="720" fetchpriority="high"></picture>` : '';
     return `${still}<video class="ambient ${cls}" data-ambient muted loop playsinline preload="none" ${eager ? `data-still="${poster}"` : `data-poster="${poster}"`} ${label ? `aria-label="${esc(label)}"` : 'aria-hidden="true"'} tabindex="-1" disableremoteplayback>
     <source src="/v/${esc(id)}-loop.mp4" type="video/mp4"></video>`;
   }

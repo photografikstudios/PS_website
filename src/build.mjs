@@ -16,7 +16,7 @@ import { validateLegal } from './lib/legal-core.js';
 import { loadWork, staticFile } from './lib/work-load.js';
 import { checkContent, holdDashboardProjects, applyReviewOnly, dashboardStatus } from './lib/content-check.js';
 import { imageSize } from './lib/image-size.js';
-import { PAGES as PAGE_MEDIA, checkPageMedia } from './lib/page-media-core.js';
+import { PAGES as PAGE_MEDIA, checkPageMedia, heroStillMap } from './lib/page-media-core.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -94,7 +94,8 @@ const loopIds = new Set(Object.keys(mediaAssets.files || {}).map((f) => f.match(
 // A replaced film plays its fresh files (<id>-rN, record.asset); its own id stays the name page sections use.
 for (const m of work.media) if (m.asset && loopIds.has(m.asset)) loopIds.add(m.id);
 const loopFile = (id) => work.media.find((m) => m.id === id)?.asset || id;
-const pmLib = { media: new Map(work.media.map((m) => [m.id, m])), projects: new Map(work.projects.map((p) => [p.slug, p])), loops: loopIds, heroLoops: new Set([...loopIds].filter((id) => existsSync(join(root, 'static/images/hero', `${loopFile(id)}-phone.webp`)))), fileExists };
+const heroStills = heroStillMap(loopIds, new Map(work.media.map((m) => [m.id, m])), fileExists);
+const pmLib = { media: new Map(work.media.map((m) => [m.id, m])), projects: new Map(work.projects.map((p) => [p.slug, p])), loops: loopIds, heroLoops: new Set([...loopIds].filter((id) => !!heroStills[loopFile(id)])), fileExists };
 const pmCheck = checkPageMedia(pageMedia, pmLib);
 for (const w of pmCheck.warnings) console.warn(`Page Media note: ${w}`);
 if (pmCheck.errors.length) { console.error('Page Media errors (fix them in /admin → Page Media; the site keeps the previous version until then):\n - ' + pmCheck.errors.join('\n - ')); process.exit(1); }
@@ -135,7 +136,7 @@ if (!reviewMode && !prodCheck) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel, heroStills }) };
 ctx.galleryAuto = {}; // filled by buildPages: what each gallery shows automatically today (for the dashboard)
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.

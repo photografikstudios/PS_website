@@ -84,3 +84,11 @@ A hidden `urlCategory` marker is now saved for a previously shown project (and w
 - 31-page REVIEW build; 368/368 web media and 40/40 card posters, zero problems.
 - All QA records, their three generated files and manifest entries removed. Contact JSON and every content/static file are byte-identical to owner baseline a5aeb05403caa4464c73f31f68c5bce7f3e23427. All 20 owner Drive imports and the owner's later visibility/category saves in that baseline are preserved.
 - No main push, production deployment, domain cutover, credential or protection change.
+
+## Follow-up: Home picker omitted the recent hidden videos
+
+James reported that Home → moving background → Replace from library omitted his new hidden films. Reproduced in the real pre-fix CMS: searching `oct15-` returned **0 of 6** compatible items. The cause was section compatibility filtering, not the review catalog's published flag: all 20 imports had playing excerpts/posters, but lacked a separate optimized phone crop, so the hero picker filtered them out.
+
+Fix: the picker lists both suitable and unsuitable library items, including Hidden/Shown labels. Suitable items come first; incompatible items remain visible with a specific explanation and cannot be selected into an invalid section. A rights-approved imported film with a playing excerpt can use its existing verified poster for the phone fallback; an existing optimized phone crop remains preferred. No second import, new media record, visibility change or asset rewrite is needed. Rights, hidden-production behavior and section validation remain intact. The current homepage selection is unchanged.
+
+Regression: all20 October15 imports, regardless of hidden/shown state, have usable hero fallbacks; existing crop preference and uncleared poster rejection verified. A disposable local site copy rendered Home with a recent hidden horizontal film and its poster source, then restoring the selection restored Home byte for byte. This was not saved on the owner’s site. Browser-widget acceptance checks all20 appear/selectable and incompatible photos remain listed with reasons.

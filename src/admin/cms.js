@@ -727,6 +727,15 @@
       default: return false;
     }
   };
+  function notForSection(accepts, m) {
+    if (fits(accepts, m)) return '';
+    if (accepts === 'heroLoop' || accepts === 'loop') {
+      if (m.kind === 'photo') return 'This section needs a playing video.';
+      if (!m.loop) return 'No playing excerpt yet. In Films, enable “Also make a playing excerpt”, re-import and wait for Ready.';
+      return 'A usable poster is needed for the phone fallback.';
+    }
+    return 'This item does not fit this section’s media type. It remains available elsewhere in the library.';
+  }
   var takesFiles = function (accepts) { return ['photo', 'still', 'loopOrPhoto', 'photoOrFilm'].indexOf(accepts) >= 0; };
   var asItems = function (v) { var x = v && v.toJS ? v.toJS() : v; return Array.isArray(x) ? x.filter(Boolean) : x ? [x] : []; };
   // A small preview for any library item: its still, or the first frame of a film that has none.
@@ -745,7 +754,7 @@
     toggle: function (id) { var c = this.state.chosen.slice(); var i = c.indexOf(id); if (i >= 0) c.splice(i, 1); else { if (!this.props.multiple) c = []; c.push(id); } this.setState({ chosen: c }); },
     render: function () {
       var self = this; var st = this.state; var q = st.q.toLowerCase();
-      var pool = MEDIA.filter(function (m) { return fits(self.props.accepts, m); });
+      var pool = MEDIA.slice().sort(function (a, b) { return Number(!!fits(self.props.accepts, b)) - Number(!!fits(self.props.accepts, a)); });
       var kinds = ['photo', 'film', 'loop'].filter(function (k) { return pool.some(function (m) { return m.kind === k; }); });
       var cats = []; pool.forEach(function (m) { if (m.catLabel && cats.indexOf(m.catLabel) < 0) cats.push(m.catLabel); }); cats.sort();
       var items = pool.filter(function (m) { return (!st.kind || m.kind === st.kind) && (!st.cat || m.catLabel === st.cat) && (!q || (m.title + ' ' + m.alt + ' ' + m.catLabel + ' ' + (m.project || '') + ' ' + m.id).toLowerCase().indexOf(q) >= 0); });
@@ -758,13 +767,13 @@
             cats.length > 1 ? h('select', { value: st.cat, onChange: function (e) { self.setState({ cat: e.target.value }); }, 'aria-label': 'Service' }, h('option', { value: '' }, 'Every service'), cats.map(function (c) { return h('option', { key: c, value: c }, c); })) : null,
             h('button', { type: 'button', className: 'pgk-btn', disabled: !n, onClick: function () { self.props.onPick(st.chosen); } }, n ? (self.props.multiple ? 'Add ' + n : 'Use this') : 'Choose'),
             h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.props.onClose }, 'Cancel')),
-          h('p', { className: 'pgk-modal__count', role: 'status' }, items.length + ' of ' + pool.length + ' that fit this section'),
+          h('p', { className: 'pgk-modal__count', role: 'status' }, items.length + ' of ' + pool.length + ' library items. Hidden and shown items are included; items unsuitable for this section explain why.'),
           items.length ? h('ul', { className: 'pgk-modal__grid' }, items.map(function (m) {
-            var on = st.chosen.indexOf(m.id) >= 0;
+            var on = st.chosen.indexOf(m.id) >= 0; var reason = notForSection(self.props.accepts, m);
             return h('li', { key: m.id },
-              h('button', { type: 'button', className: 'pgk-pick' + (on ? ' is-on' : ''), 'aria-pressed': on, onClick: function () { self.toggle(m.id); }, title: m.title },
+              h('button', { type: 'button', className: 'pgk-pick' + (on ? ' is-on' : ''), 'aria-pressed': on, disabled: !!reason, onClick: function () { if (!reason) self.toggle(m.id); }, title: m.title },
                 h(MediaThumb, { item: { media: m.id } }),
-                h('span', {}, m.title), h('span', { className: 'pgk-pick__meta' }, [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.project ? 'from ' + m.project : '', m.hidden ? 'Hidden' : ''].filter(Boolean).join(' · '))));
+                h('span', {}, m.title), h('span', { className: 'pgk-pick__meta' }, [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.project ? 'from ' + m.project : '', m.hidden ? 'Hidden' : 'Shown', reason].filter(Boolean).join(' · '))));
           })) : h('p', { className: 'pgk-modal__empty' }, 'Nothing matches. Clear the search or the filters.')));
     },
   });

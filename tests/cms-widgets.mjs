@@ -173,6 +173,24 @@ await check('registered widgets', async () => {
   for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-drive', 'pgk-live', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
 });
 
+await check('Home library includes all hidden recent films; incompatible photos remain visible with reasons', async () => {
+  const field = await slotField('home', 'hero'); const value = (await pm('home')).hero;
+  await page.evaluate(({field, value}) => { window.__allhero = window.mountWidget('pgk-slot', {field, value, entry: {}, collection: 'page-media'}); }, {field, value});
+  try {
+    await page.locator('.host-pgk-slot').last().getByRole('button', {name: 'Replace from library'}).click();
+    const dlg = page.getByRole('dialog', {name: 'Choose from the library'}).last();
+    await dlg.getByRole('searchbox').fill('oct15-');
+    await page.waitForFunction(() => document.querySelectorAll('.host-pgk-slot [role="dialog"] .pgk-pick').length === 20);
+    assert.equal(await dlg.locator('.pgk-pick:disabled').count(), 0);
+    assert.ok((await dlg.locator('.pgk-pick').allTextContents()).some(t => /Hidden/.test(t)));
+    await dlg.getByRole('searchbox').fill('ph-dan-dan');
+    await page.waitForFunction(() => { const bs = [...document.querySelectorAll('.host-pgk-slot [role="dialog"] .pgk-pick')]; return bs.length > 0 && bs.every(b => b.disabled); });
+    assert.match(await dlg.innerText(), /needs a playing video/);
+    await dlg.getByRole('button', {name: 'Cancel', exact: true}).click();
+    assert.deepEqual(await page.evaluate(() => window.__allhero.state.value), value, 'browsing changes no selection');
+  } finally { await page.evaluate(() => window.__allhero.unmount()); }
+});
+
 await check('Page Media single required section: shows the item, cannot be emptied, replace from the library', async () => {
   const field = await slotField('commercial', 'featureRecurring'); const value = (await pm('commercial')).featureRecurring;
   await page.evaluate(({ field, value }) => { window.__slot1 = window.mountWidget('pgk-slot', { field, value, entry: { slug: 'commercial' }, collection: 'page-media' }); }, { field, value });
@@ -185,7 +203,7 @@ await check('Page Media single required section: shows the item, cannot be empti
   const dlg = page.getByRole('dialog', { name: 'Choose from the library' }).last();
   await dlg.waitFor();
   const count = await dlg.locator('.pgk-modal__count').innerText();
-  assert.match(count, /that fit this section/);
+  assert.match(count, /library items.*Hidden and shown/);
   await dlg.getByLabel('Search the library').fill('torella');
   await dlg.locator('.pgk-pick').first().click();
   await dlg.getByRole('button', { name: 'Use this' }).click();

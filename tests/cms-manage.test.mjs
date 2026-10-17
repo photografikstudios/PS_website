@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { PAGES, checkPageMedia, pageMediaRefs } from '../src/lib/page-media-core.js';
+import { PAGES, checkPageMedia, heroStillMap, itemProblem, pageMediaRefs } from '../src/lib/page-media-core.js';
 import { whereUsed, planDeletion, uploadUsage, planFileDeletion } from '../src/lib/usage-core.js';
 import { parseNote, withName } from '../src/lib/github-repo.js';
 import { loadWork, expandProjectPhotos } from '../src/lib/work-load.js';
@@ -83,6 +83,21 @@ test('Page Media: the committed choices pass, and each rule refuses what it shou
   }
 });
 
+test('Home video choices: all 20 owner imports have a poster-backed hero fallback regardless of hidden state', async () => {
+  const work = await loadWork(root); const media = new Map(work.media.map(m => [m.id, m]));
+  const loops = new Set(Object.keys(assets.files).map(p => p.match(/^\/v\/([\w-]+)-loop\.mp4$/)?.[1]).filter(Boolean));
+  const stills = heroStillMap(loops, media, fileExists);
+  const recent = work.media.filter(m => m.id.startsWith('oct15-'));
+  assert.equal(recent.length, 20);
+  for (const m of recent) {
+    assert.ok(loops.has(m.id), m.id); assert.equal(stills[m.asset || m.id], m.poster, m.id);
+    assert.equal(itemProblem({ accepts: 'heroLoop' }, { media: m.id }, { media, loops, heroLoops: new Set(Object.keys(stills)), fileExists }), '');
+  }
+  const m = { id: 'qa', type: 'video', rights: 'approved', poster: '/v/qa.webp', published: false };
+  assert.equal(heroStillMap(new Set(['qa']), new Map([['qa', m]]), () => true).qa, '/images/hero/qa-phone.webp', 'existing optimized phone crop wins');
+  assert.deepEqual(heroStillMap(new Set(['qa']), new Map([['qa', { ...m, rights: 'pending' }]]), p => p === '/v/qa.webp'), {}, 'uncleared poster cannot unlock a hero');
+});
+
 test('Page Media: a changed choice changes the built page; removing it again restores the page byte for byte', { timeout: 120000 }, async () => {
   const dir = await mkdtemp(join(tmpdir(), 'pgk-pm-'));
   for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
@@ -91,7 +106,16 @@ test('Page Media: a changed choice changes the built page; removing it again res
   const page = (p) => readFile(join(dir, 'dist', p), 'utf8');
   build();
   const before = { com: await page('commercial.html'), cs: await page('creator-studios.html'), contact: await page('contact.html') };
+  const homeBefore = await page('index.html');
   const edit = async (f, fn) => { const p = join(dir, 'content/page-media', `${f}.json`); const v = JSON.parse(await readFile(p, 'utf8')); fn(v); await writeFile(p, JSON.stringify(v, null, 2) + '\n'); };
+  // A recently imported hidden film is selectable for Home on the protected review, with its existing poster on phones.
+  await edit('home', v => { v.hero = { media: 'oct15-horizontal-41-niamogue-ln' }; });
+  build();
+  const chosenHero = await page('index.html');
+  assert.match(chosenHero, /src="\/v\/oct15-horizontal-41-niamogue-ln-loop\.mp4"/);
+  assert.match(chosenHero, /srcset="\/v\/oct15-horizontal-41-niamogue-ln\.webp"/);
+  await cp(join(root, 'content/page-media/home.json'), join(dir, 'content/page-media/home.json'));
+  build(); assert.equal(await page('index.html'), homeBefore, 'restoring selection restores exact Home output');
   // Replace a photo, reorder and remove playing examples, add a film to a text-only page.
   await edit('commercial', (v) => { v.featureBrand = { media: 'ph-torella-aerial' }; });
   await edit('creator-studios', (v) => { v.openingExamples = [v.openingExamples[1], v.openingExamples[0]]; });

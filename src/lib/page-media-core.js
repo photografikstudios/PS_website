@@ -308,3 +308,15 @@ export function pageMediaRefs(pm) {
   }
   return out;
 }
+
+/** Existing phone crops remain preferred; imported films can use their checked poster without another import. */
+export function heroStillMap(loops, media, fileExists) {
+  const out = {};
+  for (const id of loops) {
+    const m = media.get(id); const asset = m?.asset || id;
+    const phone = `/images/hero/${asset}-phone.webp`;
+    if (fileExists(phone)) out[asset] = phone;
+    else if (m?.type === 'video' && m.rights === 'approved' && m.poster && fileExists(m.poster)) out[asset] = m.poster;
+  }
+  return out;
+}
