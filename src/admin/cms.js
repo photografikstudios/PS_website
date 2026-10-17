@@ -634,9 +634,11 @@
   CMS.registerWidget('pgk-featured', createClass({ render: function () {
     var self = this; var article = this.props.collection && this.props.collection.get('name') === 'field-notes';
     return h('div', { className: 'pgk-note', id: this.props.forID },
-      h('label', { className: 'pgk-switch' }, h('input', { type: 'checkbox', role: 'switch', checked: this.props.value === true, onChange: function (e) { self.props.onChange(e.target.checked); } }), ' Keep featured designation'),
-      h('p', {}, article ? 'This editorial flag is saved for reference. Field Notes currently sorts by publish date; it does not move this article.' : 'This existing flag is saved for reference. It does not choose or reorder homepage tiles.'),
-      !article ? h('a', { href: '#/collections/page-media/entries/home' }, 'Manage Home → Selected work: thumbnails, selection and order') : null);
+      h('p', {}, article ? 'Field Notes is ordered by publish date. The retained designation below does not move an article.' : 'Choose and order homepage tiles in Home → Selected work. Automatic service galleries follow Gallery placement above.'),
+      !article ? h('a', { className: 'pgk-btn pgk-btn--quiet', href: '#/collections/page-media/entries/home' }, 'Manage Home → Selected work: thumbnails, selection and order') : null,
+      h('details', {}, h('summary', {}, 'Advanced: retained featured designation'),
+        h('p', {}, 'Kept for existing records. This flag does not select or reorder website tiles.'),
+        h('label', { className: 'pgk-switch' }, h('input', { type: 'checkbox', role: 'switch', checked: this.props.value === true, onChange: function (e) { self.props.onChange(e.target.checked); } }), ' Keep featured designation')));
   } }));
 
   CMS.registerWidget('pgk-review-display', createClass({
@@ -653,11 +655,13 @@
   }));
 
   // A previously shown project's category participates in its URL. A move must be reviewed with redirects.
+  var PROJECT_CATEGORY_FORMS = [];
   var CategoryControl = createClass({
-    getInitialState: function () { var e = this.props.entry; return { savedCategory: e && !e.get('newRecord') && e.getIn(['data', 'published']) === true ? this.props.value : null }; },
+    getInitialState: function () { var e = this.props.entry; var remembered = e && e.getIn(['data', 'urlCategory']); var shown = e && !e.get('newRecord') && e.getIn(['data', 'published']) === true; return { savedCategory: remembered || (shown ? this.props.value : null) }; },
+    componentDidMount: function () { PROJECT_CATEGORY_FORMS.push(this); },
     locked: function () { var slug = this.props.entry && this.props.entry.get('slug'); return this.state.savedCategory ? { cat: this.state.savedCategory } : (window.PHOTOGRAFIK_PROJECTS || []).find(function (p) { return p.slug === slug && !p.hidden; }); },
     isValid: function () { var p = this.locked(); return p && this.props.value !== p.cat ? { error: { type: 'custom', message: 'This project has a published address. Keep its saved service category; a move needs a reviewed redirect.' } } : true; },
-    componentWillUnmount: function () { liveDrop(this.props.field); },
+    componentWillUnmount: function () { var self = this; PROJECT_CATEGORY_FORMS = PROJECT_CATEGORY_FORMS.filter(function (f) { return f !== self; }); liveDrop(this.props.field); },
     render: function () {
       var self = this; liveSet(this.props.field, this.props.value); var p = this.locked();
       var opts = this.props.field.get('options'); opts = opts && opts.toJS ? opts.toJS() : opts || [];
@@ -1166,8 +1170,15 @@
   // The film forms on screen, so a Save can start following its import in the same open form (Codex acceptance of
   // bce18af: Ready → Replace → Save stayed on "Waiting" after the import had finished, until the page was reloaded).
   var FILM_FORMS = [];
-  if (CMS.registerEventListener) CMS.registerEventListener({ name: 'preSave', handler: function () {
+  if (CMS.registerEventListener) CMS.registerEventListener({ name: 'preSave', handler: function (o) {
     pill.hidden = false; pill.className = 'pgk-sitepill pgk-sitepill--busy'; pill.textContent = 'Validating and saving…'; pill.title = 'Nothing is confirmed saved until the save finishes. Website delivery is checked separately.';
+    var e = o && o.entry; var data = e && e.get('data'); if (!data || !data.set) return;
+    // Keep a published address protected even after Hide → Save → reopen. Only the mounted project editor can
+    // add this hidden marker; every other data key is returned unchanged. New, never-shown drafts stay editable.
+    var form = PROJECT_CATEGORY_FORMS.find(function (f) { var a = f.props.entry; return a && (a.get('slug') === e.get('slug') || (a.get('newRecord') && e.get('newRecord'))); });
+    if (!form) return;
+    var locked = form.locked(); var cat = data.get('urlCategory') || (locked && locked.cat) || (data.get('published') === true ? data.get('category') : null);
+    return cat ? data.set('urlCategory', cat) : data;
   } });
   var pendingState = function (v) { return !!(v && (v.state === 'waiting' || v.state === 'retry')); };
   if (CMS.registerEventListener) CMS.registerEventListener({ name: 'postSave', handler: function (o) {

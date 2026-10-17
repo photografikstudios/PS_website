@@ -670,6 +670,23 @@ await check('Category URL protection blocks changing a previously shown project;
   assert.equal(await page.locator('.host-pgk-category').last().getByRole('combobox').isEnabled(), true);
   await page.evaluate(() => window.__draftcat.unmount());
 });
+await check('Project URL category survives hide/save/reopen and preserves other hidden metadata', async () => {
+  await page.evaluate(() => { window.__urlhistory = window.mountWidget('pgk-category', { field: { name: 'category', options: [] }, value: 'commercial', entry: { slug: 'qa-persist-url', data: { published: true } } }); });
+  // The stand-in schedules componentDidMount on the next task, like React's commit phase.
+  await page.waitForTimeout(50);
+  const saved = await page.evaluate(() => {
+    const data = { title: 'Exact project title', category: 'commercial', published: false, hiddenMetadata: { keep: 7 } };
+    const map = { get: k => data[k], set: (k, v) => ({ ...data, [k]: v }) };
+    const result = window.__events.preSave({ entry: { get: k => k === 'slug' ? 'qa-persist-url' : k === 'data' ? map : undefined } });
+    window.__urlhistory.unmount();
+    window.__urlhidden = window.mountWidget('pgk-category', { field: { name: 'category', options: [] }, value: 'architecture-design', entry: { slug: 'qa-persist-url', data: result } });
+    return result;
+  });
+  assert.deepEqual(saved, { title: 'Exact project title', category: 'commercial', published: false, hiddenMetadata: { keep: 7 }, urlCategory: 'commercial' });
+  assert.equal(await page.locator('.host-pgk-category').last().getByRole('combobox').isDisabled(), true);
+  assert.match((await page.evaluate(() => window.__urlhidden.instance.isValid())).error.message, /reviewed redirect/);
+  await page.evaluate(() => window.__urlhidden.unmount());
+});
 await check('New Film visibility cannot bypass import readiness, and never asserts a completed publish', async () => {
   await page.evaluate(() => { window.__vis = window.mountWidget('pgk-visibility', { field: { name: 'published' }, value: true, entry: { newRecord: true, data: {} }, collection: 'films' }); });
   assert.match((await page.evaluate(() => window.__vis.instance.isValid())).error.message, /hidden draft first/);

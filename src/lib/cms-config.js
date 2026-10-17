@@ -63,6 +63,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   const projectFields = [
     { name: 'title', label: 'Project name', widget: 'pgk-live', inner: 'string', pattern: max(80, 'name'), hint: 'Usually the client, builder or designer, e.g. “Yankee Barn Builders”. No street addresses.' },
     { name: 'published', label: 'Show on site', widget: 'pgk-publish', default: false, required: false, hint: 'Off = Hidden draft. On = Show on site after Save, validation and a successful website update. The status at the bottom confirms the website update.' },
+    { name: 'urlCategory', label: 'urlCategory', widget: 'hidden', required: false },
     { name: 'category', label: 'Service page', widget: 'pgk-category', inner: 'select', options: workCats, hint: 'Where visitors find this project. Previously shown projects keep this category to protect their web address; a move needs a reviewed redirect.' },
     { name: 'shortTitle', label: 'Short name for cards', widget: 'string', required: false, pattern: max(40, 'short name') },
     { name: 'client', label: 'Client name shown', widget: 'string', required: false, hint: 'Leave empty if the client has not agreed to be named.' },
@@ -104,7 +105,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'location', label: 'Town or area', widget: 'string', required: false, hint: hint.location },
     { name: 'client', label: 'Client name shown', widget: 'string', required: false },
     { name: 'sortPriority', label: 'Gallery placement', widget: 'pgk-placement', default: 0, hint: 'Higher numbers move it up in the Home Selected Work and service galleries.' },
-    { name: 'featured', label: 'Featured designation', widget: 'pgk-featured', required: false, default: false },
+    { name: 'featured', label: 'Featured work & ordering', widget: 'pgk-featured', required: false, default: false },
   ];
   const photoFields = [
     { name: 'type', label: 'type', widget: 'hidden', default: 'image' },
@@ -297,7 +298,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'ogImage', label: 'Social sharing image', widget: 'pgk-photo', required: false, ...notesMedia, hint: 'Optional. Defaults to the hero image.' },
           { name: 'slug', label: 'URL name', widget: 'string', required: false, pattern: ['^([a-z0-9]+(-[a-z0-9]+)*)?$', 'Lowercase letters, numbers and single hyphens only'], hint: 'Optional. Leave empty to use the title. Do not change it after publishing.' },
           { name: 'author', label: 'Author', widget: 'string', required: false, default: 'Photografik Studios' },
-          { name: 'featured', label: 'Featured designation', widget: 'pgk-featured', required: false, default: false },
+          { name: 'featured', label: 'Featured work & ordering', widget: 'pgk-featured', required: false, default: false },
           { name: 'relatedService', label: 'Related service', widget: 'select', required: false, options: servicePages },
           { name: 'cta', label: 'Call to action at the end', widget: 'object', required: false, collapsed: true, fields: [
             { name: 'label', label: 'Button text', widget: 'string', default: 'Send a Project Brief' },
