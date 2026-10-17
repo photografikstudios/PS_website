@@ -135,7 +135,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'dialogue', label: 'Does the film have speech?', widget: 'boolean', required: false, default: true, hint: 'Films with speech need captions before the live site can launch.' },
     { name: 'captions', label: 'Captions', widget: 'pgk-captions', required: false, media_folder: '/static/captions', public_folder: '/captions' },
     { name: 'captionsStatus', label: 'Captions approved', widget: 'select', required: false, default: 'machine-draft', options: [{ label: 'Draft: not approved yet (for example machine captions)', value: 'machine-draft' }, { label: 'Approved by James', value: 'approved' }], hint: 'Burned-in captions and caption files both show with the sound off. A caption file is shown by default on the site.' },
-    ...mediaCommon.slice(2),
+    ...mediaCommon.slice(2).map((f) => f.name === 'service' ? { ...f, default: ['video'] } : f),
     { name: 'rights', label: 'rights', widget: 'hidden', default: 'approved' },
     { name: 'packageIds', label: 'packageIds', widget: 'hidden', default: [] },
     { name: 'capturedYear', label: 'capturedYear', widget: 'hidden', default: null },

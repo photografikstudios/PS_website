@@ -1375,6 +1375,7 @@
   // Widget styles (thumbnails, rows, buttons, status).
   var widgetCss = document.createElement('style');
   widgetCss.textContent = [
+    '[aria-label="pgk-section field"] > [class*="ControlTopbar"] { display: none; }',
     '.pgk-section { border-top: 2px solid #c9d7d7; padding: 4px 0; color: #405656; } .pgk-section h2 { margin: 6px 0; font-size: 21px; font-weight: 650; } .pgk-section p:empty { display: none; } .pgk-section p { margin: 0; font-size: 14px; line-height: 1.5; }',
     '.pgk-context { border-left: 3px solid #527575; background: #f4f8f7; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; } .pgk-context p { margin: 5px 0; } .pgk-usage { margin: 5px 0 10px; font-size: 13px; } .pgk-note details { margin-top: 12px; } .pgk-note summary { cursor: pointer; } .pgk-note input[type=number] { max-width: 160px; padding: 8px; }',
     '.pgk-thumb { display: block; width: 160px; height: 110px; object-fit: cover; border-radius: 6px; background: #eef0f3; }',
