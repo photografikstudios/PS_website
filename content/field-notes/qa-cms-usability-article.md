@@ -1,27 +1,27 @@
 {
-  "title": "QA CMS usability article",
+"excerpt": "Edited in the real CMS; temporary hidden review fixture.",
+  "relatedService": "/contact",
+  "author": "Photografik Studios",
+  "slug": "qa-cms-usability-article",
+  "legacyUrls": [],
+  "approvedBy": "Review test only; never publish",
   "published": false,
   "date": "2026-09-30",
-  "category": "real-estate",
-  "excerpt": "Temporary review fixture for testing the existing editor.",
-  "answer": "Choose horizontal film when the video will live on the listing page, YouTube, email and your listing presentations. Choose a vertical reel when the launch runs mainly on Instagram, TikTok and Reels. When a property will be marketed on both, plan both formats from the same shoot rather than cropping one into the other.",
-  "hero": "/v/re-hamptons-beachfront.webp",
   "heroAlt": "Beachfront estate film",
-  "author": "Photografik Studios",
   "cta": {
     "label": "Send a Project Brief",
     "href": "/contact"
   },
-  "relatedService": "/contact",
-  "seoTitle": "Horizontal film or vertical reel for a listing? | Photografik",
-  "seoDescription": "When a listing needs horizontal film, a vertical reel or both, where each plays, and which Photografik packages include them.",
-  "approvedBy": "Review test only; never publish",
-  "legacyUrls": [],
+  "title": "QA CMS usability article",
   "sources": [
     "Photografik Real Estate page copy (approved)",
     "HD Photo Hub package inclusions (read 2026-09-23)"
   ],
-  "slug": "qa-cms-usability-article"
+  "hero": "/v/re-hamptons-beachfront.webp",
+  "seoTitle": "Horizontal film or vertical reel for a listing? | Photografik",
+  "category": "real-estate",
+  "answer": "Choose horizontal film when the video will live on the listing page, YouTube, email and your listing presentations. Choose a vertical reel when the launch runs mainly on Instagram, TikTok and Reels. When a property will be marketed on both, plan both formats from the same shoot rather than cropping one into the other.",
+  "seoDescription": "When a listing needs horizontal film, a vertical reel or both, where each plays, and which Photografik packages include them."
 }
 
 ## What a horizontal film does
