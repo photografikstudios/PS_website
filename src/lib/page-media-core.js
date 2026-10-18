@@ -124,7 +124,7 @@ export const PAGES = [
       S('agencyPhoto', '“For agencies”: picture', 'still'),
       S('closing', 'Closing band: background photo', 'photo', { alt: 'decorative' }),
       G('caseStudy', 'Case study: which project', 'project', { auto: 'RevivaLuxe, or the first client project.' }),
-      G('clientWork', 'Client work: which projects, in which order', 'projectGallery', { auto: 'Every Commercial project with media, RevivaLuxe, Rachel Lynch Pools and Torella Pools first.' }),
+      G('clientWork', 'Client work: which projects, in which order', 'projectGallery', { auto: 'Every Commercial project with media, RevivaLuxe, Rachel Lynch Pools and Tortorella Pools first.' }),
     ],
     automatic: [
       ['Each project’s own films and photos', 'Edited in Projects.', '#/collections/projects'],

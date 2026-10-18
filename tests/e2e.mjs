@@ -1124,13 +1124,18 @@ await check('reels: words show while muted (WebVTT default on Agent on camera; b
     await card.scrollIntoViewIfNeeded();
     await card.locator('.vplayer__start').click();
     const st = await card.locator('video').evaluate(async (v) => {
-      v.muted = true; await v.play().catch(() => {});
+      // Oct 18: an intermittent full-suite failure (cue empty at 1440) gave no clue why; record what the player did.
+      const log = []; const at = () => Math.round(v.currentTime * 100) / 100;
+      for (const ev of ['pause', 'waiting', 'stalled', 'error', 'ended', 'emptied']) v.addEventListener(ev, () => log.push(`${ev}@${at()}`));
+      document.addEventListener('visibilitychange', () => log.push(`hidden=${document.hidden}@${at()}`));
+      v.muted = true; await v.play().catch((e) => log.push(`play-rejected:${e.name}`));
       await new Promise((r) => setTimeout(r, 500)); const t0 = v.currentTime;
       // The first spoken words start at 6.9 s; the test server has no range requests, so let it play there.
       for (let i = 0; i < 200 && !(v.textTracks[0] && v.textTracks[0].activeCues && v.textTracks[0].activeCues.length && v.currentTime > 7.3); i++) await new Promise((r) => setTimeout(r, 100));
       if (!(t0 > 0)) return { muted: v.muted, mode: 'not playing', cue: '', time: t0 };
       const t = v.textTracks[0];
-      return { muted: v.muted, mode: t && t.mode, cue: t && t.activeCues && t.activeCues[0] ? t.activeCues[0].text : '', played: t0, controls: v.controls };
+      const cues = t && t.cues ? t.cues.length : null;
+      return { muted: v.muted, mode: t && t.mode, cue: t && t.activeCues && t.activeCues[0] ? t.activeCues[0].text : '', played: t0, controls: v.controls, end: at(), paused: v.paused, ready: v.readyState, net: v.networkState, cues, log };
     });
     assert(st.muted && st.played > 0 && st.mode === 'showing' && /part of the story/.test(st.cue) && st.controls, `${vp.width}: muted words ${JSON.stringify(st)}`);
     await p.goto(base + '/creator-studios/sessions');

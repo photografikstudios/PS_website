@@ -323,6 +323,17 @@ test('production build: no street address in any public page or in the media URL
   assert.deepEqual([...hits].slice(0, 12), []);
 });
 
+// Oct 18: James corrected the project to "Tortorella Pools"; its film and photo kept the old spelling in their
+// visible title, alt text and client label. A project's media must name the client the way the project does.
+test('project media name the client exactly as their project does (Tortorella Pools)', () => {
+  const bySlug = Object.fromEntries(work.projects.map((p) => [p.slug, p]));
+  const off = work.media.filter((m) => !m.fromProject && bySlug[m.project]?.client && m.client && m.client !== bySlug[m.project].client).map((m) => `${m.id}: ${m.client}`);
+  assert.deepEqual(off, []);
+  const t = bySlug['torella-pools'];
+  assert.equal(t.client, 'Tortorella Pools'); assert.equal(t.path, '/commercial/torella-pools');
+  for (const m of work.media.filter((x) => x.project === 'torella-pools' && !x.fromProject)) for (const k of ['title', 'alt', 'client']) assert.ok(!/\bTorella\b/.test(m[k] || ''), `${m.id} ${k}: ${m[k]}`);
+});
+
 test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned, street-free, town from HDPH, uncredited, excluded property absent', async () => {
   // Session 59. Source mapping in the public repo is the HDPH site id, the original file name (withheld when it names
   // the street) and the original's SHA-256; the street-level mapping stays in the private brief folder.
