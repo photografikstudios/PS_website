@@ -1351,6 +1351,10 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const heroHtml = heroImage && photoLightbox
       ? `<button type="button" class="project__photo" data-project-photo="${photoIndex.get(heroImage)}" aria-label="Enlarge ${esc(p.heroAlt || rep?.alt || p.title)}">${heroStill}</button>`
       : p.hero ? heroStill : rep ? repFrame(rep, '(min-width: 900px) 55vw, 100vw') : '';
+    const galleryMedia = rep ? pm.filter((m) => m !== rep) : pm;
+    // Commercial films lead the gallery in their own rows; preserve the saved order within each media type.
+    const galleryGroups = isCom ? [galleryMedia.filter((m) => m.type === 'video'), galleryMedia.filter((m) => m.type !== 'video')].filter((group) => group.length) : [galleryMedia];
+    const galleryHtml = join(galleryGroups, (group) => `<div class="justified">${join(group, (m) => mediaCard(m, { photoLightboxIndex: photoLightbox && m.type === 'image' ? photoIndex.get(m.src) : undefined }))}<span class="justified__spacer" aria-hidden="true"></span></div>`);
     const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
     const selectedServices = (Array.isArray(p.services) ? p.services : []).map((id) => svcLabel[id] || id);
     const services = selectedServices.length ? selectedServices.join(' · ') : isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : '';
@@ -1375,7 +1379,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <div class="project__hero">${withLoop(p, heroHtml)}</div>
     </div>
   </header>
-  ${(rest => rest.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2><div class="justified">${join(rest, (m) => mediaCard(m, { photoLightboxIndex: photoLightbox && m.type === 'image' ? photoIndex.get(m.src) : undefined }))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : '')(rep ? pm.filter((m) => m !== rep) : pm)}
+  ${galleryMedia.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2>${isCom ? `<div class="project__gallery">${galleryHtml}</div>` : galleryHtml}</div></section>` : ''}
   ${related.length ? `<section class="section"><div class="wrap"><div class="section-head"><h2 class="h2 reveal">Related work</h2><a class="link-arrow" href="${serviceRoute[p.category]}${p.category === 'creator-studios' ? '' : '#portfolio'}">More ${esc(catLabel[p.category])} ${arrow}</a></div><div class="justified">${join(related, (m) => mediaCard(m))}<span class="justified__spacer" aria-hidden="true"></span></div></div></section>` : ''}
   ${isCom ? `<section class="section"><div class="wrap cta-band cta-band--light"><h2 class="h2">Planning something similar?</h2><p>Tell us about the business, the audience and where the media will be used.</p><div class="actions">${cta}<a class="link-arrow" href="/commercial#portfolio">More client projects ${arrow}</a></div></div></section>` : ''}
   ${photoLightbox && projectPhotos.length ? `${lightboxDialog()}${itemsJson(projectPhotos)}` : ''}
