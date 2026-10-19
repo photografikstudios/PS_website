@@ -1,23 +1,35 @@
 {
-  "slug": "barba-architectural",
-  "title": "Barba Architectural",
-  "shortTitle": "Barba Architectural",
-  "client": "Barba Architectural",
-  "category": "architecture-design",
-  "location": "Westhampton Beach",
-  "services": [
-    "photography"
-  ],
-  "summary": "Project photography for Barba Architectural.",
-  "story": null,
-  "rights": "approved",
-  "rightsNote": "Photo already approved for display; client named by James, Sep 27 2026.",
-  "heroOrientation": "horizontal",
-  "path": "/architecture-design/barba-architectural",
   "segments": [
     "architect"
   ],
+  "photos": [
+    {
+      "image": "/v/ph-hampton-exterior.webp",
+      "alt": "Shingle-style exterior",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    }
+  ],
+  "path": "/architecture-design/barba-architectural",
+  "summary": "Project photography for Barba Architectural.",
+  "rightsNote": "Photo already approved for display; client named by James, Sep 27 2026.",
+  "slug": "barba-architectural",
+  "client": "Barba Architectural",
+  "urlCategory": "architecture-design",
   "segmentSource": "James, Sep 27 2026: this project is for the architect Barba Architectural.",
   "published": true,
-  "order": 60
+  "order": 60,
+  "heroAlt": "Aerial view of a Barba Architectural waterfront residence in Westhampton, featuring a shingle-style exterior, pool terrace, private dock, and surrounding bay views.",
+  "story": null,
+  "location": "Westhampton Beach",
+  "heroOrientation": "horizontal",
+  "rights": "approved",
+  "title": "Barba Architectural",
+  "hero": "/v/ph-barba-waterfront.webp",
+  "shortTitle": "Barba Architectural",
+  "services": [
+    "photography"
+  ],
+  "category": "architecture-design"
 }
