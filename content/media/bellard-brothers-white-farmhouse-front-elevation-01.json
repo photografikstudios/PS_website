@@ -1,33 +1,34 @@
 {
-  "id": "bellard-brothers-white-farmhouse-front-elevation-01",
-  "type": "image",
-  "project": "bellard-brothers",
-  "title": "Bellard Brothers: white farmhouse front elevation",
-  "service": [
-    "photography"
-  ],
-  "category": "architecture-design",
-  "orientation": "horizontal",
+  "sortPriority": 0,
   "src": "/images/library/bellard-brothers/bellard-brothers-white-farmhouse-front-elevation-01.webp",
   "width": 2500,
   "height": 1667,
-  "featured": false,
-  "rights": "approved",
-  "alt": "White farmhouse front elevation \u2014 Bellard Brothers.",
-  "location": null,
-  "client": "Bellard Brothers",
-  "source": "drive",
-  "published": true,
-  "packageIds": [],
-  "capturedYear": null,
-  "sortPriority": 0,
-  "order": 2009,
   "libraryFolder": "Bellard Brothers",
+  "alt": "White farmhouse front elevation — Bellard Brothers.",
+  "client": "Bellard Brothers",
+  "featured": false,
+  "published": true,
+  "order": 2009,
+  "orientation": "horizontal",
+  "packageIds": [],
+  "_librarySourceDrive": "1k4CC4F_35EpLFHdNco3OyZY861230pKo",
+  "service": [
+    "photography"
+  ],
+  "location": null,
+  "thumb": "/images/library/bellard-brothers/bellard-brothers-white-farmhouse-front-elevation-01-sm.webp",
+  "_rights": "Owner supplied for these website pages, October 19, 2026. Web copy; full-size original retained in Drive.",
+  "rights": "approved",
+  "title": "Bellard Brothers: white farmhouse front elevation",
   "tags": [
     "photography",
-    "exterior"
+    "exterior",
+    "pool house"
   ],
-  "_librarySourceDrive": "1k4CC4F_35EpLFHdNco3OyZY861230pKo",
-  "_rights": "Owner supplied for these website pages, October 19, 2026. Web copy; full-size original retained in Drive.",
-  "thumb": "/images/library/bellard-brothers/bellard-brothers-white-farmhouse-front-elevation-01-sm.webp"
+  "project": "bellard-brothers",
+  "type": "image",
+  "source": "drive",
+  "id": "bellard-brothers-white-farmhouse-front-elevation-01",
+  "capturedYear": null,
+  "category": "architecture-design"
 }
