@@ -31,5 +31,6 @@
   "src": "/v/oct15-cl-podcast-ep-16-shorts-2-1.mp4",
   "poster": "/v/oct15-cl-podcast-ep-16-shorts-2-1.webp",
   "orientation": "vertical",
-  "duration": 27
+  "duration": 27,
+  "focal": "top"
 }

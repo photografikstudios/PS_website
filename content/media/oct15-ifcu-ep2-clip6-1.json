@@ -31,5 +31,6 @@
   "src": "/v/oct15-ifcu-ep2-clip6-1.mp4",
   "poster": "/v/oct15-ifcu-ep2-clip6-1.webp",
   "orientation": "vertical",
-  "duration": 38
+  "duration": 38,
+  "focal": "upper-third"
 }

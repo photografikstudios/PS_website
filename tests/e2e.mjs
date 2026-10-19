@@ -508,8 +508,8 @@ await check('home showcase: Videos/Photos × category, lightbox, View more', asy
   await p.goto(base + '/');
   const shown = () => p.locator('#sw-grid .sw-card:not([hidden])').evaluateAll((els) => els.map((e) => [e.dataset.kind, e.dataset.category]));
   let v = await shown();
-  assert(v.length > 0 && v.length <= 9 && v.every(([k, c]) => k === 'video' && c === 'real-estate'), JSON.stringify(v));
-  assert((await p.getAttribute('#sw-more', 'href')) === '/real-estate?type=video#portfolio', 'view more href');
+  assert(v.length > 0 && v.length <= 10 && v.every(([k, c]) => k === 'image' && c === 'real-estate'), JSON.stringify(v));
+  assert((await p.getAttribute('#sw-more', 'href')) === '/real-estate?type=photo#portfolio', 'view more href');
   await p.selectOption('#sw-kind', 'image');
   await p.selectOption('#sw-cat', 'architecture-design');
   v = await shown();
@@ -1417,7 +1417,7 @@ await check('mobile menu reachable at 320-1024; Home trimmed with every path kep
   const h = await p.evaluate(() => document.documentElement.scrollHeight);
   assert(h < 10500, 'Home at 390 px is trimmed: ' + h);
   const order = await p.evaluate(() => [...document.querySelectorAll('main > section')].map((x) => x.id || x.className.split(' ').slice(-1)[0]));
-  assert(order.indexOf('home-proof') === 1 && order.indexOf('selected-work') === 3 && await p.locator('.path').count() === 4 && await p.locator('#sw-grid .sw-card:not([hidden])').count() === 6, 'Home order and six-item phone preview: ' + order.join(','));
+  assert(order.indexOf('home-proof') === 3 && order.indexOf('selected-work') === 2 && await p.locator('.path').count() === 4 && await p.locator('#sw-grid .sw-card:not([hidden])').count() === 4, 'Home order and two-row phone preview: ' + order.join(','));
   for (const href of ['/real-estate', '/architecture-design', '/commercial', '/creator-studios', '/agent-content', '/agency-partnerships', '/real-estate/pricing', '/contact']) assert(await p.locator(`main a[href="${href}"], main a[href^="${href}?"]`).count() >= 1, 'Home keeps a path to ' + href);
   assert(await p.locator('.home-proof blockquote').count() === 1 && await p.locator('.home-pkgs__item').count() === 4, 'proof quote and four package lines');
   await p.goto(base + '/real-estate/pricing'); await p.click('#tab-video');
@@ -1746,9 +1746,9 @@ await check('copy pass: no generic marketing phrases, intent CTAs, contact makes
   assert(/A lighter monthly cadence for agents/.test(ac) && /A larger monthly production session/.test(ac), 'Agent plan taglines');
 });
 
-// James, Sep 30 2026 (OWNER_HOME_GALLERY_SIZE): same curated pieces and third row, smaller tiles; phones get a two-column grid.
-await check('home Selected Work: compact tiles, three rows kept, two columns on phones, touch and keyboard reach every card', async () => {
-  for (const [w, h, cols, rows, maxGrid] of [[1280, 900, 3, 3, 640], [768, 1024, 3, 3, 460], [430, 932, 2, 3, 480], [390, 844, 2, 3, 440], [375, 812, 2, 3, 420], [320, 640, 2, 3, 360]]) {
+// James, Oct 19 2026: two rows, five columns on wide desktops, four on smaller desktops, two on phones.
+await check('home Selected Work: two rows, responsive columns, touch and keyboard reach every card', async () => {
+  for (const [w, h, cols, rows, maxGrid] of [[1440, 1000, 5, 2, 430], [1280, 900, 5, 2, 390], [1024, 900, 4, 2, 380], [768, 1024, 4, 2, 300], [430, 932, 2, 2, 320], [390, 844, 2, 2, 290], [375, 812, 2, 2, 280], [320, 640, 2, 2, 240]]) {
     const p = await newPage({ width: w, height: h }, w < 700 ? { hasTouch: true, isMobile: true } : {});
     await p.goto(base + '/');
     const g = await p.evaluate(() => { const cards = [...document.querySelectorAll('#sw-grid .sw-card')].filter((c) => !c.hidden); const r = cards.map((c) => c.getBoundingClientRect()); return { n: cards.length, cols: new Set(r.map((x) => Math.round(x.left))).size, rows: new Set(r.map((x) => Math.round(x.top))).size, grid: document.getElementById('sw-grid').getBoundingClientRect().height, minSide: Math.min(...r.map((x) => Math.min(x.width, x.height))), over: document.documentElement.scrollWidth > innerWidth + 1 }; });
@@ -1759,8 +1759,8 @@ await check('home Selected Work: compact tiles, three rows kept, two columns on 
       await p.locator('#lightbox[open]').waitFor({ timeout: 5000 });
       await p.keyboard.press('Escape');
     } else {
-      await p.focus('#sw-grid .sw-card:not([hidden]) >> nth=8');
-      assert(await p.evaluate(() => getComputedStyle(document.activeElement).outlineStyle !== 'none'), 'visible focus on the ninth card');
+      await p.locator('#sw-grid .sw-card:not([hidden])').last().focus();
+      assert(await p.evaluate(() => getComputedStyle(document.activeElement).outlineStyle !== 'none'), 'visible focus on the last card');
     }
     assert(await p.locator('#sw-more').isVisible() && await p.locator('#sw-kind').isVisible() && await p.locator('#sw-cat').isVisible(), 'filters and View more stay');
     await p.context().close();

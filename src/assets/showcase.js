@@ -1,4 +1,4 @@
-// Home "Selected work": Videos/Photos × category filter, 9 cards, lightbox viewer, View more → that category's service page portfolio (no Work page).
+// Home "Selected work": Photos/Videos × category, two responsive rows, lightbox, View more → service portfolio.
 // Items come from the shared work.media collection (the same records as the service-page galleries).
 import { createLightbox } from './lightbox.js';
 // Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
@@ -12,8 +12,9 @@ if (root) {
   const cards = [...root.querySelectorAll('.sw-card')];
   const empty = root.querySelector('#sw-empty');
   const more = root.querySelector('#sw-more');
-  // Codex/James Sep 29 2026: six items on phones keep the preview compact; View more goes to the service gallery.
-  const LIMIT = (matchMedia('(max-width: 700px)').matches && Number(root.dataset.limitPhone)) || Number(root.dataset.limit) || 9;
+  const grid = root.querySelector('#sw-grid');
+  // Match the CSS column count after resizing too; never leave a third row behind at a breakpoint.
+  const limit = () => Math.min(Number(root.dataset.limit) || 10, (parseInt(getComputedStyle(grid).getPropertyValue('--showcase-columns'), 10) || 2) * 2);
   let routes = {}; try { routes = JSON.parse(root.dataset.routes || '{}'); } catch { /* keep default */ }
   const lb = createLightbox(root.querySelector('dialog'), data, { where: 'home' });
   let visible = [];
@@ -29,7 +30,7 @@ if (root) {
   function render() {
     const kind = kindSel.value; const cat = catSel.value;
     const matches = cards.filter((c) => c.dataset.kind === kind && c.dataset.category === cat);
-    visible = matches.slice(0, LIMIT).map((c) => +c.dataset.i);
+    visible = matches.slice(0, limit()).map((c) => +c.dataset.i);
     cards.forEach((c) => { c.hidden = !visible.includes(+c.dataset.i); });
     empty.hidden = matches.length > 0;
     const route = routes[cat] || '/real-estate';
@@ -40,6 +41,7 @@ if (root) {
   const changed = () => track('gallery_filter', { where: 'home', kind: kindSel.value, category: catSel.value });
   kindSel.addEventListener('change', () => { syncCategories(); render(); changed(); });
   catSel.addEventListener('change', () => { render(); changed(); });
+  for (const query of ['(max-width: 700px)', '(min-width: 1280px)']) matchMedia(query).addEventListener('change', render);
 
   root.querySelector('#sw-grid').addEventListener('click', (e) => {
     const card = e.target.closest('.sw-card');

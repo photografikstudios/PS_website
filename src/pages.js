@@ -195,7 +195,11 @@ export function buildPages(ctx) {
   // Home showcase: videos with a poster and all stills, filtered client-side (Videos/Photos × category).
   const cardable = media.filter((m) => (m.type === 'video' ? !!m.poster : true));
   const showcase = curate('home', 'selectedWork', editorialOrder(cardable), cardable);
-  const homeLimit = site.galleries?.home?.limit || 9;
+  const homeLimit = site.galleries?.home?.limit || 10;
+  const homeInitial = new Set(showcase.filter((m) => m.type === 'image' && m.category === 'real-estate').slice(0, homeLimit).map((m) => m.id));
+  // Portrait podcast stills need a little extra headroom in Home's short tiles. Full-size viewers stay uncropped.
+  const showcaseFocus = (m) => m.category === 'creator-studios' && m.orientation === 'vertical' && m.focal === 'top'
+    ? ' style="object-position: 50% 8%"' : focalAttr(m.focal);
   // Codex/James Sep 29 2026: one approved written review on Home; the rest and Jack's film stay on About.
   // Oct 1 2026: Home shows the review's verbatim excerpt (with an ellipsis) when it has one; About keeps the full quote.
   const homeQuote = (testimonials?.reviews || []).find((r) => r.approval === 'approved' && r.name === 'Kimberly Cammarata');
@@ -227,17 +231,6 @@ export function buildPages(ctx) {
   ${motionToggle}
 </section>
 
-<section class="section home-proof" aria-labelledby="proof-h">
-  <div class="wrap home-proof__grid">
-    <div>
-      <p class="eyebrow">In our clients' words</p>
-      <h2 class="h2 reveal" id="proof-h">Trusted with the work <em>behind the brand.</em></h2>
-    </div>
-    ${homeQuote ? `<figure class="review review--lead reveal home-proof__quote"><blockquote><p>${esc(homeQuote.excerpt || homeQuote.quote)}</p></blockquote><figcaption><span class="review__name">${esc(homeQuote.name)}</span>${homeQuote.org ? `<span class="review__org">${esc(homeQuote.org)}</span>` : ''}</figcaption></figure>` : ''}
-    <p class="home-proof__more"><a class="link-arrow" href="/about#reviews" data-track="reviews_click" data-track-location="home_proof">More reviews →</a></p>
-  </div>
-</section>
-
 <section class="quick on-dark" aria-label="Book a shoot or send a project brief">
   <div class="wrap quick__grid">
     <article class="quick__tile reveal">
@@ -261,28 +254,39 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-<section class="section section--ink on-dark showcase" id="selected-work" aria-labelledby="work-h" data-showcase data-limit="${homeLimit}" data-limit-phone="6" data-routes="${esc(JSON.stringify(serviceRoute))}">
+<section class="section section--ink on-dark showcase" id="selected-work" aria-labelledby="work-h" data-showcase data-limit="${homeLimit}" data-routes="${esc(JSON.stringify(serviceRoute))}">
   <div class="wrap">
     <div class="showcase__head">
       <div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="work-h">Recent listings, projects <em>and films.</em></h2></div>
       <div class="showcase__filters" role="group" aria-label="Filter selected work">
         <label class="sr-only" for="sw-kind">Media type</label>
-        <select id="sw-kind" class="pill-select"><option value="video">Videos</option><option value="image">Photos</option></select>
+        <select id="sw-kind" class="pill-select"><option value="image" selected>Photos</option><option value="video">Videos</option></select>
         <label class="sr-only" for="sw-cat">Category</label>
-        <select id="sw-cat" class="pill-select">${join(work.taxonomy.category.filter((c) => showcase.some((m) => m.category === c.id)), (c) => `<option value="${c.id}">${esc(c.label)}</option>`)}</select>
+        <select id="sw-cat" class="pill-select">${join(work.taxonomy.category.filter((c) => showcase.some((m) => m.category === c.id)), (c) => `<option value="${c.id}"${c.id === 'real-estate' ? ' selected' : ''}>${esc(c.label)}</option>`)}</select>
       </div>
     </div>
     <div class="showcase__grid" id="sw-grid">
-      ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${i >= homeLimit ? ' hidden' : ''}>
-        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async"${focalAttr(m.focal)}>
+      ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${!homeInitial.has(m.id) ? ' hidden' : ''}>
+        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async"${showcaseFocus(m)}>
         ${m.type === 'video' ? playIcon : ''}
       </button>`)}
     </div>
     <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">send us a project brief</a>.</p>
-    <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/real-estate?type=video#portfolio" data-track="gallery_view_more">View more</a></div>
+    <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/real-estate?type=photo#portfolio" data-track="gallery_view_more">View more</a></div>
   </div>
   ${lightboxDialog()}
   ${itemsJson(showcase)}
+</section>
+
+<section class="section home-proof" aria-labelledby="proof-h">
+  <div class="wrap home-proof__grid">
+    <div>
+      <p class="eyebrow">In our clients' words</p>
+      <h2 class="h2 reveal" id="proof-h">Trusted with the work <em>behind the brand.</em></h2>
+    </div>
+    ${homeQuote ? `<figure class="review review--lead reveal home-proof__quote"><blockquote><p>${esc(homeQuote.excerpt || homeQuote.quote)}</p></blockquote><figcaption><span class="review__name">${esc(homeQuote.name)}</span>${homeQuote.org ? `<span class="review__org">${esc(homeQuote.org)}</span>` : ''}</figcaption></figure>` : ''}
+    <p class="home-proof__more"><a class="link-arrow" href="/about#reviews" data-track="reviews_click" data-track-location="home_proof">More reviews →</a></p>
+  </div>
 </section>
 
 <section class="section section--tint" aria-labelledby="paths-h">

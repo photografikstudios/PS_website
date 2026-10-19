@@ -31,5 +31,6 @@
   "src": "/v/oct15-short-cc-ep-20-clip-7.mp4",
   "poster": "/v/oct15-short-cc-ep-20-clip-7.webp",
   "orientation": "vertical",
-  "duration": 28
+  "duration": 28,
+  "focal": "top"
 }
