@@ -1041,6 +1041,40 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 
 /* Architecture & design: Bridgehampton design detail band (James, Sep 29 2026: Brick Kiln imagery as design support). */
 .arch-detail__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(10px, 1.4vw, 18px); margin-top: clamp(24px, 3vw, 36px); }
+.client-logos { padding: 34px 0 30px; border-bottom: 1px solid var(--line); background: var(--ivory); }
+.client-logos__heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 20px; }
+.client-logos__heading h2 { margin: 0; }
+.client-logos__toggle { flex-shrink: 0; border: 0; padding: 8px 0; background: none; color: var(--muted); font: 12px var(--sans); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.client-logos__viewport { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.client-logos__track { display: flex; width: max-content; }
+.client-logos__group { display: flex; flex: none; align-items: center; gap: clamp(28px, 4vw, 64px); padding: 0 clamp(28px, 4vw, 64px) 0 0; margin: 0; list-style: none; }
+.client-logos__item { position: relative; display: flex; align-items: center; justify-content: center; flex: 0 0 200px; width: 200px; height: 112px; overflow: hidden; background: var(--ivory); isolation: isolate; }
+.client-logos__item img { display: block; width: auto; height: auto; max-width: 180px; max-height: 96px; object-fit: contain; }
+/* Keep the downloaded artwork intact; neutral presentation lets the work retain the page's color focus. */
+.client-logos__item--light-mark img { filter: brightness(0); }
+.client-logos__item--delrose img { mix-blend-mode: multiply; }
+.client-logos__item--laura img { filter: invert(1); mix-blend-mode: multiply; max-height: 128px; }
+.client-logos__wordmark { font: 500 27px/1.2 Arial, sans-serif; white-space: nowrap; text-align: center; }
+.client-logos__item--goldin .client-logos__wordmark { white-space: normal; font-size: 23px; max-width: 160px; text-transform: uppercase; letter-spacing: .04em; }
+.client-logos__wordmark small { display: block; margin-top: 8px; font: 11px var(--sans); color: var(--muted); }
+.client-logos__copy { display: none; }
+.client-logos.is-enhanced .client-logos__copy { display: flex; }
+.client-logos.is-enhanced .client-logos__track { animation: client-logos-scroll 70s linear infinite; animation-play-state: paused; }
+.client-logos[data-running="true"] .client-logos__track { animation-play-state: running; }
+.client-logos__viewport:hover .client-logos__track { animation-play-state: paused; }
+.client-logos__viewport:focus-within .client-logos__track { animation: none; }
+.client-logos__viewport:focus-within .client-logos__copy { display: none; }
+@keyframes client-logos-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .client-logos .client-logos__track { animation: none !important; }
+  .client-logos .client-logos__copy, .client-logos__toggle { display: none !important; }
+}
+@media (max-width: 600px) {
+  .client-logos { padding: 24px 0; }
+  .client-logos__heading { gap: 12px; }
+  .client-logos__heading h2 { font-size: 10px; letter-spacing: .1em; }
+  .client-logos__item { flex-basis: 180px; width: 180px; }
+}
 .arch-detail__fig { margin: 0; aspect-ratio: 4 / 5; overflow: hidden; }
 .arch-detail__fig img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media (max-width: 800px) { .arch-detail__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

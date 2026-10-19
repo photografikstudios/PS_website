@@ -41,8 +41,8 @@ const siteMode = prodCheck ? 'production' : process.env.SITE_MODE || (vercelEnv 
 const reviewMode = siteMode !== 'production';
 const onVercel = !!process.env.VERCEL && process.env.LOCAL_IMAGES !== '1';
 
-const [site, pricing, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal, pageText, faqsPolicy] = await Promise.all(
-  ['site.json', 'pricing.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json', 'pages.json', 'faqs-policy.json'].map(readJSON),
+const [site, pricing, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal, pageText, faqsPolicy, architectureClients] = await Promise.all(
+  ['site.json', 'pricing.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json', 'pages.json', 'faqs-policy.json', 'architecture-clients.json'].map(readJSON),
 );
 // Portfolio: one file per project and per photo/film (content/projects, content/media), edited through /admin.
 const work = await loadWork(root);
@@ -136,7 +136,7 @@ if (!reviewMode && !prodCheck) {
 }
 
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
-const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel, heroStills, imageInfo }) };
+const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, architectureClients, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel, heroStills, imageInfo }) };
 ctx.galleryAuto = {}; // filled by buildPages: what each gallery shows automatically today (for the dashboard)
 const pages = buildPages(ctx);
 // Field Notes appears in navigation only when it has at least one visible article.

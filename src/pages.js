@@ -903,14 +903,23 @@ ${agentMonthly.length ? `<section class="section section--tint">
       </button>
     </article>`;
   };
+  const clientLogos = join(ctx.architectureClients || [], (client) => `<li class="client-logos__item client-logos__item--${esc(client.style)}">${client.logo
+    ? `<img src="${esc(client.logo)}" alt="${esc(client.name)}" width="${client.width}" height="${client.height}" loading="lazy" decoding="async">`
+    : `<span class="client-logos__wordmark">${esc(client.wordmark)}${client.name !== client.wordmark ? `<small>${esc(client.name)}</small>` : ''}</span>`}</li>`);
   pages['/architecture-design'] = {
     overlay: true,
-    scripts: ['re-gallery.js'],
+    scripts: ['re-gallery.js', 'client-logos.js'],
     body: `${pageHero({
       ...heroText('/architecture-design'),
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Plan the Next Project</a>`,
       video: loopOf('architecture-design', 'hero'),
     })}
+${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby="arch-clients-h">
+  <div class="wrap client-logos__heading"><h2 class="eyebrow" id="arch-clients-h">Clients we work with</h2><button type="button" class="client-logos__toggle" data-client-logos-toggle aria-controls="arch-client-board" aria-pressed="false" hidden>Pause scrolling</button></div>
+  <div class="client-logos__viewport" id="arch-client-board" tabindex="0" role="region" aria-label="Client logos. Scroll to see all clients.">
+    <div class="client-logos__track"><ul class="client-logos__group" role="list">${clientLogos}</ul><ul class="client-logos__group client-logos__copy" aria-hidden="true" inert>${clientLogos}</ul></div>
+  </div>
+</section>` : ''}
 <section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
   <div class="wrap pair">
     <div class="pair__text">
@@ -988,7 +997,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
 
 <section class="section arch-detail" aria-labelledby="arch-detail-h">
   <div class="wrap">
-    <div class="section-head"><div><p class="eyebrow">Design in detail</p><h2 class="h2 reveal" id="arch-detail-h">Materials, light and <em>the way a space is put together.</em></h2><p class="section-lede">From our real estate work at a Bridgehampton residence: the same eye for joinery, stone and daylight we bring to architecture and design projects.</p></div></div>
+    <div class="section-head"><div><p class="eyebrow">Design in detail</p><h2 class="h2 reveal" id="arch-detail-h">Materials, light and <em>the way a space is put together.</em></h2><p class="section-lede">A closer look at work for Bellard Brothers, Goldin Luxury Homes and Delrose Design Group: joinery, finishes and the details that make a space its own.</p></div></div>
     <div class="arch-detail__grid">${join(pmList('architecture-design', 'designDetail'), (it) => { const st = pmStill(it); return st ? `<figure class="arch-detail__fig">${img(st.src, { alt: it.alt || (st.m ? st.m.alt : st.alt), thumb: st.thumb, sizes: '(min-width: 900px) 25vw, 50vw' })}</figure>` : ''; })}</div>
   </div>
 </section>

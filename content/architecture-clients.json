@@ -1,0 +1,54 @@
+[
+  {
+    "name": "Barba Architectural Design",
+    "logo": "/images/clients/barba-architectural.webp",
+    "style": "barba",
+    "width": 1500,
+    "height": 443
+  },
+  {
+    "name": "Bellard Brothers",
+    "logo": "/images/clients/bellard-brothers.png",
+    "style": "light-mark",
+    "width": 701,
+    "height": 562
+  },
+  {
+    "name": "Goldin Luxury",
+    "wordmark": "Goldin Luxury",
+    "style": "goldin"
+  },
+  {
+    "name": "Delrose Design Group",
+    "logo": "/images/clients/delrose-design-group.png",
+    "style": "delrose",
+    "width": 190,
+    "height": 72
+  },
+  {
+    "name": "Laura Grollmus Design",
+    "logo": "/images/clients/laura-grollmus-design.jpg",
+    "style": "laura",
+    "width": 2560,
+    "height": 2000
+  },
+  {
+    "name": "Long Island Building Systems",
+    "logo": "/images/clients/long-island-building-systems.png",
+    "style": "libs",
+    "width": 488,
+    "height": 140
+  },
+  {
+    "name": "Nite-Lite Landscape Lighting",
+    "logo": "/images/clients/nite-lite-landscape-lighting.webp",
+    "style": "light-mark",
+    "width": 1401,
+    "height": 349
+  },
+  {
+    "name": "Peterson & Ramlowtan",
+    "wordmark": "P&R Builders",
+    "style": "pr"
+  }
+]
