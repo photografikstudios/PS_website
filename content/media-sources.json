@@ -1199,7 +1199,107 @@
       "id": "agent-on-camera-hero",
       "source": "/media/photografik-2027/jb-andreassi.mp4",
       "loopOnly": true,
-      "_note": "October 17 targeted front-end polish: 20\u201329 seconds of the already rights-approved Agent Engine on-camera expertise clip. Silent 1280x720 H.264 excerpt, portrait at right over blurred fill of the same footage. Existing burned captions retained; the complete playable original is unchanged. Poster at excerpt 1 second; phone crop from x=640."
+      "_note": "October 17 targeted front-end polish: 20–29 seconds of the already rights-approved Agent Engine on-camera expertise clip. Silent 1280x720 H.264 excerpt, portrait at right over blurred fill of the same footage. Existing burned captions retained; the complete playable original is unchanged. Poster at excerpt 1 second; phone crop from x=640."
+    },
+    {
+      "id": "bpe-ironworks-structural-steel-reel",
+      "drive": "1luQnSwI2IKX-F25NkZNw2yAuY2hGOODa",
+      "posterAt": 28.5,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "evolution-unlimited-backyard-construction-reel",
+      "drive": "1TMEMEflhVdiK9OAFgqmLv7nrdUW33-4t",
+      "posterAt": 10,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "evolution-unlimited-landscape-maintenance-reel",
+      "drive": "1PrWUWrSsiY7wuTWmkgmWaCpZFUZIXevW",
+      "posterAt": 8,
+      "loop": [
+        0,
+        20
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "evolution-unlimited-landscape-project-overview",
+      "drive": "1WviIRA6Rh9QVzMVrr8LKV7GUoG1XFzZg",
+      "posterAt": 4,
+      "loop": [
+        0,
+        20
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "evolution-unlimited-landscape-walkthrough",
+      "drive": "1jzBsOaVAWHnxZk9CPkc3Cv9efd66nlzO",
+      "posterAt": 17,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "evolution-unlimited-lawn-aeration-film",
+      "drive": "1sSNfqZ7p81sG-by5YUQ5M1hIgwJczMYB",
+      "posterAt": 10,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "evolution-unlimited-site-preparation-reel",
+      "drive": "1hry-hHTrjsph6WbP7VvN5tlCUSgMXPJs",
+      "posterAt": 12,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "nitelite-landscapes-landscape-lighting-film",
+      "drive": "1w_lIMlb4BFzdUQybk-AkiL78jVyTFaVp",
+      "posterAt": 61,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "nitelite-landscapes-lighting-reel",
+      "drive": "1VxqzpZn55Ysly9Yv_q7tsbxLh1L4WFVV",
+      "posterAt": 48,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
+    },
+    {
+      "id": "goldin-luxury-residence-film",
+      "drive": "1G6xjiz6VzkLTy2D67Lm2PFGnYUY33ghm",
+      "posterAt": 12,
+      "loop": [
+        0,
+        25
+      ],
+      "_note": "Added from the dashboard (Add film from Google Drive), 2026-10-19. The original stays in Drive."
     }
   ],
   "docs": [

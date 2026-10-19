@@ -25,5 +25,13 @@
   "capturedYear": null,
   "sortPriority": 0,
   "clientId": "bpe-ironworks",
-  "order": 210
+  "order": 210,
+  "libraryFolder": "BPE Ironworks",
+  "tags": [
+    "construction",
+    "steel",
+    "team",
+    "film"
+  ],
+  "_librarySourceDrive": "1-oO1sglwoFz8sAj0M0zZyS7YYg-C4Ab8"
 }

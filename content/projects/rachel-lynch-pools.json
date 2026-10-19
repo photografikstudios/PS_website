@@ -20,5 +20,9 @@
   "path": "/commercial/rachel-lynch-pools",
   "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James.",
   "published": true,
-  "order": 80
+  "order": 80,
+  "libraryFolder": "Rachel Lynch Pools",
+  "tags": [
+    "photography"
+  ]
 }

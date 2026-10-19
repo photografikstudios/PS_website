@@ -44,6 +44,9 @@
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: 96px; }
 body { margin: 0; padding-bottom: 34px; background: var(--ivory); color: var(--charcoal); font: 400 17px/1.65 var(--sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 img, video { display: block; max-width: 100%; }
+/* Oct 19: images now carry their real width and height (layout stability). Without this, any image whose own rule
+   sets only a width took the attribute height (e.g. 415x1334 boxes). Rules that set a height still win. */
+img { height: auto; }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 ::selection { background: var(--rust); color: #fff; }
 :focus-visible { outline: 2px solid var(--rust); outline-offset: 3px; }
@@ -341,7 +344,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 @media (max-width: 700px) { .closing--bleed .closing__media::after { background: rgba(21,24,22,.7); } }
 .closing--bleed .closing__inner { padding-block: clamp(120px, 16vw, 220px); }
 .block-fig { margin: 0 0 20px; }
-.block-fig img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: var(--pos, 50% 50%); display: block; background: var(--ivory-3); }
+.block-fig img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; object-position: var(--pos, 50% 50%); display: block; background: var(--ivory-3); }
 .steps .block-fig { margin-bottom: 22px; }
 .story-guide__fig--person img { object-position: 50% 28%; }
 .agency-fig { margin-top: 28px; }

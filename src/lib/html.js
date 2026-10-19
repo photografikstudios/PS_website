@@ -21,7 +21,7 @@ export const HERO_STILL_MEDIA = '(max-width: 700px) and (max-aspect-ratio: 3/5)'
 export const heroPhoneStill = (id) => `/images/hero/${esc(id)}-phone.webp`;
 
 export function createContext({ site, reviewMode, onVercel, heroStills = {}, imageInfo = () => null }) {
-  const isLocal = (p) => typeof p === 'string' && p.startsWith('/v/');
+  const isLocal = (p) => typeof p === 'string' && (p.startsWith('/v/') || p.startsWith('/images/library/'));
   const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) || isLocal(p) ? p : site.media.base + p);
 
   // Vercel Image Optimization for remote sources. Locally we fall back to the original URL.
@@ -36,12 +36,12 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {}, ima
   const imageDimensions = (p) => { const d = imageInfo(p); return d ? attrs({ width: d.width, height: d.height }) : ''; };
 
   function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height, thumb, focal } = {}) {
-    // Build-encoded stills (/v/<id>.webp, 2000px) ship a 900px <id>-sm.webp; let phones pick the small one.
+    // Build-encoded stills ship a smaller copy; use actual widths, including portrait photos.
     const local = isLocal(p) && thumb;
     const size = imageInfo(p);
     width ??= size?.width; height ??= size?.height;
     return `<img ${attrs({
-      src: local ? thumb : optimized(p, 1080), srcset: local ? `${thumb} 900w, ${p} 2000w` : srcset(p, widths), sizes: local || (onVercel && !isLocal(p)) ? sizes : null, alt,
+      src: local ? thumb : optimized(p, 1080), srcset: local ? `${thumb} ${imageInfo(thumb)?.width || 900}w, ${p} ${size?.width || 2000}w` : srcset(p, widths), sizes: local || (onVercel && !isLocal(p)) ? sizes : null, alt,
       class: cls || null, loading: eager ? 'eager' : 'lazy', decoding: 'async',
       fetchpriority: eager ? 'high' : null, width, height, style: focalPosition(focal) ? `object-position: ${focalPosition(focal)}` : null,
     })}>`;

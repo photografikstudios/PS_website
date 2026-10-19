@@ -1,0 +1,27 @@
+{
+  "slug": "evolution-unlimited",
+  "title": "Evolution Unlimited",
+  "shortTitle": "Evolution Unlimited",
+  "client": "Evolution Unlimited",
+  "category": "commercial",
+  "urlCategory": "commercial",
+  "services": [
+    "photography",
+    "video"
+  ],
+  "summary": "Photography and film for Evolution Unlimited.",
+  "story": "On-site photography and short films showing the Evolution Unlimited team, its equipment and its landscape work.",
+  "hero": "/images/library/evolution-unlimited/evolution-unlimited-lawn-care-professional-treating-a-lawn-01.webp",
+  "heroAlt": "Lawn care professional treating a lawn \u2014 Evolution Unlimited.",
+  "heroOrientation": "horizontal",
+  "rights": "approved",
+  "rightsNote": "James supplied this client media and requested adding it to the preview on October 19, 2026.",
+  "published": true,
+  "order": 290,
+  "segments": [],
+  "blurbApproved": false,
+  "libraryFolder": "Evolution Unlimited",
+  "tags": [
+    "photography"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "slug": "bellard-brothers",
+  "title": "Bellard Brothers",
+  "shortTitle": "Bellard Brothers",
+  "client": "Bellard Brothers",
+  "category": "architecture-design",
+  "urlCategory": "architecture-design",
+  "services": [
+    "photography"
+  ],
+  "summary": "Photography for Bellard Brothers.",
+  "story": "A collection of project photography for Bellard Brothers, documenting the spaces and details shown here.",
+  "hero": "/images/library/bellard-brothers/bellard-brothers-front-lawn-and-driveway-02.webp",
+  "heroAlt": "Front lawn and driveway \u2014 Bellard Brothers.",
+  "heroOrientation": "horizontal",
+  "rights": "approved",
+  "rightsNote": "James supplied this client media and requested adding it to the preview on October 19, 2026.",
+  "published": true,
+  "order": 210,
+  "segments": [
+    "builder"
+  ],
+  "segmentSource": "Owner supplied as builder/architectural media, October 19, 2026; existing client folder naming identifies the discipline.",
+  "libraryFolder": "Bellard Brothers",
+  "tags": [
+    "photography"
+  ]
+}

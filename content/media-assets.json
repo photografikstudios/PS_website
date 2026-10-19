@@ -2,9 +2,9 @@
   "_readme": "Web-ready media committed under static/v/ (encoded from the Drive originals by scripts/media.mjs). The build reuses these instead of downloading from Drive and re-encoding. Check with npm run check:media.",
   "recordedFrom": "static/v (Session 59: 252 existing pins verified unchanged; 52 Sunday-pack WebP files and manifest.json added)",
   "recordedAt": "2026-10-12",
-  "count": 370,
-  "totalBytes": 560100412,
-  "aggregate": "b870635e30cedcbd5f05d120d53035d552a9e9141fb4fb5a7382fffdb02f1d4b",
+  "count": 400,
+  "totalBytes": 678908825,
+  "aggregate": "b2e68358070e619d718ac6da21a30ae0a35bf96446ff9e0245ced2f2431d06c7",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1223,8 +1223,8 @@
       "sha256": "9a8cb2c06a0b3d321755762777a7be7087aa02574ffb639694f1401187b048ac"
     },
     "/v/manifest.json": {
-      "bytes": 14230,
-      "sha256": "a7d3a2d04ca65cca98521a8e8801180e42d6d7bc3c9b03fa8541f28aad0ab07c"
+      "bytes": 15344,
+      "sha256": "b64a78492ad020f0c5194e70745f5d859dd0d2290d896fc40769f3f66311c71a"
     },
     "/v/cs-podcast-ep23-short.mp4": {
       "bytes": 1646300,
@@ -1485,6 +1485,126 @@
     "/v/agent-on-camera-hero.webp": {
       "bytes": 23996,
       "sha256": "2dda26be26a52a7876770e467d97dae129be0d6d923b094dced8bca7be55c460"
+    },
+    "/v/bpe-ironworks-structural-steel-reel.mp4": {
+      "bytes": 8665028,
+      "sha256": "5023c88902b773b580f839428352614166a78fba739a0b1be18f5b77a80bf0c0"
+    },
+    "/v/bpe-ironworks-structural-steel-reel.webp": {
+      "bytes": 125216,
+      "sha256": "acb4a0d2131915d2bd45a44e941449dd59f96f808e7503c1a674d9fb4d4b1221"
+    },
+    "/v/bpe-ironworks-structural-steel-reel-loop.mp4": {
+      "bytes": 3672500,
+      "sha256": "ca7ffcf5372dbb625f7e20bb0aefcc5b9b3054a0549955e265f35f0ad4939925"
+    },
+    "/v/evolution-unlimited-backyard-construction-reel.mp4": {
+      "bytes": 7154970,
+      "sha256": "cbcac35f486dda84d2dc0be1cb1891df6cf2ff28064cf34caa7f7b189d8b6e1f"
+    },
+    "/v/evolution-unlimited-backyard-construction-reel.webp": {
+      "bytes": 43542,
+      "sha256": "cfa7e61f120643744bb1045419b952fe0565d69d5ee1cc56eae9fb37cc44ee3b"
+    },
+    "/v/evolution-unlimited-backyard-construction-reel-loop.mp4": {
+      "bytes": 3795172,
+      "sha256": "09cc32619936edd5493a88fd57744d65294e1550959dc2f0524e65ba4998e007"
+    },
+    "/v/evolution-unlimited-landscape-maintenance-reel.mp4": {
+      "bytes": 6085125,
+      "sha256": "e063b23336827b5544cbee5d4520955b5de7f3c80b2f01ad598e9973bd9da0f9"
+    },
+    "/v/evolution-unlimited-landscape-maintenance-reel.webp": {
+      "bytes": 54526,
+      "sha256": "d609dcbe5d878ef742428b06079bd70af8c8f0f07d551141a44152b8e29fc2c9"
+    },
+    "/v/evolution-unlimited-landscape-maintenance-reel-loop.mp4": {
+      "bytes": 3258081,
+      "sha256": "1f88ead5190a42f67351e3b3d04760a47f598bad6b098a4317516d3c1e21f6c6"
+    },
+    "/v/evolution-unlimited-landscape-project-overview.mp4": {
+      "bytes": 4901645,
+      "sha256": "6a99e101fc9beb87d6f52ad5aa350c279693f76269fced09060b43702e75b845"
+    },
+    "/v/evolution-unlimited-landscape-project-overview.webp": {
+      "bytes": 134468,
+      "sha256": "7387f4ca12c5252fcb955e19a391d6ca4a2a597d32330b6eeb595ee1424b0f1c"
+    },
+    "/v/evolution-unlimited-landscape-project-overview-loop.mp4": {
+      "bytes": 2705729,
+      "sha256": "8407a40e20c3c5ba3e831106d9b461dc1997d826a999a0b8031dfb4000b2b16a"
+    },
+    "/v/evolution-unlimited-landscape-walkthrough.mp4": {
+      "bytes": 5413485,
+      "sha256": "191f0c5b72d44ea5c5fba818ca7a833b9121ab5cecc836044600026471ceb43e"
+    },
+    "/v/evolution-unlimited-landscape-walkthrough.webp": {
+      "bytes": 84746,
+      "sha256": "d129e8bbd581deae30ed31cba5ccbf9deb6074d263fc8ddc88ae15e4c3fcc0f2"
+    },
+    "/v/evolution-unlimited-landscape-walkthrough-loop.mp4": {
+      "bytes": 1632630,
+      "sha256": "b7f2f3ab2075db347ccb0e7bded2c2423ac9e5a452cc08078e886a5e7c8a648f"
+    },
+    "/v/evolution-unlimited-lawn-aeration-film.mp4": {
+      "bytes": 6908342,
+      "sha256": "dbbc2050420f1ea97cd519a069213090dacb9cb3bfa6c6c150beeb63a3ec5801"
+    },
+    "/v/evolution-unlimited-lawn-aeration-film.webp": {
+      "bytes": 62984,
+      "sha256": "a3750407bfae161cfd1b86355776d4ef631612dfe8e1c4c11d115d42dcd47325"
+    },
+    "/v/evolution-unlimited-lawn-aeration-film-loop.mp4": {
+      "bytes": 4007972,
+      "sha256": "57051395e8e1abc238a3c5dce6f02a985788aca75209920af2f3a47b363832e3"
+    },
+    "/v/evolution-unlimited-site-preparation-reel.mp4": {
+      "bytes": 8395996,
+      "sha256": "f963df44f8cd8994a00d81d3f8c076b9cde08caf5a3e840e27e7e0163d75518b"
+    },
+    "/v/evolution-unlimited-site-preparation-reel.webp": {
+      "bytes": 112216,
+      "sha256": "2b7382c10c4b0e0bff5b9fb4b0dd438ff74d5c2c73ca4c65cacbff603bd444e5"
+    },
+    "/v/evolution-unlimited-site-preparation-reel-loop.mp4": {
+      "bytes": 4016194,
+      "sha256": "090951d1e7f599419fcd55356794ce19f905a1aa658b0bcffe546b84aafcd00c"
+    },
+    "/v/nitelite-landscapes-landscape-lighting-film.mp4": {
+      "bytes": 11799984,
+      "sha256": "b649387e7f2b0be95939cd35b2756d9c2abeb6f168a10657a6643a592a3f3fd2"
+    },
+    "/v/nitelite-landscapes-landscape-lighting-film.webp": {
+      "bytes": 65986,
+      "sha256": "b6de5ea45fe196854db714ecb2c1f64749078f7eaf69ba1ae6465657ea907bdb"
+    },
+    "/v/nitelite-landscapes-landscape-lighting-film-loop.mp4": {
+      "bytes": 1900794,
+      "sha256": "ed9007ff77059ba980ed1e68add030a92ba4470b74668a0d03785715898e617b"
+    },
+    "/v/nitelite-landscapes-lighting-reel.mp4": {
+      "bytes": 8737661,
+      "sha256": "1ccc23495a17a20962d98c2bec8c4751cf314b6994981113aeab08acf41d7869"
+    },
+    "/v/nitelite-landscapes-lighting-reel.webp": {
+      "bytes": 64896,
+      "sha256": "05b828425df91147431d8b75ed09f49fb710871c2cc92cbeeb22685b2cb1284d"
+    },
+    "/v/nitelite-landscapes-lighting-reel-loop.mp4": {
+      "bytes": 1928524,
+      "sha256": "9a288a2e0a53ff3b9788aa28db1bb5d12f359fa0147f190dce127e887da9500f"
+    },
+    "/v/goldin-luxury-residence-film.mp4": {
+      "bytes": 19004667,
+      "sha256": "b9c9bff59afea7eff1003068572de307e8531369a2d088b7c94d196c479df77d"
+    },
+    "/v/goldin-luxury-residence-film.webp": {
+      "bytes": 132890,
+      "sha256": "89d80b06547880fe2b81b43ae8f06f5f805df1f616f364f12ea95ee67a7f13d1"
+    },
+    "/v/goldin-luxury-residence-film-loop.mp4": {
+      "bytes": 3941330,
+      "sha256": "47c703a28768adf20c98ee685168bf3c25cab95f5dff15fb7989563c9084a6ad"
     }
   }
 }

@@ -9,6 +9,8 @@ const STREET = /\b\d{1,6}[\s_-]+(?:[a-z]+[\s_-]+){0,3}(?:lane|ln|road|rd|street|
 // Camera and phone file names (PS_00314, DJI_0042, IMG_1234, DSC01234, _MG_5678…) must never reach the public site.
 const CAMERA = /(?:^|[^a-z0-9])(?:ps|dji|img|dsc[fn]?|_?mg|mvi|gopr|pxl|gh0?\d)[_-]?\d{4,}/i;
 export const looksLikeCameraName = (path) => typeof path === 'string' && CAMERA.test('/' + path.split('/').pop().replace(/\.[a-z0-9]+$/i, ''));
+// Library folders and tags: a street pattern only (a tag such as "360 tour" is fine).
+export const looksLikeStreet = (s) => typeof s === 'string' && STREET.test(s);
 export const looksLikeAddress = (s) => typeof s === 'string' && (STREET.test(s.replace(/\.[a-z0-9]+$/i, '')) || /^\s*\d{1,6}\s+\S/.test(s));
 
 export function checkContent({ work, fileExists, imageInfo = () => null, pageText = null, testimonials = null, faqs = null }) {
@@ -34,6 +36,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
     if (!p.story) say(live && isNew, `${who}: add the story / goal paragraph`);
     if (p.rights !== 'approved') say(live, `${who}: rights are not marked Approved. Keep it as a draft until the client or owner has agreed to the photos being shown`);
     if (looksLikeAddress(p.location)) say(live, `${who}: “Town or area” looks like a street address. Use the town only`);
+    if (looksLikeStreet(p.libraryFolder) || (Array.isArray(p.tags) && p.tags.some(looksLikeStreet))) say(live, `${who}: a library folder or tag looks like a street address. Use the client, project or town`);
     if (looksLikeAddress(p.title) || looksLikeAddress(p.shortTitle)) say(live, `${who}: the title looks like a street address. Use the client or a neutral name`);
     if (p.hero) {
       if (!p.heroAlt) say(live, `${who}: describe the hero image (alt text)`);
@@ -64,6 +67,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
     if (m.project && !projectSlugs.has(m.project)) say(live, `“${m.title || m.id}”: its project “${m.project}” does not exist`);
     if (m.type === 'image' && m.src && m.src.startsWith('/images/') && !fileExists(m.src)) say(live, `Photo “${m.title || m.id}”: ${m.src} is missing`);
     if (looksLikeAddress(m.location)) say(live, `“${m.title || m.id}”: “Town or area” looks like a street address`);
+    if (looksLikeStreet(m.libraryFolder) || (Array.isArray(m.tags) && m.tags.some(looksLikeStreet))) say(live, `“${m.title || m.id}”: a library folder or tag looks like a street address. Use the client, project or town`);
     if (m.type === 'image' && looksLikeCameraName(m.src)) say(live, `Photo “${m.title || m.id}”: still has its camera file name (${String(m.src).split('/').pop()}). Replace the photo so the dashboard renames it`);
   }
 

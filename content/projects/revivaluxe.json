@@ -17,7 +17,7 @@
   "rightsNote": "Approved for display Sept 23 2026.",
   "heroOrientation": "vertical",
   "path": "/commercial/revivaluxe",
-  "goal": "Open RevivaLuxe’s new storefront with a full set of media, ready to launch on day one.",
+  "goal": "Open RevivaLuxe\u2019s new storefront with a full set of media, ready to launch on day one.",
   "blurbApproved": true,
   "_blurb": "James, Sep 28 2026 (chat): goal and scope given by James; wording written from his description.",
   "_films": "Sep 28 2026: James approved silent visual use of the 33 s brand film. Only the silent export /v/revivaluxe-silent-loop.mp4 (audio stream physically removed) is shown, as a muted loop in the Commercial case study and on this project page. The audio-bearing revivaluxe-film and the 75 s biz-revivaluxe-tour stay withheld. Delivered and approach text come from James (Sep 28 chat); only the silent loop is shown.",
@@ -31,5 +31,9 @@
   ],
   "published": true,
   "order": 70,
-  "serviceDetails": "Team headshots, space and action photography, a service film, and owner-on-camera footage."
+  "serviceDetails": "Team headshots, space and action photography, a service film, and owner-on-camera footage.",
+  "libraryFolder": "RevivaLuxe",
+  "tags": [
+    "photography"
+  ]
 }

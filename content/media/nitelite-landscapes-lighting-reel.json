@@ -1,0 +1,43 @@
+{
+  "id": "nitelite-landscapes-lighting-reel",
+  "type": "video",
+  "title": "NiteLite Landscapes: lighting reel",
+  "project": "nitelite-landscapes",
+  "client": "NiteLite Landscapes",
+  "category": "architecture-design",
+  "service": [
+    "video"
+  ],
+  "drive": "https://drive.google.com/file/d/1VxqzpZn55Ysly9Yv_q7tsbxLh1L4WFVV/view",
+  "orientation": "vertical",
+  "rights": "approved",
+  "published": true,
+  "featured": false,
+  "dialogue": true,
+  "captions": "/captions/nitelite-landscapes-lighting-reel.vtt",
+  "captionsStatus": "machine-draft",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 2409,
+  "libraryFolder": "NiteLite Landscapes",
+  "tags": [
+    "film",
+    "lighting",
+    "landscape",
+    "night",
+    "reel"
+  ],
+  "posterTime": 48,
+  "import": {
+    "state": "ready",
+    "at": "2026-10-19T13:33:31.224Z",
+    "message": "Imported from Google Drive (1080\u00d71920, 60 s). The original stays in Drive."
+  },
+  "_rights": "Owner supplied and requested for the preview, October19,2026. Original stays in the client folder in Google Drive. Speech captions require owner proofreading before production.",
+  "src": "/v/nitelite-landscapes-lighting-reel.mp4",
+  "poster": "/v/nitelite-landscapes-lighting-reel.webp",
+  "duration": 60,
+  "source": "drive",
+  "transcript": "Hey guys, welcome to the Stone House in Roslyn, New York, the coolest butler's house you'll ever going to see."
+}

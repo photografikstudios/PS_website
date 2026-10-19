@@ -1,0 +1,28 @@
+{
+  "slug": "long-island-building-systems",
+  "title": "Long Island Building Systems",
+  "shortTitle": "Long Island Building Systems",
+  "client": "Long Island Building Systems",
+  "category": "architecture-design",
+  "urlCategory": "architecture-design",
+  "services": [
+    "photography"
+  ],
+  "summary": "Photography for Long Island Building Systems.",
+  "story": "A collection of project photography for Long Island Building Systems, documenting the spaces and details shown here.",
+  "hero": "/images/library/long-island-building-systems/long-island-building-systems-aerial-fire-station-and-vehicle-bays-03.webp",
+  "heroAlt": "Aerial fire station and vehicle bays \u2014 Long Island Building Systems.",
+  "heroOrientation": "horizontal",
+  "rights": "approved",
+  "rightsNote": "James supplied this client media and requested adding it to the preview on October 19, 2026.",
+  "published": true,
+  "order": 260,
+  "segments": [
+    "builder"
+  ],
+  "segmentSource": "Owner supplied as builder/architectural media, October 19, 2026; existing client folder naming identifies the discipline.",
+  "libraryFolder": "Long Island Building Systems",
+  "tags": [
+    "photography"
+  ]
+}

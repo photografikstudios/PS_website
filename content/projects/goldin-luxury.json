@@ -1,0 +1,29 @@
+{
+  "slug": "goldin-luxury",
+  "title": "Goldin Luxury",
+  "shortTitle": "Goldin Luxury",
+  "client": "Goldin Luxury",
+  "category": "architecture-design",
+  "urlCategory": "architecture-design",
+  "services": [
+    "photography",
+    "video"
+  ],
+  "summary": "Photography and film for Goldin Luxury.",
+  "story": "A collection of project photography for Goldin Luxury, documenting the spaces and details shown here.",
+  "hero": "/images/library/goldin-luxury/goldin-luxury-rear-elevation-and-swimming-pool-10.webp",
+  "heroAlt": "Rear elevation and swimming pool \u2014 Goldin Luxury.",
+  "heroOrientation": "horizontal",
+  "rights": "approved",
+  "rightsNote": "James supplied this client media and requested adding it to the preview on October 19, 2026.",
+  "published": true,
+  "order": 230,
+  "segments": [
+    "builder"
+  ],
+  "segmentSource": "Owner supplied as builder/architectural media, October 19, 2026; existing client folder naming identifies the discipline.",
+  "libraryFolder": "Goldin Luxury",
+  "tags": [
+    "photography"
+  ]
+}

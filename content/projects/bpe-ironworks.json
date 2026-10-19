@@ -20,5 +20,9 @@
   "path": "/commercial/bpe-ironworks",
   "_readme": "One client per project (clientId). Services are derived from the media on the page until James approves wording; summary/story/goal stay null until the client blurb is approved with James.",
   "published": true,
-  "order": 110
+  "order": 110,
+  "libraryFolder": "BPE Ironworks",
+  "tags": [
+    "photography"
+  ]
 }

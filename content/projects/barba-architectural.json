@@ -31,5 +31,9 @@
   "services": [
     "photography"
   ],
-  "category": "architecture-design"
+  "category": "architecture-design",
+  "libraryFolder": "Barba Architectural",
+  "tags": [
+    "photography"
+  ]
 }

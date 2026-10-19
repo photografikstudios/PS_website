@@ -462,27 +462,77 @@
     },
   });
 
+  // Library organization is metadata only: never move a file or change publication/placement.
+  function tagValues(v) { var a = v && v.toJS ? v.toJS() : v; return Array.isArray(a) ? a.filter(function (t) { return typeof t === 'string'; }) : []; }
+  function folderValue(m) { return typeof m.libraryFolder === 'string' ? m.libraryFolder.trim() : ''; }
+  function uniqueWords(values) { var seen = Object.create(null); return values.filter(function (v) { var k = v.toLowerCase(); if (seen[k]) return false; seen[k] = true; return true; }).sort(function (a, b) { return a.localeCompare(b); }); }
+  var FolderControl = createClass({
+    isValid: function () { return !this.props.value || (typeof this.props.value === 'string' && this.props.value.length <= 80) ? true : { error: { type: 'custom', message: 'Keep the folder name to 80 characters.' } }; },
+    render: function () { var p = this.props; var id = p.forID; return h('div', { className: 'pgk-organization' },
+      h('input', { id: id, type: 'text', list: id + '-folders', value: p.value || '', maxLength: 80, placeholder: 'Choose a folder or type a new name', onChange: function (e) { p.onChange(e.target.value); }, onBlur: function (e) { if (e.target.value !== e.target.value.trim()) p.onChange(e.target.value.trim()); }, 'aria-label': 'Library folder' }),
+      h('datalist', { id: id + '-folders' }, tagValues(p.field.get('options')).map(function (f) { return h('option', { key: f, value: f }); })),
+      h('p', {}, 'Leave blank for No folder. Use client or project names; avoid street addresses.'));
+    },
+  });
+  CMS.registerWidget('pgk-folder', FolderControl);
+  var TagsControl = createClass({
+    getInitialState: function () { return { draft: '', error: '' }; },
+    add: function () {
+      var values = tagValues(this.props.value); var next = values.slice(); var typed = this.state.draft.split(',').map(function (t) { return t.trim(); }).filter(Boolean);
+      if (!typed.length) return;
+      if (typed.some(function (t) { return t.length > 40; })) { this.setState({ error: 'Keep each tag to 40 characters.' }); return; }
+      // Reuse an existing tag's spelling ("Pool" typed when "pool" exists), so the library and its filters show one tag.
+      var known = tagValues(this.props.field.get('options'));
+      typed.forEach(function (t) { var same = known.filter(function (k) { return k.toLowerCase() === t.toLowerCase(); })[0]; t = same || t; if (!next.some(function (v) { return v.toLowerCase() === t.toLowerCase(); })) next.push(t); });
+      if (next.length > 20) { this.setState({ error: 'Use up to 20 tags per item.' }); return; }
+      this.props.onChange(next); this.setState({ draft: '', error: '' });
+    },
+    isValid: function () { return this.state.error ? { error: { type: 'custom', message: this.state.error } } : true; },
+    render: function () { var self = this; var p = this.props; var values = tagValues(p.value); return h('div', { className: 'pgk-organization' },
+      h('div', { className: 'pgk-tags' }, values.map(function (t, i) { return h('button', { key: t + i, type: 'button', className: 'pgk-btn pgk-btn--quiet', 'aria-label': 'Remove tag ' + t, onClick: function () { p.onChange(values.filter(function (_, n) { return n !== i; })); self.setState({ error: '' }); } }, t + ' ×'); })),
+      h('input', { id: p.forID, type: 'text', value: this.state.draft, list: p.forID + '-tags', placeholder: 'e.g. kitchen, exterior, pool', 'aria-label': 'Add tags', onChange: function (e) { self.setState({ draft: e.target.value, error: '' }); }, onBlur: this.add, onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); self.add(); } } }),
+      h('datalist', { id: p.forID + '-tags' }, tagValues(p.field.get('options')).map(function (t) { return h('option', { key: t, value: t }); })),
+      h('button', { type: 'button', className: 'pgk-btn', onClick: this.add }, 'Add tag'),
+      this.state.error ? h('p', { className: 'pgk-msg', role: 'alert' }, this.state.error) : null);
+    },
+  });
+  CMS.registerWidget('pgk-tags', TagsControl);
+  function organizationMatches(m, st) {
+    return (!st.folder || (st.folder === 'none' ? !folderValue(m) : ('name:' + folderValue(m)).toLowerCase() === st.folder.toLowerCase())) && (!st.tag || tagValues(m.tags).some(function (t) { return t.toLowerCase() === st.tag.toLowerCase(); }));
+  }
+  function organizationText(m) { return [folderValue(m), tagValues(m.tags).join(' ')].join(' '); }
+  function OrganizationFilters(p) {
+    var folders = uniqueWords(p.pool.map(folderValue).filter(Boolean)); var tags = uniqueWords([].concat.apply([], p.pool.map(function (m) { return tagValues(m.tags); })));
+    return h('div', { className: 'pgk-library-filters' },
+      h('label', {}, 'Folder ', h('select', { 'aria-label': 'Folder', value: p.state.folder, onChange: function (e) { p.change({ folder: e.target.value }); } }, h('option', { value: '' }, 'All folders'), h('option', { value: 'none' }, 'No folder'), folders.map(function (f) { return h('option', { key: f, value: 'name:' + f }, f); }))),
+      h('label', {}, 'Tag ', h('select', { 'aria-label': 'Tag', value: p.state.tag, onChange: function (e) { p.change({ tag: e.target.value }); } }, h('option', { value: '' }, 'All tags'), tags.map(function (t) { return h('option', { key: t, value: t }, t); }))),
+      h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { p.change({ folder: '', tag: '', cat: '', kind: '', q: '' }); } }, 'Clear filters'));
+  }
+
   // ---------- Picker: choose photos that are already on the site ----------
   // For adding existing site photos to a project or article without uploading them again. Multi-select in galleries.
   var Picker = createClass({
-    getInitialState: function () { return { q: '', chosen: {} }; },
+    getInitialState: function () { return { q: '', cat: '', folder: '', tag: '', chosen: {} }; },
     componentDidMount: function () { if (this.search) this.search.focus(); },
     toggle: function (src) { var c = Object.assign({}, this.state.chosen); if (c[src]) delete c[src]; else { if (!this.props.multiple) c = {}; c[src] = true; } this.setState({ chosen: c }); },
     render: function () {
       var self = this; var q = this.state.q.toLowerCase();
-      var items = siteThumbs.pick.filter(function (x) { return !q || (x.label + ' ' + x.alt + ' ' + x.cat).toLowerCase().indexOf(q) >= 0; });
+      var items = siteThumbs.pick.filter(function (x) { return organizationMatches(x, self.state) && (!self.state.cat || x.cat === self.state.cat) && (!q || (x.label + ' ' + x.alt + ' ' + x.cat + ' ' + organizationText(x)).toLowerCase().indexOf(q) >= 0); });
       var n = Object.keys(this.state.chosen).length;
       return h(Modal, { label: 'Choose photos already on the site', onClose: this.props.onClose },
         h('div', { className: 'pgk-modal__inner' },
           h('div', { className: 'pgk-modal__head' },
-            h('input', { type: 'search', placeholder: 'Search the site’s photos', value: this.state.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search photos' }),
+            h('input', { type: 'search', placeholder: 'Search names, folders, tags or descriptions', value: this.state.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search photos' }),
+            h('select', { 'aria-label': 'Service', value: this.state.cat, onChange: function (e) { self.setState({ cat: e.target.value }); } }, h('option', { value: '' }, 'Every service'), (window.PHOTOGRAFIK_WORK_CATEGORIES || []).map(function (c) { return h('option', { key: c.value, value: c.value }, c.label); })),
             h('button', { type: 'button', className: 'pgk-btn', disabled: !n, onClick: function () { self.props.onPick(siteThumbs.pick.filter(function (x) { return self.state.chosen[x.src]; })); } }, n ? 'Add ' + n + (n === 1 ? ' photo' : ' photos') : 'Choose photos'),
             h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.props.onClose }, 'Cancel')),
+          h(OrganizationFilters, { pool: siteThumbs.pick, state: this.state, change: this.setState.bind(this) }),
+          h('p', { className: 'pgk-modal__count', role: 'status' }, items.length + ' photos. Hidden and shown photos are included. Choose once and reuse the same file.'),
           h('ul', { className: 'pgk-modal__grid' }, items.map(function (x) {
             var on = !!self.state.chosen[x.src];
             return h('li', { key: x.src },
               h('button', { type: 'button', className: 'pgk-pick' + (on ? ' is-on' : ''), 'aria-pressed': on, onClick: function () { self.toggle(x.src); }, title: x.label },
-                h('img', { src: x.thumb, alt: x.alt || x.label, loading: 'lazy' }), h('span', {}, x.label)));
+                h('img', { src: x.thumb, alt: x.alt || x.label, loading: 'lazy' }), h('span', {}, x.label), h('span', { className: 'pgk-pick__meta' }, [x.catLabel, folderValue(x) || 'No folder', tagValues(x.tags).join(', '), x.hidden ? 'Hidden' : 'Shown'].filter(Boolean).join(' · '))));
           }))));
     },
   });
@@ -749,7 +799,7 @@
 
   // Library picker for Page Media: search, type and service filters, previews for photos, films and playing excerpts.
   var LibraryPicker = createClass({
-    getInitialState: function () { return { q: '', kind: '', cat: '', chosen: [] }; },
+    getInitialState: function () { return { q: '', kind: '', cat: '', folder: '', tag: '', chosen: [] }; },
     componentDidMount: function () { if (this.search) this.search.focus(); },
     toggle: function (id) { var c = this.state.chosen.slice(); var i = c.indexOf(id); if (i >= 0) c.splice(i, 1); else { if (!this.props.multiple) c = []; c.push(id); } this.setState({ chosen: c }); },
     render: function () {
@@ -757,23 +807,24 @@
       var pool = MEDIA.slice().sort(function (a, b) { return Number(!!fits(self.props.accepts, b)) - Number(!!fits(self.props.accepts, a)); });
       var kinds = ['photo', 'film', 'loop'].filter(function (k) { return pool.some(function (m) { return m.kind === k; }); });
       var cats = []; pool.forEach(function (m) { if (m.catLabel && cats.indexOf(m.catLabel) < 0) cats.push(m.catLabel); }); cats.sort();
-      var items = pool.filter(function (m) { return (!st.kind || m.kind === st.kind) && (!st.cat || m.catLabel === st.cat) && (!q || (m.title + ' ' + m.alt + ' ' + m.catLabel + ' ' + (m.project || '') + ' ' + m.id).toLowerCase().indexOf(q) >= 0); });
+      var items = pool.filter(function (m) { return organizationMatches(m, st) && (!st.kind || m.kind === st.kind) && (!st.cat || m.catLabel === st.cat) && (!q || (m.title + ' ' + m.alt + ' ' + m.catLabel + ' ' + (m.project || '') + ' ' + m.id + ' ' + organizationText(m)).toLowerCase().indexOf(q) >= 0); });
       var n = st.chosen.length;
       return h(Modal, { label: 'Choose from the library', onClose: this.props.onClose },
         h('div', { className: 'pgk-modal__inner' },
           h('div', { className: 'pgk-modal__head' },
-            h('input', { type: 'search', placeholder: 'Search by name, description or service', value: st.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search the library' }),
+            h('input', { type: 'search', placeholder: 'Search names, folders, tags or descriptions', value: st.q, ref: function (el) { self.search = el; }, onChange: function (e) { self.setState({ q: e.target.value }); }, 'aria-label': 'Search the library' }),
             kinds.length > 1 ? h('select', { value: st.kind, onChange: function (e) { self.setState({ kind: e.target.value }); }, 'aria-label': 'Type' }, h('option', { value: '' }, 'Photos and films'), kinds.map(function (k) { return h('option', { key: k, value: k }, KIND_WORD[k] + 's'); })) : null,
             cats.length > 1 ? h('select', { value: st.cat, onChange: function (e) { self.setState({ cat: e.target.value }); }, 'aria-label': 'Service' }, h('option', { value: '' }, 'Every service'), cats.map(function (c) { return h('option', { key: c, value: c }, c); })) : null,
             h('button', { type: 'button', className: 'pgk-btn', disabled: !n, onClick: function () { self.props.onPick(st.chosen); } }, n ? (self.props.multiple ? 'Add ' + n : 'Use this') : 'Choose'),
             h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: this.props.onClose }, 'Cancel')),
+          h(OrganizationFilters, { pool: pool, state: st, change: this.setState.bind(this) }),
           h('p', { className: 'pgk-modal__count', role: 'status' }, items.length + ' of ' + pool.length + ' library items. Hidden and shown items are included; items unsuitable for this section explain why.'),
           items.length ? h('ul', { className: 'pgk-modal__grid' }, items.map(function (m) {
             var on = st.chosen.indexOf(m.id) >= 0; var reason = notForSection(self.props.accepts, m);
             return h('li', { key: m.id },
               h('button', { type: 'button', className: 'pgk-pick' + (on ? ' is-on' : ''), 'aria-pressed': on, disabled: !!reason, onClick: function () { if (!reason) self.toggle(m.id); }, title: m.title },
                 h(MediaThumb, { item: { media: m.id } }),
-                h('span', {}, m.title), h('span', { className: 'pgk-pick__meta' }, [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.project ? 'from ' + m.project : '', m.hidden ? 'Hidden' : 'Shown', reason].filter(Boolean).join(' · '))));
+                h('span', {}, m.title), h('span', { className: 'pgk-pick__meta' }, [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.project ? 'from ' + m.project : '', folderValue(m) || 'No folder', tagValues(m.tags).join(', '), m.hidden ? 'Hidden' : 'Shown', reason].filter(Boolean).join(' · '))));
           })) : h('p', { className: 'pgk-modal__empty' }, 'Nothing matches. Clear the search or the filters.')));
     },
   });
@@ -1397,6 +1448,7 @@
   widgetCss.textContent = [
     '[aria-label="pgk-section field"] > [class*="ControlTopbar"] { display: none; }',
     '.pgk-section { border-top: 2px solid #c9d7d7; padding: 4px 0; color: #405656; } .pgk-section h2 { margin: 6px 0; font-size: 21px; font-weight: 650; } .pgk-section p:empty { display: none; } .pgk-section p { margin: 0; font-size: 14px; line-height: 1.5; }',
+    '.pgk-organization input { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #c9ced6; border-radius: 5px; font: inherit; } .pgk-organization p { font-size: 13px; color: #5b6472; } .pgk-tags, .pgk-library-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; } .pgk-tags { margin-bottom: 8px; } .pgk-library-filters { padding: 10px 14px; } .pgk-library-filters select { padding: 8px; max-width: 100%; font: inherit; } .pgk-library-filters label { max-width: 100%; }',
     '.pgk-context { border-left: 3px solid #527575; background: #f4f8f7; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; } .pgk-context p { margin: 5px 0; } .pgk-usage { margin: 5px 0 10px; font-size: 13px; } .pgk-note details { margin-top: 12px; } .pgk-note summary { cursor: pointer; } .pgk-note input[type=number] { max-width: 160px; padding: 8px; }',
     '.pgk-thumb { display: block; width: 160px; height: 110px; object-fit: cover; border-radius: 6px; background: #eef0f3; }',
     '.pgk-thumb--empty, .pgk-thumb--missing { display: flex; align-items: center; justify-content: center; padding: 8px; font-size: 12px; line-height: 1.3; color: #5b6472; text-align: center; box-sizing: border-box; }',

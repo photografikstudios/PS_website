@@ -6,6 +6,18 @@ import { start } from './serve.mjs';
 import { loadWork } from '../src/lib/work-load.js';
 const loadWorkRecords = () => loadWork(new URL('..', import.meta.url).pathname);
 
+// Oct 19: this suite serves dist/ as it is and never builds it. A dist/ older than the content or code tests the old
+// site (a stale one reported James's new Barba photo as missing), so say so first instead of failing elsewhere.
+const { statSync, readdirSync } = await import('node:fs');
+const newest = (d) => readdirSync(d, { withFileTypes: true }).reduce((t, e) => Math.max(t, e.isDirectory() ? newest(`${d}/${e.name}`) : statSync(`${d}/${e.name}`).mtimeMs), 0);
+const repo = new URL('..', import.meta.url).pathname;
+let staleDist = null;
+try {
+  const built = statSync(`${repo}dist/index.html`).mtimeMs; const src = Math.max(...['content', 'src', 'static'].map((d) => newest(repo + d)));
+  if (src > built) staleDist = `dist/ was built ${Math.round((src - built) / 1000)} s before the latest change in content/, src/ or static/`;
+} catch { staleDist = 'dist/ has not been built'; }
+if (staleDist) console.log(`\nWARNING  PREREQUISITE: ${staleDist}. Run npm run build, then npm run test:e2e. Results below test the old site.\n`);
+
 const fixture = await readFile(new URL('./fixtures/vertical.webm', import.meta.url));
 const server = await start(0);
 const base = `http://localhost:${server.address().port}`;
@@ -39,6 +51,8 @@ async function check(name, fn) {
   catch (e) { results.push({ name, ok: false, err: e.message.split('\n')[0] }); }
 }
 const assert = (c, m) => { if (!c) throw new Error(m); };
+
+await check('prerequisite: dist/ is built from the current content and code', async () => { assert(!staleDist, `${staleDist}. Run npm run build, then rerun npm run test:e2e.`); });
 
 // ---------- Pricing ----------
 await check('pricing: starting prices shown before entry', async () => {
@@ -923,8 +937,8 @@ await check('home quick tiles use the two owner-selected stills (not video poste
 
 await check('commercial (James Sep 26): value prop after hero, one case study, compact grid of one card per project, dedicated single-client project pages', async () => {
   const work = await loadWorkRecords();
-  const com = work.media.filter((m) => m.category === 'commercial' && m.rights === 'approved');
-  const clients = [...new Set(com.map((m) => m.clientId))];
+  const com = work.media.filter((m) => m.category === 'commercial' && m.rights === 'approved' && m.published !== false);
+  const clients = [...new Set(com.map((m) => m.project))];
   const p = await newPage();
   await p.goto(base + '/commercial');
   // Order: hero, value proposition, case study, then the project grid.
@@ -948,8 +962,8 @@ await check('commercial (James Sep 26): value prop after hero, one case study, c
   for (const c of cards) {
     await p.goto(base + c.href);
     const ids = await p.locator('main [data-id], main img').evaluateAll((els) => els.map((e) => e.dataset?.id || e.getAttribute('src')));
-    const mine = com.filter((m) => m.clientId === c.slug && m.gallery !== false);
-    const others = com.filter((m) => m.clientId !== c.slug);
+    const mine = com.filter((m) => m.project === c.slug && m.gallery !== false);
+    const others = com.filter((m) => m.project !== c.slug);
     for (const m of mine) assert(ids.some((x) => x && (x === m.id || x.includes(m.id) || (m.src && x.includes(m.src)))), `${c.slug} missing ${m.id}`);
     for (const m of others) assert(!ids.some((x) => x && (x === m.id || (m.src && x.includes(m.src)))), `${c.slug} shows other client ${m.id}`);
     const f = await p.locator('.project__facts').textContent();
@@ -1111,14 +1125,28 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
 
 // James, Oct 13 2026 (OWNER_REEL_CAPTIONS): reel captions are approved and must be readable with the sound off. The
 // waterfront Agent on camera reel shows its WebVTT words by default while muted; burned-in reels carry no second track.
-let longFixture = null;
-try { const { execFileSync } = await import('node:child_process'); const f = '/tmp/pgk-reel-12s.webm'; execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc=size=360x640:rate=25', '-t', '12', '-c:v', 'libvpx', '-b:v', '300k', f]); longFixture = await readFile(f); } catch { /* no ffmpeg: the check reports it */ }
+// Oct 19: this stand-in needs ffmpeg with libvpx. Without it the check used to fall back silently to the 4-second shared
+// fixture, which ends before the first spoken words, so it failed as an empty caption cue (Codex, Session 73). A missing
+// or failed prerequisite now fails the check by name, with the fix, and the caption requirement itself is unchanged.
+const REEL_FIXTURE_SECONDS = 12; const FIRST_WORDS_AT = 6.9;
+let longFixture = null; let longFixtureProblem = null;
+try {
+  const { execFileSync } = await import('node:child_process'); const f = '/tmp/pgk-reel-12s.webm';
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc=size=360x640:rate=25', '-t', String(REEL_FIXTURE_SECONDS), '-c:v', 'libvpx', '-b:v', '300k', f], { stdio: ['ignore', 'ignore', 'pipe'] });
+  longFixture = await readFile(f);
+  if (longFixture.length < 10000) { longFixtureProblem = `ffmpeg wrote only ${longFixture.length} bytes to ${f}`; longFixture = null; }
+} catch (e) {
+  longFixtureProblem = e.code === 'ENOENT' ? 'ffmpeg is not on PATH' : `ffmpeg could not make the WebM stand-in (${String(e.stderr || e.message).trim().split('\n')[0]})`;
+}
+const reelFixtureHelp = () => `PREREQUISITE MISSING, not a caption result: ${longFixtureProblem}. The reel caption check needs a ${REEL_FIXTURE_SECONDS}-second WebM stand-in made by ffmpeg with libvpx (spoken captions start at ${FIRST_WORDS_AT} s; the shared fixture is shorter). Install ffmpeg (macOS: brew install ffmpeg) or add it to PATH (check with: ffmpeg -hide_banner -encoders | grep libvpx), then rerun npm run test:e2e.`;
+if (longFixtureProblem) console.log(`\nWARNING  ${reelFixtureHelp()}\n`);
 await check('reels: words show while muted (WebVTT default on Agent on camera; burned-in on the replacement, no doubled track); excerpts advance', async () => {
   for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     const p = await newPage(vp);
     // This Chromium cannot decode the real H.264 reel, and the shared fixture ends before the first spoken words (6.9 s),
     // so the reel is stood in for by a 12-second WebM; the captions file, track and player are the site's own.
-    if (longFixture) await p.route(/agent-property-tour\.mp4/, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: longFixture }));
+    if (!longFixture) { await p.context().close(); throw new Error(reelFixtureHelp()); }
+    await p.route(/agent-property-tour\.mp4/, (r) => r.fulfill({ status: 200, contentType: 'video/webm', body: longFixture }));
     await p.goto(base + '/agent-content');
     const card = p.locator('.ac-example:has([data-id="agent-on-camera"])');
     await card.scrollIntoViewIfNeeded();
@@ -1130,6 +1158,8 @@ await check('reels: words show while muted (WebVTT default on Agent on camera; b
       document.addEventListener('visibilitychange', () => log.push(`hidden=${document.hidden}@${at()}`));
       v.muted = true; await v.play().catch((e) => log.push(`play-rejected:${e.name}`));
       await new Promise((r) => setTimeout(r, 500)); const t0 = v.currentTime;
+      // A stand-in that ends before the first words cannot test captions; say so instead of reporting an empty cue.
+      if (Number.isFinite(v.duration) && v.duration < 7.5) return { fixtureTooShort: v.duration };
       // The first spoken words start at 6.9 s; the test server has no range requests, so let it play there.
       for (let i = 0; i < 200 && !(v.textTracks[0] && v.textTracks[0].activeCues && v.textTracks[0].activeCues.length && v.currentTime > 7.3); i++) await new Promise((r) => setTimeout(r, 100));
       if (!(t0 > 0)) return { muted: v.muted, mode: 'not playing', cue: '', time: t0 };
@@ -1137,6 +1167,7 @@ await check('reels: words show while muted (WebVTT default on Agent on camera; b
       const cues = t && t.cues ? t.cues.length : null;
       return { muted: v.muted, mode: t && t.mode, cue: t && t.activeCues && t.activeCues[0] ? t.activeCues[0].text : '', played: t0, controls: v.controls, end: at(), paused: v.paused, ready: v.readyState, net: v.networkState, cues, log };
     });
+    assert(!st.fixtureTooShort, `${vp.width}: PREREQUISITE, not a caption result: the reel stand-in is ${st.fixtureTooShort} s long but the first spoken words start at ${FIRST_WORDS_AT} s. Check that the ffmpeg stand-in route matched the reel's file name.`);
     assert(st.muted && st.played > 0 && st.mode === 'showing' && /part of the story/.test(st.cue) && st.controls, `${vp.width}: muted words ${JSON.stringify(st)}`);
     await p.goto(base + '/creator-studios/sessions');
     const rep = p.locator('.card:has([data-id="cs-podcast-ep23-short"])');
@@ -1228,6 +1259,26 @@ await check('RevivaLuxe: silent film loop only, copy matches visible media', asy
 });
 
 // James, Sep 28 2026: galleries across the site show the media only: no captions, no piece counts, plain Load more.
+// Claude review, Oct 19: images carry their real width and height since 245377c. Any image whose own rule set only a
+// width then took the attribute height (Real Estate 415x1334, Creator Studios 350x3000, every project hero). No image
+// box may keep its height attribute while it is drawn narrower than its width attribute.
+await check('images keep their shape: no box takes the height attribute at a smaller width (1440 and 390)', async () => {
+  const paths = ['/', '/real-estate', '/commercial', '/creator-studios', '/agent-content', '/architecture-design', '/commercial/torella-pools', '/architecture-design/peterson-ramlowtan', '/real-estate/lauryn-koke-daniel-gale-sothebys', '/field-notes'];
+  const bad = [];
+  for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    const p = await newPage(vp);
+    for (const path of paths) {
+      await p.goto(base + path, { waitUntil: 'load' });
+      bad.push(...(await p.evaluate(() => [...document.images].filter((i) => i.offsetParent && i.getAttribute('height')).map((i) => {
+        const b = i.getBoundingClientRect(); const w = Number(i.getAttribute('width')); const h = Number(i.getAttribute('height'));
+        return b.width > 40 && b.width < w - 1 && Math.abs(b.height - h) < 1 ? `${i.className || i.parentElement.className} ${Math.round(b.width)}x${Math.round(b.height)}` : null;
+      }).filter(Boolean))).map((x) => `${vp.width} ${path}: ${x}`));
+    }
+    await p.context().close();
+  }
+  assert(bad.length === 0, `${bad.length} stretched: ${bad.slice(0, 6).join(' | ')}`);
+});
+
 await check('galleries: media only, no captions, no piece counts, plain Load more', async () => {
   for (const path of ['/', '/real-estate', '/architecture-design', '/agent-content', '/creator-studios/sessions', '/commercial/revivaluxe', '/architecture-design/kerry-delrose']) {
     const p = await newPage();
@@ -1423,8 +1474,8 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   await p.goto(base + '/architecture-design');
   const shown = () => p.locator('#ag-grid .gcard:not([hidden])').count();
   const total = +(await p.textContent('#ag-count')).match(/\d+/)[0];
-  // Session 59: the Oct 11 owner pack adds 11 uncredited architecture stills after the project cards (was at most 12).
-  assert(total >= 4 && total <= 20 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
+  // The owner can add projects. The gallery must still open with only eight cards, regardless of library size.
+  assert(total >= 4 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
   // Only segments with mapped, evidenced projects are offered; nothing is inferred from a house name.
   const segs = await p.locator('#ag-segment option').evaluateAll((os) => os.map((o) => o.value).filter(Boolean));
   const mapped = new Set(work.projects.filter((x) => x.category === 'architecture-design' && x.segments?.length).flatMap((x) => x.segments));
@@ -1440,10 +1491,13 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   assert(await bySeg('designer') === 'kerry-delrose', 'designers');
   await p.selectOption('#ag-segment', 'builder');
   const b = (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).sort();
-  assert(b.join(',') === 'peterson-ramlowtan,yankee-barn-builders' && (await p.textContent('#ag-count')) === '2 results', 'builders: ' + b.join(','));
+  const builders = work.projects.filter(pr => pr.category === 'architecture-design' && pr.published !== false && pr.segments?.includes('builder') && work.media.some(m => m.project === pr.slug && m.rights === 'approved' && m.published !== false)).map(pr => pr.slug).sort();
+  assert(b.join(',') === builders.join(',') && (await p.textContent('#ag-count')) === `${builders.length} results`, 'builders: ' + b.join(','));
   assert(new URL(p.url()).searchParams.get('segment') === 'builder' && await p.isVisible('#portfolio .filters__clear'), 'segment in URL, reset visible');
   await p.selectOption('#ag-type', 'video');
-  assert(await shown() === 1 && (await p.locator('#ag-grid .gcard:not([hidden])').getAttribute('data-project')) === 'yankee-barn-builders', 'builders + video = the Yankee Barn Builders film');
+  const builderFilms = builders.filter(slug => work.media.some(m => m.project === slug && m.type === 'video' && m.rights === 'approved' && m.published !== false)).sort();
+  const shownBuilderFilms = await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll(es => es.map(e => e.dataset.project).sort());
+  assert(shownBuilderFilms.join(',') === builderFilms.join(','), 'builders + video: ' + shownBuilderFilms.join(','));
   await p.selectOption('#ag-segment', 'designer');
   assert(await shown() === 0 && await p.isVisible('#ag-empty') && (await p.textContent('#ag-empty-title')) === 'Nothing for Designers in video yet.', 'designer + video empty state: ' + await p.textContent('#ag-empty-title'));
   assert(!/\(\d+\)/.test(await p.textContent('#ag-segment')) && !/\(\d+\)/.test(await p.textContent('#ag-type')), 'no counts in option labels');
@@ -1499,10 +1553,14 @@ await check('Architecture & design gallery: segment and media filters, counts, r
   await p.context().close();
   const ph = await newPage({ width: 375, height: 812 });
   await ph.goto(base + '/architecture-design?segment=designer');
-  assert(await ph.inputValue('#ag-segment') === 'designer' && await ph.locator('#ag-grid .gcard:not([hidden])').count() === 1, 'phone deep link');
+  const designers = work.projects.filter(pr => pr.category === 'architecture-design' && pr.published !== false && pr.segments?.includes('designer') && work.media.some(m => m.project === pr.slug && m.rights === 'approved' && m.published !== false)).map(pr => pr.slug).sort();
+  const phoneDesigners = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll(es => es.map(e => e.dataset.project).sort());
+  assert(await ph.inputValue('#ag-segment') === 'designer' && phoneDesigners.join(',') === designers.join(','), 'phone deep link');
   // A single filtered result uses the full mobile column; several results keep two columns.
-  const one = await ph.locator('#ag-grid .gcard:not([hidden])').boundingBox(); const gridW = (await ph.locator('#ag-grid').boundingBox()).width;
-  assert(one.width > gridW * 0.9, `single result width ${one.width} of ${gridW}`);
+  await ph.selectOption('#ag-segment', 'builder'); await ph.selectOption('#ag-type', 'video');
+  assert(await ph.locator('#ag-grid .gcard:not([hidden])').count() === builderFilms.length, 'builder films on phone');
+  const first = await ph.locator('#ag-grid .gcard:not([hidden])').first().boundingBox(); const gridW = (await ph.locator('#ag-grid').boundingBox()).width;
+  assert(builderFilms.length === 1 ? first.width > gridW * 0.9 : first.width < gridW * 0.6, `filtered result width ${first.width} of ${gridW}`);
   await ph.selectOption('#ag-segment', '');
   const widths = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.getBoundingClientRect().width));
   assert(widths.length > 1 && widths.every((w) => w < gridW * 0.6), 'two compact columns for several results');

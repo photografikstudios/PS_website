@@ -21,5 +21,11 @@
   "capturedYear": null,
   "sortPriority": 0,
   "_addressRemoved": "James, Sep 27 2026: no street addresses anywhere on the site; client names only.",
-  "order": 440
+  "order": 440,
+  "libraryFolder": "Peterson & Ramlowtan",
+  "tags": [
+    "photography",
+    "interior"
+  ],
+  "_librarySourceDrive": "1HZK76wIVO3Rhdy1K7uEEHd-BUpj2AhNO"
 }

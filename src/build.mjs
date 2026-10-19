@@ -208,7 +208,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   const decap = JSON.parse(await readFile(join(root, 'src/admin/decap.json'), 'utf8'));
   const branch = process.env.CMS_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || 'redesign/2027-preview';
   const repo = process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}` : 'photografikstudios/PS_website';
-  const { config, library, categories } = cmsConfig({ site, fieldNotes, work, branch, repo, testimonials });
+  const { config, library, categories } = cmsConfig({ site, fieldNotes, work, branch, repo, testimonials, reviewMode });
   const safe = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
   await mkdir(join(out, 'admin'), { recursive: true });
   const adminHtml = (await readFile(join(root, 'src/admin/index.html'), 'utf8'))
@@ -217,7 +217,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   // Thumbnails for the dashboard's collection lists and photo picker (James, Oct 2 2026: every photo on the site must
   // show a preview in the back end). Deployed site URLs, small -sm.webp versions where they exist.
   const assetSet = new Set(Object.keys(mediaAssets.files || {}));
-  const small = (u) => { if (!u) return null; const sm = String(u).replace(/\.webp$/, '-sm.webp'); return sm !== u && assetSet.has(sm) ? sm : u; };
+  const small = (u) => { if (!u) return null; const sm = String(u).replace(/\.webp$/, '-sm.webp'); return sm !== u && (assetSet.has(sm) || (sm.startsWith('/images/library/') && existsSync(staticFile(root, sm) || ''))) ? sm : u; };
   const thumbs = { photos: {}, films: {}, projects: {}, pick: [] };
   // A film's still: its poster, else the .webp still the media step keeps beside a /v/ film.
   const still = (m) => m.poster || (m.src && /\.mp4$/.test(m.src) && assetSet.has(m.src.replace(/\.mp4$/, '.webp')) ? m.src.replace(/\.mp4$/, '.webp') : null);
@@ -258,7 +258,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   for (const m of work.media) {
     if (m.type !== 'image' || !m.src || seen.has(m.src) || m.rights !== 'approved' || testOnly.has(m.project) || (!reviewMode && m.published === false)) continue;
     seen.add(m.src);
-    thumbs.pick.push({ src: m.src, thumb: small(m.src), alt: m.alt || '', label: m.title || m.id, cat: m.category || '', service: m.service || [] });
+    thumbs.pick.push({ src: m.src, thumb: small(m.src), alt: m.alt || '', label: m.title || m.id, cat: m.category || '', catLabel: catName[m.category] || '', service: m.service || [], libraryFolder: m.libraryFolder || '', tags: Array.isArray(m.tags) ? m.tags : [], hidden: m.published === false });
   }
   // Page Media picker: every photo, film and film loop the sections can use, each with a preview (rights-approved only;
   // production lists only what the public site shows).
@@ -270,7 +270,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   for (const m of work.media) {
     if (testOnly.has(m.project) || (!reviewMode && m.published === false)) continue;
     const thumb = m.type === 'image' ? small(m.src) : still(m) ? small(still(m)) : null;
-    pickMedia.push({ id: m.id, kind: m.type === 'image' ? 'photo' : 'film', title: m.title || m.id, alt: m.alt || '', cat: m.category || '', catLabel: catName[m.category] || '',
+    pickMedia.push({ id: m.id, kind: m.type === 'image' ? 'photo' : 'film', title: m.title || m.id, alt: m.alt || '', cat: m.category || '', catLabel: catName[m.category] || '', libraryFolder: m.libraryFolder || '', tags: Array.isArray(m.tags) ? m.tags : [],
       thumb, frame: !thumb && m.src && /\.mp4$/.test(m.src) ? `${m.src}#t=${m.posterTime ?? 1}` : null, still: m.type === 'image' || !!m.poster,
       loop: loopIds.has(m.id), hero: pmLib.heroLoops.has(m.id), hidden: m.published === false, project: m.fromProject ? projTitle[m.project] || '' : '' });
   }

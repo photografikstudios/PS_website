@@ -18,5 +18,11 @@
   "sortPriority": 0,
   "clientId": "revivaluxe",
   "client": "RevivaLuxe",
-  "order": 280
+  "order": 280,
+  "libraryFolder": "RevivaLuxe",
+  "tags": [
+    "photography",
+    "team"
+  ],
+  "_librarySourceDrive": "1caEyA-5Kd5uTFP1eduZo4U0APgCSnue0"
 }

@@ -1,0 +1,28 @@
+{
+  "slug": "laura-grollmus-interiors",
+  "title": "Laura Grollmus Interiors",
+  "shortTitle": "Laura Grollmus Interiors",
+  "client": "Laura Grollmus Interiors",
+  "category": "architecture-design",
+  "urlCategory": "architecture-design",
+  "services": [
+    "photography"
+  ],
+  "summary": "Photography for Laura Grollmus Interiors.",
+  "story": "A collection of project photography for Laura Grollmus Interiors, documenting the spaces and details shown here.",
+  "hero": "/images/library/laura-grollmus-interiors/laura-grollmus-interiors-waterfront-living-room-with-curved-seating-01.webp",
+  "heroAlt": "Waterfront living room with curved seating \u2014 Laura Grollmus Interiors.",
+  "heroOrientation": "horizontal",
+  "rights": "approved",
+  "rightsNote": "James supplied this client media and requested adding it to the preview on October 19, 2026.",
+  "published": true,
+  "order": 250,
+  "segments": [
+    "designer"
+  ],
+  "segmentSource": "Owner supplied as builder/architectural media, October 19, 2026; existing client folder naming identifies the discipline.",
+  "libraryFolder": "Laura Grollmus Interiors",
+  "tags": [
+    "photography"
+  ]
+}

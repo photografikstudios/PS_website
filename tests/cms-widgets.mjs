@@ -173,6 +173,58 @@ await check('registered widgets', async () => {
   for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-drive', 'pgk-live', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
 });
 
+await check('folder and tag controls save new names, deduplicate tags, and remove safely', async () => {
+  await page.evaluate(() => {
+    window.__orgFolder = window.mountWidget('pgk-folder', { field: {name: 'libraryFolder', options: ['Client samples']}, value: '', entry: {}, collection: 'photos' });
+    window.__orgTags = window.mountWidget('pgk-tags', { field: {name: 'tags', options: ['exterior']}, value: ['pool'], entry: {}, collection: 'photos' });
+  });
+  const f = page.locator('.host-pgk-folder').last();
+  await f.getByLabel('Library folder').fill('New client');
+  assert.equal(await page.evaluate(() => window.__orgFolder.state.value), 'New client');
+  const tags = page.locator('.host-pgk-tags').last();
+  await tags.getByLabel('Add tags').fill('Pool, exterior'); await tags.getByLabel('Add tags').press('Enter'); await page.waitForFunction(() => window.__orgTags.instance.props.value.toJS?.().includes('exterior') || window.__orgTags.instance.props.value.includes?.('exterior'));
+  assert.deepEqual(await page.evaluate(() => window.__orgTags.state.value), ['pool', 'exterior']);
+  await tags.getByRole('button', {name: 'Remove tag pool', exact: true}).click(); await tags.getByRole('button', {name: 'Remove tag pool', exact: true}).waitFor({state: 'detached'});
+  assert.deepEqual(await page.evaluate(() => window.__orgTags.state.value), ['exterior']);
+  await tags.getByLabel('Add tags').fill('kitchen'); await tags.getByLabel('Add tags').press('Tab');
+  assert.deepEqual(await page.evaluate(() => window.__orgTags.state.value), ['exterior', 'kitchen']);
+});
+
+await check('tags reuse an existing spelling, and the field label reaches the tag input', async () => {
+  await page.evaluate(() => { window.__orgCase = window.mountWidget('pgk-tags', { field: {name: 'tags', options: ['exterior', 'Drone']}, value: [], entry: {}, collection: 'photos' }); });
+  const tags = page.locator('.host-pgk-tags').last();
+  await tags.getByLabel('Add tags').fill('EXTERIOR, drone, Pool'); await tags.getByLabel('Add tags').press('Enter');
+  await page.waitForFunction(() => (window.__orgCase.state.value || []).length === 3);
+  assert.deepEqual(await page.evaluate(() => window.__orgCase.state.value), ['exterior', 'Drone', 'Pool']);
+  assert.equal(await tags.getByLabel('Add tags').getAttribute('id'), await page.evaluate(() => window.__orgCase.instance.props.forID));
+  await page.evaluate(() => window.__orgCase.unmount());
+});
+
+await check('library organization filters combine with service and include hidden photos without placing them', async () => {
+  const field = await slotField('home', 'closing');
+  await page.evaluate((field) => {
+    const m = window.PHOTOGRAFIK_MEDIA.find((m) => m.kind === 'photo');
+    window.__orgBefore = {...m}; window.__orgId = m.id;
+    m.libraryFolder = 'QA client'; m.tags = ['QA exterior']; m.hidden = true;
+    window.__orgSlot = window.mountWidget('pgk-slot', {field, value: null, entry: {}, collection: 'page-media'});
+  }, field);
+  try {
+  const host = page.locator('.host-pgk-slot').last();
+  await host.getByRole('button', {name: 'Choose from library', exact: true}).click();
+  const dlg = page.getByRole('dialog', {name: 'Choose from the library'}).last();
+  await dlg.getByLabel('Folder', {exact: true}).selectOption({label: 'QA client'});
+  await dlg.getByLabel('Tag', {exact: true}).selectOption('QA exterior');
+  assert.equal(await dlg.locator('.pgk-pick').count(), 1);
+  assert.match(await dlg.locator('.pgk-pick').innerText(), /Hidden/);
+  await dlg.locator('.pgk-pick').click();
+  await dlg.getByRole('button', {name: 'Clear filters'}).click();
+  await page.waitForFunction(() => document.querySelectorAll('[role=dialog] .pgk-pick').length > 1);
+  assert.ok(await dlg.locator('.pgk-pick').count() > 1);
+  await dlg.getByRole('button', {name: 'Use this'}).click();
+  assert.equal(await page.evaluate(() => window.__orgSlot.state.value.media), await page.evaluate(() => window.__orgId));
+  } finally { await page.evaluate(() => { window.__orgSlot.unmount(); const m = window.PHOTOGRAFIK_MEDIA.find((m) => m.id === window.__orgId); Object.keys(m).forEach((k) => delete m[k]); Object.assign(m, window.__orgBefore); }); }
+});
+
 await check('Home library includes all hidden recent films; incompatible photos remain visible with reasons', async () => {
   const field = await slotField('home', 'hero'); const value = (await pm('home')).hero;
   await page.evaluate(({field, value}) => { window.__allhero = window.mountWidget('pgk-slot', {field, value, entry: {}, collection: 'page-media'}); }, {field, value});

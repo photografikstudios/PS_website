@@ -1,0 +1,40 @@
+{
+  "id": "evolution-unlimited-lawn-aeration-film",
+  "type": "video",
+  "title": "Evolution Unlimited: lawn aeration",
+  "project": "evolution-unlimited",
+  "client": "Evolution Unlimited",
+  "category": "commercial",
+  "service": [
+    "video"
+  ],
+  "drive": "https://drive.google.com/file/d/1sSNfqZ7p81sG-by5YUQ5M1hIgwJczMYB/view",
+  "orientation": "horizontal",
+  "rights": "approved",
+  "published": true,
+  "featured": false,
+  "dialogue": false,
+  "captions": null,
+  "captionsStatus": "machine-draft",
+  "packageIds": [],
+  "capturedYear": null,
+  "sortPriority": 0,
+  "order": 2405,
+  "libraryFolder": "Evolution Unlimited",
+  "tags": [
+    "film",
+    "lawn care",
+    "team"
+  ],
+  "posterTime": 10,
+  "import": {
+    "state": "ready",
+    "at": "2026-10-19T13:33:31.224Z",
+    "message": "Imported from Google Drive (1920\u00d71080, 25 s). The original stays in Drive."
+  },
+  "_rights": "Owner supplied and requested for the preview, October19,2026. Original stays in the client folder in Google Drive. Speech captions require owner proofreading before production.",
+  "src": "/v/evolution-unlimited-lawn-aeration-film.mp4",
+  "poster": "/v/evolution-unlimited-lawn-aeration-film.webp",
+  "duration": 25,
+  "source": "drive"
+}

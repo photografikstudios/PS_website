@@ -11,6 +11,7 @@ import { checkContent, looksLikeAddress, looksLikeCameraName, isVerbatimExcerpt,
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { cmsConfig } from '../src/lib/cms-config.js';
+import { createContext } from '../src/lib/html.js';
 import { imageSize } from '../src/lib/image-size.js';
 import { loadFieldNotes, makeFileExists } from '../src/lib/field-notes-load.js';
 
@@ -33,14 +34,18 @@ const withSynthetic = (w) => {
   return qa;
 };
 
-test('portfolio: 13 original projects and 175 media records (128 + 26 from the Oct 11 owner pack + the Oct 13 JM2 replacement + 20 owner Drive videos of Oct 15), one file each, names match ids, no load errors', async () => {
+test('portfolio: original library plus the Oct 19 owner pack, one file each, names match ids, no load errors', async () => {
   // Projects James adds in the dashboard (no fixed path) sit beside the 13 originals and carry their photos inline.
   assert.deepEqual(work.loadErrors, []);
   const originals = work.projects.filter((p) => p.path);
   assert.equal(originals.length, 13);
-  assert.equal(work.media.filter((m) => !m.fromProject).length, 175);
+  assert.equal(work.media.filter((m) => !m.fromProject).length, 359);
+  assert.equal(work.importing.length, 0);
+  const goldin = work.media.find(m => m.id === 'goldin-luxury-residence-film');
+  assert.equal(goldin.published, true);
+  assert.match(goldin._ownerAddressException, /James approved/, 'opening title explicitly accepted by the owner');
   assert.equal((await readdir(join(root, 'content/projects'))).length, work.projects.length);
-  assert.equal((await readdir(join(root, 'content/media'))).length, 175);
+  assert.equal((await readdir(join(root, 'content/media'))).length, 359);
   // James's 20 Drive videos of Oct 15 are owner assets, imported as hidden drafts with no page placement yet.
   const oct15 = work.media.filter((m) => /^oct15-/.test(m.id));
   assert.equal(oct15.length, 20);
@@ -358,7 +363,11 @@ test('Oct 11 owner photo pack: 26 records traced to a verified original, pinned,
     // Town only, read from the HDPH listing record on Oct 12 2026 (James signed in).
     assert.equal(m.location, TOWN_BY_SITE[site], `${m.id}: town from the HDPH listing`);
     assert.ok(m.alt.endsWith(' in ' + m.location), `${m.id}: alt names the town`);
-    assert.ok(m.project === null && m.client === null && !m.packageIds.length && m.capturedYear === null, `${m.id}: no invented project, client, package or year`);
+    if (m.id === 'ad26-firehouse-front') {
+      assert.equal(m.project, 'long-island-building-systems', 'Oct 19 exact duplicate supplied in this client folder');
+      assert.equal(m.client, 'Long Island Building Systems');
+    } else assert.ok(m.project === null && m.client === null, `${m.id}: no invented project or client`);
+    assert.ok(!m.packageIds.length && m.capturedYear === null, `${m.id}: no invented package or year`);
     assert.equal(m.category, m.id.startsWith('re26-') ? 'real-estate' : 'architecture-design');
     for (const t of [m.alt, m.title, m.id, src._note, m._rights]) assert.ok(!looksLikeAddress(t) && !/\b(lane|ln|road|rd|way)\b/i.test(t.replace(/^.*?SHA-256 [0-9a-f]{64}/, '')), `${m.id}: no street in "${t.slice(0, 60)}"`);
   }
@@ -391,7 +400,7 @@ test('usability: flat fields retain data keys, Film essentials come first, secti
   const col = (n) => config.collections.find((c) => c.name === n);
   const visible = (n) => col(n).fields.filter((f) => f.widget !== 'hidden' && f.widget !== 'pgk-section');
   assert.deepEqual(visible('films').slice(0, 5).map((f) => f.name), ['title', 'drive', 'category', 'import', 'published']);
-  assert.deepEqual(col('films').fields.filter((f) => f.widget === 'pgk-section').map((f) => f.label), ['Add or update a film', 'Presentation', 'Captions & Accessibility', 'Gallery Placement', 'Advanced']);
+  assert.deepEqual(col('films').fields.filter((f) => f.widget === 'pgk-section').map((f) => f.label), ['Add or update a film', 'Organize in the library', 'Presentation', 'Captions & Accessibility', 'Gallery Placement', 'Advanced']);
   assert.deepEqual(col('field-notes').fields.filter((f) => f.widget === 'pgk-section').map((f) => f.label), ['Writing', 'Publishing', 'Related content', 'SEO (optional)', 'Advanced']);
   assert.deepEqual(visible('field-notes').slice(0, 5).map((f) => f.name), ['title', 'category', 'hero', 'heroAlt', 'excerpt']);
   assert.equal(col('projects').fields.find((f) => f.name === 'category').widget, 'pgk-category');
@@ -407,4 +416,98 @@ test('usability: flat fields retain data keys, Film essentials come first, secti
   for (const page of col('page-media').files) for (const f of page.fields.filter((f) => f.galleryKey)) {
     assert.ok(f.pageLabel && f.sectionLabel && f.device, page.name + '.' + f.name);
   }
+});
+
+
+test('library folders and tags organize records without changing placement, IDs or file URLs', () => {
+  const w = structuredClone(work);
+  const photo = w.media.find((m) => m.type === 'image' && !m.fromProject);
+  photo.libraryFolder = 'Client samples'; photo.tags = ['pool', 'before+after'];
+  const result = cmsConfig({ site, fieldNotes, work: w, branch: 'redesign/2027-preview', repo: 'photografikstudios/PS_website', testimonials });
+  for (const name of ['photos', 'films', 'projects']) {
+    const fields = result.config.collections.find((c) => c.name === name).fields;
+    assert.equal(fields.filter((f) => f.name === 'libraryFolder').length, 1);
+    assert.equal(fields.find((f) => f.name === 'libraryFolder').widget, 'pgk-folder');
+    assert.equal(fields.find((f) => f.name === 'tags').widget, 'pgk-tags');
+  }
+  const c = result.config.collections.find((c) => c.name === 'photos');
+  assert.ok(c.view_groups.some((g) => g.field === 'libraryFolder'));
+  const tag = c.view_filters.find((f) => f.label === 'Tag: before+after');
+  assert.ok(new RegExp(tag.pattern).test('before+after'));
+  assert.ok(!new RegExp(tag.pattern).test('beforeeeeeafter'));
+  const project = { slug: 'qa-organized', title: 'QA client', category: 'architecture-design', published: false, rights: 'pending', libraryFolder: 'Client samples', tags: ['exterior'], photos: [{ image: '/images/projects/qa-front.jpg', alt: 'Front elevation' }] };
+  const expanded = expandProjectPhotos(root, project)[0];
+  assert.deepEqual([expanded.libraryFolder, expanded.tags, expanded.src, expanded.id, expanded.category, expanded.published, expanded.rights], ['Client samples', ['exterior'], '/images/projects/qa-front.jpg', 'qa-organized-qa-front', 'architecture-design', false, 'pending']);
+  expanded.tags.push('different'); assert.deepEqual(project.tags, ['exterior']);
+  const original = work.media.find((m) => m.id === photo.id);
+  for (const key of ['id', 'src', 'category', 'published', 'rights', 'sortPriority']) assert.deepEqual(photo[key], original[key]);
+});
+
+test('Oct 19 client media: 180 source photos, canonical reuse, usable thumbnails and accurate responsive widths', async () => {
+  const { createHash } = await import('node:crypto');
+  const { imageSize } = await import('../src/lib/image-size.js');
+  const pack = await read('docs/owner-media-2026-10-19.json');
+  assert.equal(pack.photos.length, 180);
+  assert.equal(new Set(pack.photos.map(p => p.driveId)).size, 180);
+  assert.equal(new Set(pack.photos.map(p => p.record)).size, 180);
+  assert.equal(pack.photos.filter(p => p.action === 'added').length, 174);
+  assert.equal(pack.photos.filter(p => p.action === 'reused existing record').length, 6);
+  for (const p of pack.photos) {
+    const m = work.media.find(m => m.id === p.record);
+    assert.ok(m, p.record); assert.equal(m.libraryFolder, p.client); assert.ok(m.tags.length);
+    assert.equal(m.rights, 'approved'); assert.equal(m.type, 'image');
+    if (['BPE Ironworks', 'Rachel Lynch Pools', 'Evolution Unlimited', 'RevivaLuxe'].includes(p.client)) assert.equal(m.category, 'commercial');
+    if (p.action !== 'added') continue;
+    assert.equal(m.src, p.src); assert.equal(m.thumb, p.thumb);
+    const full = await readFile(join(root, 'static', m.src)); const small = await readFile(join(root, 'static', m.thumb));
+    assert.equal(createHash('sha256').update(full).digest('hex'), p.sha256);
+    assert.equal(createHash('sha256').update(small).digest('hex'), p.thumbSha256);
+    const a = imageSize(full), b = imageSize(small);
+    assert.ok(Math.max(a.width, a.height) <= 2500); assert.ok(Math.max(b.width, b.height) <= 900);
+    assert.ok(b.width < a.width && b.height < a.height);
+    const ctx = createContext({ site, reviewMode: true, onVercel: true, imageInfo: u => u === m.src ? a : u === m.thumb ? b : null });
+    const html = ctx.img(m.src, { thumb: m.thumb });
+    assert.ok(html.includes(`${m.thumb} ${b.width}w, ${m.src} ${a.width}w`));
+    assert.ok(!html.includes('/_vercel/image'));
+  }
+  assert.equal(pack.videos.filter(v => v.action === 'imported').length, 10);
+  assert.equal(pack.videos.filter(v => v.action === 'reused existing film').length, 1);
+  for (const v of pack.videos.filter(v => v.action === 'imported')) {
+    const m = work.media.find(m => m.id === v.record);
+    assert.equal(m.import.state, 'ready'); assert.ok(fileExists(m.src) && fileExists(m.poster));
+    if (v.speech) { assert.equal(m.captionsStatus, 'machine-draft'); assert.ok(fileExists(m.captions)); }
+  }
+});
+
+// Claude review, Oct 19: folder and tag names go into /admin/config.js, which production serves publicly.
+test('library folders and tags: production suggestions come only from shown records; tag filters match whole tags', () => {
+  const w = structuredClone(work);
+  const hidden = w.media.find((m) => !m.fromProject && m.published === false);
+  const shown = w.media.find((m) => !m.fromProject && m.type === 'image' && m.published !== false);
+  const draftProject = w.projects.find((p) => p.reviewOnly === true) || w.projects.find((p) => p.published === false);
+  w.media.push({ id: 'qa-unapproved-media', type: 'image', published: true, rights: 'pending', libraryFolder: 'QA Unapproved Client', tags: ['qa-unapproved-tag'] });
+  hidden.libraryFolder = 'QA Hidden Client'; hidden.tags = ['qa-hidden-tag'];
+  draftProject.libraryFolder = 'QA Draft Project'; draftProject.tags = ['qa-draft-tag'];
+  shown.libraryFolder = 'QA Shown Client'; shown.tags = ['pool', 'pool house'];
+  const conf = (reviewMode) => JSON.stringify(cmsConfig({ site, fieldNotes, work: w, branch: 'redesign/2027-preview', repo: 'photografikstudios/PS_website', testimonials, reviewMode }).config);
+  const prod = conf(false); const review = conf(true);
+  for (const s of ['QA Hidden Client', 'qa-hidden-tag', 'QA Draft Project', 'qa-draft-tag', 'QA Unapproved Client', 'qa-unapproved-tag']) { assert.ok(!prod.includes(s), `${s} not in the public config`); assert.ok(review.includes(s), `${s} offered in the review editor`); }
+  assert.ok(prod.includes('QA Shown Client') && prod.includes('pool house'));
+  const photos = cmsConfig({ site, fieldNotes, work: w, branch: 'redesign/2027-preview', repo: 'photografikstudios/PS_website', testimonials }).config.collections.find((c) => c.name === 'photos');
+  const pool = new RegExp(photos.view_filters.find((f) => f.label === 'Tag: pool').pattern);
+  // Decap compares the pattern with the field as text: Immutable lists read 'List [ "a", "b" ]', plain arrays "a,b".
+  for (const [tags, want] of [[['pool'], true], [['exterior', 'pool'], true], [['pool house'], false], [['swimming pool'], false]]) {
+    assert.equal(pool.test(`List [ ${tags.map((t) => JSON.stringify(t)).join(', ')} ]`), want, `List ${tags}`);
+    assert.equal(pool.test(String(tags)), want, `array ${tags}`);
+  }
+});
+
+test('library folders and tags: a street address is caught like other address fields; ordinary tags pass', () => {
+  const w = structuredClone(work);
+  const shown = w.media.find((m) => !m.fromProject && m.type === 'image' && m.published !== false && m.rights === 'approved');
+  shown.tags = ['360 tour', 'kitchen']; shown.libraryFolder = 'Bellard Brothers';
+  const ok = checkContent({ work: w, fileExists: () => true });
+  assert.ok(!ok.errors.some((e) => /library folder or tag/.test(e)));
+  shown.tags = ['26 Sunset Ave'];
+  assert.ok(checkContent({ work: w, fileExists: () => true }).errors.some((e) => /library folder or tag looks like a street address/.test(e)));
 });

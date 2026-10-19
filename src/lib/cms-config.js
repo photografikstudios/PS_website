@@ -38,12 +38,27 @@ function keep(records, shown) {
   return [...keys].sort().map((k) => ({ name: k, label: k, widget: 'hidden', required: false }));
 }
 
-export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials = { reviews: [] } }) {
+export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials = { reviews: [] }, reviewMode = false }) {
   const cats = fieldNotes.categories.map((c) => ({ label: c.label, value: c.id }));
   const workCats = work.taxonomy.category.map((c) => ({ label: c.label, value: c.id }));
   const services = work.taxonomy.service.map((c) => ({ label: c.label, value: c.id }));
   const segments = (work.taxonomy.segment || []).map((c) => ({ label: c.label, value: c.id }));
   const fileMedia = work.media.filter((m) => !m.fromProject);
+  // Folder and tag suggestions are written into /admin/config.js, which production serves publicly. Outside the review
+  // version, only records the public site shows may contribute names (no hidden drafts, imports or review-only tests).
+  const reviewOnlySlugs = new Set(work.projects.filter((p) => p.reviewOnly === true).map((p) => p.slug));
+  const organizationRecords = (reviewMode ? [...work.projects, ...work.media, ...(work.importing || [])] : [...work.projects, ...work.media])
+    .filter((r) => reviewMode || (r.published !== false && r.rights === 'approved' && !reviewOnlySlugs.has(r.slug) && !reviewOnlySlugs.has(r.project)));
+  const folders = [...new Set(organizationRecords.map((m) => m.libraryFolder).filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim()))].sort();
+  const tags = [...new Set(organizationRecords.flatMap((m) => Array.isArray(m.tags) ? m.tags : []).filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim()))].sort();
+  const organizationFields = () => [
+    { name: 'libraryFolder', label: 'Library folder', widget: 'pgk-folder', required: false, options: folders, hint: 'Choose an existing folder or type a new one, e.g. Bellard Brothers. This organizes the library without moving files or changing where they appear.' },
+    { name: 'tags', label: 'Tags', widget: 'pgk-tags', required: false, options: tags, hint: 'Reusable labels such as kitchen, exterior, pool or drone. Press Enter or comma to add each tag. Tags do not publish or place a photo.' },
+  ];
+  // Decap tests a filter pattern against the field as text: a list reads 'List [ "pool", "pool house" ]' (or
+  // "pool,pool house" as a plain array). Match one whole tag, so "Tag: pool" does not also list "pool house".
+  const tagPattern = (tag) => `(?:^|[\\[,] ?"?)${tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:"? ?[,\\]]|$)`;
+  const tagFilters = tags.map((tag) => ({ label: `Tag: ${tag}`, field: 'tags', pattern: tagPattern(tag) }));
   // Only media the site shows (no drafts, no review-only test photos): this list is in the public /admin/config.js.
   const testOnly = new Set(work.projects.filter((p) => p.reviewOnly === true).map((p) => p.slug));
   const library = work.media.filter((m) => m.rights === 'approved' && m.published !== false && !testOnly.has(m.project) && (m.type === 'image' || m.poster))
@@ -81,6 +96,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'heroAlt', label: 'Main image description (alt text)', widget: 'pgk-live', inner: 'string', required: false, hint: hint.alt },
     { name: 'heroFocal', label: 'Main image focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
     { name: 'heroOrientation', label: 'Main image shape', widget: 'select', required: false, default: 'auto', options: ORIENT },
+    ...organizationFields(),
     { name: 'photos', label: 'Photos', widget: 'pgk-gallery', required: false, default: [], ...projectMedia, hint: `Choose several photos at once, then describe each one. Use the arrows to change the order. Photos already on the site for this project are in the Photos section. ${imageHint}` },
     { name: 'films', label: 'Films from the library', widget: 'relation', collection: 'films', search_fields: ['title', 'location'], value_field: '{{slug}}', display_fields: ['title', 'location'], multiple: true, required: false, hint: 'Choose films that are already on the site. New films need the video upload step (see the guide).' },
     // James, Oct 2 2026: media he adds himself is approved, so the rights question is not in the routine form. New
@@ -100,6 +116,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'title', label: 'Title', widget: 'string', hint: 'For your reference and the gallery label.' },
     { name: 'published', label: 'Show on site', widget: 'pgk-visibility', default: false, hint: 'Off = Hidden draft. On = Show on site after Save, validation and a successful website update. The status at the bottom confirms the website update.' },
     { name: 'project', label: 'Project', widget: 'relation', collection: 'projects', search_fields: ['title'], value_field: '{{slug}}', display_fields: ['title'], required: false, hint: 'Optional: the project page this belongs to.' },
+    ...organizationFields(),
     { name: 'category', label: 'Service page', widget: 'select', options: workCats },
     { name: 'service', label: 'Type of work', widget: 'select', multiple: true, options: services },
     { name: 'location', label: 'Town or area', widget: 'string', required: false, hint: hint.location },
@@ -184,21 +201,23 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           ['details', 'Project Details', ['title', 'category', 'shortTitle', 'client', 'location', 'services', 'segments']],
           ['story', 'Story & Description', ['summary', 'story', 'serviceDetails', 'goal', 'blurbApproved']],
           ['media', 'Photography & Films', ['hero', 'heroAlt', 'heroFocal', 'heroOrientation', 'photos', 'films']],
+          ['organization', 'Organize uploaded photos', ['libraryFolder', 'tags'], 'Applies to all photos uploaded in this project, including a batch upload. Existing library items keep their own organization.'],
           ['display', 'Display & Publishing', ['published', 'sortPriority', 'order']],
           ['advanced', 'Advanced', [], 'Rights and file metadata are preserved automatically. Use the checked panel below for usage, deletion and recovery.'],
         ]), ...keep(work.projects, projectShown), MANAGE],
       },
       {
         name: 'photos', label: 'Photos', label_singular: 'Photo',
-        description: 'Every photo in the library. Replace a picture, fix its description or focus, change where it shows, hide it, or delete it for good (the panel at the bottom of each photo says where it is used first).',
+        description: 'Organize photos with Library folder and Tags. Use Group by → Library folder or Filter → Tag to find them. Service page controls website placement; folders and tags only organize the library. For a batch, use Projects → Photos and set its folder and tags once. Photos uploaded inside a Project are edited there and are available in the library pickers.',
         folder: 'content/media', filter: { field: 'type', value: 'image' }, create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/library', public_folder: '/images/library',
         summary: "{{title}} · {{published | ternary('Shown', 'Hidden')}}",
-        sortable_fields: ['title', 'category', 'sortPriority'],
-        view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters, { label: 'Drone photos', field: 'service', pattern: 'drone' }],
-        view_groups: [{ label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
+        sortable_fields: ['title', 'libraryFolder', 'category', 'sortPriority'],
+        view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters, { label: 'Drone photos', field: 'service', pattern: 'drone' }, ...tagFilters],
+        view_groups: [{ label: 'Library folder', field: 'libraryFolder' }, { label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
         fields: [...arrange(photoFields, [
           ['photo', 'Photo & Description', ['title', 'src', 'alt', 'category', 'published']],
+          ['organization', 'Organize in the library', ['libraryFolder', 'tags']],
           ['presentation', 'Presentation', ['focal', 'orientation']],
           ['placement', 'Gallery Placement', ['project', 'service', 'location', 'client', 'sortPriority', 'featured']],
           ['advanced', 'Advanced', [], 'Existing rights and source metadata are kept automatically.'],
@@ -209,11 +228,12 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         description: 'Every film in the library. Add a film from Google Drive with “New Film” (the original stays in your Drive), change how a film is shown, hide it, or delete it for good.',
         folder: 'content/media', filter: { field: 'type', value: 'video' }, create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{published | ternary('Shown', 'Hidden')}}",
-        sortable_fields: ['title', 'category', 'sortPriority'],
-        view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters],
-        view_groups: [{ label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
+        sortable_fields: ['title', 'libraryFolder', 'category', 'sortPriority'],
+        view_filters: [{ label: 'Shown', field: 'published', pattern: true }, { label: 'Hidden', field: 'published', pattern: false }, ...catFilters, ...tagFilters],
+        view_groups: [{ label: 'Library folder', field: 'libraryFolder' }, { label: 'Service', field: 'category' }, { label: 'Shown or hidden', field: 'published' }],
         fields: [...arrange(filmFields, [
           ['film', 'Add or update a film', ['title', 'drive', 'category', 'import', 'published'], 'Title → Drive link → service → Save as a hidden draft. Wait for Ready, then choose Show on site and Save. Website updated confirms deployment, not just a saved switch.'],
+          ['organization', 'Organize in the library', ['libraryFolder', 'tags']],
           ['presentation', 'Presentation', ['makeLoop', 'posterTime']],
           ['access', 'Captions & Accessibility', ['alt', 'dialogue', 'captions', 'captionsStatus']],
           ['placement', 'Gallery Placement', ['project', 'service', 'location', 'client', 'sortPriority', 'featured']],

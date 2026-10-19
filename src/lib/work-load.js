@@ -53,6 +53,7 @@ export function expandProjectPhotos(root, p) {
     const size = f && existsSync(f) ? imageSize(readFileSync(f)) : null;
     out.push({
       id, type: 'image', project: p.slug, title: p.title,
+      libraryFolder: p.libraryFolder || '', tags: Array.isArray(p.tags) ? [...p.tags] : [],
       service: ph.photoType === 'drone' ? ['photography', 'drone'] : ['photography'], category: p.category,
       orientation: ph.orientation && ph.orientation !== 'auto' ? ph.orientation : size ? orientationOf(size) : 'horizontal',
       src: ph.image, featured: false, rights: p.rights || 'pending', alt: ph.alt || null, location: p.location || null,
@@ -76,8 +77,8 @@ export async function loadWork(root) {
   // A film being replaced (it already has web copies) keeps playing its current copy until the new one is ready.
   const importing = media.records.filter((m) => m.type === 'video' && m.drive && m.import && m.import.state !== 'ready' && !m.src);
   media.records = media.records.filter((m) => !importing.includes(m));
-  // A replaced photo keeps no stale phone-size version: the -sm.webp thumb only belongs to its own /v/ still.
-  for (const m of media.records) if (m.thumb && !(typeof m.src === 'string' && m.src.startsWith('/v/') && m.thumb === m.src.replace(/\.webp$/, '-sm.webp'))) delete m.thumb;
+  // A replaced photo keeps no stale small version: the thumbnail belongs to this exact encoded still.
+  for (const m of media.records) if (m.thumb && !(typeof m.src === 'string' && /^\/(?:v|images\/library)\/.+\.webp$/.test(m.src) && m.thumb === m.src.replace(/\.webp$/, '-sm.webp') && existsSync(staticFile(root, m.thumb) || ''))) delete m.thumb;
   for (const p of projects.records) {
     if (p.hero && (!p.heroOrientation || p.heroOrientation === 'auto')) {
       const f = staticFile(root, p.hero);
