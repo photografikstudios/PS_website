@@ -1,37 +1,27 @@
 {
-  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
-  "hero": {
-    "media": "cs-demo-reel"
-  },
-  "openingExamples": [
-    {
-      "media": "cs-ifcu-clip",
-      "label": "Island Federal podcast short, muted excerpt"
-    },
-    {
-      "media": "cs-noah-knows-short",
-      "label": "Noah Knows podcast short, muted excerpt"
-    },
-    {
-      "media": "cs-podcast-ep23-short",
-      "label": "Podcast short on payment schedules in a building contract, muted excerpt"
-    }
-  ],
-  "sessionPodcast": {
-    "media": "cs-ph-island-federal"
-  },
-  "sessionContent": {
-    "media": "cs-ph-solo-couch"
-  },
-  "sessionMonthly": {
-    "media": "cs-ph-cc-ep20"
-  },
-  "sessionOther": {
-    "media": "cs-ph-solo-couch"
-  },
   "spaceReel": {
     "media": "cs-demo-reel-silent",
     "label": "LI Creator Studios demo reel: podcast and on-camera sessions recorded in the studio (no sound)"
+  },
+  "openingExamples": [
+    {
+      "media": "oct15-short-cc-ep-20-clip-7",
+      "label": "Champagne Confidential Podcast"
+    },
+    {
+      "media": "cs-noah-knows-short",
+      "label": "Noah Knows Podcast"
+    },
+    {
+      "media": "cs-ifcu-clip",
+      "label": "Island Federal podcast short"
+    }
+  ],
+  "sessionContent": {
+    "media": "cs-ph-solo-couch"
+  },
+  "formatShort": {
+    "media": "oct15-short-4-1"
   },
   "formatPodcasts": {
     "media": "cs-ph-cc-onsite"
@@ -39,18 +29,12 @@
   "formatMulticam": {
     "media": "cs-ph-hedgestone-switch"
   },
-  "formatLongform": {
-    "media": "ph-noah-knows"
-  },
-  "formatSolo": {
-    "media": "cs-ph-solo-bts"
-  },
-  "formatShort": {
-    "media": "cs-tick",
-    "alt": "Frame from a vertical podcast clip with word-by-word captions"
-  },
   "formatPlanned": {
     "media": "creator-still"
+  },
+  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
+  "sessionPodcast": {
+    "media": "cs-ph-island-federal"
   },
   "conversations": [
     {
@@ -62,5 +46,20 @@
     {
       "media": "ph-network-effect"
     }
-  ]
+  ],
+  "formatSolo": {
+    "media": "cs-ph-solo-bts"
+  },
+  "sessionMonthly": {
+    "media": "cs-ph-cc-ep20"
+  },
+  "formatLongform": {
+    "media": "ph-noah-knows"
+  },
+  "sessionOther": {
+    "media": "cs-ph-solo-couch"
+  },
+  "hero": {
+    "media": "cs-demo-reel"
+  }
 }
