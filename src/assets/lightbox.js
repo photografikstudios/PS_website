@@ -39,7 +39,11 @@ export function createLightbox(dlg, items, { where = 'gallery' } = {}) {
     const t = document.createElement('strong'); t.textContent = d.title; titleEl.append(t);
     if (d.sub) { const s = document.createElement('span'); s.textContent = d.sub; titleEl.append(s); }
     const pos = order.indexOf(i);
-    capEl.textContent = order.length > 1 ? `${d.title}. ${pos + 1} of ${order.length}` : d.title;
+    const note = d.kind === 'image' && typeof d.caption === 'string' ? d.caption.trim() : '';
+    const status = order.length > 1 ? `${d.title}. ${pos + 1} of ${order.length}` : d.title;
+    capEl.classList.toggle('lightbox__caption--note', !!note);
+    capEl.textContent = note || status;
+    if (note) { const s = document.createElement('span'); s.className = 'sr-only'; s.textContent = ` ${status}`; capEl.append(s); }
     prev.hidden = next.hidden = order.length < 2;
   }
 

@@ -84,7 +84,7 @@ test('project photos become ordinary media records that inherit the project (dra
   const png = Buffer.alloc(33); png.writeUInt32BE(0x89504e47, 0); png.writeUInt32BE(1200, 16); png.writeUInt32BE(1800, 20);
   await writeFile(join(tmp, 'static/images/projects/Great Room.png'), png);
   const p = { slug: 'shelter-island-house', title: 'Shelter Island House', category: 'architecture-design', location: 'Shelter Island', client: 'Studio X', rights: 'approved', published: false, sortPriority: 2,
-    photos: [{ image: '/images/projects/Great Room.png', alt: 'Great room', focal: 'top', photoType: 'drone' }, { image: '/images/projects/Great Room.png', alt: 'Again' }] };
+    photos: [{ image: '/images/projects/Great Room.png', alt: 'Great room', caption: '  Design: Studio X  ', focal: 'top', photoType: 'drone' }, { image: '/images/projects/Great Room.png', alt: 'Again' }] };
   const out = expandProjectPhotos(tmp, p);
   assert.equal(out.length, 2);
   assert.equal(out[0].id, 'shelter-island-house-great-room');
@@ -94,6 +94,9 @@ test('project photos become ordinary media records that inherit the project (dra
   assert.deepEqual(out[0].service, ['photography', 'drone']);
   assert.deepEqual(out[1].service, ['photography']);
   assert.equal(out[1].focal, undefined);
+  assert.equal(out[0].caption, 'Design: Studio X');
+  assert.equal(out[0].alt, 'Great room');
+  assert.equal(out[1].caption, undefined, 'no caption inferred from a description or title');
   for (const m of out) {
     assert.equal(m.project, p.slug); assert.equal(m.category, p.category); assert.equal(m.published, false);
     assert.equal(m.rights, 'approved'); assert.equal(m.sortPriority, 2); assert.deepEqual(m.packageIds, []);
@@ -152,13 +155,17 @@ test('a draft project with photos: preview shows it with a Draft note; productio
   await writeFile(join(tmp, 'content/projects/shelter-island-house.json'), JSON.stringify({
     title: 'Shelter Island House', category: 'architecture-design', client: 'Studio X', location: 'Shelter Island', services: ['photography'],
     summary: 'Project photography of a new house.', story: 'Coverage planned around the architect’s portfolio.', rights: 'approved', published: false,
-    photos: [{ image: '/images/projects/shelter-island-great-room.webp', alt: 'Great room with timber trusses', focal: 'upper-third' }],
+    hero: '/images/projects/shelter-island-great-room.webp', heroAlt: 'Timber house main image', heroCaption: 'Design: Studio X & partners',
+    photos: [{ image: '/images/projects/shelter-island-great-room.webp', alt: 'Great room with timber trusses', focal: 'upper-third', caption: 'A note <script>not markup</script>' }],
   }, null, 2));
   const env = { ...process.env, VERCEL: '', VERCEL_ENV: '', CI: '', VERCEL_GIT_COMMIT_SHA: '2222222222222222222222222222222222222222' };
   const run = (extra) => execFileSync('node', ['src/build.mjs'], { cwd: tmp, env: { ...env, ...extra }, stdio: 'pipe' }).toString();
   run({});
   const page = await rf(join(tmp, 'dist/architecture-design/shelter-island-house.html'), 'utf8');
   assert.ok(/Draft, not published/.test(page) && /Great room with timber trusses/.test(page) && /object-position: 50% 30%/.test(page), 'review build shows the draft with its photo and focus');
+  assert.ok(page.includes('<p class="photo-caption">Design: Studio X &amp; partners</p>'));
+  assert.ok(page.includes('<p class="photo-caption">A note &lt;script&gt;not markup&lt;/script&gt;</p>'));
+  assert.ok(page.includes('alt="Great room with timber trusses"'), 'caption never replaces alt text');
   assert.ok(!/shelter-island-house/.test(await rf(join(tmp, 'dist/sitemap.xml'), 'utf8')), 'draft never in the sitemap');
   run({ PRODUCTION_VISIBILITY_CHECK: '1' });
   assert.ok(!existsSync(join(tmp, 'dist-prodcheck/architecture-design/shelter-island-house.html')), 'no page in production');

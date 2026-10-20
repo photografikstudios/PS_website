@@ -15,7 +15,8 @@ const FOCAL = [
 const ORIENT = [{ label: 'Work it out from the file', value: 'auto' }, { label: 'Landscape', value: 'horizontal' }, { label: 'Portrait', value: 'vertical' }];
 const hint = {
   published: 'Off = draft. A draft is saved and shows on the preview with a Draft note, but the live site, its galleries and the sitemap leave it out.',
-  alt: 'Describe the picture for people who cannot see it, e.g. “Kitchen with a marble island and brass pendant lights”. No street addresses.',
+  alt: 'Describe the picture for people who cannot see it, e.g. “Kitchen with a marble island and brass pendant lights”. Kept as image metadata, not shown as a caption. No street addresses.',
+  caption: 'Optional visible note or credit, separate from the photo name and alt text. Leave blank for no caption. Shown in project galleries, photo viewers and Field Notes; compact gallery thumbnails stay uncluttered.',
   location: 'Town or area only (e.g. “Amagansett”). Never a street address.',
   focal: 'Which part of the photo must stay in view when a card crops it.',
 };
@@ -62,7 +63,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   // Only media the site shows (no drafts, no review-only test photos): this list is in the public /admin/config.js.
   const testOnly = new Set(work.projects.filter((p) => p.reviewOnly === true).map((p) => p.slug));
   const library = work.media.filter((m) => m.rights === 'approved' && m.published !== false && !testOnly.has(m.project) && (m.type === 'image' || m.poster))
-    .map((m) => ({ label: `${m.title}${m.location ? `, ${m.location}` : ''} (${m.type === 'video' ? 'film' : 'photo'})`, value: m.id, image: m.type === 'video' ? m.poster : m.src }))
+    .map((m) => ({ label: `${m.title}${m.location ? `, ${m.location}` : ''} (${m.type === 'video' ? 'film' : 'photo'})`, value: m.id, image: m.type === 'video' ? m.poster : m.src, type: m.type, alt: m.alt || '', caption: m.type === 'image' ? m.caption || '' : '' }))
     .sort((a, b) => a.label.localeCompare(b.label));
   const servicePages = [
     ['Real Estate', '/real-estate'], ['Real Estate pricing', '/real-estate/pricing'], ['Agent Content', '/agent-content'],
@@ -94,6 +95,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'delivered', label: 'delivered', widget: 'hidden', required: false },
     { name: 'hero', label: 'Main image', widget: 'pgk-photo', required: false, ...projectMedia, hint: `Optional: without one, the first photo or film below leads the page. ${imageHint}` },
     { name: 'heroAlt', label: 'Main image description (alt text)', widget: 'pgk-live', inner: 'string', required: false, hint: hint.alt },
+    { name: 'heroCaption', label: 'Main image caption (optional)', widget: 'string', required: false, pattern: max(300, 'caption'), hint: 'A visible note or credit under the main project photo. Leave blank for no caption; the description above stays as alt text.' },
     { name: 'heroFocal', label: 'Main image focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
     { name: 'heroOrientation', label: 'Main image shape', widget: 'select', required: false, default: 'auto', options: ORIENT },
     ...organizationFields(),
@@ -129,6 +131,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     ...mediaCommon.slice(0, 2),
     { name: 'src', label: 'Photo', widget: 'pgk-photo', media_folder: '/static/images/library', public_folder: '/images/library', hint: `Replacing the file keeps the same place on the site. ${imageHint}` },
     { name: 'alt', label: 'Description (alt text)', widget: 'string', hint: hint.alt },
+    { name: 'caption', label: 'Visible caption (optional)', widget: 'string', required: false, pattern: max(300, 'caption'), hint: hint.caption },
     { name: 'focal', label: 'Focus', widget: 'select', required: false, default: 'center', options: FOCAL, hint: hint.focal },
     { name: 'orientation', label: 'Shape', widget: 'select', default: 'horizontal', options: ORIENT.slice(1) },
     ...mediaCommon.slice(2),
@@ -200,7 +203,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         fields: [...arrange(projectFields, [
           ['details', 'Project Details', ['title', 'category', 'shortTitle', 'client', 'location', 'services', 'segments']],
           ['story', 'Story & Description', ['summary', 'story', 'serviceDetails', 'goal', 'blurbApproved']],
-          ['media', 'Photography & Films', ['hero', 'heroAlt', 'heroFocal', 'heroOrientation', 'photos', 'films']],
+          ['media', 'Photography & Films', ['hero', 'heroAlt', 'heroCaption', 'heroFocal', 'heroOrientation', 'photos', 'films']],
           ['organization', 'Organize uploaded photos', ['libraryFolder', 'tags'], 'Applies to all photos uploaded in this project, including a batch upload. Existing library items keep their own organization.'],
           ['display', 'Display & Publishing', ['published', 'sortPriority', 'order']],
           ['advanced', 'Advanced', [], 'Rights and file metadata are preserved automatically. Use the checked panel below for usage, deletion and recovery.'],
@@ -218,7 +221,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         fields: [...arrange(photoFields, [
           ['photo', 'Photo & Description', ['title', 'src', 'alt', 'category', 'published']],
           ['organization', 'Organize in the library', ['libraryFolder', 'tags']],
-          ['presentation', 'Presentation', ['focal', 'orientation']],
+          ['presentation', 'Presentation', ['caption', 'focal', 'orientation']],
           ['placement', 'Gallery Placement', ['project', 'service', 'location', 'client', 'sortPriority', 'featured']],
           ['advanced', 'Advanced', [], 'Existing rights and source metadata are kept automatically.'],
         ]), ...keep(photos, photoShown), MANAGE],

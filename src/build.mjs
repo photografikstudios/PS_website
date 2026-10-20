@@ -258,7 +258,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   for (const m of work.media) {
     if (m.type !== 'image' || !m.src || seen.has(m.src) || m.rights !== 'approved' || testOnly.has(m.project) || (!reviewMode && m.published === false)) continue;
     seen.add(m.src);
-    thumbs.pick.push({ src: m.src, thumb: small(m.src), alt: m.alt || '', label: m.title || m.id, cat: m.category || '', catLabel: catName[m.category] || '', service: m.service || [], libraryFolder: m.libraryFolder || '', tags: Array.isArray(m.tags) ? m.tags : [], hidden: m.published === false });
+    thumbs.pick.push({ src: m.src, thumb: small(m.src), alt: m.alt || '', caption: m.caption || '', label: m.title || m.id, cat: m.category || '', catLabel: catName[m.category] || '', service: m.service || [], libraryFolder: m.libraryFolder || '', tags: Array.isArray(m.tags) ? m.tags : [], hidden: m.published === false });
   }
   // Page Media picker: every photo, film and film loop the sections can use, each with a preview (rights-approved only;
   // production lists only what the public site shows).

@@ -11,6 +11,7 @@
   var library = window.PHOTOGRAFIK_LIBRARY || [];
   var byId = {};
   library.forEach(function (m) { byId[m.value] = m; });
+  var escapePreview = function (s) { return String(s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
 
   CMS.registerPreviewStyle('/assets/styles.css');
   CMS.registerPreviewStyle('/admin/preview.css');
@@ -25,7 +26,8 @@
     toPreview: function (d) {
       var m = byId[d.id];
       if (!m) return '<p><em>Choose a library item</em></p>';
-      return '<figure class="fn-figure"><img src="' + m.image + '" alt=""><figcaption>' + m.label + '</figcaption></figure>';
+      var note = m.type === 'video' ? m.label : typeof m.caption === 'string' ? m.caption.trim() : '';
+      return '<figure class="fn-figure"><img src="' + escapePreview(m.image) + '" alt="' + escapePreview(m.alt) + '">' + (note ? '<figcaption>' + escapePreview(note) + '</figcaption>' : '') + '</figure>';
     },
   });
 
@@ -68,9 +70,9 @@
       if (get('rights') === 'pending') warn.push('This older project was never cleared to show. Ask us to clear it before requesting Show on site.');
       photos.forEach(function (p, i) { if (!p.alt) warn.push('Photo ' + (i + 1) + ' needs a description.'); });
       if (get('hero') && !get('heroAlt')) warn.push('The main image needs a description.');
-      var fig = function (src, alt, focal, key) {
+      var fig = function (src, alt, focal, key, caption) {
         var a = src ? (thumbs[src] || self.props.getAsset(src).toString()) : null;
-        return a ? h('figure', { key: key, className: 'dash-fig' }, h(Thumb, { src: a, path: src, alt: alt || '' }), h('figcaption', {}, alt || 'No description yet')) : null;
+        return a ? h('figure', { key: key, className: 'dash-fig' }, h(Thumb, { src: a, path: src, alt: alt || '' }), typeof caption === 'string' && caption.trim() ? h('figcaption', {}, caption.trim()) : null) : null;
       };
       return h('article', { className: 'project dash-project' },
         h('div', { className: 'wrap', style: { paddingTop: '32px' } },
@@ -82,8 +84,8 @@
           get('client') ? h('p', {}, h('strong', {}, 'Client: '), get('client')) : null,
           services.length ? h('p', {}, h('strong', {}, 'Services: '), services.map(function (s) { return serviceLabels[s] || s; }).join(' · ')) : null,
           get('serviceDetails') ? h('p', {}, h('strong', {}, 'Special work: '), get('serviceDetails')) : null,
-          fig(get('hero'), get('heroAlt'), get('heroFocal'), 'hero'),
-          h('div', { className: 'dash-grid' }, photos.map(function (p, i) { return fig(p.image, p.alt, p.focal, 'p' + i); }))));
+          fig(get('hero'), get('heroAlt'), get('heroFocal'), 'hero', get('heroCaption')),
+          h('div', { className: 'dash-grid' }, photos.map(function (p, i) { return fig(p.image, p.alt, p.focal, 'p' + i, p.caption); }))));
     },
   });
   CMS.registerPreviewTemplate('projects', ProjectPreview);
@@ -97,7 +99,7 @@
         h('div', { className: 'dash-cards' }, ['16 / 9', '4 / 3', '3 / 4'].map(function (r) {
           return h('figure', { key: r, className: 'dash-fig' }, a ? h('img', { src: a.toString(), alt: get('alt') || '', style: { aspectRatio: r, objectFit: 'cover', objectPosition: FOCAL[get('focal')] || '50% 50%' } }) : null, h('figcaption', {}, 'Card crop ' + r));
         })),
-        h('p', {}, h('strong', {}, 'Description: '), get('alt') || 'none yet'));
+        typeof get('caption') === 'string' && get('caption').trim() ? h('p', { className: 'photo-caption' }, get('caption').trim()) : null);
     },
   });
   CMS.registerPreviewTemplate('photos', PhotoPreview);
@@ -208,7 +210,7 @@
           h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: true }); } }, 'Choose from site photos'),
           h('span', { className: 'pgk-gallery__count' }, arr.length ? arr.length + (arr.length === 1 ? ' photo' : ' photos') + '. The first one leads.' : 'Choose several at once: hold Shift or Command.'),
           h('input', { type: 'file', multiple: true, accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose photos' })),
-        this.state.picking ? h(Picker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { self.props.onChange(toArr(self.props.value).concat(list.map(function (x) { return { image: x.src, alt: x.alt || '', focal: 'center', orientation: 'auto', photoType: (x.service || []).includes('drone') ? 'drone' : 'photography' }; }))); self.setState({ picking: false }); } }) : null,
+        this.state.picking ? h(Picker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { self.props.onChange(toArr(self.props.value).concat(list.map(function (x) { return Object.assign({ image: x.src, alt: x.alt || '', focal: 'center', orientation: 'auto', photoType: (x.service || []).includes('drone') ? 'drone' : 'photography' }, x.caption ? { caption: x.caption } : {}); }))); self.setState({ picking: false }); } }) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
         h('ol', { className: 'pgk-gallery__list' }, arr.map(function (ph, i) {
           var sz = self.state.sizes[ph.image];
@@ -216,6 +218,8 @@
             h(Thumb, { src: thumbFor(ph.image, self.props.getAsset, self.props.field), path: ph.image, alt: ph.alt, onSize: function (w, ht) { if (!sz) { var s = Object.assign({}, self.state.sizes); s[ph.image] = [w, ht]; self.setState({ sizes: s }); } } }),
             h('div', { className: 'pgk-row__fields' },
               h('label', {}, h('span', {}, 'Description (alt text)' + (ph.alt ? '' : ' · needed before publishing')), h('input', { type: 'text', value: ph.alt || '', placeholder: 'e.g. Kitchen with a marble island and brass pendant lights', onChange: function (e) { self.update(i, 'alt', e.target.value); } })),
+              h('label', {}, h('span', {}, 'Visible caption (optional)'), h('input', { type: 'text', 'aria-label': 'Visible caption (optional), photo ' + (i + 1), value: ph.caption || '', maxLength: 300, placeholder: 'Optional note or credit — blank means no caption', onChange: function (e) { self.update(i, 'caption', e.target.value); } })),
+              h('p', { className: 'pgk-gallery__count' }, 'The description is alt text for accessibility. Only the optional caption is displayed under the photo.'),
               h('label', {}, h('span', {}, 'Photo type for gallery filters'), h('select', { value: ph.photoType || 'photography', onChange: function (e) { self.update(i, 'photoType', e.target.value); } },
                 h('option', { value: 'photography' }, 'Photography'), h('option', { value: 'drone' }, 'Drone photography'))),
               h('label', {}, h('span', {}, 'Focus when cropped'), h('select', { value: ph.focal || 'center', onChange: function (e) { self.update(i, 'focal', e.target.value); } }, FOCAL_OPTIONS.map(function (o) { return h('option', { key: o[0], value: o[0] }, o[1]); }))),

@@ -20,10 +20,16 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
   const projectSlugs = new Set(work.projects.map((p) => p.slug));
   const say = (live, msg) => (live ? errors : warnings).push(msg);
   const nameOf = (p) => `Project “${p.title || p.slug}”`;
+  const checkCaption = (value, live, label) => {
+    if (value == null || value === '') return;
+    if (typeof value !== 'string' || value.length > 300) say(live, `${label}: keep the optional caption to 300 characters of text or fewer`);
+    if (looksLikeStreet(value)) say(live, `${label}: the caption looks like a street address. Use the client, project or town`);
+  };
 
   for (const p of work.projects) {
     const live = p.published !== false;
     const who = nameOf(p);
+    checkCaption(p.heroCaption, live, `${who}, main image`);
     if (!p.title) say(live, `${who}: add a title`);
     if (!cats.has(p.category)) say(live, `${who}: choose a service category`);
     if (!Array.isArray(p.services) || !p.services.length) say(live && !p.path, `${who}: choose at least one standard service delivered`);
@@ -50,6 +56,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
       const label = `${who}, photo ${i + 1}`;
       if (!ph || !ph.image) { say(live, `${label}: choose an image`); continue; }
       if (!ph.alt) say(live, `${label}: describe the photo (alt text)`);
+      checkCaption(ph.caption, live, label);
       if (ph.photoType && !['photography', 'drone'].includes(ph.photoType)) say(live, `${label}: choose Photography or Drone photography for the gallery filter`);
       if (looksLikeAddress(ph.image.split('/').pop())) say(live, `${label}: the file name looks like a street address. Rename the file and upload it again`);
       if (looksLikeCameraName(ph.image)) say(live, `${label}: still has its camera file name (${ph.image.split('/').pop()}). Remove it and add it again so the dashboard renames it`);
@@ -64,6 +71,7 @@ export function checkContent({ work, fileExists, imageInfo = () => null, pageTex
     if (m.fromProject) continue; // checked with its project above
     const live = m.published !== false && m.rights === 'approved';
     if (m.type === 'image' && !m.alt) say(live, `Photo “${m.title || m.id}”: describe the photo (alt text)`);
+    if (m.type === 'image') checkCaption(m.caption, live, `Photo “${m.title || m.id}”`);
     if (m.project && !projectSlugs.has(m.project)) say(live, `“${m.title || m.id}”: its project “${m.project}” does not exist`);
     if (m.type === 'image' && m.src && m.src.startsWith('/images/') && !fileExists(m.src)) say(live, `Photo “${m.title || m.id}”: ${m.src} is missing`);
     if (looksLikeAddress(m.location)) say(live, `“${m.title || m.id}”: “Town or area” looks like a street address`);

@@ -6,7 +6,7 @@
 // `sortPriority` still decides what shows first in galleries; `order` only breaks ties, as file order did before.
 //
 // Dashboard additions (all optional, absent on the 13 original projects):
-//   project.photos  [{ image, alt, focal, orientation }]  photos uploaded in the project form. Each becomes a normal
+//   project.photos  [{ image, alt, caption?, focal, orientation }]  photos uploaded in the project form. Each becomes a normal
 //                   media record `<slug>-<file name>` that inherits the project's category, client, location, rights,
 //                   visibility and priority, so every gallery, filter and project page treats it like any other photo.
 //   project.films   [media id]  existing library films added to the project (they must not belong to another one).
@@ -57,6 +57,7 @@ export function expandProjectPhotos(root, p) {
       service: ph.photoType === 'drone' ? ['photography', 'drone'] : ['photography'], category: p.category,
       orientation: ph.orientation && ph.orientation !== 'auto' ? ph.orientation : size ? orientationOf(size) : 'horizontal',
       src: ph.image, featured: false, rights: p.rights || 'pending', alt: ph.alt || null, location: p.location || null,
+      ...(typeof ph.caption === 'string' && ph.caption.trim() ? { caption: ph.caption.trim() } : {}),
       client: p.client || null, source: 'upload', published: p.published !== false, packageIds: [], capturedYear: null,
       sortPriority: num(p.sortPriority) || 0, ...(ph.focal && ph.focal !== 'center' ? { focal: ph.focal } : {}),
       ...(size ? { width: size.width, height: size.height } : {}), fromProject: true,

@@ -106,12 +106,12 @@ window.mountWidget = function (name, { field, value, entry, collection, decap })
   m.unmount = () => { mounts = mounts.filter((x) => x !== m); for (const [k, inst] of [...instances]) if (k.startsWith(m.id + ':')) { if (inst.componentWillUnmount) inst.componentWillUnmount(); instances.delete(k); } host.remove(); };
   mounts.push(m); m.draw(); return m;
 };
-window.CMS = { registerWidget: (n, c) => { window.__registered[n] = c; }, registerPreviewTemplate() {}, registerPreviewStyle() {}, registerEditorComponent() {}, registerLocale() {}, registerEventListener(l) { (window.__events = window.__events || {})[l.name] = l.handler; }, init() {} };
+window.CMS = { registerWidget: (n, c) => { window.__registered[n] = c; }, registerPreviewTemplate(n, c) { window.__registered['preview-' + n] = c; }, registerPreviewStyle() {}, registerEditorComponent() {}, registerLocale() {}, registerEventListener(l) { (window.__events = window.__events || {})[l.name] = l.handler; }, init() {} };
 window.h = h; window.createClass = createClass; window.__unmountNamed = (name) => mounts.filter((m) => m.id.startsWith(name + '#')).forEach((m) => m.unmount()); window.__wrapForTest = (x) => wrap(x);
 localStorage.setItem('decap-cms-user', JSON.stringify({ token: 'gho_${'x'.repeat(36)}', backendName: 'github' }));
 `;
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); page.setDefaultTimeout(8000);
 const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
 // Routes added later win in Playwright, so the catch-all page goes first.
@@ -171,6 +171,36 @@ const valid = (cls) => page.evaluate((c) => { const m = window.__mounts?.[c]; re
 await check('registered widgets', async () => {
   const names = await page.evaluate(() => Object.keys(window.__registered).sort());
   for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-drive', 'pgk-live', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
+});
+
+await check('project preview: descriptions stay in alt text; only explicit captions are visible', async () => {
+  const data = { title: 'Caption QA', published: true, hero: '/images/hero.jpg', heroAlt: 'Main photo metadata', photos: [{ image: '/images/detail.jpg', alt: 'Detail photo metadata', hiddenMetadata: 'keep' }] };
+  await page.evaluate(data => { window.__captionPreview = window.mountWidget('preview-projects', { field: {}, entry: { data } }); }, data);
+  const host = page.locator('.host-preview-projects').last();
+  assert.equal(await host.locator('figcaption').count(), 0);
+  assert.equal(await host.locator('img').last().getAttribute('alt'), data.photos[0].alt);
+  assert.ok(!(await host.innerText()).includes('photo metadata'));
+  await page.evaluate(() => { window.__captionPreview.setSibling('heroCaption', 'Main photo credit'); window.__captionPreview.setSibling('photos', [{ image: '/images/detail.jpg', alt: 'Detail photo metadata', caption: '<b>Literal note</b>' }]); });
+  await host.locator('figcaption').last().waitFor();
+  assert.deepEqual(await host.locator('figcaption').allTextContents(), ['Main photo credit', '<b>Literal note</b>']);
+  assert.equal(await host.locator('figcaption b').count(), 0);
+  await page.evaluate(() => { window.__captionPreview.setSibling('heroCaption', ' '); window.__captionPreview.setSibling('photos', [{ image: '/images/detail.jpg', alt: 'Detail photo metadata', caption: '' }]); });
+  await page.waitForTimeout(40);
+  assert.equal(await host.locator('figcaption').count(), 0);
+  await page.evaluate(() => window.__captionPreview.unmount());
+});
+
+await check('photo caption editing and clearing preserves descriptions, order and hidden metadata', async () => {
+  const photos = [{ image: '/images/a.jpg', alt: 'Descriptive metadata', hiddenMetadata: 'keep', focal: 'top' }, { image: '/images/b.jpg', alt: 'Second photo', caption: 'Credit' }];
+  await page.evaluate(photos => { window.__captionGallery = window.mountWidget('pgk-gallery', { field: { name: 'photos' }, value: photos, entry: { data: { photos } }, collection: 'projects' }); }, photos);
+  const host = page.locator('.host-pgk-gallery').last();
+  const input = host.getByLabel('Visible caption (optional)').first();
+  assert.equal(await input.inputValue(), '');
+  await input.fill('Project note'); await page.waitForTimeout(40);
+  assert.deepEqual(await page.evaluate(() => window.__captionGallery.savedJson().photos), [{ ...photos[0], caption: 'Project note' }, photos[1]]);
+  await input.fill(''); await page.waitForTimeout(40);
+  assert.deepEqual(await page.evaluate(() => window.__captionGallery.savedJson().photos), [{ ...photos[0], caption: '' }, photos[1]]);
+  await page.evaluate(() => window.__captionGallery.unmount());
 });
 
 await check('folder and tag controls save new names, deduplicate tags, and remove safely', async () => {

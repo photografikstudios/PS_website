@@ -7,6 +7,8 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const arrow = '<span aria-hidden="true">→</span>';
+const captionText = (value) => typeof value === 'string' ? value.trim() : '';
+const photoCaption = (value) => captionText(value) ? `<p class="photo-caption">${esc(captionText(value))}</p>` : '';
 
 export function buildPages(ctx) {
   const { site, pricing, work, offers, faqs, testimonials, pageText, img, videoPlayer, needsApproval, visible, reviewMode } = ctx;
@@ -124,7 +126,7 @@ export function buildPages(ctx) {
       </div>` : '';
     return `<article class="card card--${m.orientation} card--${m.type} reveal" style="--ar:${m.orientation === 'vertical' ? '0.5625' : m.type === 'video' ? '1.7778' : '1.5'}"
       data-service="${esc(m.service.join(' '))}" data-category="${esc(m.category)}" data-kind="${m.type}">
-      ${frame}${meta}
+      ${frame}${m.type === 'image' ? photoCaption(m.caption) : ''}${meta}
     </article>`;
   };
 
@@ -141,6 +143,7 @@ export function buildPages(ctx) {
     poster: m.type === 'video' ? posterFull(m) : null, alt: m.alt || m.title, category: m.category, orientation: m.orientation, ...facts(m, segmentsOf(m, projectBySlug)),
     captions: m.type === 'video' && m.captions && m.captions !== 'burned-in' ? m.captions : undefined,
     openCaptions: m.openCaptions || undefined,
+    caption: m.type === 'image' ? captionText(m.caption) : undefined,
   });
   const itemsJson = (list) => `<script type="application/json" data-gallery-items>${JSON.stringify(list.map(galleryItem)).replace(/</g, '\\u003c')}</script>`;
   const playIcon = '<span class="sw-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>';
@@ -341,7 +344,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
     if (!m) return '';
     return m.type === 'video'
       ? `<figure class="fn-figure fn-figure--${esc(m.orientation)}">${videoPlayer(m, { sizes: '(min-width: 900px) 720px, 100vw' })}<figcaption>${esc(m.title)}${m.location ? `, ${esc(m.location)}` : ''}</figcaption></figure>`
-      : `<figure class="fn-figure">${img(m.src, { alt: m.alt || m.title, sizes: '(min-width: 900px) 720px, 100vw' })}<figcaption>${esc(m.title)}</figcaption></figure>`;
+      : `<figure class="fn-figure">${img(m.src, { alt: m.alt || m.title, sizes: '(min-width: 900px) 720px, 100vw' })}${captionText(m.caption) ? `<figcaption>${esc(captionText(m.caption))}</figcaption>` : ''}</figure>`;
   };
   const fnImage = (b) => `<figure class="fn-figure">${img(b.src, { alt: b.alt, sizes: '(min-width: 900px) 720px, 100vw' })}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`;
   const fnCard = (a) => `<article class="fn-card" data-category="${esc(a.category)}">
@@ -441,7 +444,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
   <div class="wrap fn-narrow fn-body">
     ${toc ? `<nav class="fn-toc" aria-label="In this article"><p class="fn-toc__h">In this article</p><ol>${join(rendered.toc, (t) => `<li><a href="#${t.id}">${inlineMd(t.text)}</a></li>`)}</ol></nav>` : ''}
     ${rendered.html}
-    ${a.photos?.length ? `<div class="fn-gallery">${join(a.photos, (ph) => `<figure class="fn-figure">${img(ph.image, { alt: ph.alt || '', focal: ph.focal, sizes: '(min-width: 900px) 360px, 50vw' })}</figure>`)}</div>` : ''}
+    ${a.photos?.length ? `<div class="fn-gallery">${join(a.photos, (ph) => `<figure class="fn-figure">${img(ph.image, { alt: ph.alt || '', focal: ph.focal, sizes: '(min-width: 900px) 360px, 50vw' })}${captionText(ph.caption) ? `<figcaption>${esc(captionText(ph.caption))}</figcaption>` : ''}</figure>`)}</div>` : ''}
     <aside class="fn-next">
       <p class="eyebrow">Next step</p>
       <p class="fn-next__t">${esc(a.cta?.lead || 'Ready to plan the media for your next listing?')}</p>
@@ -949,10 +952,11 @@ ${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby
     <h2 class="h2 reveal" id="arch-story-h">Pick the story that wins <em>the next project.</em></h2>
     <div class="story-guide">
       <div class="story-guide__item reveal">${archFig(archPairIds.photo, { sizes: '(min-width: 1000px) 30vw, 100vw', cls: 'story-guide__fig' })}<p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
-      <div class="story-guide__item reveal">${archVideo ? `<a class="story-guide__film" href="?type=video#portfolio" data-track="gallery_filter" data-track-location="arch_story_film"><span class="still still--horizontal"><img src="${esc(galThumb(archVideo))}" alt="" loading="lazy" decoding="async">${playIcon}</span><span class="story-guide__filmcap">Watch the ${esc(archVideo.project && projectBySlug[archVideo.project] ? projectBySlug[archVideo.project].title : archVideo.title.split(':')[0])} film below</span></a>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
+      <div class="story-guide__item reveal">${archVideo ? `<figure class="story-guide__fig"><span class="still still--horizontal"><video data-ambient muted loop playsinline controls preload="none" data-poster="${esc(posterFull(archVideo))}" aria-label="${esc(archVideo.title)}"><source src="${esc(ctx.mediaUrl(archVideo.src))}" type="video/mp4"></video></span></figure>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
       <div class="story-guide__item reveal">${(() => { const it = pmv('architecture-design', 'storyBrand'); const st = pmStill(omitIds.has(it?.media) ? { media: 'cs-ph-dan-dan-conversation' } : it); return st ? `<figure class="story-guide__fig story-guide__fig--person"><span class="still still--horizontal">${img(st.src, { alt: (!omitIds.has(it?.media) && it.alt) || st.alt, thumb: st.m?.type === 'video' ? undefined : st.thumb, sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })()}<p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
     </div>
     <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
+    <div class="actions story-guide__actions"><a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_discovery">Book a discovery call</a></div>
   </div>
 </section>
 
@@ -1353,7 +1357,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const isRE = p.category === 'real-estate';
     const photoLightbox = p.category === 'architecture-design';
     const projectPhotos = photoLightbox ? [
-      ...(p.hero ? [{ id: `${p.slug}-hero`, type: 'image', project: p.slug, title: p.title, src: p.hero, alt: p.heroAlt || p.title, orientation: p.heroOrientation, service: [], category: p.category }] : []),
+      ...(p.hero ? [{ id: `${p.slug}-hero`, type: 'image', project: p.slug, title: p.title, src: p.hero, alt: p.heroAlt || p.title, caption: p.heroCaption, orientation: p.heroOrientation, service: [], category: p.category }] : []),
       ...pm.filter((m) => m.type === 'image'),
     ].filter((m, i, all) => all.findIndex((other) => other.src === m.src) === i) : [];
     const photoIndex = new Map(projectPhotos.map((m, i) => [m.src, i]));
@@ -1389,7 +1393,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
         <dl class="project__facts">${p.client ? `<div><dt>Client</dt><dd>${esc(p.client)}</dd></div>` : ''}${services ? `<div><dt>${isCom ? 'Delivered' : 'Services'}</dt><dd>${esc(services)}</dd></div>` : ''}${serviceDetails ? `<div><dt>Special work</dt><dd>${esc(serviceDetails)}</dd></div>` : ''}${goal ? `<div><dt>Goal</dt><dd>${goal}</dd></div>` : ''}${p.location ? `<div><dt>Location</dt><dd>${esc(p.location)}</dd></div>` : ''}</dl>
         <div class="actions">${cta}</div>
       </div>
-      <div class="project__hero">${withLoop(p, heroHtml)}</div>
+      <div class="project__hero">${withLoop(p, heroHtml)}${photoCaption(p.hero ? p.heroCaption : rep?.type === 'image' ? rep.caption : '')}</div>
     </div>
   </header>
   ${galleryMedia.length ? `<section class="section section--ink on-dark"><div class="wrap"><h2 class="h2 reveal">From the project</h2>${isCom ? `<div class="project__gallery">${galleryHtml}</div>` : galleryHtml}</div></section>` : ''}
