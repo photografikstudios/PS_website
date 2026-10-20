@@ -1,28 +1,268 @@
 {
-  "slug": "bellard-brothers",
-  "title": "Bellard Brothers",
-  "shortTitle": "Bellard Brothers",
-  "client": "Bellard Brothers",
-  "category": "architecture-design",
-  "urlCategory": "architecture-design",
-  "services": [
-    "photography"
-  ],
-  "summary": "Photography for Bellard Brothers.",
-  "story": "A collection of project photography for Bellard Brothers, documenting the spaces and details shown here.",
-  "hero": "/images/library/bellard-brothers/bellard-brothers-front-lawn-and-driveway-02.webp",
-  "heroAlt": "Front lawn and driveway \u2014 Bellard Brothers.",
-  "heroOrientation": "horizontal",
-  "rights": "approved",
-  "rightsNote": "James supplied this client media and requested adding it to the preview on October 19, 2026.",
-  "published": true,
-  "order": 210,
   "segments": [
     "builder"
   ],
-  "segmentSource": "Owner supplied as builder/architectural media, October 19, 2026; existing client folder naming identifies the discipline.",
+  "photos": [
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-white-farmhouse-front-elevation-01.webp",
+      "alt": "White farmhouse front elevation — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-farmhouse-framed-by-garden-flowers-03.webp",
+      "alt": "Farmhouse framed by garden flowers — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-covered-porch-and-garden-path-04.webp",
+      "alt": "Covered porch and garden path — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-rear-lawn-pool-fence-and-porch-05.webp",
+      "alt": "Rear lawn pool fence and porch — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-front-porch-entrance-detail-06.webp",
+      "alt": "Front porch entrance detail — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-farmhouse-side-and-front-elevation-07.webp",
+      "alt": "Farmhouse side and front elevation — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-garden-path-to-the-covered-porch-08.webp",
+      "alt": "Garden path to the covered porch — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-pool-and-shaded-outdoor-dining-09.webp",
+      "alt": "Pool and shaded outdoor dining — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-rear-porch-and-swimming-pool-10.webp",
+      "alt": "Rear porch and swimming pool — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-aerial-front-elevation-and-lawn-11.webp",
+      "alt": "Aerial front elevation and lawn — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "drone"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-aerial-backyard-pool-and-fire-pit-12.webp",
+      "alt": "Aerial backyard pool and fire pit — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "drone"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-aerial-pool-terrace-and-rear-elevation-13.webp",
+      "alt": "Aerial pool terrace and rear elevation — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "drone"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-aerial-view-of-front-porch-14.webp",
+      "alt": "Aerial view of front porch — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "drone"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-white-kitchen-island-and-ceiling-beams-15.webp",
+      "alt": "White kitchen island and ceiling beams — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-wood-vanity-and-patterned-bathroom-walls-16.webp",
+      "alt": "Wood vanity and patterned bathroom walls — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-kitchen-island-with-pendant-lights-17.webp",
+      "alt": "Kitchen island with pendant lights — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-kitchen-cabinetry-and-built-in-appliances-18.webp",
+      "alt": "Kitchen cabinetry and built in appliances — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-white-cabinet-and-brass-handle-detail-19.webp",
+      "alt": "White cabinet and brass handle detail — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-bathroom-vanity-and-mirrors-21.webp",
+      "alt": "Bathroom vanity and mirrors — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-kitchen-range-and-hood-22.webp",
+      "alt": "Kitchen range and hood — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-wood-bathroom-vanity-and-mirror-23.webp",
+      "alt": "Wood bathroom vanity and mirror — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-living-room-fireplace-and-built-in-shelves-24.webp",
+      "alt": "Living room fireplace and built in shelves — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-glass-shower-and-stone-patterned-walls-25.webp",
+      "alt": "Glass shower and stone patterned walls — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-home-office-with-blue-built-in-shelves-26.webp",
+      "alt": "Home office with blue built in shelves — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-bathroom-vanity-and-arched-mirrors-27.webp",
+      "alt": "Bathroom vanity and arched mirrors — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-freestanding-bath-and-glass-shower-28.webp",
+      "alt": "Freestanding bath and glass shower — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-shower-and-niche-detail-29.webp",
+      "alt": "Shower and niche detail — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-home-library-with-dining-table-30.webp",
+      "alt": "Home library with dining table — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-bathroom-vanity-and-floral-wallpaper-31.webp",
+      "alt": "Bathroom vanity and floral wallpaper — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-freestanding-bath-beside-glass-shower-32.webp",
+      "alt": "Freestanding bath beside glass shower — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-dark-kitchen-cabinets-and-white-island-33.webp",
+      "alt": "Dark kitchen cabinets and white island — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-bedroom-with-upholstered-bed-34.webp",
+      "alt": "Bedroom with upholstered bed — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-bright-bedroom-seating-area-35.webp",
+      "alt": "Bright bedroom seating area — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/bellard-brothers/bellard-brothers-white-built-in-media-cabinetry-36.webp",
+      "alt": "White built in media cabinetry — Bellard Brothers.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    }
+  ],
+  "summary": "Photography for Bellard Brothers.",
   "libraryFolder": "Bellard Brothers",
+  "rightsNote": "James supplied this client media and requested adding it to the preview on October 19, 2026.",
+  "slug": "bellard-brothers",
+  "client": "Bellard Brothers",
+  "urlCategory": "architecture-design",
+  "segmentSource": "Owner supplied as builder/architectural media, October 19, 2026; existing client folder naming identifies the discipline.",
+  "published": true,
+  "order": 210,
+  "heroAlt": "Front lawn and driveway — Bellard Brothers.",
+  "story": "A collection of project photography for Bellard Brothers, documenting the spaces and details shown here.",
+  "heroOrientation": "horizontal",
+  "rights": "approved",
+  "title": "Bellard Brothers",
   "tags": [
     "photography"
-  ]
+  ],
+  "hero": "/images/library/bellard-brothers/bellard-brothers-front-lawn-and-driveway-02.webp",
+  "shortTitle": "Bellard Brothers",
+  "services": [
+    "photography"
+  ],
+  "category": "architecture-design"
 }
