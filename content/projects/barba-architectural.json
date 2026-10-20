@@ -9,10 +9,74 @@
       "focal": "center",
       "orientation": "auto",
       "photoType": "photography"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-waterfront-shingle-residence-across-the-marsh-01.webp",
+      "alt": "Waterfront shingle residence across the marsh — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-waterfront-residence-and-pool-terrace-02.webp",
+      "alt": "Waterfront residence and pool terrace — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-shingle-roof-and-waterfront-gables-03.webp",
+      "alt": "Shingle roof and waterfront gables — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-rear-elevation-with-pool-terrace-04.webp",
+      "alt": "Rear elevation with pool terrace — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-aerial-view-of-the-pool-and-terraces-05.webp",
+      "alt": "Aerial view of the pool and terraces — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "drone"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-front-elevation-beside-the-bay-06.webp",
+      "alt": "Front elevation beside the bay — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-overhead-view-of-the-residence-and-dock-07.webp",
+      "alt": "Overhead view of the residence and dock — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "drone"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-overhead-pool-and-terrace-detail-08.webp",
+      "alt": "Overhead pool and terrace detail — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "drone"
+    },
+    {
+      "image": "/images/library/barba-architectural/barba-architectural-waterside-facade-and-pool-terrace-09.webp",
+      "alt": "Waterside facade and pool terrace — Barba Architectural.",
+      "focal": "center",
+      "orientation": "auto",
+      "photoType": "photography"
     }
   ],
   "path": "/architecture-design/barba-architectural",
   "summary": "Project photography for Barba Architectural.",
+  "libraryFolder": "Barba Architectural",
   "rightsNote": "Photo already approved for display; client named by James, Sep 27 2026.",
   "slug": "barba-architectural",
   "client": "Barba Architectural",
@@ -26,14 +90,13 @@
   "heroOrientation": "horizontal",
   "rights": "approved",
   "title": "Barba Architectural",
+  "tags": [
+    "photography"
+  ],
   "hero": "/v/ph-barba-waterfront.webp",
   "shortTitle": "Barba Architectural",
   "services": [
     "photography"
   ],
-  "category": "architecture-design",
-  "libraryFolder": "Barba Architectural",
-  "tags": [
-    "photography"
-  ]
+  "category": "architecture-design"
 }
