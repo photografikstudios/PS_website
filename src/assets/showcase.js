@@ -23,19 +23,19 @@ if (root) {
 
   function syncCategories() {
     const have = catsFor(kindSel.value);
-    for (const o of catSel.options) o.hidden = o.disabled = !have.has(o.value);
-    if (!have.has(catSel.value)) catSel.value = [...catSel.options].find((o) => !o.disabled)?.value || '';
+    for (const o of catSel.options) o.hidden = o.disabled = o.value !== '' && !have.has(o.value);
+    if (catSel.value && !have.has(catSel.value)) catSel.value = '';
   }
 
   function render() {
     const kind = kindSel.value; const cat = catSel.value;
-    const matches = cards.filter((c) => c.dataset.kind === kind && c.dataset.category === cat);
+    const matches = cards.filter((c) => c.dataset.kind === kind && (!cat || c.dataset.category === cat));
     visible = matches.slice(0, limit()).map((c) => +c.dataset.i);
     cards.forEach((c) => { c.hidden = !visible.includes(+c.dataset.i); });
     empty.hidden = matches.length > 0;
     const route = routes[cat] || '/real-estate';
     more.href = `${route}${route === '/real-estate' ? `?type=${kind === 'video' ? 'video' : 'photo'}` : ''}#portfolio`;
-    more.textContent = 'View more'; // James, Sep 28: no visible item counts
+    more.textContent = cat ? 'View more' : 'View more Real Estate'; // Name the destination of the mixed-service view.
   }
 
   const changed = () => track('gallery_filter', { where: 'home', kind: kindSel.value, category: catSel.value });

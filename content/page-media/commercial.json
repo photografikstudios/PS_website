@@ -23,5 +23,30 @@
     "media": "ph-rachel-lynch-infinity"
   },
   "caseStudy": null,
-  "clientWork": null
+  "clientWork": {
+    "mode": "custom",
+    "items": [
+      {
+        "project": "bpe-ironworks"
+      },
+      {
+        "project": "clos-lighting"
+      },
+      {
+        "project": "revivaluxe"
+      },
+      {
+        "project": "rachel-lynch-pools"
+      },
+      {
+        "project": "eestairs"
+      },
+      {
+        "project": "evolution-unlimited"
+      },
+      {
+        "project": "torella-pools"
+      }
+    ]
+  }
 }

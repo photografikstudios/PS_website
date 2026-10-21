@@ -508,7 +508,8 @@ await check('home showcase: Videos/Photos × category, lightbox, View more', asy
   await p.goto(base + '/');
   const shown = () => p.locator('#sw-grid .sw-card:not([hidden])').evaluateAll((els) => els.map((e) => [e.dataset.kind, e.dataset.category]));
   let v = await shown();
-  assert(v.length > 0 && v.length <= 10 && v.every(([k, c]) => k === 'image' && c === 'real-estate'), JSON.stringify(v));
+  assert(v.length > 0 && v.length <= 10 && v.every(([k]) => k === 'image') && new Set(v.map(([, c]) => c)).size >= 3, JSON.stringify(v));
+  assert((await p.inputValue('#sw-cat')) === '', 'curated photos across all services initially');
   assert((await p.getAttribute('#sw-more', 'href')) === '/real-estate?type=photo#portfolio', 'view more href');
   await p.selectOption('#sw-kind', 'image');
   await p.selectOption('#sw-cat', 'architecture-design');

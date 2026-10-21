@@ -199,7 +199,7 @@ export function buildPages(ctx) {
   const cardable = media.filter((m) => (m.type === 'video' ? !!m.poster : true));
   const showcase = curate('home', 'selectedWork', editorialOrder(cardable), cardable);
   const homeLimit = site.galleries?.home?.limit || 10;
-  const homeInitial = new Set(showcase.filter((m) => m.type === 'image' && m.category === 'real-estate').slice(0, homeLimit).map((m) => m.id));
+  const homeInitial = new Set(showcase.filter((m) => m.type === 'image').slice(0, homeLimit).map((m) => m.id));
   // Portrait podcast stills need a little extra headroom in Home's short tiles. Full-size viewers stay uncropped.
   const showcaseFocus = (m) => m.category === 'creator-studios' && m.orientation === 'vertical' && m.focal === 'top'
     ? ' style="object-position: 50% 8%"' : focalAttr(m.focal);
@@ -265,7 +265,7 @@ export function buildPages(ctx) {
         <label class="sr-only" for="sw-kind">Media type</label>
         <select id="sw-kind" class="pill-select"><option value="image" selected>Photos</option><option value="video">Videos</option></select>
         <label class="sr-only" for="sw-cat">Category</label>
-        <select id="sw-cat" class="pill-select">${join(work.taxonomy.category.filter((c) => showcase.some((m) => m.category === c.id)), (c) => `<option value="${c.id}"${c.id === 'real-estate' ? ' selected' : ''}>${esc(c.label)}</option>`)}</select>
+        <select id="sw-cat" class="pill-select"><option value="" selected>All services</option>${join(work.taxonomy.category.filter((c) => showcase.some((m) => m.category === c.id)), (c) => `<option value="${c.id}">${esc(c.label)}</option>`)}</select>
       </div>
     </div>
     <div class="showcase__grid" id="sw-grid">
@@ -275,7 +275,7 @@ export function buildPages(ctx) {
       </button>`)}
     </div>
     <p class="showcase__empty" id="sw-empty" hidden>Nothing in this category yet. Try another, or <a href="/contact">send us a project brief</a>.</p>
-    <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/real-estate?type=photo#portfolio" data-track="gallery_view_more">View more</a></div>
+    <div class="showcase__more"><a class="btn btn--light" id="sw-more" href="/real-estate?type=photo#portfolio" data-track="gallery_view_more">View more Real Estate</a></div>
   </div>
   ${lightboxDialog()}
   ${itemsJson(showcase)}

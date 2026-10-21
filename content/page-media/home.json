@@ -2,7 +2,1193 @@
   "pathCreator": {
     "media": "cs-podcast-ep23-short"
   },
-  "selectedWork": null,
+  "selectedWork": {
+    "mode": "custom",
+    "items": [
+      {
+        "media": "re-southampton-pool"
+      },
+      {
+        "media": "yankee-lead"
+      },
+      {
+        "media": "re-lloyd-harbor-foyer"
+      },
+      {
+        "media": "peterson-lead"
+      },
+      {
+        "media": "re-quiogue-aerial"
+      },
+      {
+        "media": "ph-bpe-steel"
+      },
+      {
+        "media": "ph-revivaluxe-treatment"
+      },
+      {
+        "media": "re-sag-harbor-living"
+      },
+      {
+        "media": "re-quiogue-exterior"
+      },
+      {
+        "media": "re-east-hampton-bath"
+      },
+      {
+        "media": "cs-demo-reel"
+      },
+      {
+        "media": "ad26-glass-house-pool"
+      },
+      {
+        "media": "ad26-open-staircase"
+      },
+      {
+        "media": "ad26-powder-room"
+      },
+      {
+        "media": "re-quiogue-great-room"
+      },
+      {
+        "media": "re-quiogue-pool"
+      },
+      {
+        "media": "re-bridgehampton-terrace"
+      },
+      {
+        "media": "re-bridgehampton-kitchen"
+      },
+      {
+        "media": "re-lloyd-harbor-front"
+      },
+      {
+        "media": "re-sag-harbor-pool"
+      },
+      {
+        "media": "re-water-mill-pool"
+      },
+      {
+        "media": "oct15-listing-reel-westhampton"
+      },
+      {
+        "media": "oct15-listing-reel-centerport"
+      },
+      {
+        "media": "re-hamptons-beachfront"
+      },
+      {
+        "media": "lauryn-lead"
+      },
+      {
+        "media": "arch-yankee-barn-film"
+      },
+      {
+        "media": "biz-torella-pools"
+      },
+      {
+        "media": "re-hamptons-standout"
+      },
+      {
+        "media": "biz-rachel-lynch-pools"
+      },
+      {
+        "media": "re-hamptons-calm"
+      },
+      {
+        "media": "re-east-end-listing-reel"
+      },
+      {
+        "media": "re-hamptons-aesthetic"
+      },
+      {
+        "media": "biz-eestairs-gramercy"
+      },
+      {
+        "media": "re-hamptons-upbeat"
+      },
+      {
+        "media": "cs-noah-knows-short"
+      },
+      {
+        "media": "biz-bpe-ironworks"
+      },
+      {
+        "media": "re-hamptons-cinematic"
+      },
+      {
+        "media": "cs-tick"
+      },
+      {
+        "media": "re-hamptons-home-aesthetic"
+      },
+      {
+        "media": "re-hampton-luxury-home"
+      },
+      {
+        "media": "agent-lead"
+      },
+      {
+        "media": "revivaluxe-still"
+      },
+      {
+        "media": "creator-still"
+      },
+      {
+        "media": "lauryn-interior"
+      },
+      {
+        "media": "peterson-detail"
+      },
+      {
+        "media": "ph-oceanfront-twilight-pool"
+      },
+      {
+        "media": "ph-hamptons-residence-twilight"
+      },
+      {
+        "media": "ph-hampton-aerial-pool-beach"
+      },
+      {
+        "media": "ph-hamptons-infinity-pool"
+      },
+      {
+        "media": "ph-hamptons-kitchen"
+      },
+      {
+        "media": "ph-hamptons-bedroom-beach"
+      },
+      {
+        "media": "ph-hamptons-pool-fireplace"
+      },
+      {
+        "media": "ph-hamptons-bathroom"
+      },
+      {
+        "media": "ph-hampton-exterior"
+      },
+      {
+        "media": "ph-yankee-barn-great-room"
+      },
+      {
+        "media": "ph-yankee-barn-exterior"
+      },
+      {
+        "media": "ph-peterson-game-room"
+      },
+      {
+        "media": "ph-peterson-dining"
+      },
+      {
+        "media": "ph-kerry-delrose-pool"
+      },
+      {
+        "media": "ph-barba-waterfront"
+      },
+      {
+        "media": "ph-rachel-lynch-infinity"
+      },
+      {
+        "media": "ph-torella-aerial"
+      },
+      {
+        "media": "ph-revivaluxe-portrait"
+      },
+      {
+        "media": "ph-clos-lighting"
+      },
+      {
+        "media": "ph-noah-knows"
+      },
+      {
+        "media": "ph-network-effect"
+      },
+      {
+        "media": "ph-dan-dan"
+      },
+      {
+        "media": "cs-ph-cc-onsite"
+      },
+      {
+        "media": "cs-ph-cc-ep20"
+      },
+      {
+        "media": "cs-ph-hedgestone-switch"
+      },
+      {
+        "media": "cs-ph-island-federal"
+      },
+      {
+        "media": "cs-ph-determined-society"
+      },
+      {
+        "media": "cs-ph-solo-couch"
+      },
+      {
+        "media": "cs-ph-solo-bts"
+      },
+      {
+        "media": "cs-ph-dan-dan-conversation"
+      },
+      {
+        "media": "re-southampton-front"
+      },
+      {
+        "media": "re-southampton-approach"
+      },
+      {
+        "media": "re-southampton-kitchen"
+      },
+      {
+        "media": "re-southampton-living"
+      },
+      {
+        "media": "re-southampton-bar"
+      },
+      {
+        "media": "re-southampton-bath"
+      },
+      {
+        "media": "re-southampton-bedroom"
+      },
+      {
+        "media": "re-southampton-red-bath"
+      },
+      {
+        "media": "re-southampton-rear"
+      },
+      {
+        "media": "re-southampton-outdoor-kitchen"
+      },
+      {
+        "media": "re-southampton-aerial"
+      },
+      {
+        "media": "re-quiogue-aerial-pool"
+      },
+      {
+        "media": "re-quiogue-kitchen"
+      },
+      {
+        "media": "re-quiogue-living"
+      },
+      {
+        "media": "re-quiogue-firepit"
+      },
+      {
+        "media": "re-quiogue-office"
+      },
+      {
+        "media": "re-bridgehampton-exterior"
+      },
+      {
+        "media": "re-bridgehampton-aerial"
+      },
+      {
+        "media": "re-bridgehampton-dining"
+      },
+      {
+        "media": "re-bridgehampton-living"
+      },
+      {
+        "media": "re-bridgehampton-stair"
+      },
+      {
+        "media": "re-bridgehampton-stair-detail"
+      },
+      {
+        "media": "re-bridgehampton-bath"
+      },
+      {
+        "media": "re-bridgehampton-sauna"
+      },
+      {
+        "media": "re-bridgehampton-wine"
+      },
+      {
+        "media": "re-bridgehampton-suite"
+      },
+      {
+        "media": "re-bridgehampton-facade"
+      },
+      {
+        "media": "re-lloyd-harbor-entry"
+      },
+      {
+        "media": "re-lloyd-harbor-lawn"
+      },
+      {
+        "media": "re-lloyd-harbor-living"
+      },
+      {
+        "media": "re-lloyd-harbor-stair"
+      },
+      {
+        "media": "re-lloyd-harbor-kitchen"
+      },
+      {
+        "media": "re-lloyd-harbor-tub"
+      },
+      {
+        "media": "re-lloyd-harbor-portico"
+      },
+      {
+        "media": "re-lloyd-harbor-aerial"
+      },
+      {
+        "media": "re-sag-harbor-rear"
+      },
+      {
+        "media": "re-sag-harbor-kitchen"
+      },
+      {
+        "media": "re-sag-harbor-bath"
+      },
+      {
+        "media": "re-sag-harbor-deck"
+      },
+      {
+        "media": "re-water-mill-front"
+      },
+      {
+        "media": "re-water-mill-living"
+      },
+      {
+        "media": "re-water-mill-foyer"
+      },
+      {
+        "media": "re-water-mill-kitchen"
+      },
+      {
+        "media": "re-water-mill-porch"
+      },
+      {
+        "media": "re-water-mill-bath"
+      },
+      {
+        "media": "re-east-hampton-kitchen"
+      },
+      {
+        "media": "re-east-hampton-lounge"
+      },
+      {
+        "media": "re-east-hampton-tub"
+      },
+      {
+        "media": "re-floorplan"
+      },
+      {
+        "media": "re26-shingle-pool-aerial"
+      },
+      {
+        "media": "re26-double-height-entry"
+      },
+      {
+        "media": "re26-white-kitchen-marble"
+      },
+      {
+        "media": "re26-double-height-living"
+      },
+      {
+        "media": "re26-oceanfront-aerial"
+      },
+      {
+        "media": "re26-oceanfront-twilight"
+      },
+      {
+        "media": "re26-curved-sunroom"
+      },
+      {
+        "media": "re26-shoreline-aerial"
+      },
+      {
+        "media": "re26-pool-overhead"
+      },
+      {
+        "media": "re26-pool-oblique-aerial"
+      },
+      {
+        "media": "re26-driveway-twilight"
+      },
+      {
+        "media": "re26-dock-aerial"
+      },
+      {
+        "media": "re26-waterfront-terrace-aerial"
+      },
+      {
+        "media": "re26-waterview-living"
+      },
+      {
+        "media": "re26-white-kitchen-range-hood"
+      },
+      {
+        "media": "ad26-wood-kitchen"
+      },
+      {
+        "media": "ad26-wood-stair-glass"
+      },
+      {
+        "media": "ad26-window-seat"
+      },
+      {
+        "media": "ad26-glass-house-dusk"
+      },
+      {
+        "media": "ad26-minimal-kitchen"
+      },
+      {
+        "media": "ad26-firehouse-front"
+      },
+      {
+        "media": "ad26-firehouse-bay"
+      },
+      {
+        "media": "ad26-construction-progress"
+      },
+      {
+        "media": "cs-podcast-ep23-short"
+      },
+      {
+        "media": "barba-architectural-waterfront-shingle-residence-across-the-marsh-01"
+      },
+      {
+        "media": "barba-architectural-waterfront-residence-and-pool-terrace-02"
+      },
+      {
+        "media": "barba-architectural-shingle-roof-and-waterfront-gables-03"
+      },
+      {
+        "media": "barba-architectural-rear-elevation-with-pool-terrace-04"
+      },
+      {
+        "media": "barba-architectural-aerial-view-of-the-pool-and-terraces-05"
+      },
+      {
+        "media": "barba-architectural-front-elevation-beside-the-bay-06"
+      },
+      {
+        "media": "barba-architectural-overhead-view-of-the-residence-and-dock-07"
+      },
+      {
+        "media": "barba-architectural-overhead-pool-and-terrace-detail-08"
+      },
+      {
+        "media": "barba-architectural-waterside-facade-and-pool-terrace-09"
+      },
+      {
+        "media": "bellard-brothers-white-farmhouse-front-elevation-01"
+      },
+      {
+        "media": "bellard-brothers-front-lawn-and-driveway-02"
+      },
+      {
+        "media": "bellard-brothers-farmhouse-framed-by-garden-flowers-03"
+      },
+      {
+        "media": "bellard-brothers-covered-porch-and-garden-path-04"
+      },
+      {
+        "media": "bellard-brothers-rear-lawn-pool-fence-and-porch-05"
+      },
+      {
+        "media": "bellard-brothers-front-porch-entrance-detail-06"
+      },
+      {
+        "media": "bellard-brothers-farmhouse-side-and-front-elevation-07"
+      },
+      {
+        "media": "bellard-brothers-garden-path-to-the-covered-porch-08"
+      },
+      {
+        "media": "bellard-brothers-pool-and-shaded-outdoor-dining-09"
+      },
+      {
+        "media": "bellard-brothers-rear-porch-and-swimming-pool-10"
+      },
+      {
+        "media": "bellard-brothers-aerial-front-elevation-and-lawn-11"
+      },
+      {
+        "media": "bellard-brothers-aerial-backyard-pool-and-fire-pit-12"
+      },
+      {
+        "media": "bellard-brothers-aerial-pool-terrace-and-rear-elevation-13"
+      },
+      {
+        "media": "bellard-brothers-aerial-view-of-front-porch-14"
+      },
+      {
+        "media": "bellard-brothers-white-kitchen-island-and-ceiling-beams-15"
+      },
+      {
+        "media": "bellard-brothers-wood-vanity-and-patterned-bathroom-walls-16"
+      },
+      {
+        "media": "bellard-brothers-kitchen-island-with-pendant-lights-17"
+      },
+      {
+        "media": "bellard-brothers-kitchen-cabinetry-and-built-in-appliances-18"
+      },
+      {
+        "media": "bellard-brothers-white-cabinet-and-brass-handle-detail-19"
+      },
+      {
+        "media": "bellard-brothers-double-vanity-with-patterned-walls-20"
+      },
+      {
+        "media": "bellard-brothers-bathroom-vanity-and-mirrors-21"
+      },
+      {
+        "media": "bellard-brothers-kitchen-range-and-hood-22"
+      },
+      {
+        "media": "bellard-brothers-wood-bathroom-vanity-and-mirror-23"
+      },
+      {
+        "media": "bellard-brothers-living-room-fireplace-and-built-in-shelves-24"
+      },
+      {
+        "media": "bellard-brothers-glass-shower-and-stone-patterned-walls-25"
+      },
+      {
+        "media": "bellard-brothers-home-office-with-blue-built-in-shelves-26"
+      },
+      {
+        "media": "bellard-brothers-bathroom-vanity-and-arched-mirrors-27"
+      },
+      {
+        "media": "bellard-brothers-freestanding-bath-and-glass-shower-28"
+      },
+      {
+        "media": "bellard-brothers-shower-and-niche-detail-29"
+      },
+      {
+        "media": "bellard-brothers-home-library-with-dining-table-30"
+      },
+      {
+        "media": "bellard-brothers-bathroom-vanity-and-floral-wallpaper-31"
+      },
+      {
+        "media": "bellard-brothers-freestanding-bath-beside-glass-shower-32"
+      },
+      {
+        "media": "bellard-brothers-dark-kitchen-cabinets-and-white-island-33"
+      },
+      {
+        "media": "bellard-brothers-bedroom-with-upholstered-bed-34"
+      },
+      {
+        "media": "bellard-brothers-bright-bedroom-seating-area-35"
+      },
+      {
+        "media": "bellard-brothers-white-built-in-media-cabinetry-36"
+      },
+      {
+        "media": "bpe-ironworks-worker-cutting-a-steel-beam-01"
+      },
+      {
+        "media": "bpe-ironworks-worker-preparing-steel-on-site-02"
+      },
+      {
+        "media": "bpe-ironworks-aerial-crane-and-steel-construction-site-03"
+      },
+      {
+        "media": "bpe-ironworks-ironworker-on-waterfront-steel-frame-04"
+      },
+      {
+        "media": "bpe-ironworks-crew-members-on-steel-framing-05"
+      },
+      {
+        "media": "bpe-ironworks-steel-structure-and-crane-at-waterfront-06"
+      },
+      {
+        "media": "bpe-ironworks-suspended-steel-beam-against-sunlight-07"
+      },
+      {
+        "media": "bpe-ironworks-steel-framing-above-concrete-foundations-08"
+      },
+      {
+        "media": "bpe-ironworks-crane-installing-waterfront-steel-frame-09"
+      },
+      {
+        "media": "bpe-ironworks-construction-team-beside-equipment-10"
+      },
+      {
+        "media": "bpe-ironworks-ironworker-securing-a-steel-beam-11"
+      },
+      {
+        "media": "bpe-ironworks-ironworker-at-a-steel-connection-12"
+      },
+      {
+        "media": "bpe-ironworks-steel-framework-on-the-construction-site-13"
+      },
+      {
+        "media": "bpe-ironworks-worker-measuring-construction-materials-14"
+      },
+      {
+        "media": "bpe-ironworks-worker-welding-from-a-ladder-15"
+      },
+      {
+        "media": "bpe-ironworks-aerial-foundations-and-construction-equipment-16"
+      },
+      {
+        "media": "bpe-ironworks-aerial-steel-framework-and-crane-17"
+      },
+      {
+        "media": "bpe-ironworks-ironworker-in-safety-equipment-18"
+      },
+      {
+        "media": "bpe-ironworks-crew-securing-a-steel-column-19"
+      },
+      {
+        "media": "bpe-ironworks-ironworker-beside-a-steel-column-20"
+      },
+      {
+        "media": "goldin-luxury-dining-nook-with-framed-artwork-01"
+      },
+      {
+        "media": "goldin-luxury-stairwell-pendant-lighting-02"
+      },
+      {
+        "media": "goldin-luxury-ceiling-beams-and-stairwell-lighting-03"
+      },
+      {
+        "media": "goldin-luxury-recreation-room-with-oversized-lettering-04"
+      },
+      {
+        "media": "goldin-luxury-bedroom-with-fireplace-05"
+      },
+      {
+        "media": "goldin-luxury-bath-and-glass-shower-detail-06"
+      },
+      {
+        "media": "goldin-luxury-stair-landing-and-pendant-lights-07"
+      },
+      {
+        "media": "goldin-luxury-kitchen-island-and-pendant-lights-08"
+      },
+      {
+        "media": "goldin-luxury-front-entrance-and-steps-09"
+      },
+      {
+        "media": "goldin-luxury-rear-elevation-and-swimming-pool-10"
+      },
+      {
+        "media": "goldin-luxury-aerial-neighborhood-and-harbor-view-11"
+      },
+      {
+        "media": "kerry-delrose-interiors-poolside-lounge-chairs-overlooking-water-01"
+      },
+      {
+        "media": "kerry-delrose-interiors-double-height-living-room-from-above-02"
+      },
+      {
+        "media": "kerry-delrose-interiors-waterfront-seating-and-table-detail-03"
+      },
+      {
+        "media": "kerry-delrose-interiors-modern-dark-exterior-and-landscaping-04"
+      },
+      {
+        "media": "kerry-delrose-interiors-powder-room-vanity-and-oval-mirror-05"
+      },
+      {
+        "media": "kerry-delrose-interiors-hallway-opening-to-waterfront-office-06"
+      },
+      {
+        "media": "kerry-delrose-interiors-hallway-and-blue-bathroom-detail-07"
+      },
+      {
+        "media": "kerry-delrose-interiors-long-bathroom-vanity-and-blue-wall-08"
+      },
+      {
+        "media": "kerry-delrose-interiors-dining-room-opening-to-kitchen-09"
+      },
+      {
+        "media": "kerry-delrose-interiors-dining-table-and-kitchen-island-10"
+      },
+      {
+        "media": "kerry-delrose-interiors-living-room-with-green-sofa-and-fireplace-11"
+      },
+      {
+        "media": "kerry-delrose-interiors-waterfront-living-room-seating-12"
+      },
+      {
+        "media": "kerry-delrose-interiors-double-height-living-room-and-fireplace-13"
+      },
+      {
+        "media": "kerry-delrose-interiors-green-sofa-and-fireplace-seating-14"
+      },
+      {
+        "media": "kerry-delrose-interiors-kitchen-range-and-countertop-detail-15"
+      },
+      {
+        "media": "laura-grollmus-interiors-waterfront-living-room-with-curved-seating-01"
+      },
+      {
+        "media": "laura-grollmus-interiors-open-living-space-and-colorful-artwork-02"
+      },
+      {
+        "media": "laura-grollmus-interiors-bedroom-with-canopy-bed-03"
+      },
+      {
+        "media": "laura-grollmus-interiors-white-piano-and-colorful-artwork-04"
+      },
+      {
+        "media": "laura-grollmus-interiors-pool-table-and-lounge-seating-05"
+      },
+      {
+        "media": "laura-grollmus-interiors-white-kitchen-with-colorful-portrait-art-06"
+      },
+      {
+        "media": "laura-grollmus-interiors-open-kitchen-overlooking-living-space-07"
+      },
+      {
+        "media": "laura-grollmus-interiors-double-height-living-room-and-staircase-08"
+      },
+      {
+        "media": "long-island-building-systems-fire-station-angled-facade-02"
+      },
+      {
+        "media": "long-island-building-systems-aerial-fire-station-and-vehicle-bays-03"
+      },
+      {
+        "media": "long-island-building-systems-aerial-roof-and-front-vehicle-bays-04"
+      },
+      {
+        "media": "rachel-lynch-pools-infinity-pool-and-garden-lawn-01"
+      },
+      {
+        "media": "rachel-lynch-pools-reflecting-infinity-pool-at-sunset-02"
+      },
+      {
+        "media": "rachel-lynch-pools-overflow-pool-edge-detail-03"
+      },
+      {
+        "media": "rachel-lynch-pools-pool-and-planted-garden-landscape-04"
+      },
+      {
+        "media": "rachel-lynch-pools-pool-viewed-from-the-terrace-05"
+      },
+      {
+        "media": "rachel-lynch-pools-illuminated-residence-and-pool-at-twilight-06"
+      },
+      {
+        "media": "revivaluxe-consultation-with-practitioner-and-client-01"
+      },
+      {
+        "media": "revivaluxe-treatment-demonstration-in-the-clinic-03"
+      },
+      {
+        "media": "revivaluxe-reception-desk-and-brand-sign-04"
+      },
+      {
+        "media": "revivaluxe-reception-and-product-display-05"
+      },
+      {
+        "media": "revivaluxe-practitioner-portrait-at-reception-06"
+      },
+      {
+        "media": "revivaluxe-seated-practitioner-portrait-07"
+      },
+      {
+        "media": "revivaluxe-practitioner-portrait-beside-brand-sign-08"
+      },
+      {
+        "media": "revivaluxe-team-member-portrait-at-reception-09"
+      },
+      {
+        "media": "revivaluxe-team-member-portrait-in-clinical-uniform-10"
+      },
+      {
+        "media": "revivaluxe-practitioner-at-the-reception-workstation-11"
+      },
+      {
+        "media": "evolution-unlimited-lawn-care-professional-treating-a-lawn-01"
+      },
+      {
+        "media": "evolution-unlimited-service-vehicle-at-a-landscaped-property-02"
+      },
+      {
+        "media": "evolution-unlimited-lawn-care-professional-preparing-equipment-03"
+      },
+      {
+        "media": "nitelite-landscapes-illuminated-shingle-residence-at-night-01"
+      },
+      {
+        "media": "nitelite-landscapes-nighttime-exterior-and-landscape-lighting-02"
+      },
+      {
+        "media": "nitelite-landscapes-illuminated-stone-driveway-and-trees-03"
+      },
+      {
+        "media": "nitelite-landscapes-accent-lighting-on-a-garden-tree-04"
+      },
+      {
+        "media": "nitelite-landscapes-courtyard-and-tree-lighting-05"
+      },
+      {
+        "media": "nitelite-landscapes-pool-surrounded-by-illuminated-trees-06"
+      },
+      {
+        "media": "peterson-ramlowtan-mudroom-cabinetry-and-patterned-wallpaper-01"
+      },
+      {
+        "media": "peterson-ramlowtan-living-room-and-dining-room-connection-03"
+      },
+      {
+        "media": "peterson-ramlowtan-dining-table-with-blue-banquette-04"
+      },
+      {
+        "media": "peterson-ramlowtan-dining-table-and-tall-windows-05"
+      },
+      {
+        "media": "peterson-ramlowtan-living-room-seating-around-fireplace-06"
+      },
+      {
+        "media": "peterson-ramlowtan-bedroom-with-painted-ceiling-beams-07"
+      },
+      {
+        "media": "peterson-ramlowtan-shingle-residence-and-pool-terrace-08"
+      },
+      {
+        "media": "peterson-ramlowtan-rear-elevation-and-swimming-pool-09"
+      },
+      {
+        "media": "peterson-ramlowtan-hallway-with-pale-blue-trim-10"
+      },
+      {
+        "media": "peterson-ramlowtan-home-library-with-built-in-bookshelves-11"
+      },
+      {
+        "media": "peterson-ramlowtan-sunlit-dining-room-windows-12"
+      },
+      {
+        "media": "peterson-ramlowtan-blue-kitchen-with-wood-island-13"
+      },
+      {
+        "media": "peterson-ramlowtan-kitchen-island-and-hanging-copper-pans-14"
+      },
+      {
+        "media": "peterson-ramlowtan-kitchen-range-and-blue-cabinetry-15"
+      },
+      {
+        "media": "peterson-ramlowtan-bathroom-with-double-vanity-and-freestanding-tub-16"
+      },
+      {
+        "media": "peterson-ramlowtan-freestanding-blue-bathtub-and-brass-fittings-17"
+      },
+      {
+        "media": "peterson-ramlowtan-media-room-with-built-in-shelving-18"
+      },
+      {
+        "media": "peterson-ramlowtan-media-room-seating-and-cabinetry-19"
+      },
+      {
+        "media": "peterson-ramlowtan-wood-kitchen-cabinetry-and-stone-patterned-hood-20"
+      },
+      {
+        "media": "peterson-ramlowtan-range-and-stone-patterned-backsplash-22"
+      },
+      {
+        "media": "peterson-ramlowtan-wood-kitchen-and-continuous-cabinetry-23"
+      },
+      {
+        "media": "peterson-ramlowtan-kitchen-range-and-matching-hood-24"
+      },
+      {
+        "media": "peterson-ramlowtan-wood-paneled-bar-and-curved-counter-25"
+      },
+      {
+        "media": "peterson-ramlowtan-dark-built-in-library-shelves-26"
+      },
+      {
+        "media": "peterson-ramlowtan-home-exercise-room-28"
+      },
+      {
+        "media": "peterson-ramlowtan-bar-counter-and-illuminated-shelving-29"
+      },
+      {
+        "media": "peterson-ramlowtan-twin-bedroom-with-chandelier-30"
+      },
+      {
+        "media": "peterson-ramlowtan-freestanding-bath-in-tiled-alcove-31"
+      },
+      {
+        "media": "peterson-ramlowtan-wood-kitchen-and-wine-storage-32"
+      },
+      {
+        "media": "peterson-ramlowtan-bedroom-with-dark-green-ceiling-33"
+      },
+      {
+        "media": "peterson-ramlowtan-green-archway-into-bath-alcove-34"
+      },
+      {
+        "media": "peterson-ramlowtan-dining-table-beside-built-in-library-35"
+      },
+      {
+        "media": "peterson-ramlowtan-shingle-residence-and-pool-garden-36"
+      },
+      {
+        "media": "peterson-ramlowtan-staircase-and-dining-room-37"
+      },
+      {
+        "media": "peterson-ramlowtan-green-bathroom-with-freestanding-tub-38"
+      },
+      {
+        "media": "peterson-ramlowtan-hallway-with-artwork-and-window-bench-39"
+      },
+      {
+        "media": "peterson-ramlowtan-bedroom-with-patterned-wallpaper-40"
+      },
+      {
+        "media": "peterson-ramlowtan-powder-room-with-curved-wood-vanity-41"
+      },
+      {
+        "media": "peterson-ramlowtan-hallway-with-patterned-runner-42"
+      },
+      {
+        "media": "peterson-ramlowtan-bedroom-with-green-curtains-43"
+      },
+      {
+        "media": "peterson-ramlowtan-bathtub-and-patterned-tile-detail-44"
+      },
+      {
+        "media": "peterson-ramlowtan-media-room-and-library-seating-45"
+      },
+      {
+        "media": "peterson-ramlowtan-bedroom-with-green-upholstered-chair-46"
+      },
+      {
+        "media": "peterson-ramlowtan-bathtub-and-brass-shower-fittings-47"
+      },
+      {
+        "media": "peterson-ramlowtan-pink-bar-with-bottle-display-48"
+      },
+      {
+        "media": "peterson-ramlowtan-bedroom-with-bold-green-trim-49"
+      },
+      {
+        "media": "peterson-ramlowtan-pool-garden-and-stone-terrace-50"
+      },
+      {
+        "media": "bpe-ironworks-structural-steel-reel"
+      },
+      {
+        "media": "goldin-luxury-residence-film"
+      },
+      {
+        "media": "evolution-unlimited-site-preparation-reel"
+      },
+      {
+        "media": "evolution-unlimited-backyard-construction-reel"
+      },
+      {
+        "media": "evolution-unlimited-lawn-aeration-film"
+      },
+      {
+        "media": "evolution-unlimited-landscape-maintenance-reel"
+      },
+      {
+        "media": "evolution-unlimited-landscape-project-overview"
+      },
+      {
+        "media": "evolution-unlimited-landscape-walkthrough"
+      },
+      {
+        "media": "nitelite-landscapes-lighting-reel"
+      },
+      {
+        "media": "nitelite-landscapes-landscape-lighting-film"
+      },
+      {
+        "media": "oct15-cl-podcast-ep-16-shorts-2-1"
+      },
+      {
+        "media": "oct15-ifcu-ep2-clip6-1"
+      },
+      {
+        "media": "oct15-short-4-1"
+      },
+      {
+        "media": "oct15-short-cc-ep-20-clip-7"
+      },
+      {
+        "media": "oct15-short-3-1"
+      },
+      {
+        "media": "oct15-1775-point-pleassant-v2-final"
+      },
+      {
+        "media": "oct15-26-georgian-la-1"
+      },
+      {
+        "media": "oct15-in-house-v2"
+      },
+      {
+        "media": "oct15-horizontal-464-montauk-hwy"
+      },
+      {
+        "media": "oct15-horizontal-41-niamogue-ln"
+      },
+      {
+        "media": "oct15-26-sunset-ave-v3"
+      },
+      {
+        "media": "oct15-354-rose-hill-before-and-after-video"
+      },
+      {
+        "media": "oct15-354-rose-hill-video-2-v3"
+      },
+      {
+        "media": "oct15-stair-install-reel-2-30s"
+      },
+      {
+        "media": "oct15-stair-install-horizontal-60s"
+      },
+      {
+        "media": "oct15-v2-horizontal-51-school-ln-mov"
+      },
+      {
+        "media": "oct15-vertical-51-school-ln-v3"
+      },
+      {
+        "media": "oct15-1750-hobart-rd-vertical-v3"
+      },
+      {
+        "media": "barba-architectural-ph-hampton-exterior"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-waterfront-shingle-residence-across-the"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-waterfront-residence-and-pool-terrace-02"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-shingle-roof-and-waterfront-gables-03"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-rear-elevation-with-pool-terrace-04"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-aerial-view-of-the-pool-and-terraces-05"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-front-elevation-beside-the-bay-06"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-overhead-view-of-the-residence-and-dock"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-overhead-pool-and-terrace-detail-08"
+      },
+      {
+        "media": "barba-architectural-barba-architectural-waterside-facade-and-pool-terrace-09"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-white-farmhouse-front-elevation-01"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-farmhouse-framed-by-garden-flowers-03"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-covered-porch-and-garden-path-04"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-rear-lawn-pool-fence-and-porch-05"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-front-porch-entrance-detail-06"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-farmhouse-side-and-front-elevation-07"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-garden-path-to-the-covered-porch-08"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-pool-and-shaded-outdoor-dining-09"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-rear-porch-and-swimming-pool-10"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-aerial-front-elevation-and-lawn-11"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-aerial-backyard-pool-and-fire-pit-12"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-aerial-pool-terrace-and-rear-elevation-13"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-aerial-view-of-front-porch-14"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-white-kitchen-island-and-ceiling-beams-15"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-wood-vanity-and-patterned-bathroom-walls-16"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-kitchen-island-with-pendant-lights-17"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-kitchen-cabinetry-and-built-in-appliances-1"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-white-cabinet-and-brass-handle-detail-19"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-bathroom-vanity-and-mirrors-21"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-kitchen-range-and-hood-22"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-wood-bathroom-vanity-and-mirror-23"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-living-room-fireplace-and-built-in-shelves"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-glass-shower-and-stone-patterned-walls-25"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-home-office-with-blue-built-in-shelves-26"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-bathroom-vanity-and-arched-mirrors-27"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-freestanding-bath-and-glass-shower-28"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-shower-and-niche-detail-29"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-home-library-with-dining-table-30"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-bathroom-vanity-and-floral-wallpaper-31"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-freestanding-bath-beside-glass-shower-32"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-dark-kitchen-cabinets-and-white-island-33"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-bedroom-with-upholstered-bed-34"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-bright-bedroom-seating-area-35"
+      },
+      {
+        "media": "bellard-brothers-bellard-brothers-white-built-in-media-cabinetry-36"
+      }
+    ]
+  },
   "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
   "pathRealEstate": {
     "media": "re-hamptons-calm"
