@@ -1,5 +1,5 @@
 import { INTENTS, validIntent, pageIntent, resolveIntent, sourceOf, campaignSlug, cleanVisit, canSuggest, bundleComparison } from './guidance-core.js';
-import { parseSquareFeet, formatUSD, tierLabel } from './pricing-core.js';
+import { parseSquareFeet, formatUSD, tierLabel, errorMessages } from './pricing-core.js';
 
 const root = document.getElementById('service-guidance');
 if (root) init();
@@ -38,8 +38,9 @@ function init() {
     state.entry = config.route;
   }
   if (campaign) state.campaignIntent = campaign;
-  let intent = resolveIntent({ path: config.route, campaign, choice: state.choice, previousCampaign: state.campaignIntent, previousPage: state.lastIntent, source: state.source });
+  let intent = resolveIntent({ path: config.route, campaign, choice: state.choice, related: config.article?.intent, previousCampaign: state.campaignIntent, previousPage: state.lastIntent, source: state.source });
   if (pageIntent(config.route)) { state.lastIntent = pageIntent(config.route); state.context = config.route; }
+  if (config.article) { state.lastIntent = intent; state.context = config.route; }
   if (config.route === '/contact' && query.has('type')) intent = query.get('type') === 'real-estate-large' ? 'listing' : Object.entries(INTENTS).find(([id, d]) => id !== 'listing' && d.type === query.get('type'))?.[0] || intent;
   persist();
 
@@ -49,7 +50,7 @@ function init() {
   const dialog = root.querySelector('dialog');
   const primary = root.querySelector('.guidance-primary');
   const details = root.querySelector('.guidance-math');
-  const hero = document.querySelector('.hero, .page-hero') || document.querySelector('main h1');
+  const hero = document.querySelector('.hero, .page-hero, .fn-article__head') || document.querySelector('main h1');
   const footer = document.querySelector('.site-footer');
   const marketingPage = root.dataset.auto === 'true';
   // If dismissal cannot be remembered, keep the manual chooser and skip automatic suggestions.
@@ -96,6 +97,10 @@ function init() {
     root.querySelector('.guidance-copy').textContent = copy;
     primary.textContent = intent === 'listing' ? (size() > 30000 ? 'Discuss your listing' : 'See Luxury Media') : data.action;
     primary.href = intent === 'listing' && config.route === '/real-estate/pricing' && !(size() > 30000) ? '#pk-luxury-media' : withIntent(href, intent || 'unsure');
+    if (config.article?.intent === intent && config.article.cta && !(size() > 30000)) {
+      primary.textContent = config.article.cta.label;
+      primary.href = withIntent(config.article.cta.href, intent);
+    }
     primary.hidden = !intent;
   }
   function refresh() {
@@ -135,16 +140,34 @@ function init() {
   dialog.querySelector('.guidance-close').addEventListener('click', closeChooser);
   dialog.addEventListener('keydown', e => {
     if (e.key !== 'Tab') return;
-    const focusable = [...dialog.querySelectorAll('button, a[href]')].filter(el => el.getClientRects().length);
+    const focusable = [...dialog.querySelectorAll('button, input, a[href]')].filter(el => !el.disabled && el.getClientRects().length);
     const first = focusable[0], last = focusable.at(-1);
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
   dialog.addEventListener('close', () => { refresh(); if (opener && !opener.hidden) opener.focus({ preventScroll: true }); });
   dialog.addEventListener('click', e => { if (e.target === dialog) { const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeChooser(); } });
+  const sizeStep = dialog.querySelector('.service-size');
+  const sizeInput = dialog.querySelector('#guidance-sqft');
+  function updateListingChoice() {
+    const action = dialog.querySelector('[data-choice-action]');
+    const parsed = parseSquareFeet(sizeInput.value);
+    const invalid = sizeInput.value.trim() && !parsed.ok;
+    const error = dialog.querySelector('#guidance-size-error');
+    error.hidden = !invalid;
+    error.textContent = invalid ? errorMessages[parsed.reason] : '';
+    sizeInput.setAttribute('aria-invalid', String(!!invalid));
+    action.setAttribute('aria-disabled', String(!!invalid));
+    if (invalid) { action.removeAttribute('href'); return; }
+    const custom = parsed.ok && parsed.value > 30000;
+    action.textContent = custom ? 'Discuss your listing' : parsed.ok ? 'See packages for this size' : INTENTS.listing.action;
+    action.href = withIntent(custom ? `/contact?type=real-estate-large&sqft=${parsed.value}` : '/real-estate/pricing' + (parsed.ok ? `?sqft=${parsed.value}` : ''), 'listing');
+  }
+  sizeInput.addEventListener('input', updateListingChoice);
   dialog.querySelectorAll('[data-intent]').forEach(button => button.addEventListener('click', () => {
     intent = button.dataset.intent;
     state.choice = intent;
+    state.lastIntent = intent;
     persist();
     const data = INTENTS[intent];
     dialog.querySelectorAll('[data-intent]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
@@ -153,14 +176,20 @@ function init() {
     result.querySelector('h3').textContent = data.title;
     result.querySelector('p').textContent = data.value;
     const action = result.querySelector('[data-choice-action]');
+    action.removeAttribute('aria-disabled');
     action.textContent = data.action;
     action.href = withIntent(data.href, intent);
     const examples = result.querySelector('[data-choice-examples]');
     examples.href = withIntent(data.route, intent);
     examples.hidden = intent === 'unsure';
+    sizeStep.hidden = intent !== 'listing';
+    if (intent === 'listing') {
+      if (!sizeInput.value) { const current = size(); if (current > 1) sizeInput.value = String(current); }
+      updateListingChoice();
+    }
     track('service_intent_selected');
     renderCard();
-    action.focus({ preventScroll: true });
+    (intent === 'listing' ? sizeInput : action).focus({ preventScroll: true });
     result.scrollIntoView({ block: 'nearest', behavior: 'instant' });
   }));
   dialog.querySelectorAll('a').forEach(a => a.addEventListener('click', () => track('service_route_click', { href: a.getAttribute('href') })));
@@ -170,6 +199,9 @@ function init() {
   const visit = () => cleanVisit({ visitIntent: intent, visitSource: state.source, visitCampaign: state.campaign, visitEntry: state.entry, visitContext: state.context });
   if (form) {
     const type = form.querySelector('[name="type"]');
+    const propertySize = parseSquareFeet(query.get('sqft'));
+    const brief = form.querySelector('[name="deliverables"]');
+    if (query.get('type') === 'real-estate-large' && propertySize.ok && propertySize.value > 30000 && brief && !brief.value) brief.value = `Property size: ${propertySize.value.toLocaleString('en-US')} sq ft.\n`;
     if (!query.has('type') && type && !type.value && intent) type.value = INTENTS[intent].type;
     const populate = () => {
       for (const [name, value] of Object.entries(visit())) {

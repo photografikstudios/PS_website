@@ -33,10 +33,18 @@ test('intent follows the page or explicit choice, never an inferred occupation f
   assert.equal(resolveIntent({ path: '/', previousCampaign: 'agent' }), 'agent');
   assert.equal(resolveIntent({ path: '/contact', choice: 'listing', previousPage: 'commercial', previousCampaign: 'agent' }), 'commercial');
   assert.equal(resolveIntent({ path: '/contact', campaign: 'architecture', previousPage: 'commercial' }), 'architecture');
+  assert.equal(resolveIntent({ path: '/field-notes/prep', related: 'listing', previousPage: 'studio' }), 'listing');
+  assert.equal(resolveIntent({ path: '/field-notes/prep', related: 'listing', choice: 'architecture' }), 'architecture');
+  assert.equal(resolveIntent({ path: '/field-notes/prep', related: 'listing', campaign: 'agent' }), 'agent');
+  assert.equal(resolveIntent({ path: '/field-notes/prep', related: 'invalid' }), '');
   for (const data of Object.values(INTENTS)) assert.match(data.href, /^\/(?!\/)/);
 });
 test('source context is coarse and cannot leak full referral URLs or unrestricted campaign text', () => {
   assert.equal(sourceOf('?utm_source=ig', '', 'https://pgk.test'), 'instagram');
+  for (const source of ['email', 'qr', 'partner']) {
+    assert.equal(sourceOf(`?utm_source=${source}`, '', 'https://pgk.test'), source);
+    assert.equal(cleanVisit({ visitSource: source }).visitSource, source);
+  }
   assert.equal(sourceOf('', 'https://www.licreatorstudios.com/book?email=pat@example.com', 'https://pgk.test'), 'creator-studios');
   assert.equal(sourceOf('', 'https://licreatorstudios.com.evil.test', 'https://pgk.test'), 'referral');
   assert.equal(sourceOf('', 'https://pgk.test/real-estate', 'https://pgk.test'), '');

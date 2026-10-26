@@ -73,3 +73,12 @@ E2E_MUTE_AUDIO=1 npm run test:e2e
 The inline-player regression checks for an **open** dialog, allowing the new closed service chooser to exist without treating it as a video lightbox. The optional `E2E_MUTE_AUDIO` flag changes only the test player's mute state; production playback code is unchanged.
 
 Live inquiry receipt remains an existing launch gate: delivery credentials are not configured. The accepted and failed inquiry paths are verified with a mocked endpoint; no real customer email, booking or production publication is performed by these tests.
+
+## October 26 follow-up: full source-aware plan
+
+- Direct Field Notes visits now use the existing CMS related-service metadata and CTA. Article context is retained with the inquiry. Explicit visitor choices and current tagged intent take precedence over the article suggestion.
+- The listing chooser asks for optional square footage. Blank shows starting prices; valid sizes carry into the existing pricing calculator; invalid values show an inline error. Over 30,000 sq ft opens the custom listing inquiry and retains the size in its editable brief.
+- Email, QR and partner sources are retained as distinct source values. The existing source/campaign privacy filters, session-only memory and dismissal rules remain.
+- [Campaign link sheet](CAMPAIGN_LINKS.md) and [CSV](CAMPAIGN_LINKS.csv): 12 copyable preview links and clearly labeled launch URL templates. No external profile, campaign or production link was edited.
+
+Focused verification: 20/20 guidance/inquiry/Field Notes unit tests and 11/11 browser scenarios. These include nine source/intent entries, direct article guidance and explicit-choice override, 2,800 sq ft pricing, custom-size brief retention, invalid/blank sizes, 320/390px layout, chooser accessibility, suppression, dismissal and truthful mocked conversion outcomes. Inquiry receipt is still not configured or claimed.

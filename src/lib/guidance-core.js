@@ -12,11 +12,11 @@ export const validIntent = (v) => typeof v === 'string' && Object.hasOwn(INTENTS
 export function pageIntent(path) {
   return Object.entries(INTENTS).find(([id, v]) => id !== 'unsure' && (path === v.route || path.startsWith(v.route + '/')))?.[0] || '';
 }
-export function resolveIntent({ path, campaign, choice, previousCampaign, previousPage, source }) {
+export function resolveIntent({ path, campaign, choice, related, previousCampaign, previousPage, source }) {
   // A current service page is an intentional navigation. On general pages, the visitor's choice wins.
-  return pageIntent(path) || (path === '/contact' ? validIntent(campaign) || validIntent(previousPage) : '') || validIntent(choice) || validIntent(campaign) || validIntent(previousPage) || validIntent(previousCampaign) || (source === 'creator-studios' ? 'studio' : '');
+  return pageIntent(path) || (path === '/contact' ? validIntent(campaign) || validIntent(previousPage) : '') || validIntent(choice) || validIntent(campaign) || validIntent(related) || validIntent(previousPage) || validIntent(previousCampaign) || (source === 'creator-studios' ? 'studio' : '');
 }
-export const SOURCES = ['direct', 'instagram', 'facebook', 'google', 'bing', 'linkedin', 'youtube', 'creator-studios', 'referral', 'campaign'];
+export const SOURCES = ['direct', 'instagram', 'facebook', 'google', 'bing', 'linkedin', 'youtube', 'creator-studios', 'referral', 'email', 'qr', 'partner', 'campaign'];
 export function sourceOf(search, referrer, origin) {
   const q = new URLSearchParams(search);
   const utm = (q.get('utm_source') || '').toLowerCase();

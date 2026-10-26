@@ -1229,6 +1229,13 @@ video[controls]:focus { outline: 2px solid var(--rust); outline-offset: 3px; }
 .service-result { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
 .service-result p { font-size: 15px; }
 .service-result .h3 { font-size: 27px; }
+.service-size { margin: 16px 0; }
+.service-size label { display: block; margin-bottom: 8px; font: 500 15px/1.5 var(--sans); }
+.service-size label span { font-weight: 400; }
+.service-size input { width: 100%; max-width: 260px; min-height: 44px; padding: 10px 12px; border: 1px solid var(--muted); background: var(--ivory); color: inherit; font: 400 16px/1.5 var(--sans); }
+.service-size p { margin: 6px 0 0; font-size: 13px; }
+.service-size input[aria-invalid="true"] { border-color: var(--rust); }
+.service-result a[aria-disabled="true"] { opacity: .65; cursor: default; }
 body:has(.service-dialog[open]) { overflow: hidden; }
 #service-guidance [hidden] { display: none !important; }
 #service-guidance :focus-visible { outline: 3px solid var(--rust); outline-offset: 3px; }

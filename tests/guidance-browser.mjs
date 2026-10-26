@@ -20,7 +20,7 @@ async function page(mobile = false, storageBlocked = false) {
 }
 const visible = (p, selector) => p.locator(selector).isVisible();
 async function pastHero(p) {
-  await p.evaluate(() => { const h = document.querySelector('.hero,.page-hero'); scrollTo(0, scrollY + h.getBoundingClientRect().bottom + 50); });
+  await p.evaluate(() => { const h = document.querySelector('.hero,.page-hero,.fn-article__head'); scrollTo(0, scrollY + h.getBoundingClientRect().bottom + 50); });
   await p.clock.fastForward(13000);
   await p.waitForTimeout(150);
 }
@@ -29,6 +29,65 @@ async function check(name, fn) {
   catch(e) { results.push({ name, pass: false, error: e.stack }); console.log('FAIL', name, e.message); }
 }
 try {
+  await check('tagged campaign entry points keep source and intent through navigation without redirecting', async () => {
+    for (const [route, intent, source] of [['/', 'listing', 'google'], ['/architecture-design', 'architecture', 'instagram'], ['/commercial', 'commercial', 'referral'], ['/agent-content', 'agent', 'instagram'], ['/creator-studios', 'studio', 'creator-studios'], ['/agency-partnerships', 'agency', 'linkedin'], ['/', 'unsure', 'qr'], ['/real-estate', 'listing', 'email'], ['/commercial/bpe-ironworks', 'commercial', 'partner']]) {
+      const p = await page(); await p.goto(`${base}${route}?intent=${intent}&utm_source=${source}&utm_medium=social&utm_campaign=source-test`);
+      assert.equal(new URL(p.url()).pathname, route);
+      await p.goto(base + '/contact');
+      assert.equal(await p.locator('[name="visitSource"]').inputValue(), source);
+      assert.equal(await p.locator('[name="visitIntent"]').inputValue(), intent);
+      assert.equal(await p.locator('[name="visitCampaign"]').inputValue(), 'source-test');
+      assert.deepEqual(p.errors, []); await p.close();
+    }
+  });
+  await check('Field Notes direct entry uses its configured service and CTA, preserves article context and honors visitor choice', async () => {
+    const p = await page();
+    const route = '/field-notes/how-to-prepare-a-home-for-listing-photos';
+    await p.goto(base + route); await pastHero(p);
+    assert.equal(await visible(p, '.guidance-card'), true);
+    assert.match(await p.locator('#guidance-title').innerText(), /Save \$80/);
+    assert.equal(await p.locator('.guidance-primary').textContent(), 'See prices for your property');
+    assert.equal(await p.locator('.guidance-primary').getAttribute('href'), '/real-estate/pricing?intent=listing');
+    await p.goto(base + '/contact');
+    assert.equal(await p.locator('[name="visitIntent"]').inputValue(), 'listing');
+    assert.equal(await p.locator('[name="visitContext"]').inputValue(), route);
+    await p.goto(base + route); await p.locator('.guidance-launch').click();
+    await p.locator('[data-intent="architecture"]').click(); await p.keyboard.press('Escape');
+    await p.goto(base + '/contact');
+    assert.equal(await p.locator('#i-type').inputValue(), 'architecture-design');
+    await p.goto(base + route);
+    assert.equal(await p.locator('.guidance-primary').getAttribute('href'), '/contact?type=architecture-design&intent=architecture');
+    assert.deepEqual(p.errors, []); await p.close();
+  });
+  await check('listing follow-up validates size, carries it to pricing and preserves custom size in the brief', async () => {
+    const p = await page(true); await p.goto(base + '/?intent=listing&utm_source=instagram&utm_campaign=listing-media');
+    await p.locator('.guidance-launch').click(); await p.locator('[data-intent="listing"]').click();
+    assert.equal(await p.locator('#guidance-sqft').evaluate(e => e === document.activeElement), true);
+    for (const input of ['-1', 'abc', '2.5']) {
+      await p.locator('#guidance-sqft').fill(input);
+      assert.equal(await p.locator('#guidance-sqft').getAttribute('aria-invalid'), 'true');
+      assert.equal(await p.locator('[data-choice-action]').getAttribute('href'), null);
+    }
+    await p.locator('#guidance-sqft').fill('');
+    assert.equal(await p.locator('[data-choice-action]').getAttribute('href'), '/real-estate/pricing?intent=listing');
+    await p.locator('#guidance-sqft').fill('2,800');
+    for (const width of [390, 320]) {
+      await p.setViewportSize({ width, height: 844 });
+      assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    }
+    await p.addScriptTag({ path: new URL('../node_modules/axe-core/axe.min.js', import.meta.url).pathname });
+    assert.deepEqual(await p.evaluate(async () => (await axe.run(document.querySelector('.service-dialog'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } })).violations.map(v => v.id)), []);
+    await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
+    assert.equal(await p.locator('#sqft').inputValue(), '2800');
+    assert.match(await p.locator('[data-price-for="luxury-media"]').innerText(), /2,140/);
+    await p.goto(base + '/'); await p.locator('.guidance-launch').click(); await p.locator('[data-intent="listing"]').click();
+    await p.locator('#guidance-sqft').fill('31000');
+    await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
+    assert.equal(await p.locator('#i-type').inputValue(), 'real-estate-large');
+    assert.match(await p.locator('#i-deliverables').inputValue(), /31,000 sq ft/);
+    assert.equal(await p.locator('[name="visitSource"]').inputValue(), 'instagram');
+    assert.deepEqual(p.errors, []); await p.close();
+  });
   await check('listing banner: real savings, sizes, detail, dismiss and no repeat across pages', async () => {
     const p = await page(); await p.goto(base + '/real-estate/pricing');
     assert.equal(await visible(p, '.guidance-card'), false);
