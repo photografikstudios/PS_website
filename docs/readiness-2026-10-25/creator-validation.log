@@ -1,0 +1,266 @@
+
+> creator-studios@0.0.1 validate /private/tmp/creator-studios-day1-links
+> pnpm format:check && pnpm lint && pnpm typecheck && pnpm validate:publish && pnpm test && pnpm build && pnpm check:links && pnpm test:e2e
+
+
+> creator-studios@0.0.1 format:check /private/tmp/creator-studios-day1-links
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> creator-studios@0.0.1 lint /private/tmp/creator-studios-day1-links
+> eslint .
+
+
+> creator-studios@0.0.1 typecheck /private/tmp/creator-studios-day1-links
+> astro check
+
+22:57:28 [content] Syncing content
+22:57:28 [content] Synced content
+22:57:28 [types] Generated 235ms
+22:57:28 [check] Getting diagnostics for Astro files in /private/tmp/creator-studios-day1-links...
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m925[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m925[0m   function Ga() {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m893[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m893[0m   function U(a, b) {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m798[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m798[0m   function T(a) {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m706[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m706[0m   function R(a, b, c, d) {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m694[0m:[93m33[0m - [93mwarning[0m[90m ts(6133): [0m'a' is declared but its value is never read.
+
+[7m694[0m       e = new Promise(function (a, c) {
+[7m   [0m [93m                                ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m664[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m664[0m   function Aa(a, b, c, d, e, f, g) {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m586[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m586[0m   function va(a, b, c, d, e, f, g, k) {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m567[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m567[0m   function L(a, b) {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m462[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m462[0m   function I() {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m453[0m:[93m53[0m - [93mwarning[0m[90m ts(6133): [0m'a' is declared but its value is never read.
+
+[7m453[0m     return a.b.replace(/\{([^\{\}]+)\}/g, function (a, d) {
+[7m   [0m [93m                                                    ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m449[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m449[0m   function G(a) {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m385[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m385[0m   function ma(a, b, c) {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m355[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m355[0m   function A(a, b, c) {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m225[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m225[0m   function ha(a) {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m157[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m157[0m   function fa(a, b, c) {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m143[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m143[0m   function r(a, b) {
+[7m   [0m [93m           ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m128[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m128[0m   function da() {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m123[0m:[93m30[0m - [93mwarning[0m[90m ts(6133): [0m'a' is declared but its value is never read.
+
+[7m123[0m   ca.prototype.b = function (a) {
+[7m   [0m [93m                             ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m120[0m:[93m12[0m - [93mwarning[0m[90m ts(80002): [0mThis constructor function may be converted to a class declaration.
+
+[7m120[0m   function ca(a) {
+[7m   [0m [93m           ~~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m108[0m:[93m20[0m - [93mwarning[0m[90m ts(6133): [0m'c' is declared but its value is never read.
+
+[7m108[0m   function h(a, b, c) {
+[7m   [0m [93m                   ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m108[0m:[93m17[0m - [93mwarning[0m[90m ts(6133): [0m'b' is declared but its value is never read.
+
+[7m108[0m   function h(a, b, c) {
+[7m   [0m [93m                ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m108[0m:[93m14[0m - [93mwarning[0m[90m ts(6133): [0m'a' is declared but its value is never read.
+
+[7m108[0m   function h(a, b, c) {
+[7m   [0m [93m             ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m94[0m:[93m21[0m - [93mwarning[0m[90m ts(6133): [0m'c' is declared but its value is never read.
+
+[7m94[0m   function ba(a, b, c) {
+[7m  [0m [93m                    ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m91[0m:[93m21[0m - [93mwarning[0m[90m ts(6133): [0m'c' is declared but its value is never read.
+
+[7m91[0m   function aa(a, b, c) {
+[7m  [0m [93m                    ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m91[0m:[93m18[0m - [93mwarning[0m[90m ts(6133): [0m'b' is declared but its value is never read.
+
+[7m91[0m   function aa(a, b, c) {
+[7m  [0m [93m                 ~[0m
+[96mdocs/archive/live-site-2026-08-02/typekit.js[0m:[93m86[0m:[93m30[0m - [93mwarning[0m[90m ts(6133): [0m'undefined' is declared but its value is never read.
+
+[7m86[0m (function (window, document, undefined) {
+[7m  [0m [93m                             ~~~~~~~~~[0m
+
+Result (62 files): 
+- 0 errors
+- 0 warnings
+- 26 hints
+
+
+> creator-studios@0.0.1 validate:publish /private/tmp/creator-studios-day1-links
+> tsx scripts/validate-publish.ts
+
+
+Preview mode: 29 entries awaiting owner confirmation (allowed in preview, will block production):
+  • src/content/faqs/batch-episodes.md: approvalStatus "pending-owner-confirmation"
+  • src/content/faqs/content-planning.md: approvalStatus "pending-owner-confirmation"
+  • src/content/faqs/editing-included.md: approvalStatus "pending-owner-confirmation"
+  • src/content/faqs/podcast-cost.md: approvalStatus "pending-owner-confirmation"
+  • src/content/faqs/publishing.md: approvalStatus "pending-owner-confirmation"
+  • src/content/faqs/what-files.md: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#reel: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#clip-11: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#clip-12: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#clip-13: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#clip-14: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#clip-17: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#clip-18: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#creator-short7: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#creator-ifcu-ep2-clip6: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#testimonial-christina: approvalStatus "pending-owner-confirmation"
+  • src/content/media/videos.json#testimonial-noah: approvalStatus "pending-owner-confirmation"
+  • src/content/offers/general-content-session.md: approvalStatus "pending-owner-confirmation"
+  • src/content/offers/monthly-four-edited.md: approvalStatus "pending-owner-confirmation"
+  • src/content/offers/monthly-four-recording.md: approvalStatus "pending-owner-confirmation"
+  • src/content/offers/monthly-two-edited.md: approvalStatus "pending-owner-confirmation"
+  • src/content/offers/monthly-two-recording.md: approvalStatus "pending-owner-confirmation"
+  • src/content/offers/partnership-content.md: approvalStatus "pending-owner-confirmation"
+  • src/content/offers/studio-session.md: approvalStatus "pending-owner-confirmation"
+  • src/content/studios/studio-one.md: unresolved [OWNER CONFIRM]/placeholder marker; approvalStatus "pending-owner-confirmation"
+  • src/content/studios/studio-two.md: unresolved [OWNER CONFIRM]/placeholder marker; approvalStatus "pending-owner-confirmation"
+  • src/content/testimonials/christina-mathieson.md: approvalStatus "pending-owner-confirmation"
+  • src/content/testimonials/noah.md: approvalStatus "pending-owner-confirmation"
+  • src/pages/long-island-podcast-content-studio.astro: route file carries an unresolved [OWNER CONFIRM] marker
+
+Publish-safety passed (preview mode).
+
+> creator-studios@0.0.1 test /private/tmp/creator-studios-day1-links
+> vitest run
+
+
+ RUN  v4.1.10 /private/tmp/creator-studios-day1-links
+
+
+ Test Files  5 passed (5)
+      Tests  19 passed (19)
+   Start at  22:57:32
+   Duration  1.14s (transform 102ms, setup 0ms, import 143ms, tests 1.04s, environment 0ms)
+
+
+> creator-studios@0.0.1 build /private/tmp/creator-studios-day1-links
+> astro build
+
+22:57:34 [content] Syncing content
+22:57:34 [content] Synced content
+22:57:34 [types] Generated 286ms
+22:57:34 [build] output: "static"
+22:57:34 [build] mode: "static"
+22:57:34 [build] directory: /private/tmp/creator-studios-day1-links/dist/
+22:57:34 [build] Collecting build info...
+22:57:34 [build] ✓ Completed in 308ms.
+22:57:34 [build] Building static entrypoints...
+22:57:34 [vite] ✓ built in 203ms
+22:57:34 [vite] ✓ built in 16ms
+22:57:34 [build] Rearranging server assets...
+
+ generating static routes 
+22:57:34   ├─ /404.html (+6ms) 
+22:57:34   ├─ /about/index.html (+2ms) 
+22:57:34   ├─ /accessibility/index.html (+3ms) 
+22:57:34   ├─ /book/index.html (+2ms) 
+22:57:34   ├─ /content-partnerships/index.html (+5ms) 
+22:57:34   ├─ /faqs/index.html (+1ms) 
+22:57:34   ├─ /how-it-works/index.html (+2ms) 
+22:57:34   ├─ /long-island-podcast-content-studio/index.html (+3ms) 
+22:57:34   ├─ /plan-a-project/index.html (+3ms) 
+22:57:34   ├─ /pricing/index.html (+3ms) 
+22:57:34   ├─ /privacy/index.html (+1ms) 
+22:57:34   ├─ /terms/index.html (+1ms) 
+22:57:34   ├─ /thank-you/booking/index.html (+2ms) 
+22:57:34   ├─ /thank-you/consultation/index.html (+2ms) 
+22:57:34   ├─ /work/index.html (+2ms) 
+22:57:34   ├─ /index.html (+2ms) 
+22:57:34 ✓ Completed in 53ms.
+
+22:57:34 [build] ✓ Completed in 290ms.
+22:57:34 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`
+22:57:34 [build] 16 page(s) built in 614ms
+22:57:34 [build] Complete!
+
+> creator-studios@0.0.1 check:links /private/tmp/creator-studios-day1-links
+> tsx scripts/check-links.ts
+
+Link check passed: 16 pages, 590 internal links OK, 136 external links (not fetched).
+
+> creator-studios@0.0.1 test:e2e /private/tmp/creator-studios-day1-links
+> playwright test
+
+[WebServer] (node:15173) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:15189) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 110 tests using 6 workers
+(node:15201) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15202) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15199) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15203) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15200) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+······················································(node:15473) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·(node:15480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15478) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15479) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15483) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15498) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+····················°····
+······························
+  1 skipped
+  109 passed (18.9s)
+::notice title=🎭 Playwright Run Summary::  1 skipped%0A  109 passed (18.9s)

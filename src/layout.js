@@ -34,10 +34,11 @@ export function layout(ctx, { route, body, seo, jsonLd, scripts = [], dark = fal
 <title>${esc(seo.title)}</title>
 <meta name="description" content="${esc(seo.description)}">
 <link rel="canonical" href="${esc(canonical)}">
-${reviewMode ? '<meta name="robots" content="noindex, nofollow">' : ''}
+${reviewMode ? '<meta name="robots" content="noindex, nofollow">' : route === '/404' ? '<meta name="robots" content="noindex, follow">' : ''}
 <meta property="og:type" content="${esc(ogType)}">
 ${articleDates?.published ? `<meta property="article:published_time" content="${esc(articleDates.published)}">` : ''}${articleDates?.modified ? `\n<meta property="article:modified_time" content="${esc(articleDates.modified)}">` : ''}
 <meta property="og:site_name" content="Photografik Studios">
+<meta property="og:locale" content="en_US">
 <meta property="og:title" content="${esc(seo.title)}">
 <meta property="og:description" content="${esc(seo.description)}">
 <meta property="og:url" content="${esc(canonical)}">

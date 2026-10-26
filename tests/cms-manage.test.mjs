@@ -87,7 +87,7 @@ test('Home video choices: all 20 owner imports have a poster-backed hero fallbac
   const work = await loadWork(root); const media = new Map(work.media.map(m => [m.id, m]));
   const loops = new Set(Object.keys(assets.files).map(p => p.match(/^\/v\/([\w-]+)-loop\.mp4$/)?.[1]).filter(Boolean));
   const stills = heroStillMap(loops, media, fileExists);
-  const recent = work.media.filter(m => m.id.startsWith('oct15-'));
+  const recent = work.media.filter(m => (m.id.startsWith('oct15-') || m.id === 'waterfront-residence-cinematic-film'));
   assert.equal(recent.length, 20);
   for (const m of recent) {
     assert.ok(loops.has(m.id), m.id); assert.equal(stills[m.asset || m.id], fileExists(`/images/hero/${m.asset || m.id}-phone.webp`) ? `/images/hero/${m.asset || m.id}-phone.webp` : m.poster, m.id);
@@ -118,14 +118,17 @@ test('Page Media: a changed choice changes the built page; removing it again res
   build(); assert.equal(await page('index.html'), homeBefore, 'restoring selection restores exact Home output');
   // Replace a photo, reorder and remove playing examples, add a film to a text-only page.
   await edit('commercial', (v) => { v.featureBrand = { media: 'ph-torella-aerial' }; });
-  await edit('creator-studios', (v) => { v.openingExamples = [v.openingExamples[1], v.openingExamples[0]]; });
+  let originalExamples;
+  await edit('creator-studios', (v) => { originalExamples = v.openingExamples.map(it => it.media); v.openingExamples = [v.openingExamples[1], v.openingExamples[0]]; });
   await edit('contact', (v) => { v.introMedia = { media: 'cs-demo-reel' }; });
   build();
   const com = await page('commercial.html'); const cs = await page('creator-studios.html'); const contact = await page('contact.html');
   assert.ok(com.includes('ph-torella-aerial') && !com.includes('ph-revivaluxe-portrait.webp'), 'replaced photo');
   const loops = [...cs.matchAll(/class="cs-loop"><[^>]*?\/v\/([\w-]+)-loop\.mp4|<source src="\/v\/([\w-]+)-loop\.mp4"/g)].map((m) => m[1] || m[2]);
-  assert.ok(cs.indexOf('/v/cs-noah-knows-short-loop.mp4') < cs.indexOf('/v/cs-ifcu-clip-loop.mp4'), 'reordered: ' + loops.join());
-  assert.ok(!cs.includes('cs-podcast-ep23-short-loop.mp4'), 'removed from the page');
+  const loopPath = id => `/v/${id}-loop.mp4`;
+  assert.ok(cs.includes(loopPath(originalExamples[0])) && cs.includes(loopPath(originalExamples[1])), 'both retained examples render');
+  assert.ok(cs.indexOf(loopPath(originalExamples[1])) < cs.indexOf(loopPath(originalExamples[0])), 'reordered: ' + loops.join());
+  for (const id of originalExamples.slice(2)) assert.ok(!loops.includes(id), `${id} removed from the page`);
   assert.match(contact, /<figure class="pm-extra pm-extra--film"><div class="vplayer[^"]*" data-video data-id="cs-demo-reel"/);
   // Back to the committed choices: identical pages.
   for (const f of ['commercial', 'creator-studios', 'contact']) await cp(join(root, 'content/page-media', `${f}.json`), join(dir, 'content/page-media', `${f}.json`));
@@ -134,9 +137,11 @@ test('Page Media: a changed choice changes the built page; removing it again res
   // Emptied in the dashboard (the key is left out of the file): the same page as an empty section.
   await edit('contact', (v) => { delete v.introMedia; });
   await edit('home', (v) => { delete v.selectedWork; });
+  await edit('commercial', (v) => { v.caseStudy = null; v.clientWork = { mode: 'automatic' }; });
+  build(); const automaticCommercial = await page('commercial.html');
   await edit('commercial', (v) => { delete v.caseStudy; delete v.clientWork; });
   build();
-  assert.equal(await page('contact.html'), before.contact, 'Contact with no introMedia key'); assert.equal(await page('commercial.html'), before.com, 'Commercial with Automatic galleries left out');
+  assert.equal(await page('contact.html'), before.contact, 'Contact with no introMedia key'); assert.equal(await page('commercial.html'), automaticCommercial, 'Commercial with Automatic galleries left out');
   for (const f of ['commercial', 'home', 'contact']) await cp(join(root, 'content/page-media', `${f}.json`), join(dir, 'content/page-media', `${f}.json`));
   // A broken choice stops the build with a plain reason (the live site keeps the previous version).
   await edit('home', (v) => { v.hero = null; });
@@ -361,7 +366,7 @@ test('per-page galleries: leaving an item out of Home touches no other page; an 
   const homeAfter = items(await page('index.html'));
   assert.ok(!homeAfter.includes(x), 'left out of Home'); assert.equal(homeAfter.length, homeBefore.length - 1);
   assert.deepEqual(items(await page('real-estate.html')), reBefore, 'Real Estate unchanged');
-  assert.ok(existsSync(join(dir, 'content/media', `${x}.json`)) || true, 'library record untouched');
+  assert.ok(existsSync(join(dir, 'content/media', `${x}.json`)), 'library record untouched');
   const ac = await page('agent-content.html');
   assert.ok(ac.indexOf('data-id="agent-on-camera"') < ac.indexOf('data-id="agent-expertise"'), 'own order on Agent Content');
   // A gallery's own selection is an explicit use; an automatic one is information only.
@@ -369,7 +374,11 @@ test('per-page galleries: leaving an item out of Home touches no other page; an 
   files['content/page-media/agent-content.json'] = await readFile(join(dir, 'content/page-media/agent-content.json'), 'utf8');
   const r = repoFrom(files);
   assert.ok(whereUsed({ collection: 'films', key: 'agent-expertise' }, r).blocking.some((b) => /Agent Content: Examples/.test(b.text)));
-  const auto = whereUsed({ collection: 'photos', key: x }, repoFrom(await diskFiles()));
+  const automaticFiles = await diskFiles();
+  const automaticHome = JSON.parse(automaticFiles['content/page-media/home.json']);
+  automaticHome.selectedWork = { mode: 'automatic', exclude: [] };
+  automaticFiles['content/page-media/home.json'] = JSON.stringify(automaticHome);
+  const auto = whereUsed({ collection: 'photos', key: x }, repoFrom(automaticFiles));
   assert.ok(auto.auto.includes('Home: Selected work') && !auto.blocking.some((b) => /Selected work/.test(b.text)), 'automatic galleries are information, not a block');
   await rm(dir, { recursive: true, force: true });
 });

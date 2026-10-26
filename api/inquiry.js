@@ -39,6 +39,7 @@ export default async function handler(req, res) {
   try {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
+      signal: AbortSignal.timeout(12000),
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: FROM, to: [TO], reply_to: data.email, subject: `Website inquiry: ${data.type} from ${data.name}`, text, html }),
     });

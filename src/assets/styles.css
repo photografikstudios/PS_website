@@ -1184,6 +1184,7 @@ video[controls]:focus { outline: 2px solid var(--rust); outline-offset: 3px; }
 /* Home proof follows the service tiles and selected work; base-tier limits travel with prices. */
 .home-proof { padding-block: clamp(36px, 5vw, 72px); }
 .price-size { display: block; margin-top: 5px; font: 400 12px/1.5 var(--sans); color: var(--muted); letter-spacing: 0; text-transform: none; }
+.on-dark .price-size, .section--pricing .price-size { color: var(--on-dark-muted); }
 .home-pkgs__price .price-size { white-space: nowrap; }
 /* On phones, give the property/agent an unobstructed opening area above the existing hero copy. */
 @media (max-width: 700px) {

@@ -160,92 +160,92 @@
     {
       "source": "/insights",
       "destination": "/field-notes",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/blog-1",
       "destination": "/field-notes",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles",
       "destination": "/field-notes",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2026/2/12/your-listing-isnt-just-a-home-its-an-experience-are-you-showing-it",
       "destination": "/field-notes/listing-video-horizontal-or-vertical",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/11/17/elevate-your-long-island-real-estate-social-media-strategy-in-2024-a-comprehensive-guide",
       "destination": "/agent-content",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/10/24/real-estate-marketing-the-importance-of-drone-video-photography",
       "destination": "/field-notes/twilight-drone-floor-plans",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/10/6/capturing-the-essence-of-the-east-end-why-professional-real-estate-photography-matters",
       "destination": "/real-estate#photography",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/10/5/elevating-suffolk-county-real-estate-photography-with-drone-video",
       "destination": "/field-notes/twilight-drone-floor-plans",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/10/5/unlocking-the-charm-of-long-island-real-estate-meet-your-trusted-real-estate-photographer",
       "destination": "/about",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/9/28/should-you-use-a-professional-photographer-and-videographer-for-long-island-real-estate",
       "destination": "/real-estate",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/9/28/unlocking-success-long-island-real-estate-video-editing-and-marketing-tips",
       "destination": "/real-estate#video",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/9/25/soaring-to-new-heights-the-popularity-and-importance-of-drone-photography-and-videography-in-real-estate",
       "destination": "/field-notes/twilight-drone-floor-plans",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/9/25/long-islands-premier-real-estate-photography-and-social-media-agency",
       "destination": "/about",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/9/19/capturing-long-islands-real-estate-the-importance-of-photography-in-a-thriving-market",
       "destination": "/real-estate#photography",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/2023/3/28/why-use-a-photographer-for-your-hamptons-listings",
       "destination": "/real-estate",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/so-now-are-we-doing-the-lights-off",
-      "destination": "/real-estate#faq",
-      "permanent": false
+      "destination": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+      "permanent": true
     },
     {
       "source": "/articles/why-you-should-get-a-real-estate-video-done",
       "destination": "/real-estate#video",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/articles/how-to-prep-a-home-for-photos",
       "destination": "/field-notes/how-to-prepare-a-home-for-listing-photos",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/work",
@@ -307,6 +307,46 @@
     {
       "source": "/architecture-design/99-hedges-lane",
       "destination": "/architecture-design/yankee-barn-builders",
+      "permanent": true
+    },
+    {
+      "source": "/policies",
+      "destination": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+      "permanent": true
+    },
+    {
+      "source": "/terms-conditions",
+      "destination": "/terms",
+      "permanent": true
+    },
+    {
+      "source": "/things-ive-saved-to-reference-back-to",
+      "destination": "/real-estate",
+      "permanent": true
+    },
+    {
+      "source": "/architecture-photography-1-1",
+      "destination": "/commercial",
+      "permanent": true
+    },
+    {
+      "source": "/monthly-content-packages",
+      "destination": "/creator-studios#sessions",
+      "permanent": true
+    },
+    {
+      "source": "/portfolio-gallery",
+      "destination": "/#selected-work",
+      "permanent": true
+    },
+    {
+      "source": "/about-photografik-studios-1",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/contact-1",
+      "destination": "/contact",
       "permanent": true
     }
   ],

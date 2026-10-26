@@ -1,0 +1,38 @@
+Vercel CLI 65.2.0
+  Inspect         https://vercel.com/creator-studios1/creator-studios/FpWtnvNsCxxpBQ1HrBBNs1LutV2F
+  Preview         https://creator-studios-ou22ovyag-creator-studios1.vercel.app
+{
+  "status": "ok",
+  "deployment": {
+    "id": "dpl_FpWtnvNsCxxpBQ1HrBBNs1LutV2F",
+    "url": "https://creator-studios-ou22ovyag-creator-studios1.vercel.app",
+    "productionUrl": null,
+    "inspectorUrl": "https://vercel.com/creator-studios1/creator-studios/FpWtnvNsCxxpBQ1HrBBNs1LutV2F",
+    "readyState": "READY",
+    "target": null,
+    "deploymentApiUrl": "https://api.vercel.com/v13/deployments/dpl_FpWtnvNsCxxpBQ1HrBBNs1LutV2F",
+    "buildMachine": {
+      "cores": 4,
+      "memory": 8192,
+      "machine": "standard",
+      "selectionType": "elastic",
+      "selectionSource": "elastic-algorithm"
+    },
+    "deploymentProtection": []
+  },
+  "message": "Deployment creator-studios-ou22ovyag-creator-studios1.vercel.app ready.",
+  "next": [
+    {
+      "command": "vercel curl https://creator-studios-ou22ovyag-creator-studios1.vercel.app",
+      "when": "Verify deployment, including when Deployment Protection is enabled"
+    },
+    {
+      "command": "vercel inspect creator-studios-ou22ovyag-creator-studios1.vercel.app --scope creator-studios1",
+      "when": "Inspect deployment"
+    },
+    {
+      "command": "vercel deploy --prod --scope creator-studios1",
+      "when": "Promote to production"
+    }
+  ]
+}

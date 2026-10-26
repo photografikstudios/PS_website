@@ -23,9 +23,10 @@
       "note": "HD Photo Hub order form. Loads and shows products; no verified query-string handoff for size or package."
     },
     "inquiryEndpoint": {
-      "env": "INQUIRY_WEBHOOK_URL",
+      "path": "/api/inquiry",
+      "env": "RESEND_API_KEY",
       "verified": false,
-      "note": "No approved CRM or inbox integration yet. Without the env var the form falls back to a prepared email."
+      "note": "Resend sends to INQUIRY_TO (default info@photografikstudios.com) from INQUIRY_FROM. Missing credentials return an explicit unsent email draft. Real delivery acceptance still required."
     },
     "creatorBooking": {
       "href": "https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services",
@@ -36,6 +37,11 @@
     "creatorInquiry": {
       "href": "/contact?type=creator-studios",
       "verified": true
+    },
+    "creatorWebsite": {
+      "href": "https://www.licreatorstudios.com/",
+      "verified": true,
+      "note": "Public Creator Studios website checked October 25, 2026. Studio booking remains the separate Square destination."
     }
   },
   "media": {

@@ -3,8 +3,8 @@
   "recordedFrom": "static/v (Session 59: 252 existing pins verified unchanged; 52 Sunday-pack WebP files and manifest.json added)",
   "recordedAt": "2026-10-12",
   "count": 400,
-  "totalBytes": 678908825,
-  "aggregate": "b2e68358070e619d718ac6da21a30ae0a35bf96446ff9e0245ced2f2431d06c7",
+  "totalBytes": 678908824,
+  "aggregate": "6ff9152e5f80f878493ac9046df84f1bc532bc3be556c3d520b1faed9212ae6a",
   "files": {
     "/v/home-listings-twilight.webp": {
       "bytes": 653488,
@@ -1223,8 +1223,8 @@
       "sha256": "9a8cb2c06a0b3d321755762777a7be7087aa02574ffb639694f1401187b048ac"
     },
     "/v/manifest.json": {
-      "bytes": 15344,
-      "sha256": "b64a78492ad020f0c5194e70745f5d859dd0d2290d896fc40769f3f66311c71a"
+      "bytes": 15343,
+      "sha256": "c73ba3dbb39b6aa1a600c367f27733b9fc233c5a870a0e19869bf8d231e960ca"
     },
     "/v/cs-podcast-ep23-short.mp4": {
       "bytes": 1646300,
@@ -1454,15 +1454,15 @@
       "bytes": 2110243,
       "sha256": "ad6a24f1101f5631ed67f9b53370c517bd55f9670b414fa84be17ef8a8ee9503"
     },
-    "/v/oct15-v2-horizontal-51-school-ln-mov.mp4": {
+    "/v/waterfront-residence-cinematic-film.mp4": {
       "bytes": 15588513,
       "sha256": "e99a42fa95b066ddd1a4ee468fddf1ad75c5b646a4e0848b4f98e90f6c7aefa8"
     },
-    "/v/oct15-v2-horizontal-51-school-ln-mov.webp": {
+    "/v/waterfront-residence-cinematic-film.webp": {
       "bytes": 82870,
       "sha256": "3e5637bf4094fc2ee50a09b12f116dc5c0f1d3c120bd1cb76e2ff49f6bfc67b6"
     },
-    "/v/oct15-v2-horizontal-51-school-ln-mov-loop.mp4": {
+    "/v/waterfront-residence-cinematic-film-loop.mp4": {
       "bytes": 1755393,
       "sha256": "4a65f13ecfb0482c36ca3865e85d6f9d2878aea47e0740f7f6dde88b92d25cea"
     },

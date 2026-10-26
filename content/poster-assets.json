@@ -1,8 +1,8 @@
 {
   "_readme": "640px film card posters (Oct 13 2026), derived from each film's pinned /v/<id>.webp poster (Pillow LANCZOS, WebP q74). Cards use these; players and lightboxes keep the full poster. Checked by scripts/media-check.mjs.",
   "count": 19,
-  "totalBytes": 600556,
-  "aggregate": "9241d72289b661ffa0dfab0be310eb2982be687670da6fc4f4c77d2af47e3a87",
+  "totalBytes": 1399294,
+  "aggregate": "70a9bef5d597727c63eea86e3860b99156072ca77861e3ce29e6c4d5561b4c97",
   "files": {
     "/images/posters-sm/arch-yankee-barn-film.webp": {
       "bytes": 44742,
@@ -156,7 +156,7 @@
       "bytes": 12808,
       "sha256": "d269bdf0da63c75d6f0eff4d2735fde75b9b619a19abc83e5e9faaae7ae097b3"
     },
-    "/images/posters-sm/oct15-v2-horizontal-51-school-ln-mov.webp": {
+    "/images/posters-sm/waterfront-residence-cinematic-film.webp": {
       "bytes": 26510,
       "sha256": "3117ee1a144e7b8be6628ebe5c36dcdf0eaddcf4e8bde406d0218154be9efa2f"
     },

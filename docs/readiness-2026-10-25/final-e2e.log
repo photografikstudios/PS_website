@@ -1,0 +1,80 @@
+PASS  prerequisite: dist/ is built from the current content and code
+PASS  pricing: starting prices shown before entry
+PASS  pricing: every boundary updates all cards from one table
+PASS  pricing: 30,001 shows custom quote, fixed add-ons unchanged
+PASS  pricing: invalid input rejected politely on blur
+PASS  pricing: live region announces band once (debounced)
+PASS  pricing: tabs work by keyboard
+PASS  pricing: ?sqft= deep link
+PASS  compare: Book Now CTA to the booking portal; common inclusions shown as rows; Day-to-night video label
+PASS  portfolios: every approved item appears on its own service page, once, and nowhere links to /work
+PASS  portfolios: /work and old project URLs redirect to their service destination, keeping intent without a stale ?category=
+PASS  video: plays inline in its frame, no dialog/route change, one at a time
+PASS  video: start button is keyboard operable and labelled
+PASS  video: pauses when scrolled offscreen
+PASS  video: every player has a real source (no "Unable to play media")
+PASS  video: vertical frames are 9:16
+PASS  contact: only acknowledged JSON counts as sent; malformed responses and timeout preserve the brief
+PASS  contact: required-field errors, then mailto fallback without email key
+PASS  a11y: no aria-label on role-less div/span/p on any page; native-control video shows a focus ring
+PASS  podcast-omit variant: no old clip anywhere, four slots swapped, players still work; live pages unchanged
+PASS  GA4: review preview silent by default; opt-in debug hits carry no personal data and truthful inquiry events
+PASS  contact: first view is short; extra questions are optional and collapsed
+PASS  booking CTAs point to HD Photo Hub
+PASS  redirects from old Squarespace and Replit routes
+PASS  all internal links resolve (no 404s)
+PASS  a11y basics: one h1, labelled controls, alt on images, no JS errors
+PASS  mobile: no horizontal overflow at 360px
+PASS  mobile: menu opens and closes with Escape
+PASS  home: video hero, two quick-book tiles, four video path tiles
+PASS  home: background video respects reduced motion and has a pause control
+PASS  home showcase: Videos/Photos × category, lightbox, View more
+PASS  compare: 2,800 sq ft gives the same HDPH amounts on compare and pricing pages
+PASS  compare: every tier boundary of every compared item matches the pricing function
+PASS  compare: inclusions come from the same data as package cards
+PASS  compare: keyboard tabs, column choice limit, phone shows two columns without overflow
+PASS  RE gallery: package matches, package × type intersection, zero result, reset
+PASS  RE gallery: untagged catalog hides the package control (no (0) options), honest note, type filter, reset, keyboard, 375 px
+PASS  RE gallery: Load More reveals the next batch, keeps filters, never plays hidden video
+PASS  RE gallery: inline mode plays in the card (horizontal and vertical), one at a time
+PASS  RE gallery on a phone: a portrait film plays in a portrait frame (9:16), not letterboxed in the 16:10 tile
+PASS  RE gallery: lightbox mode (review override) with Escape and focus return
+PASS  one media collection: the same record drives Home, the Real Estate gallery and Commercial
+PASS  Field Notes: nav, index, article answer-first with truthful schema
+PASS  Field Notes: phone reading, keyboard TOC, inline video, sitemap excludes drafts
+PASS  no Replit requests; legacy media served from the site
+PASS  call-to-action labels match their destinations
+PASS  nav: Creator Studios replaces Agencies; agency partnerships stay reachable
+PASS  primary-nav pages open with a silent autoplaying 16:9 hero video, poster, pause/play control, no Watch the film prompt
+PASS  home quick tiles use the two owner-selected stills (not video posters), responsive and cropped
+PASS  commercial (James Sep 26): value prop after hero, one case study, compact grid of one card per project, dedicated single-client project pages
+PASS  creator studios: story, formats with scope, conversations, process, proof, labeled inquiry
+PASS  Field Notes opens with a rights-approved house photograph and the Photografik Studios byline
+PASS  Listing Engine is listing sale-cycle content with the HDPH agent-on-camera video; demo reel is music-only
+PASS  speech clips carry caption tracks that load and parse, no Creator transcripts, and a machine-draft review tag; unlicensed RevivaLuxe films withheld
+PASS  reels: words show while muted (WebVTT default on Agent on camera; burned-in on the replacement, no doubled track); excerpts advance
+PASS  About reviews: Jack Richardson video testimonial with credit, curated verbatim quotes, Google link, no overflow at 375 px
+PASS  RevivaLuxe: silent film loop only, copy matches visible media
+PASS  images keep their shape: no box takes the height attribute at a smaller width (1440 and 390)
+PASS  galleries: media only, no captions, no piece counts, plain Load more
+PASS  phone lightbox: previous/next arrows clear of the browser toolbar zone and working
+PASS  Commercial: property media prices, add-ons and portfolio rates; RevivaLuxe case study wording
+PASS  monthly plans match the sheet; Home closing image keeps the house in frame
+PASS  pricing rows: photos, one static note, plain fixed prices, content add-ons under Video; new stills in use
+PASS  mobile menu reachable at 320-1024; Home trimmed with every path kept; Video note names fixed vs size-based
+PASS  Architecture & design: story first, text and media paired, early proof, no repeats, clear paths
+PASS  Architecture & design gallery: segment and media filters, counts, reset, empty state, inline film, project links
+PASS  James Sep 28: pricing four across, Most Popular, package loops; RE image-led, no tile captions; no counts; Agent split; phone hero waits for load
+PASS  fonts: self-hosted faces load, no third-party font requests, fallback keeps Home hero lines
+PASS  no street addresses in any page, caption, alt text, URL or media file name
+PASS  LCP: small header logo, hero poster preloaded at high priority; RE portfolio before packages, no three steps; one package note
+PASS  copy pass: no generic marketing phrases, intent CTAs, contact makes no timing promise
+PASS  home Selected Work: two rows, responsive columns, touch and keyboard reach every card
+PASS  legal pages: Photografik policies first, Creator supplement last, effective date, cross-links, footer acceptance, phone layout
+PASS  Dashboard content model: all 13 original project URLs load with their hero, title and photos; page text renders from content/pages.json
+PASS  Site dashboard: /admin is noindex, pinned and Git-backed; eight sections; drafts are off by default
+PASS  Dashboard status: /admin/status.json lists held projects and review-only tests; Test page says review-only
+PASS  polish: starting size stays beside every price through entry and clear
+PASS  polish: Architecture thumbnails reserve dimensions and fall back without losing actions; video retry works
+
+78/78 passed

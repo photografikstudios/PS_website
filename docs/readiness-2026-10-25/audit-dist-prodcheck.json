@@ -1,0 +1,454 @@
+{
+  "build": "dist-prodcheck",
+  "pages": 36,
+  "issues": [],
+  "external": [
+    "https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services",
+    "https://photografikstudios.hd.pics/order",
+    "https://www.facebook.com/photografikstudios",
+    "https://www.google.com/search?q=Photografik+Studios+Inc+Shoreham+NY",
+    "https://www.instagram.com/photografikstudios",
+    "https://www.licreatorstudios.com/"
+  ],
+  "summary": [
+    {
+      "route": "/",
+      "title": "Photografik Studios | Real Estate, Architecture & Brand Media",
+      "descriptionLength": 146,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage"
+      ],
+      "images": 383
+    },
+    {
+      "route": "/licensing",
+      "title": "Licensing & Usage Rights Policy | Photografik Studios",
+      "descriptionLength": 161,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 1
+    },
+    {
+      "route": "/about",
+      "title": "About Photografik Studios | Our Approach",
+      "descriptionLength": 109,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 2
+    },
+    {
+      "route": "/contact",
+      "title": "Send a Project Brief | Photografik Studios",
+      "descriptionLength": 109,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "ContactPage",
+        "BreadcrumbList"
+      ],
+      "images": 1
+    },
+    {
+      "route": "/terms",
+      "title": "Terms & Conditions | Photografik Studios",
+      "descriptionLength": 172,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 1
+    },
+    {
+      "route": "/404",
+      "title": "Page Not Found | Photografik Studios",
+      "descriptionLength": 79,
+      "schema": [],
+      "images": 1
+    },
+    {
+      "route": "/creator-studios",
+      "title": "LI Creator Studios | Long Island Podcast & Video Studio",
+      "descriptionLength": 139,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Service",
+        "BreadcrumbList",
+        "FAQPage"
+      ],
+      "images": 14
+    },
+    {
+      "route": "/field-notes",
+      "title": "Field Notes | Practical answers before the shoot | Photografik",
+      "descriptionLength": 144,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Blog",
+        "BreadcrumbList"
+      ],
+      "images": 5
+    },
+    {
+      "route": "/commercial",
+      "title": "Commercial Photo & Video Production | Long Island | Photografik",
+      "descriptionLength": 143,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Service",
+        "BreadcrumbList"
+      ],
+      "images": 11
+    },
+    {
+      "route": "/architecture-design",
+      "title": "Architecture & Interior Design Photography | Photografik",
+      "descriptionLength": 142,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Service",
+        "BreadcrumbList"
+      ],
+      "images": 48
+    },
+    {
+      "route": "/real-estate",
+      "title": "Real Estate Photography & Video | Hamptons & Long Island",
+      "descriptionLength": 143,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Service",
+        "BreadcrumbList",
+        "FAQPage"
+      ],
+      "images": 112
+    },
+    {
+      "route": "/agent-content",
+      "title": "Agent Content, Listing Engine & Agent Engine | Photografik",
+      "descriptionLength": 129,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Service",
+        "BreadcrumbList"
+      ],
+      "images": 3
+    },
+    {
+      "route": "/agency-partnerships",
+      "title": "Production Partner for Agencies | Photografik Studios",
+      "descriptionLength": 139,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Service",
+        "BreadcrumbList"
+      ],
+      "images": 2
+    },
+    {
+      "route": "/architecture-design/nitelite-landscapes",
+      "title": "NiteLite Landscapes | Architecture & Design | Photografik",
+      "descriptionLength": 45,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 10
+    },
+    {
+      "route": "/architecture-design/kerry-delrose",
+      "title": "Kerry Delrose | Architecture & Design | Photografik",
+      "descriptionLength": 47,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 19
+    },
+    {
+      "route": "/architecture-design/bellard-brothers",
+      "title": "Bellard Brothers | Architecture & Design | Photografik",
+      "descriptionLength": 33,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 74
+    },
+    {
+      "route": "/architecture-design/barba-architectural",
+      "title": "Barba Architectural | Architecture & Design | Photografik",
+      "descriptionLength": 44,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 24
+    },
+    {
+      "route": "/architecture-design/goldin-luxury",
+      "title": "Goldin Luxury | Architecture & Design | Photografik",
+      "descriptionLength": 39,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 15
+    },
+    {
+      "route": "/architecture-design/long-island-building-systems",
+      "title": "Long Island Building Systems | Architecture & Design | Photografik",
+      "descriptionLength": 45,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 8
+    },
+    {
+      "route": "/architecture-design/laura-grollmus-interiors",
+      "title": "Laura Grollmus Interiors | Architecture & Design | Photografik",
+      "descriptionLength": 41,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 12
+    },
+    {
+      "route": "/architecture-design/yankee-barn-builders",
+      "title": "Yankee Barn Builders | Architecture & Design | Photografik",
+      "descriptionLength": 91,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 8
+    },
+    {
+      "route": "/architecture-design/peterson-ramlowtan",
+      "title": "Peterson & Ramlowtan | Architecture & Design | Photografik",
+      "descriptionLength": 81,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 55
+    },
+    {
+      "route": "/real-estate/pricing",
+      "title": "Real Estate Media Pricing by Square Footage | Photografik",
+      "descriptionLength": 114,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "Service",
+        "BreadcrumbList"
+      ],
+      "images": 10
+    },
+    {
+      "route": "/real-estate/lauryn-koke-daniel-gale-sothebys",
+      "title": "Lauryn Koke, Daniel Gale Sotheby's International Realty | Real Estate | Photografik",
+      "descriptionLength": 91,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 4
+    },
+    {
+      "route": "/commercial/evolution-unlimited",
+      "title": "Evolution Unlimited | Commercial & Brand | Photografik",
+      "descriptionLength": 45,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 5
+    },
+    {
+      "route": "/commercial/bpe-ironworks",
+      "title": "BPE Ironworks | Commercial & Brand | Photografik",
+      "descriptionLength": 57,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 22
+    },
+    {
+      "route": "/commercial/clos-lighting",
+      "title": "CLOS Lighting | Commercial & Brand | Photografik",
+      "descriptionLength": 57,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 2
+    },
+    {
+      "route": "/commercial/torella-pools",
+      "title": "Tortorella Pools | Commercial & Brand | Photografik",
+      "descriptionLength": 60,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 3
+    },
+    {
+      "route": "/commercial/eestairs",
+      "title": "EEStairs | Commercial & Brand | Photografik",
+      "descriptionLength": 52,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 1
+    },
+    {
+      "route": "/commercial/revivaluxe",
+      "title": "RevivaLuxe | Commercial & Brand | Photografik",
+      "descriptionLength": 128,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 15
+    },
+    {
+      "route": "/commercial/rachel-lynch-pools",
+      "title": "Rachel Lynch Pools | Commercial & Brand | Photografik",
+      "descriptionLength": 62,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 8
+    },
+    {
+      "route": "/field-notes/twilight-drone-floor-plans",
+      "title": "When are twilight, drone and floor plans worth it? | Photografik",
+      "descriptionLength": 125,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BlogPosting",
+        "BreadcrumbList"
+      ],
+      "images": 6
+    },
+    {
+      "route": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+      "title": "How to prepare a home for listing photos and video | Photografik",
+      "descriptionLength": 154,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BlogPosting",
+        "BreadcrumbList"
+      ],
+      "images": 4
+    },
+    {
+      "route": "/field-notes/listing-video-horizontal-or-vertical",
+      "title": "Horizontal film or vertical reel for a listing? | Photografik",
+      "descriptionLength": 125,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BlogPosting",
+        "BreadcrumbList"
+      ],
+      "images": 3
+    },
+    {
+      "route": "/creator-studios/sessions",
+      "title": "Creator Studios Sessions | LI Creator Studios | Photografik",
+      "descriptionLength": 89,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 14
+    },
+    {
+      "route": "/agent-content/property-tour-agent-media",
+      "title": "Property Tour & Agent Media | Agent Content | Photografik",
+      "descriptionLength": 98,
+      "schema": [
+        "ProfessionalService",
+        "WebSite",
+        "WebPage",
+        "BreadcrumbList"
+      ],
+      "images": 3
+    }
+  ]
+}

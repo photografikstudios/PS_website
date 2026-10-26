@@ -1,7 +1,7 @@
 {
   "type": "video",
-  "title": "v2 Horizontal 51 School Ln.mov",
-  "published": false,
+  "title": "Waterfront home: cinematic property film",
+  "published": true,
   "drive": "https://drive.google.com/file/d/1GCBlKWVJRuiVfekHL4QPbb1b_wthR75W/view?usp=drivesdk",
   "import": {
     "state": "ready",
@@ -17,7 +17,7 @@
   ],
   "location": null,
   "client": null,
-  "dialogue": true,
+  "dialogue": false,
   "captions": null,
   "captionsStatus": "machine-draft",
   "featured": false,
@@ -27,8 +27,10 @@
   "capturedYear": null,
   "sortPriority": 0,
   "order": 3170,
-  "src": "/v/oct15-v2-horizontal-51-school-ln-mov.mp4",
-  "poster": "/v/oct15-v2-horizontal-51-school-ln-mov.webp",
+  "src": "/v/waterfront-residence-cinematic-film.mp4",
+  "poster": "/v/waterfront-residence-cinematic-film.webp",
   "orientation": "horizontal",
-  "duration": 97
+  "duration": 97,
+  "publicationNote": "Selected by James in Page Media and approved for website use October 25, 2026. Make the selected record visible in the production build; unrelated hidden library records remain hidden.",
+  "audioCheckNote": "2026-10-25: full 97-second soundtrack checked with speech detection/transcription (no speech segments detected); sampled film frames show property footage. Classified as music-only. Original Drive source retained."
 }

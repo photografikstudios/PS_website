@@ -22,6 +22,7 @@ test('inquiry: no key -> 503 mailto fallback; provider error -> 502; network err
     let sent; globalThis.fetch = async (url, init) => { sent = { url, init }; return { ok: true, status: 200 }; };
     r = res(); await handler({ method: 'POST', body: brief }, r);
     assert.deepEqual([r.code, r.body], [200, { ok: true }]);
+    assert.ok(sent.init.signal instanceof AbortSignal, 'provider call has a timeout signal');
     const payload = JSON.parse(sent.init.body);
     assert.equal(sent.url, 'https://api.resend.com/emails');
     assert.equal(payload.reply_to, 'pat@example.com'); assert.deepEqual(payload.to, ['info@photografikstudios.com']);

@@ -5,9 +5,9 @@ import { join, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const dist = join(root, 'dist');
+const dist = join(root, process.env.TEST_DIST === 'dist-prodcheck' ? 'dist-prodcheck' : 'dist');
 const config = JSON.parse(await readFile(join(root, 'vercel.json'), 'utf8'));
-const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.webm': 'video/webm', '.mp4': 'video/mp4', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.avif': 'image/avif' };
+const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json', '.xml': 'application/xml', '.txt': 'text/plain', '.webm': 'video/webm', '.mp4': 'video/mp4', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.vtt': 'text/vtt; charset=utf-8', '.svg': 'image/svg+xml', '.avif': 'image/avif' };
 
 function matchRedirect(path, query) {
   // Mirrors the parts of Vercel's redirect matching this site uses: exact paths, /:path* prefixes,

@@ -16,6 +16,7 @@ import { validateLegal } from './lib/legal-core.js';
 import { loadWork, staticFile } from './lib/work-load.js';
 import { checkContent, holdDashboardProjects, applyReviewOnly, dashboardStatus } from './lib/content-check.js';
 import { imageSize } from './lib/image-size.js';
+import { structuredData } from './lib/seo-core.js';
 import { PAGES as PAGE_MEDIA, checkPageMedia, heroStillMap } from './lib/page-media-core.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -148,16 +149,10 @@ if (!pages['/field-notes']) {
 await rm(out, { recursive: true, force: true });
 await mkdir(join(out, 'assets'), { recursive: true });
 
-const orgLd = {
-  '@context': 'https://schema.org', '@type': 'ProfessionalService', name: site.name, url: site.canonicalOrigin,
-  email: site.email, telephone: '+1-631-998-9661', areaServed: ['Long Island', 'The Hamptons', 'North Fork', 'Suffolk County', 'Nassau County', 'New York City'],
-  sameAs: site.social.map((s) => s.href),
-};
-
 const routes = [];
 for (const [route, page] of Object.entries(pages)) {
   const pageSeo = page.seo || seo[route] || seo['/'];
-  const html = layout(ctx, { route, body: page.body, seo: pageSeo, scripts: page.scripts, dark: page.dark, overlay: page.overlay, ogType: page.ogType, articleDates: page.articleDates, jsonLd: route === '/' ? orgLd : page.jsonLd || null });
+  const html = layout(ctx, { route, body: page.body, seo: pageSeo, scripts: page.scripts, dark: page.dark, overlay: page.overlay, ogType: page.ogType, articleDates: page.articleDates, jsonLd: structuredData(site, route, pageSeo, page) });
   const file = route === '/' ? 'index.html' : `${route.slice(1)}.html`;
   await mkdir(dirname(join(out, file)), { recursive: true });
   await writeFile(join(out, file), html);

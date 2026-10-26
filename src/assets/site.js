@@ -115,6 +115,25 @@ window.pgkVideoRecovery = videoRecovery;
 // Videos play inside their own frame. No lightbox, modal, route change or new tab.
 // One video plays at a time; videos pause when scrolled out of view.
 const players = new Set();
+function pauseOffscreenPlayers() {
+  for (const player of players) {
+    const v = player.querySelector('video');
+    if (!v || v.paused) continue;
+    const r = player.getBoundingClientRect();
+    const shown = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+    if (document.hidden || (r.height && shown / r.height < 0.25)) v.pause();
+  }
+}
+// A fast click-and-scroll can enter and leave the viewport between observer samples
+// (0 -> 0), so no intersection change is delivered. Check active players once per
+// scroll frame as well. This also cancels a play request still waiting for media.
+let videoScrollFrame = 0;
+addEventListener('scroll', () => {
+  if (!videoScrollFrame) videoScrollFrame = requestAnimationFrame(() => {
+    videoScrollFrame = 0;
+    pauseOffscreenPlayers();
+  });
+}, { passive: true });
 
 function loadSource(player) {
   const v = player.querySelector('video');
@@ -143,10 +162,15 @@ async function start(player) {
   v.muted = false;
   try {
     await v.play();
-  } catch {
-    // Browser blocked audio: start muted, controls stay visible so the viewer can unmute.
-    v.muted = true;
-    try { await v.play(); } catch { /* leave paused with controls */ }
+  } catch (error) {
+    // Only retry an audio-policy refusal. Pausing during loading rejects play() with
+    // AbortError; retrying that cancellation would restart an offscreen video.
+    const r = player.getBoundingClientRect();
+    const shown = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+    if (error?.name === 'NotAllowedError' && !document.hidden && r.height && shown / r.height >= 0.25) {
+      v.muted = true;
+      try { await v.play(); } catch { /* leave paused with controls */ }
+    }
   }
   v.focus({ preventScroll: true });
   track('video_play', { video: player.dataset.id });

@@ -1,12 +1,12 @@
 {
   "type": "video",
-  "title": "CL Podcast Ep 16 Shorts 2 (1)",
-  "published": false,
+  "title": "Creator Studios podcast short",
+  "published": true,
   "drive": "https://drive.google.com/file/d/1SBJbueQNwl9TcD3YJGLFqoiA9biVBqB8/view?usp=drivesdk",
   "import": {
     "state": "ready",
     "at": "2026-10-15T13:32:41.604Z",
-    "message": "Imported from Google Drive (1080×1920, 27 s). The original stays in Drive."
+    "message": "Imported from Google Drive (1080\u00d71920, 27 s). The original stays in Drive."
   },
   "posterTime": 3,
   "alt": "",
@@ -19,7 +19,7 @@
   "location": null,
   "client": null,
   "dialogue": true,
-  "captions": null,
+  "captions": "burned-in",
   "captionsStatus": "machine-draft",
   "featured": false,
   "rights": "approved",
@@ -32,5 +32,8 @@
   "poster": "/v/oct15-cl-podcast-ep-16-shorts-2-1.webp",
   "orientation": "vertical",
   "duration": 27,
-  "focal": "top"
+  "focal": "top",
+  "openCaptions": true,
+  "captionsNote": "Embedded captions verified in the supplied video frames, October 25, 2026. Use the existing open captions; do not overlay a duplicate track.",
+  "publicationNote": "Selected by James in Page Media and approved for website use October 25, 2026. Make the selected record visible in the production build; unrelated hidden library records remain hidden."
 }

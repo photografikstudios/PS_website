@@ -74,8 +74,12 @@ form.addEventListener('submit', async (e) => {
   btn.disabled = true; btn.textContent = 'Sending…';
   let delivered = false;
   try {
-    const res = await fetch('/api/inquiry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-    delivered = res.ok;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 18000);
+    try {
+      const res = await fetch('/api/inquiry', { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      delivered = res.ok && (await res.json()).ok === true;
+    } finally { clearTimeout(timeout); }
   } catch { delivered = false; }
   btn.disabled = false; btn.textContent = 'Send Project Brief';
   if (delivered) {

@@ -47,7 +47,7 @@ test('portfolio: original library plus the Oct 19 owner pack, one file each, nam
   assert.equal((await readdir(join(root, 'content/projects'))).length, work.projects.length);
   assert.equal((await readdir(join(root, 'content/media'))).length, 359);
   // James's 20 Drive videos of Oct 15 are owner assets, imported as hidden drafts with no page placement yet.
-  const oct15 = work.media.filter((m) => /^oct15-/.test(m.id));
+  const oct15 = work.media.filter((m) => (/^oct15-/.test(m.id) || m.id === 'waterfront-residence-cinematic-film'));
   assert.equal(oct15.length, 20);
   assert.ok(oct15.every((m) => m.type === 'video' && typeof m.published === 'boolean' && m.import && m.import.state === 'ready'), 'imported owner records; editor visibility decisions retained');
   assert.ok(originals.every((p) => p.published === true), 'original projects are explicitly published');

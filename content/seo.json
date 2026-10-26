@@ -10,7 +10,7 @@
   },
   "/real-estate/pricing": {
     "title": "Real Estate Media Pricing by Square Footage | Photografik",
-    "description": "Enter the property size to see published base prices for every Photografik listing package and à la carte service."
+    "description": "Enter the property size to see published base prices for every Photografik listing package and \u00e0 la carte service."
   },
   "/agent-content": {
     "title": "Agent Content, Listing Engine & Agent Engine | Photografik",
@@ -29,8 +29,8 @@
     "description": "Crew, studio, filming, editing and white-label delivery for advertising and marketing agencies working on Long Island and in New York City."
   },
   "/creator-studios": {
-    "title": "LI Creator Studios | Podcast & Content Studio in Bohemia, NY",
-    "description": "LI Creator Studios, a podcast and content studio in Bohemia, NY. Single studio sessions start at $249 for up to 90 minutes; general studio content starts at $500 for a 2-hour minimum; monthly schedules are scoped on request."
+    "title": "LI Creator Studios | Long Island Podcast & Video Studio",
+    "description": "Podcasts, interviews and on-camera content in Bohemia, NY. Multi-camera studio sessions with production support for Long Island businesses."
   },
   "/work": {
     "title": "Work | Photography & Film by Photografik Studios",

@@ -1,0 +1,45 @@
+{
+  "profile": "Local lab: 390px, 4x CPU slowdown, 1.6 Mbps, 150ms latency; load plus 4 seconds; not field data",
+  "output": [
+    {
+      "route": "/",
+      "lcp": 2388,
+      "cls": 0.0009184300235152641,
+      "lcpElement": "IMG",
+      "resourceBytes": 1044239,
+      "resources": 15
+    },
+    {
+      "route": "/real-estate",
+      "lcp": 2232,
+      "cls": 0,
+      "lcpElement": "IMG",
+      "resourceBytes": 601713,
+      "resources": 17
+    },
+    {
+      "route": "/architecture-design",
+      "lcp": 1992,
+      "cls": 0.002920481489864478,
+      "lcpElement": "IMG",
+      "resourceBytes": 651624,
+      "resources": 18
+    },
+    {
+      "route": "/commercial",
+      "lcp": 2396,
+      "cls": 0,
+      "lcpElement": "IMG",
+      "resourceBytes": 1326009,
+      "resources": 18
+    },
+    {
+      "route": "/creator-studios",
+      "lcp": 1680,
+      "cls": 0,
+      "lcpElement": "IMG",
+      "resourceBytes": 362252,
+      "resources": 10
+    }
+  ]
+}

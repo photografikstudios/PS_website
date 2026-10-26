@@ -211,7 +211,7 @@ export function buildPages(ctx) {
     const st = pmStill(it); if (!st) return '';
     const sm = /^\/v\/[\w-]+\.webp$/.test(st.src) ? (st.thumb || st.src.replace(/\.webp$/, '-sm.webp')) : null;
     const alt = it.alt || st.alt;
-    return sm ? `<img src="${st.src}" srcset="${sm} 900w, ${st.src} 2000w" sizes="(min-width: 700px) 50vw, 100vw" alt="${esc(alt)}" loading="lazy" decoding="async">`
+    return sm ? `<img src="${st.src}" srcset="${sm} 900w, ${st.src} 2000w" sizes="(min-width: 700px) 50vw, 100vw" alt="${esc(alt)}" ${ctx.imageDimensions(st.src)} loading="lazy" decoding="async">`
       : img(st.src, { alt, thumb: st.thumb, sizes: '(min-width: 700px) 50vw, 100vw' });
   };
   pages['/'] = {
@@ -1091,7 +1091,7 @@ ${caseStudy ? `<section class="section section--ink on-dark" id="case-study" ari
     <ul class="pgrid" role="list">${join(comChosen, (x) => `<li class="pgrid__item" data-project="${esc(x.p.slug)}">
       <div class="pgrid__media">${x.rep.type === 'video' ? repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw') : `<a href="${projectPath(x.p)}" tabindex="-1" aria-hidden="true">${repFrame(x.rep, '(min-width: 1200px) 24vw, (min-width: 700px) 45vw, 100vw')}</a>`}</div>
       <h3 class="pgrid__title"><a href="${projectPath(x.p)}" data-track="project_click" data-track-location="com_grid">${esc(x.p.client || x.p.title)}</a></h3>
-      <a class="link-arrow pgrid__go" href="${projectPath(x.p)}" aria-label="View the ${esc(x.p.client || x.p.title)} project">View project ${arrow}</a>
+      <a class="link-arrow pgrid__go" href="${projectPath(x.p)}" aria-label="View project: ${esc(x.p.client || x.p.title)}">View project ${arrow}</a>
     </li>`)}</ul>
   </div>
 </section>
@@ -1238,7 +1238,6 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   const csCtaLine = csCtaParts.length ? csCtaParts.join(' ') : 'Tell us who you want to reach and what you want to talk about.';
   pages['/creator-studios'] = {
     overlay: true,
-    seo: { title: 'LI Creator Studios | Podcast and studio content on Long Island | Photografik', description: 'Podcasts, interviews and on-camera content that show the person and purpose behind a business. Multi-camera studio sessions with production support in Bohemia, NY.' },
     body: `${pageHero({
       ...heroText('/creator-studios'),
       cta: `${csStart('creator_hero')}<a class="link-arrow" href="#sessions">${csFrom ? `Sessions starting at ${formatUSD(csFrom)}` : 'Studio sessions'} ${arrow}</a>`,
@@ -1252,6 +1251,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <p>Your website lists what you do. A recorded conversation lets customers hear why you do it, what you believe and how you think, in your own words.</p>
       <ul class="cs-points"><li><strong>The person.</strong> Where you came from and why you do this work.</li><li><strong>The purpose.</strong> The standard you hold your work to.</li><li><strong>The expertise.</strong> The questions you answer every week, explained properly.</li></ul>
       <div class="actions">${csStart('creator_story', 'Book a Session')}<a class="btn btn--outline" href="#sessions" data-track="pricing_click" data-track-location="creator_story">See Pricing</a></div>
+      <p class="small"><a href="${esc(site.destinations.creatorWebsite.href)}" data-track="creator_click" data-track-location="creator_website">Visit the LI Creator Studios website ${arrow}</a> for more studio work and production services.</p>
     </div>
     <div class="cs-pair__media cs-loops" role="group" aria-label="${omitIds.size ? 'Examples of podcast and studio sessions with clients' : 'Examples of podcast shorts made with clients'}">${join(csLoops, ([id, label]) => (id.startsWith('img:') ? (() => { const m = csById[id.slice(4)] || visibleMediaById[id.slice(4)]; return m ? `<div class="cs-loop">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 200px, 33vw' })}</div>` : ''; })() : `<div class="cs-loop">${ambient(id, { label })}</div>`))}</div>
   </div>
@@ -1372,7 +1372,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     // Commercial films lead the gallery in their own rows; preserve the saved order within each media type.
     const galleryGroups = isCom ? [galleryMedia.filter((m) => m.type === 'video'), galleryMedia.filter((m) => m.type !== 'video')].filter((group) => group.length) : [galleryMedia];
     const galleryHtml = join(galleryGroups, (group) => `<div class="justified">${join(group, (m) => mediaCard(m, { photoLightboxIndex: photoLightbox && m.type === 'image' ? photoIndex.get(m.src) : undefined }))}<span class="justified__spacer" aria-hidden="true"></span></div>`);
-    const lede = isCom && !p.blurbApproved ? blurb(p.story, 'Client and project summary') : esc(p.story || '');
+    const lede = isCom && !p.blurbApproved ? (reviewMode ? blurb(p.story, 'Client and project summary') : esc(p.summary || '')) : esc(p.story || '');
     const selectedServices = (Array.isArray(p.services) ? p.services : []).map((id) => svcLabel[id] || id);
     const services = selectedServices.length ? selectedServices.join(' · ') : isCom ? filmDelivered(p, deliveredOf(pm)).join(' · ') : '';
     const serviceDetails = typeof p.serviceDetails === 'string' ? p.serviceDetails.trim() : '';
@@ -1594,8 +1594,11 @@ ${splitCta('Let us help with the next one.', pmStill(pmv('about', 'closing'))?.s
   // ---------- 404 ----------
   pages['/404'] = {
     overlay: true,
+    seo: { title: 'Page Not Found | Photografik Studios', description: 'Find Photografik Studios services, portfolios, pricing and contact information.' },
     body: `<section class="page-hero page-hero--compact on-dark"><div class="wrap page-hero__inner"><p class="eyebrow">404</p><h1 class="display">That page has moved.</h1><p class="lede">Try one of these instead.</p><div class="actions"><a class="btn btn--gold" href="/">Home</a><a class="link-arrow" href="/real-estate#portfolio">Real estate portfolio ${arrow}</a><a class="link-arrow" href="/real-estate/pricing">Pricing ${arrow}</a></div></div></section>`,
   };
 
+  pages['/real-estate'].faqs = (faqs['real-estate'] || []).filter(visible).map(({ q, a }) => ({ q, a }));
+  pages['/creator-studios'].faqs = csFaq.map(([q, a]) => ({ q, a }));
   return pages;
 }

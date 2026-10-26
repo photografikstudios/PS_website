@@ -17,7 +17,8 @@
   "seoDescription": "A room-by-room checklist for listing photos: exterior, lighting and blinds, kitchen, bedrooms, bathrooms and pool, plus what changes for a twilight shoot.",
   "approvedBy": "James, Sep 30 2026 (Wednesday implementation pass, item 7: the three Day 1 articles are approved for launch)",
   "legacyUrls": [
-    "/articles/how-to-prep-a-home-for-photos"
+    "/articles/how-to-prep-a-home-for-photos",
+    "/articles/so-now-are-we-doing-the-lights-off"
   ],
   "sources": [
     "Photografik's original article, How to prep a home for photos (photografikstudios.com/articles/how-to-prep-a-home-for-photos), from Codex's source notes, HOME_PREP_SOURCE_NOTES.md, Sep 24 2026"

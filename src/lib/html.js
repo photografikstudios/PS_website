@@ -57,7 +57,8 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {}, ima
   /** Inline video player: poster + start button, then native controls inside the frame. No dialog. */
   function videoPlayer(m, { sizes = '(min-width: 900px) 30vw, 90vw', eagerPoster = false } = {}) {
     const posterSrc = m.poster ? optimized(m.poster, 1080) : null;
-    const label = `Play ${m.title}${m.duration ? `, ${m.duration} seconds` : ''}`;
+    const durationLabel = m.duration ? `${Math.floor(m.duration / 60)}:${String(m.duration % 60).padStart(2, '0')}` : '';
+    const label = `Play ${m.title}${durationLabel ? `, ${durationLabel} (${m.duration} seconds)` : ''}`;
     const src = mediaUrl(m.src) + (m.poster ? '' : `#t=${m.posterTime ?? 0.5}`);
     return `<div class="vplayer vplayer--${esc(m.orientation)}" data-video data-id="${esc(m.id)}" data-title="${esc(m.title)}">
   <video ${attrs({ src, poster: posterSrc, playsinline: true, preload: 'none', 'aria-label': m.title, 'webkit-playsinline': true })}>

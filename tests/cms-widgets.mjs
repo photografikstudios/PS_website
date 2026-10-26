@@ -262,9 +262,13 @@ await check('Home library includes all hidden recent films; incompatible photos 
     await page.locator('.host-pgk-slot').last().getByRole('button', {name: 'Replace from library'}).click();
     const dlg = page.getByRole('dialog', {name: 'Choose from the library'}).last();
     await dlg.getByRole('searchbox').fill('oct15-');
-    await page.waitForFunction(() => document.querySelectorAll('.host-pgk-slot [role="dialog"] .pgk-pick').length === 20);
+    // Nineteen retain the import prefix; the selected Home film now has a street-free public name.
+    await page.waitForFunction(() => document.querySelectorAll('.host-pgk-slot [role="dialog"] .pgk-pick').length === 19);
     assert.equal(await dlg.locator('.pgk-pick:disabled').count(), 0);
     assert.ok((await dlg.locator('.pgk-pick').allTextContents()).some(t => /Hidden/.test(t)));
+    await dlg.getByRole('searchbox').fill('waterfront-residence-cinematic-film');
+    await page.waitForFunction(() => document.querySelectorAll('.host-pgk-slot [role="dialog"] .pgk-pick').length === 1);
+    assert.equal(await dlg.locator('.pgk-pick:disabled').count(), 0);
     await dlg.getByRole('searchbox').fill('ph-dan-dan');
     await page.waitForFunction(() => { const bs = [...document.querySelectorAll('.host-pgk-slot [role="dialog"] .pgk-pick')]; return bs.length > 0 && bs.every(b => b.disabled); });
     assert.match(await dlg.innerText(), /needs a playing video/);

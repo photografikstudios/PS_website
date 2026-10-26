@@ -1,0 +1,356 @@
+[
+  {
+    "name": "desktop",
+    "path": "/",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "hero": "<picture class=\"hero-still\"><source media=\"(max-width: 700px) and (max-aspect-ratio: 3/5)\" srcset=\"/images/hero/waterfront-residence-cinematic-film-phone.webp\" width=\"640\" height=\"720\"><img src=\"/imag",
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/real-estate",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/real-estate/pricing",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              "p[data-price-for=\"luxury-media\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "p[data-price-for=\"signature\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "p[data-price-for=\"social-media\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "p[data-price-for=\"listing-starter\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "desktop",
+    "path": "/architecture-design",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/commercial",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/commercial/evolution-unlimited",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/creator-studios",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/contact",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/field-notes",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/terms",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "desktop",
+    "path": "/licensing",
+    "status": 200,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "hero": "<picture class=\"hero-still\"><source media=\"(max-width: 700px) and (max-aspect-ratio: 3/5)\" srcset=\"/images/hero/waterfront-residence-cinematic-film-phone.webp\" width=\"640\" height=\"720\"><img src=\"/imag",
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/real-estate",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/real-estate/pricing",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "nodes": [
+          {
+            "target": [
+              "p[data-price-for=\"luxury-media\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "p[data-price-for=\"signature\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "p[data-price-for=\"social-media\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "p[data-price-for=\"listing-starter\"] > small"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.64 (foreground color: #5d6860, background color: #212623, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/architecture-design",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/commercial",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/commercial/evolution-unlimited",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/creator-studios",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/contact",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/field-notes",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/field-notes/how-to-prepare-a-home-for-listing-photos",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/terms",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  },
+  {
+    "name": "mobile-webkit",
+    "path": "/licensing",
+    "status": 200,
+    "width": 390,
+    "scrollWidth": 390,
+    "brokenImages": [],
+    "h1": 1,
+    "reviewBanners": 0,
+    "errors": [],
+    "violations": []
+  }
+]

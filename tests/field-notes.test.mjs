@@ -138,21 +138,19 @@ test('mapped legacy articles land on their own refreshed article, not a loosely 
 });
 
 test('production launch stays blocked until every legacy URL has an approved destination', () => {
-  const none = { articles: fn.articles.map((a) => ({ ...a, published: false })) };
-  assert.equal(legacyLaunchBlockers(none, legacy).length, legacy.items.length);
-  assert.ok(legacyLaunchBlockers(fn, legacy).length > 0, 'still blocked with the three Day 1 articles published');
-  const approved = { articles: fn.articles.map((a) => ({ ...a, published: true })) };
-  const decided = { items: legacy.items.map((r) => (r.status === 'decision' ? { ...r, approvedBy: 'James' } : r)) };
-  const left = legacyLaunchBlockers(approved, decided);
-  assert.ok(left.every((l) => l.includes('planned') || l.includes('title-only')), left.join('\n'));
+  assert.deepEqual(legacyLaunchBlockers(fn, legacy), [], 'audited migration has destinations for every old article');
+  const undecided = { items: legacy.items.map(r => ({ ...r, approvedBy: null })) };
+  assert.equal(legacyLaunchBlockers(fn, undecided).length, legacy.items.filter(r => r.status === 'decision').length);
+  const none = { articles: fn.articles.map(a => ({ ...a, published: false })) };
+  assert.equal(legacyLaunchBlockers(none, undecided).length, legacy.items.length);
+  const planned = { items: [{ from: '/old', status: 'planned', target: '/field-notes/missing' }] };
+  assert.equal(legacyLaunchBlockers(fn, planned).length, 1);
 });
 
 test('a mapped redirect matched only by title keeps production blocked until its content is compared', () => {
-  const titleOnly = legacy.items.filter((r) => r.status === 'mapped' && r.audit !== 'content-verified');
-  assert.ok(titleOnly.length > 0, 'update this test once every mapped row is content-verified');
-  const approved = { articles: fn.articles.map((a) => ({ ...a, published: true })) };
-  const left = legacyLaunchBlockers(approved, legacy);
-  for (const r of titleOnly) assert.ok(left.some((l) => l.startsWith(r.from)), r.from);
-  const verified = legacy.items.filter((r) => r.status === 'mapped' && r.audit === 'content-verified');
-  for (const r of verified) assert.ok(!left.some((l) => l.startsWith(r.from)), r.from);
+  const mapped = legacy.items.filter(r => r.status === 'mapped');
+  assert.ok(mapped.length > 0);
+  const titleOnly = { items: mapped.map(r => ({ ...r, audit: 'title-only' })) };
+  assert.equal(legacyLaunchBlockers(fn, titleOnly).length, mapped.length);
+  assert.deepEqual(legacyLaunchBlockers(fn, { items: mapped }), []);
 });

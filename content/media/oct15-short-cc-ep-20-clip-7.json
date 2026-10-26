@@ -1,12 +1,12 @@
 {
   "type": "video",
-  "title": "Short CC - EP 20 clip 7",
-  "published": false,
+  "title": "Champagne Confidential podcast short",
+  "published": true,
   "drive": "https://drive.google.com/file/d/1-vVdMcaCja5bYQ_Is6S7t1M0ZFcuAfmJ/view?usp=drivesdk",
   "import": {
     "state": "ready",
     "at": "2026-10-15T13:32:41.604Z",
-    "message": "Imported from Google Drive (1080×1920, 28 s). The original stays in Drive."
+    "message": "Imported from Google Drive (1080\u00d71920, 28 s). The original stays in Drive."
   },
   "posterTime": 3,
   "alt": "",
@@ -19,7 +19,7 @@
   "location": null,
   "client": null,
   "dialogue": true,
-  "captions": null,
+  "captions": "burned-in",
   "captionsStatus": "machine-draft",
   "featured": false,
   "rights": "approved",
@@ -32,5 +32,8 @@
   "poster": "/v/oct15-short-cc-ep-20-clip-7.webp",
   "orientation": "vertical",
   "duration": 28,
-  "focal": "top"
+  "focal": "top",
+  "openCaptions": true,
+  "captionsNote": "Embedded captions verified in the supplied video frames, October 25, 2026. Use the existing open captions; do not overlay a duplicate track.",
+  "publicationNote": "Selected by James in Page Media and approved for website use October 25, 2026. Make the selected record visible in the production build; unrelated hidden library records remain hidden."
 }

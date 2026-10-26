@@ -1,0 +1,66 @@
+… registered widgets
+… project preview: descriptions stay in alt text; only explicit captions are visible
+… photo caption editing and clearing preserves descriptions, order and hidden metadata
+… folder and tag controls save new names, deduplicate tags, and remove safely
+… tags reuse an existing spelling, and the field label reaches the tag input
+… library organization filters combine with service and include hidden photos without placing them
+… Home library includes all hidden recent films; incompatible photos remain visible with reasons
+… Page Media single required section: shows the item, cannot be emptied, replace from the library
+… Page Media list: reorder, take one off, spoken label required for playing examples
+… Page Media optional section on a text-only page: empty by default, a film can be added
+… Where it is used: an in-use photo lists its places and cannot be deleted
+… Delete an unused synthetic photo: cancel first, then typed name, own file only, undo
+… Film from Google Drive: new film starts waiting; failed shows the reason and Retry; running import is shown
+… Decap 3.16.3 behaviour: taking the photo off an optional section after an earlier save can be saved; Save writes no key; reopened it is empty
+… Decap 3.16.3 behaviour: a Drive link typed after the film form opened is the one checked on Save (new film and re-import)
+… Film import in the same open form: Ready → Replace → Save follows this request; the old Ready never counts; success and failure show here
+… Project Published: a description corrected after switching Published on saves without switching again; a missing one still blocks
+… Videos from the computer never reach Decap’s upload: stopped before it reads them, with the Google Drive route; photos and .vtt still upload
+… Captions: a file that is not WebVTT is refused with a reason
+… Card thumbnail that fails (a cached 404 from an import in progress): one retry at a fresh address, then the plain broken style
+… Collection cards: the picture sits before Decap’s card body (grid) and beside the title (list), with plain labels
+… Saved vs on the site: building, then a failed build is said plainly with its report
+… Dialogs by keyboard: focus stays inside, Escape closes, focus returns to the button that opened it
+… Page Media gallery: leave out on this page only, own selection with order, back to Automatic
+… Uploaded files: an upload taken off every page is found, deleted only by its exact name, and Undo puts it back; Escape returns focus
+… Placement actions retain integers, reverse priority direction, and undo without touching siblings
+… Testimonial visibility preserves exact order when toggled off/on, with quote untouched
+… Category URL protection blocks changing a previously shown project; drafts remain editable
+… Project URL category survives hide/save/reopen and preserves other hidden metadata
+… New Film visibility cannot bypass import readiness, and never asserts a completed publish
+… Bottom note: the review-only test note is one line, opens for details, can be hidden; a held project stays; neither covers the save pill
+… Phone width: Page Media rows fit without sideways scrolling
+ok  registered widgets
+ok  project preview: descriptions stay in alt text; only explicit captions are visible
+ok  photo caption editing and clearing preserves descriptions, order and hidden metadata
+ok  folder and tag controls save new names, deduplicate tags, and remove safely
+ok  tags reuse an existing spelling, and the field label reaches the tag input
+ok  library organization filters combine with service and include hidden photos without placing them
+ok  Home library includes all hidden recent films; incompatible photos remain visible with reasons
+ok  Page Media single required section: shows the item, cannot be emptied, replace from the library
+ok  Page Media list: reorder, take one off, spoken label required for playing examples
+ok  Page Media optional section on a text-only page: empty by default, a film can be added
+ok  Where it is used: an in-use photo lists its places and cannot be deleted
+ok  Delete an unused synthetic photo: cancel first, then typed name, own file only, undo
+ok  Film from Google Drive: new film starts waiting; failed shows the reason and Retry; running import is shown
+ok  Decap 3.16.3 behaviour: taking the photo off an optional section after an earlier save can be saved; Save writes no key; reopened it is empty
+ok  Decap 3.16.3 behaviour: a Drive link typed after the film form opened is the one checked on Save (new film and re-import)
+ok  Film import in the same open form: Ready → Replace → Save follows this request; the old Ready never counts; success and failure show here
+ok  Project Published: a description corrected after switching Published on saves without switching again; a missing one still blocks
+ok  Videos from the computer never reach Decap’s upload: stopped before it reads them, with the Google Drive route; photos and .vtt still upload
+ok  Captions: a file that is not WebVTT is refused with a reason
+ok  Card thumbnail that fails (a cached 404 from an import in progress): one retry at a fresh address, then the plain broken style
+ok  Collection cards: the picture sits before Decap’s card body (grid) and beside the title (list), with plain labels
+ok  Saved vs on the site: building, then a failed build is said plainly with its report
+ok  Dialogs by keyboard: focus stays inside, Escape closes, focus returns to the button that opened it
+ok  Page Media gallery: leave out on this page only, own selection with order, back to Automatic
+ok  Uploaded files: an upload taken off every page is found, deleted only by its exact name, and Undo puts it back; Escape returns focus
+ok  Placement actions retain integers, reverse priority direction, and undo without touching siblings
+ok  Testimonial visibility preserves exact order when toggled off/on, with quote untouched
+ok  Category URL protection blocks changing a previously shown project; drafts remain editable
+ok  Project URL category survives hide/save/reopen and preserves other hidden metadata
+ok  New Film visibility cannot bypass import readiness, and never asserts a completed publish
+ok  Bottom note: the review-only test note is one line, opens for details, can be hidden; a held project stays; neither covers the save pill
+ok  Phone width: Page Media rows fit without sideways scrolling
+page errors: none
+dashboard widgets: 32/32
