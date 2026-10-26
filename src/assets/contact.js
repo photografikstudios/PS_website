@@ -53,6 +53,9 @@ function summary(data) {
     `Project type: ${label}`, data.location && `Location: ${data.location}`, data.timing && `Timing: ${data.timing}`,
     data.budget && `Budget: ${data.budget}`, data.deliverables && `Needs and usage: ${data.deliverables}`,
     data.agency && `Agency or white-label: ${data.agency}`, data.decision && `Approvals: ${data.decision}`, data.source && `Found us via: ${data.source}`,
+    data.visitIntent && `Website interest: ${data.visitIntent}`, data.visitSource && `Visit source: ${data.visitSource}`,
+    data.visitCampaign && `Campaign: ${data.visitCampaign}`, data.visitEntry && `Entry page: ${data.visitEntry}`,
+    data.visitContext && `Project or service viewed: ${data.visitContext}`,
   ].filter(Boolean);
   return lines.join('\n');
 }

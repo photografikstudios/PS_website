@@ -240,8 +240,10 @@ await check('video: plays inline in its frame, no dialog/route change, one at a 
   const players = p.locator('[data-video]');
   assert((await players.count()) >= 2, 'need two players');
   await players.nth(0).locator('.vplayer__start').click();
-  await p.waitForFunction(() => { const v = document.querySelectorAll('[data-video] video')[0]; return v && !v.paused && v.currentTime > 0; }, null, { timeout: 8000 });
-  assert((await p.locator('dialog, [role="dialog"]').count()) === 0, 'no dialog');
+  // Optional on hosts without working audio output: use the player's mute state, never alter site behavior.
+  if (process.env.E2E_MUTE_AUDIO === '1') await players.nth(0).locator('video').evaluate(v => { v.muted = true; });
+  await p.waitForFunction(() => { const v = document.querySelectorAll('[data-video] video')[0]; return v && !v.paused && v.currentTime > 0; }, null, { timeout: 8000 }).catch(async e => { const state = await p.locator('[data-video] video').first().evaluate(v => ({ paused: v.paused, time: v.currentTime, ready: v.readyState, error: v.error?.message })); throw new Error(`First inline playback: ${JSON.stringify(state)} (${e.message})`); });
+  assert((await p.locator('dialog[open], [role="dialog"]:visible').count()) === 0, 'no open dialog during inline playback');
   assert(p.url() === url, 'no route change');
   assert((await p.context().pages()).length === 1, 'no new tab');
   const inFrame = await players.nth(0).evaluate((el) => { const v = el.querySelector('video'); const a = el.getBoundingClientRect(), b = v.getBoundingClientRect(); return b.width <= a.width + 1 && b.height <= a.height + 1 && v.controls; });

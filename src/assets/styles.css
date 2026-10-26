@@ -1203,3 +1203,45 @@ video[controls]:focus { outline: 2px solid var(--rust); outline-offset: 3px; }
 .media-fallback::after { content: 'Preview unavailable — open media'; position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; font: 400 13px/1.5 var(--sans); }
 .video-recovery { position: absolute; inset: auto 12px 48px; padding: 12px; background: var(--charcoal); color: var(--ivory); z-index: 3; font-size: 14px; }
 .video-recovery button { display: block; min-height: 44px; margin-top: 8px; color: inherit; text-decoration: underline; }
+
+/* Optional service guidance: one restrained suggestion per visit, never a blocking entrance popup. */
+.guidance-launch, .guidance-card { position: fixed; z-index: 45; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); box-shadow: 0 6px 28px #15181626; background: var(--ivory); color: var(--charcoal); border: 1px solid var(--line); }
+.guidance-launch { left: 20px; right: auto; padding: 12px 18px; border-radius: 3px; font: 500 14px/1.4 var(--sans); cursor: pointer; min-height: 44px; }
+.guidance-card { width: min(440px, calc(100vw - 40px)); padding: 24px; border-top: 3px solid var(--rust); max-height: min(65svh, 520px); overflow-y: auto; }
+.guidance-close { position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; background: transparent; border: 0; color: var(--charcoal); font: 400 28px/1 var(--sans); cursor: pointer; }
+.guidance-kicker { margin: 0 26px 8px 0; font: 400 10px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.guidance-card h2 { margin: 0 16px 8px 0; font: 400 30px/1.05 var(--serif); }
+.guidance-copy { margin: 0 0 12px; font: 400 14px/1.5 var(--sans); }
+.guidance-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+.guidance-actions .btn { white-space: normal; text-align: center; }
+.guidance-change { min-height: 44px; padding: 4px 0; border: 0; background: transparent; color: inherit; font: 400 13px/1.4 var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.guidance-math { margin: 0 0 10px; font: 400 12px/1.55 var(--sans); }
+.guidance-math summary { cursor: pointer; min-height: 28px; }
+.guidance-math p { margin: 0 0 12px; }
+.service-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100svh - 48px); padding: clamp(24px, 4vw, 40px); color: var(--charcoal); background: var(--ivory); border: 1px solid var(--line); }
+.service-dialog::backdrop { background: #151816b8; }
+.service-dialog .eyebrow { padding-right: 20px; }
+.service-dialog .h2 { font-size: clamp(32px, 5vw, 46px); margin-bottom: 10px; }
+.service-dialog > p:not(.eyebrow) { font-size: 15px; margin: 0 0 20px; }
+.service-choices { display: grid; gap: 6px; }
+.service-choices button { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 12px 16px; background: transparent; color: inherit; border: 1px solid var(--line); font: 400 15px/1.4 var(--sans); text-align: left; min-height: 48px; cursor: pointer; }
+.service-choices button:hover, .service-choices button[aria-pressed="true"] { background: var(--ivory-3); border-color: var(--muted); }
+.service-result { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+.service-result p { font-size: 15px; }
+.service-result .h3 { font-size: 27px; }
+body:has(.service-dialog[open]) { overflow: hidden; }
+#service-guidance [hidden] { display: none !important; }
+#service-guidance :focus-visible { outline: 3px solid var(--rust); outline-offset: 3px; }
+@media (max-width: 700px) {
+  .guidance-launch { left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
+  .guidance-card { right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); width: calc(100vw - 20px); padding: 16px; max-height: 42svh; }
+  .guidance-kicker { font-size: 9px; margin-bottom: 5px; }
+  .guidance-card h2 { font-size: 25px; }
+  .guidance-copy { font-size: 12px; margin-bottom: 7px; }
+  .guidance-actions { gap: 4px 12px; }
+  .guidance-actions .btn { padding: 12px 14px; font-size: 10px; }
+  .guidance-change { font-size: 12px; }
+  .guidance-math { margin-bottom: 5px; font-size: 11px; }
+  .service-dialog { max-height: calc(100svh - 24px); }
+}
+@media print { #service-guidance { display: none; } }

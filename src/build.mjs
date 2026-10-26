@@ -189,6 +189,7 @@ if (existsSync(join(root, 'static'))) await cp(join(root, 'static'), out, { recu
 await cp(join(root, 'src/assets'), join(out, 'assets'), { recursive: true });
 await cp(join(root, 'src/lib/pricing-core.js'), join(out, 'assets/pricing-core.js'));
 await cp(join(root, 'src/lib/gallery-core.js'), join(out, 'assets/gallery-core.js'));
+await cp(join(root, 'src/lib/guidance-core.js'), join(out, 'assets/guidance-core.js'));
 // Assets are cached as immutable: version relative module imports the same way the page tags are.
 for (const f of await readdir(join(out, 'assets'))) {
   if (!f.endsWith('.js')) continue;

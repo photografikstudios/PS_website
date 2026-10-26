@@ -1,4 +1,5 @@
 import { esc, attrs, join } from './lib/html.js';
+import { guidanceView } from './lib/guidance-view.js';
 
 // Google Analytics 4 (James, Oct 13 2026; existing stream G-BT3BZQBFS5). Production: loads for every visitor.
 // Review previews: loads only after ?ga_debug=1 in that tab, as debug_mode + traffic_type=internal test traffic.
@@ -91,7 +92,9 @@ ${body}
   </div>
   <div class="wrap site-footer__base"><p>© ${new Date().getFullYear()} Photografik Studios Inc.</p>${ctx.legal && (ctx.legal.ready || reviewMode) ? `<p class="site-footer__legal">${esc(ctx.legal.acceptance.text).replace('Terms &amp; Conditions', '<a href="/terms">Terms &amp; Conditions</a>').replace('Licensing &amp; Usage Rights Policy', '<a href="/licensing">Licensing &amp; Usage Rights Policy</a>')}</p>` : ''}</div>
 </footer>
+${guidanceView(ctx, route)}
 <script type="module" src="/assets/site.js?v=${ctx.version}"></script>
+<script type="module" src="/assets/guidance.js?v=${ctx.version}"></script>
 ${join(scripts, (s) => `<script type="module" src="/assets/${s}?v=${ctx.version}"></script>`)}
 </body>
 </html>`;

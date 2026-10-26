@@ -13,7 +13,7 @@ export function track(name, props = {}) {
   // inquiry_submit fires only when the server accepted the brief; inquiry_draft_prepared is the unsent fallback.
   if (typeof window.gtag === 'function') window.gtag('event', name, gaParams(payload));
 }
-const GA_KEYS = new Set(['page', 'location', 'package', 'href', 'video', 'tab', 'where', 'filter', 'kind', 'category', 'type', 'pkg', 'seg', 'results', 'shown', 'view', 'options', 'form', 'field', 'item', 'delivery', 'over']);
+const GA_KEYS = new Set(['page', 'location', 'package', 'href', 'video', 'tab', 'where', 'filter', 'kind', 'category', 'type', 'pkg', 'seg', 'results', 'shown', 'view', 'options', 'form', 'field', 'item', 'delivery', 'over', 'intent', 'trigger', 'source']);
 export function gaParams(payload, origin = location.origin) {
   const out = {};
   for (const [k, v] of Object.entries(payload)) {

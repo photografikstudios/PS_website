@@ -3,6 +3,8 @@
 // Without a key it returns 503 and the browser falls back to a prepared email, so nothing is lost.
 // Secrets stay server-side. No inquiry content is logged.
 
+import { cleanVisit } from '../src/lib/guidance-core.js';
+
 const TO = process.env.INQUIRY_TO || 'info@photografikstudios.com';
 const FROM = process.env.INQUIRY_FROM || 'Photografik Website <website@photografikstudios.com>';
 const MAX = 4000;
@@ -22,6 +24,7 @@ export default async function handler(req, res) {
     name: clean(body.name, 120), email: clean(body.email, 200), phone: clean(body.phone, 40), company: clean(body.company, 160),
     type: clean(body.type, 60), location: clean(body.location), timing: clean(body.timing), budget: clean(body.budget, 80),
     deliverables: clean(body.deliverables, MAX), agency: clean(body.agency, 10), decision: clean(body.decision), source: clean(body.source),
+    ...cleanVisit(body),
   };
   const errors = [];
   if (!data.name) errors.push('name');
