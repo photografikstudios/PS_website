@@ -86,5 +86,5 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {}, ima
     <source src="/v/${esc(id)}-loop.mp4" type="video/mp4"></video>`;
   }
 
-  return { mediaUrl, optimized, imageDimensions, img, needsApproval, videoPlayer, ambient, isLocal };
+  return { mediaUrl, optimized, imageInfo, imageDimensions, img, needsApproval, videoPlayer, ambient, isLocal };
 }

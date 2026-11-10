@@ -8,6 +8,7 @@
 //   { "media": "<id>", "label": "…" }   the same, with the words a screen reader hears for a playing example
 //   { "media": "<id>", "alt": "…" }     the same, with a description that replaces the library one in this place
 //   { "src": "/images/…", "alt": "…" }  a photo file used only here (uploaded in Page Media, or an original site image)
+// Optional display size: "size": "small", "medium", "large" or "default" (existing layout).
 // Optional keys kept as they are: "position" (crop position, e.g. "50% 22%").
 //
 // Not in Page Media on purpose: prices, policies, booking links and layout; galleries that fill themselves from the
@@ -253,6 +254,7 @@ function galleryProblems(slot, v, lib, where, errors, warnings) {
 
 /** What is wrong with one item in a section, or '' when it fits. */
 export function itemProblem(slot, it, lib) {
+  if (it.size != null && !['default', 'small', 'medium', 'large'].includes(it.size)) return 'choose Default, Small, Medium or Large for display size';
   if (it.src && it.media) return 'choose either a library item or a photo file, not both';
   if (it.src) {
     if (!['photo', 'still', 'loopOrPhoto', 'photoOrFilm'].includes(slot.accepts)) return 'this section needs a film, not a photo file';

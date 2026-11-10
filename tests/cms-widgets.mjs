@@ -57,6 +57,7 @@ function renderNode(v, path) {
     else if (val !== undefined && val !== null) el.setAttribute(k, val);
   }
   v.children.forEach((c, i) => el.appendChild(renderNode(c, path + '.' + i)));
+  if (el.tagName === 'SELECT' && v.props.value != null) el.value = v.props.value;
   return el;
 }
 const wrap = (x) => (x !== null && typeof x === 'object' ? { get: (k) => wrap(x[k]), getIn: (p) => p.reduce((a, k) => (a == null ? a : a[k]), x) && wrap(p.reduce((a, k) => (a == null ? a : a[k]), x)), toJS: () => JSON.parse(JSON.stringify(x)), _raw: x } : x);
@@ -285,6 +286,8 @@ await check('Page Media single required section: shows the item, cannot be empti
   assert.match(await host.locator('.pgk-row__title').first().innerText(), /Photo/);
   assert.ok(await host.locator('img.pgk-thumb').first().getAttribute('src'));
   assert.equal(await host.getByRole('button', { name: 'Take off this page' }).isDisabled(), true, 'required: cannot be emptied');
+  await host.getByLabel('Display size', { exact: true }).selectOption('small');
+  assert.equal((await page.evaluate(() => window.__slot1.state.value)).size, 'small');
   await host.getByRole('button', { name: 'Replace from library' }).click();
   const dlg = page.getByRole('dialog', { name: 'Choose from the library' }).last();
   await dlg.waitFor();
@@ -295,6 +298,8 @@ await check('Page Media single required section: shows the item, cannot be empti
   await dlg.getByRole('button', { name: 'Use this' }).click();
   await page.waitForTimeout(50);
   const v = await page.evaluate(() => window.__slot1.state.value);
+  assert.equal(v.size, 'small', 'replacing an asset retains this placement size');
+  assert.equal(await host.getByLabel('Display size', { exact: true }).inputValue(), 'small');
   assert.equal(v.media.startsWith('ph-torella') || v.media.includes('torella'), true, JSON.stringify(v));
   assert.equal(await page.evaluate(() => window.__slot1.instance.isValid()), true);
 });

@@ -1,12 +1,12 @@
 {
   "type": "video",
   "title": "In-house V2",
-  "published": false,
+  "published": true,
   "drive": "https://drive.google.com/file/d/1SMGfG0XjzdwySBPG3pSj10R2lSSHkePn/view?usp=drivesdk",
   "import": {
     "state": "ready",
     "at": "2026-10-15T13:32:41.604Z",
-    "message": "Imported from Google Drive (2160×3840, 37 s). The original stays in Drive."
+    "message": "Imported from Google Drive (2160\u00d73840, 37 s). The original stays in Drive."
   },
   "posterTime": 3,
   "alt": "",
@@ -18,8 +18,8 @@
   "location": null,
   "client": null,
   "dialogue": true,
-  "captions": null,
-  "captionsStatus": "machine-draft",
+  "captions": "burned-in",
+  "captionsStatus": "approved",
   "featured": false,
   "rights": "approved",
   "source": "drive",
@@ -30,5 +30,13 @@
   "src": "/v/oct15-in-house-v2.mp4",
   "poster": "/v/oct15-in-house-v2.webp",
   "orientation": "vertical",
-  "duration": 37
+  "duration": 37,
+  "gallery": false,
+  "openCaptions": true,
+  "captionReview": {
+    "basis": "Owner-supplied reel selected by James for About on November 10, 2026; embedded captions visually verified at 5, 12, 22 and 33 seconds. No duplicate WebVTT track added.",
+    "checkedAt": "2026-11-10",
+    "note": "Uses the captions in the supplied approved media; this is not a claim of an independent word-for-word listening audit."
+  },
+  "_placementNote": "James selected this reel in About Page Media on November 10. Enabled for that placement; excluded from automatic galleries."
 }

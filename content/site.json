@@ -26,7 +26,9 @@
       "path": "/api/inquiry",
       "env": "RESEND_API_KEY",
       "verified": false,
-      "note": "Resend sends to INQUIRY_TO (default info@photografikstudios.com) from INQUIRY_FROM. Missing credentials return an explicit unsent email draft. Real delivery acceptance still required."
+      "note": "Preview receipt verified October 30, 2026 (PG-RESEND-20261030-A): Resend Delivered and info inbox receipt, reply-to, full brief and authentication checks passed. Production configuration and post-launch receipt must be checked separately. Missing credentials return an explicit unsent draft.",
+      "previewVerified": true,
+      "verificationEvidence": "EMAIL_DELIVERY_2026-10-30.md in the shared brief"
     },
     "creatorBooking": {
       "href": "https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services",

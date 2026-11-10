@@ -46,7 +46,16 @@ export function buildPages(ctx) {
   // is left out of every section it was chosen for, and the section shows its empty state. Review builds still show it.
   const hiddenIds = reviewMode ? new Set() : new Set(work.media.filter((m) => m.published === false).map((m) => m.id));
   const keepItem = (it) => !!it && !(it.media && hiddenIds.has(it.media));
-  const pmv = (file, key) => { const v = PM[file]?.[key]; return Array.isArray(v) ? v.filter(keepItem) : keepItem(v) ? v : null; };
+  const pmv = (file, key) => { const v = PM[file]?.[key]; const tag = (it) => ({ ...it, placement: `${file}.${key}` }); return Array.isArray(v) ? v.filter(keepItem).map(tag) : keepItem(v) ? tag(v) : null; };
+  // Size belongs to this placement, never to the shared media record. Default retains the designed frame;
+  // natural portrait films are bounded even before an editor chooses a size.
+  const pmAttrs = (it, layout = 'frame') => {
+    if (!it) return '';
+    const m = allMediaById[it.media]; const dimensions = ctx.imageInfo?.(it.src || m?.src);
+    const vertical = m?.orientation === 'vertical' || (dimensions && dimensions.height > dimensions.width);
+    return ` data-page-media="${esc(it.placement || '')}" data-media-size="${esc(it.size || 'default')}" data-media-layout="${layout}" data-media-shape="${vertical ? 'vertical' : 'horizontal'}"`;
+  };
+  const pmSized = (it, html, layout = 'frame') => html ? html.replace(/^(<\w+)/, `$1${pmAttrs(it, layout)}`) : '';
   const pmList = (file, key) => (Array.isArray(pmv(file, key)) ? pmv(file, key) : []);
   const pmId = (file, key) => pmv(file, key)?.media;
   // Galleries per page (Page Media): Automatic as before, minus what James left out on this page, or exactly his own
@@ -60,15 +69,15 @@ export function buildPages(ctx) {
     return (g.items || []).map((it) => byId.get(it.media || it.project)).filter(Boolean);
   };
   // A moving background, or nothing when its section is empty (the page then opens on its plain heading).
-  const loopOf = (file, key) => (pmId(file, key) ? { loop: pmId(file, key) } : undefined);
+  const loopOf = (file, key) => (pmId(file, key) ? { loop: pmId(file, key), item: pmv(file, key) } : undefined);
   // Library photo or film behind an item; a film shows its still. { src, alt, thumb, m } or null.
   // Optional section on a text-only page: nothing at all when empty, so the page is unchanged until James adds one.
   const pmExtra = (it, sizes = '(min-width: 900px) 720px, 100vw') => {
     if (!it) return '';
     const m = it.media ? allMediaById[it.media] : null;
-    if (m && m.type === 'video') return `<figure class="pm-extra pm-extra--film">${videoPlayer(m, { sizes })}</figure>`;
+    if (m && m.type === 'video') return `<figure class="pm-extra pm-extra--film"${pmAttrs(it, 'natural')}>${videoPlayer(m, { sizes })}</figure>`;
     const st = pmStill(it);
-    return st ? `<figure class="pm-extra">${img(st.src, { alt: it.alt || st.alt, thumb: st.thumb, focal: m?.focal, sizes })}</figure>` : '';
+    return st ? `<figure class="pm-extra"${pmAttrs(it, 'natural')}>${img(st.src, { alt: it.alt || st.alt, thumb: st.thumb, focal: m?.focal, sizes })}</figure>` : '';
   };
   const pmStill = (it) => {
     if (!it) return null;
@@ -96,10 +105,10 @@ export function buildPages(ctx) {
   // Hero video: the page's relevant 16:9 footage autoplays silently in its frame (muted, playsinline, poster first).
   // No separate film stage or play prompt; the visitor can pause it, and reduced motion or blocked autoplay keeps the poster.
   const motionToggle = '<button type="button" class="motion-toggle" data-motion-toggle aria-pressed="false"><span class="motion-toggle__icon" aria-hidden="true"></span><span class="motion-toggle__label">Pause video</span></button>';
-  const pageHero = ({ eyebrow, title, lede, cta = '', image, imageAlt = '', tone = 'dark', video }) => {
+  const pageHero = ({ eyebrow, title, lede, cta = '', image, imageAlt = '', tone = 'dark', video, item }) => {
     const kind = video ? 'page-hero--image page-hero--video' : image ? 'page-hero--image' : 'page-hero--plain';
     return `
-<section class="page-hero ${kind} ${tone === 'dark' || video ? 'on-dark' : 'page-hero--ivory'}"${video ? ` data-hero-source="${esc(video.loop)}"` : ''}>
+<section class="page-hero ${kind} ${tone === 'dark' || video ? 'on-dark' : 'page-hero--ivory'}"${pmAttrs(video?.item || item, 'background')}${video ? ` data-hero-source="${esc(video.loop)}"` : ''}>
   ${video ? `<div class="page-hero__media">${ambient(video.loop, { eager: true, cls: 'hero__video' })}</div>`
     : image ? `<div class="page-hero__media">${img(image, { alt: imageAlt, eager: true, sizes: '100vw', widths: [768, 1080, 1600, 2200] })}</div>` : ''}
   <div class="wrap page-hero__inner">
@@ -164,8 +173,8 @@ export function buildPages(ctx) {
 
   // James, Sep 29 2026: keep the whole house in frame (roofline included) at every width.
   // James's copy-only pass, Sep 29 2026: Home's closing prices a listing; every closing sends a project brief.
-  const splitCta = (title = 'Bring us the property, <em>the project or the brief.</em>', image = '/images/photografik-2027/curated/home-estate-exterior.webp', pos = '52% 30%', home = false, alt = '') => `
-<section class="closing on-dark">
+  const splitCta = (title = 'Bring us the property, <em>the project or the brief.</em>', image = '/images/photografik-2027/curated/home-estate-exterior.webp', pos = '52% 30%', home = false, alt = '', item) => `
+<section class="closing on-dark"${pmAttrs(item, 'background')}>
   <div class="closing__media" style="--pos:${pos}">${img(image, { alt, sizes: '100vw' })}</div>
   <div class="wrap closing__inner">
     <p class="eyebrow">Next step</p>
@@ -180,10 +189,10 @@ export function buildPages(ctx) {
   // James, Sep 28 2026: an image above each step or service block, and full-bleed image footers with a legible overlay.
   const blockFig = (src, alt, { thumb, cls = '', sizes = '(min-width: 900px) 30vw, 100vw', pos } = {}) => (src ? `<figure class="block-fig ${cls}"${pos ? ` style="--pos:${pos}"` : ''}>${img(src, { alt, thumb, sizes })}</figure>` : '');
   // A Page Media item in a block figure: library items as mediaFig always drew them, files with their own description.
-  const pmFig = (it, opts = {}) => (!it ? '' : it.media ? mediaFig(it.media, { ...(it.alt ? { alt: it.alt } : {}), ...(it.position ? { pos: it.position } : {}), ...opts }) : blockFig(it.src, it.alt || '', opts));
+  const pmFig = (it, opts = {}) => (!it ? '' : pmSized(it, it.media ? mediaFig(it.media, { ...(it.alt ? { alt: it.alt } : {}), ...(it.position ? { pos: it.position } : {}), ...opts }) : blockFig(it.src, it.alt || '', opts)));
   const mediaFig = (id, opts = {}) => { const m = allMediaById[id]; if (!m) return ''; return blockFig(m.type === 'video' ? m.poster : m.src, opts.alt || (m.type === 'video' ? `Frame from ${m.title}` : (m.alt || m.title)), { thumb: m.thumb, ...opts }); };
-  const bleedCta = ({ title, text, cta, image, alt = '', eyebrow = '' }) => `
-<section class="closing closing--bleed on-dark">
+  const bleedCta = ({ title, text, cta, image, alt = '', eyebrow = '', item }) => `
+<section class="closing closing--bleed on-dark"${pmAttrs(item, 'background')}>
   ${image ? `<div class="closing__media">${img(image, { alt, sizes: '100vw' })}</div>` : ''}
   <div class="wrap closing__inner cta-band">
     ${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ''}
@@ -218,7 +227,7 @@ export function buildPages(ctx) {
     overlay: true,
     scripts: ['showcase.js'],
     body: `
-<section class="hero${pmId('home', 'hero') ? ' hero--video' : ''}"${pmId('home', 'hero') ? ` data-hero-source="${esc(pmId('home', 'hero'))}"` : ''}>
+<section class="hero${pmId('home', 'hero') ? ' hero--video' : ''}"${pmAttrs(pmv('home', 'hero'), 'background')}${pmId('home', 'hero') ? ` data-hero-source="${esc(pmId('home', 'hero'))}"` : ''}>
   ${pmId('home', 'hero') ? `<div class="hero__media">${ambient(pmId('home', 'hero'), { eager: true, cls: 'hero__video' })}</div>` : ''}
   <div class="wrap hero__inner">
     <p class="eyebrow">${esc(heroText('/').eyebrow)}</p>
@@ -237,7 +246,7 @@ export function buildPages(ctx) {
 <section class="quick on-dark" aria-label="Book a shoot or send a project brief">
   <div class="wrap quick__grid">
     <article class="quick__tile reveal">
-      <div class="quick__media quick__media--listings">${quickImg(pmv('home', 'listingsTile'))}</div>
+      <div class="quick__media quick__media--listings"${pmAttrs(pmv('home', 'listingsTile'), 'inset')}>${quickImg(pmv('home', 'listingsTile'))}</div>
       <div class="quick__body">
         <p class="eyebrow eyebrow--rust">For your listings</p>
         <h2 class="quick__title">Listing Media</h2>
@@ -246,7 +255,7 @@ export function buildPages(ctx) {
       </div>
     </article>
     <article class="quick__tile reveal">
-      <div class="quick__media quick__media--brand">${quickImg(pmv('home', 'brandTile'))}</div>
+      <div class="quick__media quick__media--brand"${pmAttrs(pmv('home', 'brandTile'), 'inset')}>${quickImg(pmv('home', 'brandTile'))}</div>
       <div class="quick__body">
         <p class="eyebrow eyebrow--rust">For your brand</p>
         <h2 class="quick__title">Brand &amp; Business Media</h2>
@@ -297,13 +306,13 @@ export function buildPages(ctx) {
     <div class="section-head"><div><p class="eyebrow">Who we work with</p><h2 class="h2 reveal" id="paths-h">Different briefs. <em>One standard.</em></h2></div></div>
     <div class="paths paths--4">
       ${join([
-        { href: '/real-estate', vid: pmId('home', 'pathRealEstate'), n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, film, drone, twilight, floor plans and agent content, planned for each listing.', go: 'Explore Real Estate' },
-        { href: '/architecture-design', vid: pmId('home', 'pathArchitecture'), n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film of finished work for builders, architects and designers.', go: 'Explore Architecture &amp; Design' },
-        { href: '/commercial', vid: pmId('home', 'pathCommercial'), n: '03 / Business & brand', t: 'Brand films and content', x: 'Project-based and recurring production, without building an in-house team.', go: 'Explore Commercial' },
-        { href: '/creator-studios', vid: omitIds.has(pmId('home', 'pathCreator')) ? 'cs-demo-reel' : pmId('home', 'pathCreator'), n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews and educational content.', go: 'Explore Creator Studios' },
+        { href: '/real-estate', vid: pmId('home', 'pathRealEstate'), item: pmv('home', 'pathRealEstate'), n: '01 / Real estate', t: 'Listing campaigns and agent media', x: 'Photo, film, drone, twilight, floor plans and agent content, planned for each listing.', go: 'Explore Real Estate' },
+        { href: '/architecture-design', vid: pmId('home', 'pathArchitecture'), item: pmv('home', 'pathArchitecture'), n: '02 / Architecture & builders', t: 'Projects told properly', x: 'Photography and film of finished work for builders, architects and designers.', go: 'Explore Architecture &amp; Design' },
+        { href: '/commercial', vid: pmId('home', 'pathCommercial'), item: pmv('home', 'pathCommercial'), n: '03 / Business & brand', t: 'Brand films and content', x: 'Project-based and recurring production, without building an in-house team.', go: 'Explore Commercial' },
+        { href: '/creator-studios', vid: omitIds.has(pmId('home', 'pathCreator')) ? 'cs-demo-reel' : pmId('home', 'pathCreator'), item: pmv('home', 'pathCreator'), n: '04 / LI Creator Studios', t: 'Podcast and studio production', x: 'A Long Island studio for podcasts, interviews and educational content.', go: 'Explore Creator Studios' },
       ], (c) => `
       <a class="path reveal" href="${c.href}">
-        <span class="path__img">${c.vid ? ambient(c.vid) : ''}</span>
+        <span class="path__img"${pmAttrs(c.item)}>${c.vid ? ambient(c.vid) : ''}</span>
         <span class="path__body"><span class="path__num">${c.n}</span><span class="path__title">${c.t}</span><span class="path__text">${c.x}</span><span class="path__go">${c.go} →</span></span>
       </a>`)}
     </div>
@@ -325,7 +334,7 @@ export function buildPages(ctx) {
   </div>
 </section>
 
-${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv('home', 'closing')?.alt)}`,
+${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv('home', 'closing')?.alt, pmv('home', 'closing'))}`,
   };
 
   // ---------- FIELD NOTES ----------
@@ -373,7 +382,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
           title: 'Practical answers <em>before the shoot.</em>',
           lede: 'Short guides built around the questions we hear most often: what to book, how to prepare, where the finished media will be used and what is actually worth adding.',
           image: heroPhoto && heroPhoto.rights === 'approved' ? heroPhoto.src : undefined,
-          imageAlt: heroPhoto?.alt || '',
+          imageAlt: heroPhoto?.alt || '', item: heroItem,
         });
       })()}
 <section class="section fn-topic" aria-labelledby="fn-latest-h">
@@ -577,7 +586,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
     const src = m ? (m.type === 'video' ? m.poster : m.src) : (it?.src || '');
     if (!src) return '';
     const alt = it.alt || (m ? (m.type === 'video' ? `Frame from the ${m.title.toLowerCase()}` : (m.alt || m.title)) : '');
-    return `<figure class="feature__img">${img(src, { alt, thumb: m?.thumb, sizes: '(min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw' })}</figure>`;
+    return `<figure class="feature__img"${pmAttrs(it)}>${img(src, { alt, thumb: m?.thumb, sizes: '(min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw' })}</figure>`;
   };
   pages['/real-estate'] = {
     overlay: true,
@@ -595,7 +604,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
         <h2 class="h2 reveal">Enough coverage to tell the whole story. No padding.</h2>
         <p class="re-coverage__lede">Stills, film, aerials and plans, planned together so every format shows the same home at its best.</p>
       </div>
-      <div class="re-coverage__film">${pmId('real-estate', 'coverageFilm') ? ambient(pmId('real-estate', 'coverageFilm'), { label: pmv('real-estate', 'coverageFilm').label }) : ''}</div>
+      <div class="re-coverage__film"${pmAttrs(pmv('real-estate', 'coverageFilm'))}>${pmId('real-estate', 'coverageFilm') ? ambient(pmId('real-estate', 'coverageFilm'), { label: pmv('real-estate', 'coverageFilm').label }) : ''}</div>
     </div>
     <div class="features features--media">
       ${join([
@@ -643,13 +652,13 @@ ${fnTeaser('real-estate')}
   };
   // James, Sep 28 2026: each package card plays its own muted 25 s loop in place (like the Home tiles), chosen to match
   // what the package includes. Listing Starter has no film, so its card cycles through the kinds of stills it delivers.
-  const pkgLoop = (key) => { const v = pmv('real-estate-pricing', key); return v ? { id: v.media, label: v.label } : null; };
+  const pkgLoop = (key) => { const v = pmv('real-estate-pricing', key); return v ? { id: v.media, label: v.label, item: v } : null; };
   const pkgLoops = { 'luxury-media': pkgLoop('loopLuxury'), 'signature': pkgLoop('loopSignature'), 'social-media': pkgLoop('loopSocial') };
-  const starterStills = pmList('real-estate-pricing', 'starterStills').map((it) => (it.src ? { src: it.src, alt: it.alt, title: it.alt } : allMediaById[it.media])).filter(Boolean);
+  const starterStills = pmList('real-estate-pricing', 'starterStills').map((it) => { const m = it.src ? { src: it.src, alt: it.alt, title: it.alt } : allMediaById[it.media]; return m ? { ...m, item: it } : null; }).filter(Boolean);
   const pkgMediaHtml = (p) => {
     const l = pkgLoops[p.id];
-    if (l) return `<div class="pcard__loop">${ambient(l.id, { label: `${l.label} (muted)` })}</div>`;
-    if (p.id === 'listing-starter' && starterStills.length) return `<div class="pcard__seq" role="group" aria-label="Listing Starter examples: interior, exterior and aerial photographs">${join(starterStills, (m, i) => `<div class="pcard__seq-item" style="--i:${i};--n:${starterStills.length}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 1180px) 22vw, (min-width: 680px) 45vw, 100vw' })}</div>`)}</div>`;
+    if (l) return `<div class="pcard__loop"${pmAttrs(l.item, 'inset')}>${ambient(l.id, { label: `${l.label} (muted)` })}</div>`;
+    if (p.id === 'listing-starter' && starterStills.length) return `<div class="pcard__seq" role="group" aria-label="Listing Starter examples: interior, exterior and aerial photographs">${join(starterStills, (m, i) => `<div class="pcard__seq-item"${pmAttrs(m.item, 'inset')} style="--i:${i};--n:${starterStills.length}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 1180px) 22vw, (min-width: 680px) 45vw, 100vw' })}</div>`)}</div>`;
     return '';
   };
   const packageCard = (p) => `<article class="pcard ${pkgFeatured(p) ? 'pcard--featured' : ''}" data-record="${esc(p.id)}" aria-labelledby="pk-${esc(p.id)}">
@@ -669,7 +678,7 @@ ${fnTeaser('real-estate')}
   const svcThumb = Object.fromEntries(Object.entries({ photography: 'rowPhotography', 'photo-floor-plan': 'rowPhotoFloorPlan', 'floor-plan': 'rowFloorPlan', 'exterior-drone': 'rowExteriorDrone', twilight: 'rowTwilight' })
     .map(([svcId, key]) => [svcId, pmv('real-estate-pricing', key)]).filter(([, it]) => it));
   const rowPrice = (rec) => { const s = resolvePrice(rec, null); return `<p class="pcard__price" data-price-for="${esc(rec.id)}"><span class="pcard__label">Starting at</span> <span class="pcard__amount">${formatUSD(s.amount)}</span><small class="price-size">${startingSize(rec)}</small></p>`; };
-  const rowThumb = (s) => { const it = svcThumb[s.id]; const m = it?.media ? allMediaById[it.media] : null; const src = m ? (m.type === 'video' ? m.poster : m.src) : it?.src; return src ? `<div class="prow__thumb">${img(src, { alt: it.alt || (m ? m.alt || m.title : ''), thumb: m?.thumb, sizes: '(min-width: 700px) 150px, 96px' })}</div>` : ''; };
+  const rowThumb = (s) => { const it = svcThumb[s.id]; const m = it?.media ? allMediaById[it.media] : null; const src = m ? (m.type === 'video' ? m.poster : m.src) : it?.src; return src ? `<div class="prow__thumb"${pmAttrs(it, 'inset')}>${img(src, { alt: it.alt || (m ? m.alt || m.title : ''), thumb: m?.thumb, sizes: '(min-width: 700px) 150px, 96px' })}</div>` : ''; };
   const serviceRow = (s) => `<li class="prow${svcThumb[s.id] ? ' prow--thumb' : ''}" data-record="${esc(s.id)}">
       ${rowThumb(s)}<div class="prow__text"><h3 class="prow__name">${esc(s.name)} ${needsApproval(s)}</h3>${s.detail ? `<p class="prow__detail">${esc(s.detail)}</p>` : ''}</div>
       <div class="prow__price">${rowPrice(s)}</div>
@@ -752,7 +761,7 @@ ${fnTeaser('real-estate')}
   // James, Sep 29 2026 + Codex brief assessment: after the hero, one text/film pair on why it matters and one
   // practical shoot-day workflow, then the engines, examples with objections, and the approved monthly plans.
   // Supportable wording only: no promised meetings, recall or finished status videos before the status exists.
-  const acWhyFig = (it, cls = '') => { const st = pmStill(it); return st ? `<figure class="ac-why__fig ${cls}">${img(st.src, { alt: it.alt || st.alt, thumb: st.thumb, sizes: '(min-width: 900px) 45vw, 100vw' })}</figure>` : ''; };
+  const acWhyFig = (it, cls = '') => { const st = pmStill(it); return st ? `<figure class="ac-why__fig ${cls}"${pmAttrs(it)}>${img(st.src, { alt: it.alt || st.alt, thumb: st.thumb, sizes: '(min-width: 900px) 45vw, 100vw' })}</figure>` : ''; };
   const acLead = media.find((m) => m.type === 'video' && m.id === pmId('agent-content', 'whyFilm'));
   const acWhy = () => `
 <section class="section ac-why" aria-labelledby="ac-why-h">
@@ -768,7 +777,7 @@ ${fnTeaser('real-estate')}
         <li>Your background, and why you do this work</li>
       </ul>
     </div>
-    <div class="two-col__media ac-why__film">${acLead ? videoPlayer(acLead, { sizes: '(min-width: 900px) 30vw, 80vw' }) : ''}</div>
+    <div class="two-col__media ac-why__film">${acLead ? pmSized(pmv('agent-content', 'whyFilm'), videoPlayer(acLead, { sizes: '(min-width: 900px) 30vw, 80vw' }), 'natural') : ''}</div>
   </div>
 </section>
 <section class="section section--tint ac-day" aria-labelledby="ac-day-h">
@@ -866,10 +875,10 @@ ${agentMonthly.length ? `<section class="section section--tint">
   const archPairIds = { intro: pmId('architecture-design', 'introPhoto'), photo: pmId('architecture-design', 'storyPhoto'), detail: pmId('architecture-design', 'detailPhoto') };
   const archUsed = new Set(Object.values(archPairIds));
   const visibleById = Object.fromEntries(media.map((m) => [m.id, m]));
-  const archFig = (id, { sizes = '(min-width: 900px) 40vw, 100vw', cls = '' } = {}) => {
-    const m = archById[id] || visibleById[id]; if (!m) return '';
+  const archFig = (it, { sizes = '(min-width: 900px) 40vw, 100vw', cls = '' } = {}) => {
+    const st = pmStill(it); if (!st) return ''; const m = st.m || { id: '', orientation: 'horizontal', ...st };
     // James, Sep 29 2026 (Vercel comment): no caption beneath these photos; each keeps its alt text.
-    return `<figure class="pair-fig ${cls}" data-media="${esc(m.id)}"><div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div></figure>`;
+    return `<figure class="pair-fig ${cls}"${pmAttrs(it)} data-media="${esc(m.id)}"><div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div></figure>`;
   };
   // Gallery (Home Selected Work style, same work.json collection): ONE item per project (its lead asset; the rest stay
   // on the project page) plus approved work without a verified project. Segments come from the project, never a house name.
@@ -934,7 +943,7 @@ ${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby
       <h2 class="h2 reveal" id="arch-intro-h">Your next client is judging more than <em>the finished room.</em></h2>
       <p class="lede">Before they call, the people you want to work with are trying to understand your point of view, your craft and what it will be like to work with you. We start with who you want to win next and where the media will be used, then recommend the coverage that helps them see it.</p>
     </div>
-    ${archFig(archPairIds.intro, { cls: 'pair__media' })}
+    ${archFig(pmv('architecture-design', 'introPhoto'), { cls: 'pair__media' })}
   </div>
   <div class="wrap">
     <ul class="audiences" role="list">
@@ -951,9 +960,9 @@ ${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby
     <p class="eyebrow">Which story should we tell?</p>
     <h2 class="h2 reveal" id="arch-story-h">Pick the story that wins <em>the next project.</em></h2>
     <div class="story-guide">
-      <div class="story-guide__item reveal">${archFig(archPairIds.photo, { sizes: '(min-width: 1000px) 30vw, 100vw', cls: 'story-guide__fig' })}<p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
+      <div class="story-guide__item reveal">${archFig(pmv('architecture-design', 'storyPhoto'), { sizes: '(min-width: 1000px) 30vw, 100vw', cls: 'story-guide__fig' })}<p class="story-guide__n">Project photography</p><h3 class="h4">When the finished work has to speak for itself.</h3><p>Your portfolio, website, proposals and award or press submissions. Complete coverage of the spaces plus the details that show quality. For most finished projects, this is the place to start.</p></div>
       <div class="story-guide__item reveal">${archVideo ? `<figure class="story-guide__fig"><span class="still still--horizontal"><video data-ambient muted loop playsinline controls preload="none" data-poster="${esc(posterFull(archVideo))}" aria-label="${esc(archVideo.title)}"><source src="${esc(ctx.mediaUrl(archVideo.src))}" type="video/mp4"></video></span></figure>` : ''}<p class="story-guide__n">Project film</p><h3 class="h4">When how it feels matters as much as how it looks.</h3><p>Movement through the spaces, the light as it changes, and the craft or process behind them. A strong fit for signature projects and for social channels where people watch rather than scroll past.</p></div>
-      <div class="story-guide__item reveal">${(() => { const it = pmv('architecture-design', 'storyBrand'); const st = pmStill(omitIds.has(it?.media) ? { media: 'cs-ph-dan-dan-conversation' } : it); return st ? `<figure class="story-guide__fig story-guide__fig--person"><span class="still still--horizontal">${img(st.src, { alt: (!omitIds.has(it?.media) && it.alt) || st.alt, thumb: st.m?.type === 'video' ? undefined : st.thumb, sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })()}<p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
+      <div class="story-guide__item reveal">${(() => { const it = pmv('architecture-design', 'storyBrand'); const st = pmStill(omitIds.has(it?.media) ? { media: 'cs-ph-dan-dan-conversation' } : it); return st ? `<figure class="story-guide__fig story-guide__fig--person"${pmAttrs(it)}><span class="still still--horizontal">${img(st.src, { alt: (!omitIds.has(it?.media) && it.alt) || st.alt, thumb: st.m?.type === 'video' ? undefined : st.thumb, sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })()}<p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
     </div>
     <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
     <div class="actions story-guide__actions"><a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_discovery">Book a discovery call</a></div>
@@ -999,14 +1008,14 @@ ${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby
       </ul>
       <p class="small muted">Every architecture and design project is quoted to its scope. Coverage, deliverables, usage and licensing are set out in a written estimate.</p>
     </div>
-    ${archFig(archPairIds.detail, { cls: 'pair__media pair__media--sticky' })}
+    ${archFig(pmv('architecture-design', 'detailPhoto'), { cls: 'pair__media pair__media--sticky' })}
   </div>
 </section>
 
 <section class="section arch-detail" aria-labelledby="arch-detail-h">
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Design in detail</p><h2 class="h2 reveal" id="arch-detail-h">Materials, light and <em>the way a space is put together.</em></h2><p class="section-lede">A closer look at work for Bellard Brothers, Goldin Luxury Homes and Delrose Design Group: joinery, finishes and the details that make a space its own.</p></div></div>
-    <div class="arch-detail__grid">${join(pmList('architecture-design', 'designDetail'), (it) => { const st = pmStill(it); return st ? `<figure class="arch-detail__fig">${img(st.src, { alt: it.alt || (st.m ? st.m.alt : st.alt), thumb: st.thumb, sizes: '(min-width: 900px) 25vw, 50vw' })}</figure>` : ''; })}</div>
+    <div class="arch-detail__grid">${join(pmList('architecture-design', 'designDetail'), (it) => { const st = pmStill(it); return st ? `<figure class="arch-detail__fig"${pmAttrs(it)}>${img(st.src, { alt: it.alt || (st.m ? st.m.alt : st.alt), thumb: st.thumb, sizes: '(min-width: 900px) 25vw, 50vw' })}</figure>` : ''; })}</div>
   </div>
 </section>
 
@@ -1024,7 +1033,7 @@ ${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby
     <p class="arch-path__cta"><a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_path">Plan the Next Project</a></p>
   </div>
 </section>
-${bleedCta({ title: 'Finished something worth showing?', text: 'Share the project, location and timing. We will come back with a plan and an estimate.', cta: '<a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_final">Plan the Next Project</a>', image: pmStill(pmv('architecture-design', 'closing'))?.src, alt: pmv('architecture-design', 'closing')?.alt || '' })}`,
+${bleedCta({ title: 'Finished something worth showing?', text: 'Share the project, location and timing. We will come back with a plan and an estimate.', cta: '<a class="btn btn--gold" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_final">Plan the Next Project</a>', image: pmStill(pmv('architecture-design', 'closing'))?.src, alt: pmv('architecture-design', 'closing')?.alt || '', item: pmv('architecture-design', 'closing') })}`,
   };
 
   // ---------- COMMERCIAL ----------
@@ -1134,7 +1143,7 @@ ${cp.length || b2b.length ? `<section class="section">
     </div>
   </div>
 </section>
-${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the fastest way to scope a campaign or a recurring program.', cta: '<a class="btn btn--gold" href="/contact?type=commercial" data-track="project_click" data-track-location="com_final">Plan a Production</a>', image: pmStill(pmv('commercial', 'closing'))?.src, alt: pmv('commercial', 'closing')?.alt || '' })}`,
+${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the fastest way to scope a campaign or a recurring program.', cta: '<a class="btn btn--gold" href="/contact?type=commercial" data-track="project_click" data-track-location="com_final">Plan a Production</a>', image: pmStill(pmv('commercial', 'closing'))?.src, alt: pmv('commercial', 'closing')?.alt || '', item: pmv('commercial', 'closing') })}`,
   };
 
   // ---------- AGENCY ----------
@@ -1143,7 +1152,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     body: `${pageHero({
       ...heroText('/agency-partnerships'),
       cta: `<a class="btn btn--solid" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_hero">Send an Agency Brief</a>`,
-      image: pmStill(pmv('agency-partnerships', 'hero'))?.src, imageAlt: pmv('agency-partnerships', 'hero')?.alt || pmStill(pmv('agency-partnerships', 'hero'))?.alt || '',
+      image: pmStill(pmv('agency-partnerships', 'hero'))?.src, imageAlt: pmv('agency-partnerships', 'hero')?.alt || pmStill(pmv('agency-partnerships', 'hero'))?.alt || '', item: pmv('agency-partnerships', 'hero'),
     })}
 <section class="section">
   <div class="wrap">
@@ -1191,8 +1200,8 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   const csById = Object.fromEntries(media.filter((m) => m.category === 'creator-studios').map((m) => [m.id, m]));
   const visibleMediaById = Object.fromEntries(media.map((m) => [m.id, m]));
   const csFig = (it, sizes = '(min-width: 900px) 40vw, 100vw') => {
-    if (it?.src) return `<figure class="cs-fig cs-fig--horizontal">${img(it.src, { alt: it.alt || '', sizes })}</figure>`;
-    const m = it && (csById[it.media] || visibleMediaById[it.media]); return m ? `<figure class="cs-fig cs-fig--${m.orientation}">${img(m.src, { alt: it.alt || m.alt || m.title, thumb: m.thumb, sizes })}</figure>` : '';
+    if (it?.src) return `<figure class="cs-fig cs-fig--horizontal"${pmAttrs(it)}>${img(it.src, { alt: it.alt || '', sizes })}</figure>`;
+    const m = it && (csById[it.media] || visibleMediaById[it.media]); return m ? `<figure class="cs-fig cs-fig--${m.orientation}"${pmAttrs(it)}>${img(m.src, { alt: it.alt || m.alt || m.title, thumb: m.thumb, sizes })}</figure>` : '';
   };
   // Opening section: three current vertical examples, quietly looping in place (muted excerpts, 25 s each).
   // Page Media: a photo in the list shows as a still; anything else is a playing example with its spoken label.
@@ -1202,18 +1211,18 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     ['img:cs-ph-solo-couch'],
   ] : pmList('creator-studios', 'openingExamples').map((it) => {
     const m = it.media ? allMediaById[it.media] : null;
-    return m?.type === 'image' ? [`img:${it.media}`] : [it.media, it.label];
+    return it.src || m?.type === 'image' ? [`img:${it.media || ''}`, '', it] : [it.media, it.label, it];
   });
   // Formats (James, Sep 28 2026): a photo above each block, matched to what the block describes.
   const csFormatImg = Object.fromEntries(Object.entries({ podcasts: 'formatPodcasts', multicam: 'formatMulticam', longform: 'formatLongform', solo: 'formatSolo', short: 'formatShort', planned: 'formatPlanned' })
     .map(([k, slot]) => { const it = pmv('creator-studios', slot); return [k, it && omitIds.has(it.media) ? { media: 'ph-network-effect' } : it]; }));
   const csFormatFig = (key) => {
     const it = csFormatImg[key];
-    if (it?.src) return `<figure class="cs-format__img">${img(it.src, { alt: it.alt || '', sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
+    if (it?.src) return `<figure class="cs-format__img"${pmAttrs(it)}>${img(it.src, { alt: it.alt || '', sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
     const m = it && (csById[it.media] || visibleMediaById[it.media]); if (!m) return '';
     const src = m.type === 'video' ? m.poster : m.src;
     const alt = it.alt || (m.type === 'video' ? `Frame from ${m.title}` : (m.alt || m.title));
-    return `<figure class="cs-format__img">${img(src, { alt, thumb: m.thumb, sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
+    return `<figure class="cs-format__img"${pmAttrs(it)}>${img(src, { alt, thumb: m.thumb, sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
   };
   const csSessionPhoto = { 'podcast-session': pmv('creator-studios', 'sessionPodcast'), 'content-session': pmv('creator-studios', 'sessionContent'), 'monthly-content': pmv('creator-studios', 'sessionMonthly') };
   // James, Sep 26 2026: How it works and FAQ follow licreatorstudios.com/how-it-works.
@@ -1253,7 +1262,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <div class="actions">${csStart('creator_story', 'Book a Session')}<a class="btn btn--outline" href="#sessions" data-track="pricing_click" data-track-location="creator_story">See Pricing</a></div>
       <p class="small"><a href="${esc(site.destinations.creatorWebsite.href)}" data-track="creator_click" data-track-location="creator_website">Visit the LI Creator Studios website ${arrow}</a> for more studio work and production services.</p>
     </div>
-    <div class="cs-pair__media cs-loops" role="group" aria-label="${omitIds.size ? 'Examples of podcast and studio sessions with clients' : 'Examples of podcast shorts made with clients'}">${join(csLoops, ([id, label]) => (id.startsWith('img:') ? (() => { const m = csById[id.slice(4)] || visibleMediaById[id.slice(4)]; return m ? `<div class="cs-loop">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 200px, 33vw' })}</div>` : ''; })() : `<div class="cs-loop">${ambient(id, { label })}</div>`))}</div>
+    <div class="cs-pair__media cs-loops" role="group" aria-label="${omitIds.size ? 'Examples of podcast and studio sessions with clients' : 'Examples of podcast shorts made with clients'}">${join(csLoops, ([id, label, it]) => (id.startsWith('img:') ? (() => { const m = it?.src ? it : csById[id.slice(4)] || visibleMediaById[id.slice(4)]; return m ? `<div class="cs-loop"${pmAttrs(it)}>${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 900px) 200px, 33vw' })}</div>` : ''; })() : `<div class="cs-loop"${pmAttrs(it)}>${ambient(id, { label })}</div>`))}</div>
   </div>
 </section>
 
@@ -1281,7 +1290,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <p>Sets, lights, cameras and sound are ready when you arrive. We switch angles live, coach pacing and delivery, and suggest a retake when a moment could land better.</p>
     </div>
     <div class="cs-pair__media cs-space-reel">
-      ${(() => { const it = pmv('creator-studios', 'spaceReel'); return !it ? '' : `<video class="ambient cs-space-reel__video" data-ambient muted loop playsinline controls preload="none" data-poster="/v/${esc(it.media)}.webp" aria-label="${esc(it.label)}" disableremoteplayback><source src="/v/${esc(it.media)}-loop.mp4" type="video/mp4"></video>`; })()}
+      ${(() => { const it = pmv('creator-studios', 'spaceReel'); return !it ? '' : `<video class="ambient cs-space-reel__video"${pmAttrs(it, 'natural')} data-ambient muted loop playsinline controls preload="none" data-poster="/v/${esc(it.media)}.webp" aria-label="${esc(it.label)}" disableremoteplayback><source src="/v/${esc(it.media)}-loop.mp4" type="video/mp4"></video>`; })()}
     </div>
   </div>
 </section>
@@ -1424,7 +1433,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
         <h2 class="h2 reveal" id="reviews-h">In our clients’ words.</h2>
         ${g ? `<a class="reviews__rating" href="${esc(g.href)}" target="_blank" rel="noopener" data-track="reviews_click" data-track-location="about_reviews_rating"><span class="reviews__score">${esc(g.rating.toFixed(1))}</span><span class="reviews__stars" aria-hidden="true">★★★★★</span><span class="reviews__count">${esc(String(g.count))} Google reviews <span class="sr-only">(opens Google)</span></span></a>` : ''}
       </div>
-      ${tmVideo ? `<figure class="reviews__video reveal">${videoPlayer(tmVideo, { sizes: '(min-width: 900px) 50vw, 90vw' })}${(tm.video?.id === tmVideo.id ? tm.video.name : tmVideo.client) ? `<figcaption class="reviews__credit"><span class="review__name">${esc(tm.video?.id === tmVideo.id ? tm.video.name : tmVideo.client)}</span></figcaption>` : ''}</figure>` : `<figure class="review review--lead reveal"><blockquote><p>${esc(lead.quote)}</p></blockquote>${cite(lead)}</figure>`}
+      ${tmVideo ? `<figure class="reviews__video reveal"${pmAttrs(pmv('about', 'clientVideo'), 'natural')}>${videoPlayer(tmVideo, { sizes: '(min-width: 900px) 50vw, 90vw' })}${(tm.video?.id === tmVideo.id ? tm.video.name : tmVideo.client) ? `<figcaption class="reviews__credit"><span class="review__name">${esc(tm.video?.id === tmVideo.id ? tm.video.name : tmVideo.client)}</span></figcaption>` : ''}</figure>` : `<figure class="review review--lead reveal"><blockquote><p>${esc(lead.quote)}</p></blockquote>${cite(lead)}</figure>`}
     </div>
     <ul class="reviews__list" role="list">
       ${(tmVideo ? tmReviews : rest).map((r) => `<li class="review reveal"><figure><blockquote><p>${esc(r.quote)}</p></blockquote>${cite(r)}</figure></li>`).join('')}
@@ -1499,7 +1508,7 @@ ${aboutReviews}
     <div><h2 class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</h2><p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p></div>
   </div>
 </section>
-${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('about', 'closing'))?.src, undefined, false, pmv('about', 'closing')?.alt)}`,
+${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('about', 'closing'))?.src, undefined, false, pmv('about', 'closing')?.alt, pmv('about', 'closing'))}`,
   };
 
   // ---------- LEGAL: /terms and /licensing ----------

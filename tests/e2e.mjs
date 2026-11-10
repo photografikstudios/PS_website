@@ -21,7 +21,7 @@ if (staleDist) console.log(`\nWARNING  PREREQUISITE: ${staleDist}. Run npm run b
 const fixture = await readFile(new URL('./fixtures/vertical.webm', import.meta.url));
 const server = await start(0);
 const base = `http://localhost:${server.address().port}`;
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {});
 const results = [];
 const shots = new URL('../docs/screenshots/', import.meta.url).pathname;
 await mkdir(shots, { recursive: true });
@@ -369,9 +369,9 @@ await check('a11y: no aria-label on role-less div/span/p on any page; native-con
 
 // Oct 13 2026: review-only variant for James's decision (old podcast clips left out, four slots swapped to approved
 // Creator media). The live review pages keep the old clips until he decides; the variant is noindex and not in the sitemap.
-await check('podcast-omit variant: no old clip anywhere, four slots swapped, players still work; live pages unchanged', async () => {
+await check('podcast-omit variant: pending replacements omitted, retained Noah preserved on current pages', async () => {
   const p = await newPage();
-  const OLD = /cs-jm2-architecture|cs-noah-knows-short|cs-tick/;
+  const OLD = /cs-jm2-architecture|cs-tick/;
   for (const r of ['/', '/creator-studios', '/creator-studios/sessions', '/architecture-design']) {
     await p.goto(base + '/_variants/podcast-omit' + (r === '/' ? '/' : r));
     const html = await p.content();
@@ -383,7 +383,7 @@ await check('podcast-omit variant: no old clip anywhere, four slots swapped, pla
   const sm = await (await fetch(base + '/sitemap.xml')).text();
   assert(!/_variants/.test(sm), 'variant not in sitemap');
   await p.goto(base + '/creator-studios');
-  assert(OLD.test(await p.content()), 'live review page unchanged until James decides');
+  assert(/cs-noah-knows-short/.test(await p.content()), 'James retained Noah on current Creator page');
   await p.context().close();
 });
 
@@ -1125,8 +1125,10 @@ await check('speech clips carry caption tracks that load and parse, no Creator t
     assert(/data-id="cs-podcast-ep23-short"/.test(ses), 'replacement on Sessions');
     for (const path of ['/', '/creator-studios', '/creator-studios/sessions', '/architecture-design']) assert(!/cs-jm2-architecture/.test(await (await fetch(base + path)).text()), 'JM2 clip gone from ' + path);
     await p.goto(base + '/creator-studios/sessions');
-    assert(await p.locator('.card:has([data-id="cs-podcast-ep23-short"]) video track').count() === 0, 'burned-in captions: no separate track'); }
-  for (const [path, id] of [['/creator-studios/sessions', 'cs-noah-knows-short'], ['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
+    assert(await p.locator('.card:has([data-id="cs-podcast-ep23-short"]) video track').count() === 0, 'burned-in captions: no separate track');
+    assert(await p.locator('.card:has([data-id="cs-noah-knows-short"]) video').count() === 1, 'owner retained Noah');
+    assert(await p.locator('.card:has([data-id="cs-noah-knows-short"]) video track').count() === 0, 'owner-approved embedded Noah captions do not duplicate a draft track'); }
+  for (const [path, id] of [['/creator-studios/sessions', 'cs-tick'], ['/agent-content', 'agent-on-camera']]) {
     await p.goto(base + path);
     const card = p.locator(`.card:has([data-id="${id}"]), .ac-example:has([data-id="${id}"])`).first();
     const src = await card.locator('video track[kind="captions"]').getAttribute('src');

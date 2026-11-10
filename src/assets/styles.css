@@ -1260,3 +1260,29 @@ body:has(.service-dialog[open]) { overflow: hidden; }
 .about-audiences .feature p { margin-bottom: 12px; }
 .about-details { padding-block: 48px; border-top: 1px solid var(--line); }
 .about-details p { font-size: 15px; color: var(--muted); }
+
+/* Page Media sizing: per placement, bounded by the existing column. No source is stretched. */
+[data-media-size="small"] { --pm-scale: 60%; --pm-factor: .6; --pm-wide: 320px; --pm-portrait: 224px; --pm-height: 52svh; }
+[data-media-size="medium"] { --pm-scale: 80%; --pm-factor: .8; --pm-wide: 640px; --pm-portrait: 320px; --pm-height: 68svh; }
+[data-media-size="large"] { --pm-scale: 100%; --pm-factor: 1; --pm-wide: 1120px; --pm-portrait: 420px; --pm-height: 88svh; }
+/* Natural media has no forced crop. Portrait video is bounded even with the default selection. */
+[data-media-layout="natural"][data-media-shape="vertical"] { width: 100%; max-width: var(--pm-portrait, 360px); justify-self: center; margin-inline: auto; }
+[data-media-layout="natural"]:not([data-media-size="default"]) { width: 100%; max-width: min(100%, var(--pm-wide)); margin-inline: auto; justify-self: center; }
+[data-media-layout="natural"][data-media-shape="vertical"]:not([data-media-size="default"]) { max-width: min(100%, var(--pm-portrait)); }
+[data-media-layout="natural"] img { max-width: 100%; max-height: 760px; height: auto; object-fit: contain; }
+[data-media-layout="natural"] video { object-fit: contain; }
+video[data-media-layout="natural"] { height: auto; }
+/* Card frames keep their space so neighboring headings stay aligned. Scale only the media inside. */
+[data-media-layout="frame"]:not([data-media-size="default"]) img,
+[data-media-layout="frame"]:not([data-media-size="default"]) video { object-fit: contain; scale: var(--pm-factor); }
+/* Fixed card and thumbnail slots retain their height so neighboring titles keep lining up. */
+[data-media-layout="inset"]:not([data-media-size="default"]) img,
+[data-media-layout="inset"]:not([data-media-size="default"]) video { object-fit: contain; width: var(--pm-scale); height: var(--pm-scale); position: absolute; inset: 0; margin: auto; }
+.prow__thumb[data-media-layout="inset"] { position: relative; }
+/* Backgrounds fill a bounded section. Text remains in normal flow and can always make it taller. */
+[data-media-layout="background"]:not([data-media-size="default"]) { min-height: var(--pm-height); }
+.closing[data-media-layout="background"]:not([data-media-size="default"]) { display: flex; align-items: center; }
+.closing[data-media-layout="background"]:not([data-media-size="default"]) .closing__inner { padding-block: clamp(40px, 6vw, 80px); }
+@media (max-width: 700px) {
+  [data-media-layout="background"]:not([data-media-size="default"]) { min-height: min(var(--pm-height), 76svh); }
+}

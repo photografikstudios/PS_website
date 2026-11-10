@@ -66,6 +66,8 @@ test('Page Media: the committed choices pass, and each rule refuses what it shou
   assert.ok(pageMediaRefs(pm).length >= 60, 'sections across every page');
   const bad = (edit) => { const x = structuredClone(pm); edit(x); return checkPageMedia(x, lib).errors.join(' | '); };
   assert.match(bad((x) => { x.home.hero = null; }), /cannot be empty/);
+  for (const size of ['default','small','medium','large']) assert.equal(bad(x => { x.about.locationMedia.size = size; }), '', size);
+  assert.match(bad(x => { x.about.locationMedia.size = 'huge'; }), /display size/);
   assert.match(bad((x) => { x.home.hero = { media: 'ph-dan-dan' }; }), /no moving background/);
   assert.match(bad((x) => { x['real-estate'].coverageFilm = { media: 're-hamptons-beachfront' }; }), /screen reader/);
   assert.match(bad((x) => { x['agency-partnerships'].hero = { src: x['agency-partnerships'].hero.src, alt: '' }; }), /describe the photo/);
@@ -120,7 +122,7 @@ test('Page Media: a changed choice changes the built page; removing it again res
   await edit('commercial', (v) => { v.featureBrand = { media: 'ph-torella-aerial' }; });
   let originalExamples;
   await edit('creator-studios', (v) => { originalExamples = v.openingExamples.map(it => it.media); v.openingExamples = [v.openingExamples[1], v.openingExamples[0]]; });
-  await edit('contact', (v) => { v.introMedia = { media: 'cs-demo-reel' }; });
+  await edit('contact', (v) => { v.introMedia = { media: 'cs-demo-reel', size: 'small' }; });
   build();
   const com = await page('commercial.html'); const cs = await page('creator-studios.html'); const contact = await page('contact.html');
   assert.ok(com.includes('ph-torella-aerial') && !com.includes('ph-revivaluxe-portrait.webp'), 'replaced photo');
@@ -129,7 +131,8 @@ test('Page Media: a changed choice changes the built page; removing it again res
   assert.ok(cs.includes(loopPath(originalExamples[0])) && cs.includes(loopPath(originalExamples[1])), 'both retained examples render');
   assert.ok(cs.indexOf(loopPath(originalExamples[1])) < cs.indexOf(loopPath(originalExamples[0])), 'reordered: ' + loops.join());
   for (const id of originalExamples.slice(2)) assert.ok(!loops.includes(id), `${id} removed from the page`);
-  assert.match(contact, /<figure class="pm-extra pm-extra--film"><div class="vplayer[^"]*" data-video data-id="cs-demo-reel"/);
+  assert.match(contact, /<figure class="pm-extra pm-extra--film"[^>]*><div class="vplayer[^"]*" data-video data-id="cs-demo-reel"/);
+  assert.match(contact, /data-page-media="contact.introMedia" data-media-size="small"/);
   // Back to the committed choices: identical pages.
   for (const f of ['commercial', 'creator-studios', 'contact']) await cp(join(root, 'content/page-media', `${f}.json`), join(dir, 'content/page-media', `${f}.json`));
   build();

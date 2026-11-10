@@ -846,6 +846,7 @@
       if (arr.length > this.f('max')) errs.push('Choose no more than ' + this.f('max') + '.');
       arr.forEach(function (it, i) {
         var n = self.f('multiple') ? ' (item ' + (i + 1) + ')' : '';
+        if (it.size != null && ['default', 'small', 'medium', 'large'].indexOf(it.size) < 0) errs.push('Choose a valid display size' + n + '.');
         if (it.src && self.f('altMode') !== 'decorative' && !it.alt) errs.push('Describe the photo' + n + '.');
         var m = it.media ? mediaById[it.media] : null;
         if (it.media && !m) errs.push('“' + it.media + '” is not in the library any more' + n + '. Choose another.');
@@ -857,14 +858,14 @@
     pickDone: function (ids) {
       var arr = this.items(); var mode = this.state.picking;
       var add = ids.map(function (id) { return { media: id }; });
-      if (mode === 'add') arr = arr.concat(add); else if (typeof mode === 'number') arr[mode] = add[0]; else arr = add.slice(0, 1);
+      if (mode === 'add') arr = arr.concat(add); else if (typeof mode === 'number') arr[mode] = Object.assign({}, arr[mode].size ? { size: arr[mode].size } : {}, add[0]); else arr = add.slice(0, 1);
       this.set(arr.slice(0, this.f('max'))); this.setState({ picking: null });
     },
     upload: function (e, index) {
       var self = this; var files = e.target.files; this.setState({ busy: true, msgs: [] });
       addFiles(this.props, files, this.props.field.get('label').split(':')[0]).then(function (r) {
         var arr = self.items(); var add = r.paths.map(function (p) { return { src: p, alt: '' }; });
-        if (typeof index === 'number') arr[index] = add[0]; else arr = self.f('multiple') ? arr.concat(add) : add.slice(0, 1);
+        if (typeof index === 'number') arr[index] = Object.assign({}, arr[index].size ? { size: arr[index].size } : {}, add[0]); else arr = self.f('multiple') ? arr.concat(add) : add.slice(0, 1);
         self.set(arr.slice(0, self.f('max'))); self.setState({ busy: false, msgs: r.msgs });
       }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
       e.target.value = '';
@@ -889,6 +890,8 @@
               h('p', { className: 'pgk-row__title' }, h('strong', {}, name), ' ', h('span', {}, m ? [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.hidden ? 'hidden in the library: shown on the review site only, left out of the live site' : ''].filter(Boolean).join(' · ') : 'Photo file used only here')),
               it.src && self.f('altMode') !== 'decorative' ? h('label', {}, h('span', {}, 'Description (alt text)' + (it.alt ? '' : ' · needed')), h('input', { type: 'text', value: it.alt || '', onChange: function (e) { self.update(i, 'alt', e.target.value); } })) : null,
               self.f('labelled') && it.media && !(m && m.kind === 'photo') ? h('label', {}, h('span', {}, 'What a screen reader hears' + (it.label ? '' : ' · needed')), h('input', { type: 'text', value: it.label || '', placeholder: 'e.g. Beachfront estate film, muted excerpt', onChange: function (e) { self.update(i, 'label', e.target.value); } })) : null,
+              h('label', {}, h('span', {}, 'Display size'), h('select', { 'aria-label': 'Display size', value: it.size || 'default', onChange: function (e) { self.update(i, 'size', e.target.value); } }, ['default', 'small', 'medium', 'large'].map(function (size) { return h('option', { key: size, value: size }, size === 'default' ? 'Default (designed layout)' : size.charAt(0).toUpperCase() + size.slice(1)); }))),
+              h('p', { className: 'pgk-size-note' }, 'Only this placement changes. Small, Medium and Large fit within its section; portraits keep their proportions. Backgrounds adjust the section height and may crop, but never stretch. Default restores the designed layout.'),
               h('div', { className: 'pgk-gallery__bar' },
                 h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: i }); } }, 'Replace from library'),
                 takesFiles(accepts) ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: self.state.busy, onClick: function () { self['in' + i].click(); } }, 'Replace with an upload') : null,
@@ -1502,7 +1505,7 @@
     '.pgk-pick img { display: block; width: 100%; height: 100px; object-fit: cover; border-radius: 4px; } .pgk-pick span { display: block; font-size: 11px; line-height: 1.3; padding: 4px 2px; color: #374151; }',
     '.pgk-pick.is-on { border-color: #1f2937; box-shadow: 0 0 0 2px #1f2937; }',
     '.pgk-btn--small { min-height: 34px; padding: 5px 10px; font-size: 13px; } .pgk-btn--danger { background: #b42318; border-color: #b42318; color: #fff; } .pgk-btn--danger[disabled] { cursor: not-allowed; }',
-    '.pgk-slot__kind, .pgk-slot__note, .pgk-slot__empty { margin: 4px 0 8px; font-size: 13px; color: #5b6472; } .pgk-slot__empty { padding: 12px; border: 1px dashed #c9ced6; border-radius: 6px; }',
+    '.pgk-slot__kind, .pgk-slot__note, .pgk-size-note, .pgk-slot__empty { margin: 4px 0 8px; font-size: 13px; color: #5b6472; } .pgk-slot__empty { padding: 12px; border: 1px dashed #c9ced6; border-radius: 6px; }',
     '.pgk-row__title { margin: 0 0 8px; font-size: 14px; } .pgk-row__title span { color: #5b6472; font-size: 12px; }',
     '.pgk-note, .pgk-manage, .pgk-film { padding: 12px 14px; border-radius: 8px; background: #f1f5f9; font-size: 14px; line-height: 1.5; color: #1f2937; } .pgk-note p, .pgk-manage p, .pgk-film p { margin: 0 0 8px; }',
     '.pgk-note a, .pgk-manage a { color: #176277; font-weight: 600; text-decoration: underline; } .pgk-note ul, .pgk-manage ul { margin: 0 0 8px; padding-left: 20px; } .pgk-note__h { font-weight: 600; } .pgk-note__state, .pgk-manage__note { color: #5b6472; }',

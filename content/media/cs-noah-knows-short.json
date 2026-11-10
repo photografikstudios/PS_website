@@ -13,7 +13,7 @@
   "poster": "/v/cs-noah-knows-short.webp",
   "duration": 86,
   "dialogue": true,
-  "captions": "/captions/cs-noah-knows-short.vtt",
+  "captions": "burned-in",
   "transcript": null,
   "featured": false,
   "rights": "approved",
@@ -26,14 +26,20 @@
   "capturedYear": null,
   "sortPriority": 0,
   "_locationNote": "Frames show the same kitchen-island set as the Episode 10 stills; the Drive notes say LI Creator Studios, but the location is not verified. Label withheld until James confirms.",
-  "captionsStatus": "machine-draft",
+  "captionsStatus": "approved",
   "openCaptions": true,
-  "_openCaptionsNote": "Sep 26: the clip has animated word-by-word captions burned in (seen at 0:03, 0:05, 0:26 in the review player). The WebVTT track is offered through the player CC control but not shown by default, so text is not doubled. James to confirm the burned-in words cover all speech.",
+  "_openCaptionsNote": "Animated word-by-word captions are part of the supplied video and remain visible while muted. Use the embedded captions without a duplicate machine-draft WebVTT track.",
   "order": 200,
   "replacement": {
-    "status": "pending",
-    "decidedBy": "James, Oct 13 2026 (Codex chat): \"For these podcast clips, we'll be changing them out with other newer clips so proofread is not needed.\"",
-    "note": "The machine-draft captions are not proofed and are not approved. This clip ships only after a replacement is received, its identity and playback are checked and it has suitable captions, or after James decides to hide it."
+    "status": "retained",
+    "decidedBy": "James, November 10, 2026: \"we can keep it on all of those places\"",
+    "note": "Keep the current clip on Home Selected Work, Creator Studios opening examples, and Studio Sessions. Supersedes the October 13 replacement hold."
   },
-  "focal": "upper-third"
+  "focal": "upper-third",
+  "captionReview": {
+    "basis": "Owner approval of existing visible reel captions on October 13, followed by explicit decision to retain this clip in all three current placements on November 10, 2026.",
+    "approvedBy": "James",
+    "checkedAt": "2026-11-10",
+    "note": "Burned-in words verified in the sampled frame. This is owner approval, not a claim of an independent word-for-word listening audit. The older machine WebVTT stays archived but is not served as an approved alternative track."
+  }
 }

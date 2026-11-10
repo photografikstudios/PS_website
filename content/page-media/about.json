@@ -9,7 +9,8 @@
     "alt": ""
   },
   "locationMedia": {
-    "media": "oct15-in-house-v2"
+    "media": "oct15-in-house-v2",
+    "size": "medium"
   },
   "studioMedia": {
     "media": "cs-ph-solo-bts"

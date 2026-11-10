@@ -18,6 +18,7 @@
     "fetch:legacy": "node scripts/fetch-legacy.mjs",
     "check:media": "node scripts/media-check.mjs",
     "pin:media": "node scripts/pin-media.mjs",
-    "test:guidance": "node tests/guidance-browser.mjs"
+    "test:guidance": "node tests/guidance-browser.mjs",
+    "test:media-sizing": "node tests/media-sizing.mjs"
   }
 }
