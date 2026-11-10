@@ -1437,36 +1437,69 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     overlay: true,
     body: `${pageHero({
       ...heroText('/about'),
-      cta: `<a class="btn btn--solid" href="/contact" data-track="project_click" data-track-location="about_hero">Send a Project Brief</a>`,
+      cta: `<a class="btn btn--solid" href="/contact" data-track="project_click" data-track-location="about_hero">Let’s talk about your project</a>`,
     })}
-<section class="section">
+<section class="section about-purpose" aria-labelledby="about-purpose-h">
+  <div class="wrap ${pmv('about', 'locationMedia') ? 'two-col' : 'narrow'}">
+    <div>
+      <p class="eyebrow">A marketing perspective</p>
+      <h2 class="h2 reveal" id="about-purpose-h">You did great work. <em>Now what?</em></h2>
+      <p>You finished a home, brought a design to life or built a business you believe in. Now the people you want to work with need to see what makes it worth their attention.</p>
+      <p>That is where we start. Who are you trying to reach? What do they care about? What would help them feel confident taking the next step with you?</p>
+      <p>Our experience in real estate and business marketing shapes what we photograph, the stories we tell and the questions we ask on camera. We plan the content around how it will work on your website, in your marketing and in the conversations that lead to new business.</p>
+    </div>
+    ${pmv('about', 'locationMedia') ? `<div class="about-bts"><p class="eyebrow">Behind the scenes · On location</p>${pmExtra(pmv('about', 'locationMedia'), '(min-width: 900px) 45vw, 100vw')}</div>` : ''}
+  </div>
+</section>
+<section class="section section--tint" aria-labelledby="about-approach-h">
   <div class="wrap">
-    <h2 class="sr-only">How we work</h2>
+    <p class="eyebrow">How we think</p>
+    <h2 class="h2 reveal" id="about-approach-h">Give the right people <em>a reason to choose you.</em></h2>
     <div class="features">
-      <div class="feature reveal"><h3 class="h3">Quality over quantity</h3><p>A complete, considered set instead of a padded gallery of near-duplicates. Every frame earns its place.</p></div>
-      <div class="feature reveal"><h3 class="h3">Marketing judgment</h3><p>We think about where the media will be used and what it needs to do there, then plan the shoot around it.</p></div>
-      <div class="feature reveal"><h3 class="h3">On site and in studio</h3><p>Listing and project coverage in the field, plus a production studio in Bohemia for podcasts, interviews and on-camera content.</p></div>
+      <div class="feature reveal"><h3 class="h3">Understand the audience.</h3><p>A buyer considering a home has different questions from a homeowner choosing a builder or a business choosing a service. We shape the message around the people you want to reach.</p></div>
+      <div class="feature reveal"><h3 class="h3">Show the work and the person.</h3><p>The finished project shows what you can do. Your perspective, your process and your clients’ experiences help people understand what it is like to work with you.</p></div>
+      <div class="feature reveal"><h3 class="h3">Plan for where it goes.</h3><p>We consider the website, social channels, presentations and campaigns before the shoot. That gives the photography, interviews and short videos a clear purpose from the start.</p></div>
     </div>
   </div>
 </section>
-<section class="section section--tint">
+<section class="section" aria-labelledby="about-james-h">
   <div class="wrap two-col two-col--top">
     <div>
-      <p class="eyebrow">The team</p>
-      <h2 class="h2 reveal">Led by James Calandrino.</h2>
-      <p>Photografik was built around a quality-first approach to real estate and commercial media. What began with James behind the camera has grown into a production team built around the same expectations for composition, consistency, communication and delivery.</p>
-      <p>James directs the creative work, leads client relationships and shoots video. Our team covers photography, drone and floor plans, including weekend shoots, and a client experience lead keeps every booking moving.</p>${pmExtra(pmv('about', 'teamMedia'), '(min-width: 900px) 45vw, 100vw')}
+      <p class="eyebrow">The people behind Photografik</p>
+      <h2 class="h2 reveal" id="about-james-h">Led by James Calandrino.</h2>
+      <p>James brings his experience in real estate and business marketing to the creative direction at Photografik Studios. He works with clients to understand what they want to be known for, who they want to reach and how to communicate it.</p>
+      <p>Our team brings that plan into the photography, filming, editing and client experience. From the first conversation through delivery, the work is guided by the same goal: help your audience understand what you do, why it matters and who they would be working with.</p>
+      ${pmExtra(pmv('about', 'teamMedia'), '(min-width: 900px) 45vw, 100vw')}
     </div>
+    <div class="about-audiences">
+      <p class="eyebrow">Built around your business</p>
+      <div class="feature"><h3 class="h3">Real estate</h3><p>Show the property to potential buyers and let future sellers see the care and expertise behind your marketing.</p><a class="link-arrow" href="/agent-content">Meet the agent behind the listing ${arrow}</a></div>
+      <div class="feature"><h3 class="h3">Builders, architects and designers</h3><p>Turn a finished project into a way to explain your craft, your decisions and the kind of work you want to do next.</p><a class="link-arrow" href="/architecture-design">Showcase your projects ${arrow}</a></div>
+      <div class="feature"><h3 class="h3">Businesses and brands</h3><p>Introduce your people, answer the questions customers ask and show what makes your approach different.</p><a class="link-arrow" href="/commercial">Explore brand production ${arrow}</a></div>
+    </div>
+  </div>
+</section>
+<section class="section section--tint" aria-labelledby="about-studio-h">
+  <div class="wrap ${pmv('about', 'studioMedia') ? 'two-col' : 'narrow'}">
+    ${pmv('about', 'studioMedia') ? `<div class="about-bts"><p class="eyebrow">Behind the scenes · LI Creator Studios</p>${pmExtra(pmv('about', 'studioMedia'), '(min-width: 900px) 45vw, 100vw')}</div>` : ''}
     <div>
-      <p class="eyebrow">Where we work</p>
-      <p>${esc(site.serviceArea)}</p>
-      <p class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</p>
-      <p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p>
+      <p class="eyebrow">One connected approach</p>
+      <h2 class="h2 reveal" id="about-studio-h">On location. <em>In the studio.</em></h2>
+      <p>Some stories belong at the property, on the job site or inside your business. Others need a place to sit down and talk.</p>
+      <p>That is why our work extends to LI Creator Studios in Bohemia. Interviews, client testimonials, podcasts and videos that explain your expertise can sit alongside project photography and films as part of the same content plan.</p>
+      <p>We help you find the questions worth answering and feel comfortable answering them. Your experience is what gives the content something to say.</p>
+      <a class="link-arrow" href="/creator-studios" data-track="creator_click" data-track-location="about_studio">Explore LI Creator Studios ${arrow}</a>
     </div>
   </div>
 </section>
 ${aboutReviews}
-${splitCta('Let us help with the next one.', pmStill(pmv('about', 'closing'))?.src, undefined, false, pmv('about', 'closing')?.alt)}`,
+<section class="section about-details" aria-label="Service area and usage">
+  <div class="wrap two-col two-col--top">
+    <div><h2 class="eyebrow">Where we work</h2><p>${esc(site.serviceArea)}</p></div>
+    <div><h2 class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</h2><p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p></div>
+  </div>
+</section>
+${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('about', 'closing'))?.src, undefined, false, pmv('about', 'closing')?.alt)}`,
   };
 
   // ---------- LEGAL: /terms and /licensing ----------

@@ -159,7 +159,9 @@ export const PAGES = [
   {
     file: 'about', route: '/about', label: 'About',
     slots: [
-      S('teamMedia', '“The team”: optional photo or film', 'photoOrFilm', OPTIONAL),
+      S('teamMedia', '“Led by James Calandrino”: optional photo or film', 'photoOrFilm', OPTIONAL),
+      S('locationMedia', '“You did great work. Now what?”: behind-the-scenes photo or film', 'photoOrFilm', OPTIONAL),
+      S('studioMedia', '“On location. In the studio.”: behind-the-scenes photo or film', 'photoOrFilm', OPTIONAL),
       S('clientVideo', 'Client reviews: video review (film with sound)', 'film', { required: false, empty: 'The first written review leads instead.' }),
       S('closing', 'Closing “Next step” band: background photo', 'photo', { alt: 'decorative' }),
     ],

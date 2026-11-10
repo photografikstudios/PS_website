@@ -1252,3 +1252,11 @@ body:has(.service-dialog[open]) { overflow: hidden; }
   .service-dialog { max-height: calc(100svh - 24px); }
 }
 @media print { #service-guidance { display: none; } }
+
+/* About: existing page typography and spacing, with editable behind-the-scenes media. */
+.about-bts .pm-extra { margin: 0; }
+.about-bts .pm-extra img { width: 100%; height: auto; }
+.about-audiences { display: grid; gap: 32px; }
+.about-audiences .feature p { margin-bottom: 12px; }
+.about-details { padding-block: 48px; border-top: 1px solid var(--line); }
+.about-details p { font-size: 15px; color: var(--muted); }
