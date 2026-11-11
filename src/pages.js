@@ -1,4 +1,4 @@
-import { esc, join, focalAttr } from './lib/html.js';
+import { esc, join, focalAttr, focalPosition } from './lib/html.js';
 import { renderArticle, bodyRefs, inline as inlineMd } from './lib/markdown.js';
 import { numberSections } from './lib/legal-core.js';
 import { formatUSD, resolvePrice, inclusion, includeLabels, tierLabel, findTier } from './lib/pricing-core.js';
@@ -49,13 +49,21 @@ export function buildPages(ctx) {
   const pmv = (file, key) => { const v = PM[file]?.[key]; const tag = (it) => ({ ...it, placement: `${file}.${key}` }); return Array.isArray(v) ? v.filter(keepItem).map(tag) : keepItem(v) ? tag(v) : null; };
   // Size belongs to this placement, never to the shared media record. Default retains the designed frame;
   // natural portrait films are bounded even before an editor chooses a size.
-  const pmAttrs = (it, layout = 'frame') => {
+  const pmAttrs = (it, layout = 'frame', extraStyle = '') => {
     if (!it) return '';
-    const m = allMediaById[it.media]; const dimensions = ctx.imageInfo?.(it.src || m?.src);
-    const vertical = m?.orientation === 'vertical' || (dimensions && dimensions.height > dimensions.width);
-    return ` data-page-media="${esc(it.placement || '')}" data-media-size="${esc(it.size || 'default')}" data-media-layout="${layout}" data-media-shape="${vertical ? 'vertical' : 'horizontal'}"`;
+    const m = allMediaById[it.media]; const dimensions = ctx.imageInfo?.(it.src || m?.poster || m?.src);
+    const vertical = dimensions ? dimensions.height > dimensions.width : m?.orientation === 'vertical';
+    const focus = focalPosition(it.focal ?? m?.focal) || (/^\d+(?:\.\d+)?% \d+(?:\.\d+)?%$/.test(it.position || '') ? it.position : null);
+    const ratio = dimensions ? `${dimensions.width} / ${dimensions.height}` : vertical ? '9 / 16' : '3 / 2';
+    const style = `--pm-ratio:${ratio};${focus ? `--pm-focus:${focus};` : ''}${extraStyle}`;
+    return ` data-page-media="${esc(it.placement || '')}" data-media-size="${esc(it.size || 'default')}" data-media-fit="${esc(it.fit || 'default')}" data-media-layout="${layout}" data-media-shape="${vertical ? 'vertical' : 'horizontal'}"${focus ? ' data-media-focus' : ''} style="${esc(style)}"`;
   };
-  const pmSized = (it, html, layout = 'frame') => html ? html.replace(/^(<\w+)/, `$1${pmAttrs(it, layout)}`) : '';
+  const pmSized = (it, html, layout = 'frame') => html ? html.replace(/^(<\w+)([^>]*)(>)/, (_, tag, own, end) => {
+    let extra = pmAttrs(it, layout);
+    // A few designed frames already have a style. Merge instead of emitting duplicate attributes.
+    if (/ style="/.test(own)) { const style = extra.match(/ style="([^"]*)"/); if (style) { own = own.replace(' style="', ` style="${style[1]}`); extra = extra.replace(style[0], ''); } }
+    return tag + extra + own + end;
+  }) : '';
   const pmList = (file, key) => (Array.isArray(pmv(file, key)) ? pmv(file, key) : []);
   const pmId = (file, key) => pmv(file, key)?.media;
   // Galleries per page (Page Media): Automatic as before, minus what James left out on this page, or exactly his own
@@ -128,7 +136,7 @@ export function buildPages(ctx) {
     const href = project && visible(project) ? projectPath(project) : null;
     const frame = m.type === 'video'
       ? videoPlayer(m, { sizes })
-      : `<div class="still still--${m.orientation}">${photoLightboxIndex != null ? `<button type="button" class="still__link still__link--lightbox" data-project-photo="${photoLightboxIndex}" aria-label="Enlarge ${esc(m.alt || m.title)}">` : href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { focal: m.focal, alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${photoLightboxIndex != null ? '</button>' : href ? '</a>' : ''}</div>`;
+      : `<div class="still still--${m.orientation}" style="--photo-ratio:${m.width || 9}/${m.height || 16}">${photoLightboxIndex != null ? `<button type="button" class="still__link still__link--lightbox" data-project-photo="${photoLightboxIndex}" aria-label="Enlarge ${esc(m.alt || m.title)}">` : href ? `<a href="${href}" class="still__link" aria-label="${esc(project.title)}: view project">` : ''}${img(m.src, { focal: m.focal, alt: m.alt || '', thumb: m.thumb, sizes: sizes || '(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw' })}${photoLightboxIndex != null ? '</button>' : href ? '</a>' : ''}</div>`;
     const meta = showMeta ? `<div class="card__meta">
         <p class="card__title">${href ? `<a href="${href}">${esc(m.title)}</a>` : esc(m.title)}</p>
         <p class="card__sub">${esc(catLabel[m.category] || '')}${(m.location || project?.location) ? ` · ${esc(m.location || project.location)}` : ''}${m.type === 'video' ? ' · Film' : ''}${m.type === 'video' && m.dialogue !== false && !m.captions ? ` ${needsApproval({ approval: 'pending' }, m.dialogue ? 'Captions and transcript needed before launch' : 'Check whether this film has speech; captions needed if it does')}` : ''}${m.type === 'video' && m.captions && m.captions !== 'burned-in' && m.captionsStatus !== 'approved' ? ` ${needsApproval({ approval: 'pending' }, 'Captions are a machine-transcribed draft; James to proofread names and wording before launch')}` : ''}</p>
@@ -220,8 +228,7 @@ export function buildPages(ctx) {
     const st = pmStill(it); if (!st) return '';
     const sm = /^\/v\/[\w-]+\.webp$/.test(st.src) ? (st.thumb || st.src.replace(/\.webp$/, '-sm.webp')) : null;
     const alt = it.alt || st.alt;
-    return sm ? `<img src="${st.src}" srcset="${sm} 900w, ${st.src} 2000w" sizes="(min-width: 700px) 50vw, 100vw" alt="${esc(alt)}" ${ctx.imageDimensions(st.src)} loading="lazy" decoding="async">`
-      : img(st.src, { alt, thumb: st.thumb, sizes: '(min-width: 700px) 50vw, 100vw' });
+    return img(st.src, { alt, thumb: sm && ctx.imageInfo(sm) ? sm : st.thumb, sizes: '(min-width: 700px) 50vw, 100vw' });
   };
   pages['/'] = {
     overlay: true,
@@ -546,7 +553,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
   // Only offer a package filter for packages with at least one verified example (James, Sep 25: labels stay blank until checked).
   const pkgTagged = pkgOptions.filter((p) => pkgCounts[p.id] > 0);
   const typeCounts = optionCounts(reFacts, { pkg: '' }, 'type', TYPE_FILTERS.map((t) => t.id));
-  const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}"${i >= reBatch ? ' hidden' : ''}>
+  const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" style="--photo-ratio:${m.width || 9}/${m.height || 16}"${i >= reBatch ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}">
         <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${m.type === 'video' ? playIcon : ''}
@@ -658,7 +665,7 @@ ${fnTeaser('real-estate')}
   const pkgMediaHtml = (p) => {
     const l = pkgLoops[p.id];
     if (l) return `<div class="pcard__loop"${pmAttrs(l.item, 'inset')}>${ambient(l.id, { label: `${l.label} (muted)` })}</div>`;
-    if (p.id === 'listing-starter' && starterStills.length) return `<div class="pcard__seq" role="group" aria-label="Listing Starter examples: interior, exterior and aerial photographs">${join(starterStills, (m, i) => `<div class="pcard__seq-item"${pmAttrs(m.item, 'inset')} style="--i:${i};--n:${starterStills.length}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 1180px) 22vw, (min-width: 680px) 45vw, 100vw' })}</div>`)}</div>`;
+    if (p.id === 'listing-starter' && starterStills.length) return `<div class="pcard__seq" role="group" aria-label="Listing Starter examples: interior, exterior and aerial photographs">${join(starterStills, (m, i) => `<div class="pcard__seq-item"${pmAttrs(m.item, 'inset', `--i:${i};--n:${starterStills.length}`)}>${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes: '(min-width: 1180px) 22vw, (min-width: 680px) 45vw, 100vw' })}</div>`)}</div>`;
     return '';
   };
   const packageCard = (p) => `<article class="pcard ${pkgFeatured(p) ? 'pcard--featured' : ''}" data-record="${esc(p.id)}" aria-labelledby="pk-${esc(p.id)}">
@@ -912,7 +919,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     const pr = m.project && projectBySlug[m.project] && visible(projectBySlug[m.project]) ? projectBySlug[m.project] : null;
     const kind = m.type === 'video' ? 'video' : 'image';
     // Photo-only variants start hidden so no project appears twice before the script runs.
-    return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${views ? ` data-views="${esc(views.join(' '))}"` : ''}${views && !views.includes('') ? ' hidden' : ''}>
+    return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" style="--photo-ratio:${m.width || 9}/${m.height || 16}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${views ? ` data-views="${esc(views.join(' '))}"` : ''}${views && !views.includes('') ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${kind === 'video' ? 'Play' : 'View'} ${esc(pr ? (pr.client || pr.title) : m.title)}">
         <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${kind === 'video' ? playIcon : ''}

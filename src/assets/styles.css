@@ -1286,3 +1286,30 @@ video[data-media-layout="natural"] { height: auto; }
 @media (max-width: 700px) {
   [data-media-layout="background"]:not([data-media-size="default"]) { min-height: min(var(--pm-height), 76svh); }
 }
+
+/* A focal choice belongs to a placement; it overrides older template crop positions. */
+[data-page-media][data-media-focus] img,
+[data-page-media][data-media-focus] video { object-position: var(--pm-focus) !important; }
+/* Normal portrait photos keep their actual proportions. Background/inset slots are deliberately fixed frames. */
+[data-media-layout="frame"][data-media-shape="vertical"][data-media-fit="default"],
+[data-media-layout="frame"][data-media-fit="original"] { max-width: min(100%, var(--pm-wide, 1120px)); margin-inline: auto; }
+[data-media-layout="frame"][data-media-shape="vertical"]:not([data-media-fit="fill"]) { max-width: min(100%, var(--pm-portrait, 360px)); }
+[data-page-media][data-media-fit="original"] .still,
+[data-media-layout="frame"][data-media-shape="vertical"][data-media-fit="default"] .still { aspect-ratio: var(--pm-ratio); }
+[data-page-media][data-media-fit="original"] img,
+[data-media-layout="frame"][data-media-shape="vertical"][data-media-fit="default"] img { width: 100%; height: auto; max-height: 760px; aspect-ratio: var(--pm-ratio); object-fit: contain; scale: 1; }
+/* Whole-image mode in a designed background keeps the frame and all text/actions, with no crop or distortion. */
+[data-media-layout="inset"][data-media-fit="original"] img,
+[data-media-layout="background"][data-media-fit="original"] img { width: 100%; height: 100%; max-height: none; position: absolute; inset: 0; aspect-ratio: auto; object-fit: contain; scale: 1; }
+[data-page-media][data-media-fit="fill"] img,
+[data-page-media][data-media-fit="fill"] video { object-fit: cover; scale: 1; }
+[data-media-layout="natural"][data-media-fit="fill"] img { height: auto; aspect-ratio: 4 / 3; }
+
+/* Ordinary portrait gallery photos use the file ratio, including 2:3 / 4:5 uploads. */
+.still--vertical { aspect-ratio: var(--photo-ratio, 9 / 16); }
+.gcard--vertical[data-kind="image"] .gcard__open { aspect-ratio: var(--photo-ratio, 9 / 16); }
+
+/* The three story cards keep aligned frames; a portrait remains visible in full inside its default frame. */
+.story-guide__fig[data-media-shape="vertical"][data-media-fit="default"] { max-width:none; }
+.story-guide__fig[data-media-shape="vertical"][data-media-fit="default"] .still { aspect-ratio:16 / 9; }
+.story-guide__fig[data-media-shape="vertical"][data-media-fit="default"] img { width:100%; height:100%; aspect-ratio:auto; object-fit:contain; }

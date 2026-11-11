@@ -96,8 +96,9 @@
       var a = get('src') ? this.props.getAsset(get('src')) : null;
       return h('div', { className: 'wrap', style: { paddingTop: '32px' } },
         get('published') ? null : h('p', { className: 'fn-draft' }, h('strong', {}, 'Hidden. '), 'This photo is left out of the live galleries.'),
+        a ? h('figure', { className:'dash-fig' },h('img',{src:a.toString(),alt:get('alt') || '',style:{height:'auto',objectFit:'contain',aspectRatio:'auto'}}),h('figcaption',{},'Full photo (uncropped)')) : null,
         h('div', { className: 'dash-cards' }, ['16 / 9', '4 / 3', '3 / 4'].map(function (r) {
-          return h('figure', { key: r, className: 'dash-fig' }, a ? h('img', { src: a.toString(), alt: get('alt') || '', style: { aspectRatio: r, objectFit: 'cover', objectPosition: FOCAL[get('focal')] || '50% 50%' } }) : null, h('figcaption', {}, 'Card crop ' + r));
+          return h('figure', { key: r, className: 'dash-fig' }, a ? h('img', { src: a.toString(), alt: get('alt') || '', style: { aspectRatio: r, objectFit: 'cover', objectPosition: focusCoordinates(get('focal')).x + '% ' + focusCoordinates(get('focal')).y + '%' } }) : null, h('figcaption', {}, 'Card crop ' + r));
         })),
         typeof get('caption') === 'string' && get('caption').trim() ? h('p', { className: 'photo-caption' }, get('caption').trim()) : null);
     },
@@ -222,7 +223,7 @@
               h('p', { className: 'pgk-gallery__count' }, 'The description is alt text for accessibility. Only the optional caption is displayed under the photo.'),
               h('label', {}, h('span', {}, 'Photo type for gallery filters'), h('select', { value: ph.photoType || 'photography', onChange: function (e) { self.update(i, 'photoType', e.target.value); } },
                 h('option', { value: 'photography' }, 'Photography'), h('option', { value: 'drone' }, 'Drone photography'))),
-              h('label', {}, h('span', {}, 'Focus when cropped'), h('select', { value: ph.focal || 'center', onChange: function (e) { self.update(i, 'focal', e.target.value); } }, FOCAL_OPTIONS.map(function (o) { return h('option', { key: o[0], value: o[0] }, o[1]); }))),
+              h(FocusEditor, { src: thumbFor(ph.image, self.props.getAsset, self.props.field), value: ph.focal, onChange: function (v) { self.update(i, 'focal', v); } }),
               h('p', { className: 'pgk-row__file' }, String(ph.image).split('/').pop() + (sz ? ' · ' + sz[0] + '×' + sz[1] + ' px' + (Math.max(sz[0], sz[1]) < 1200 ? ' · too small for the site (1,600 px or more)' : '') : ''))),
             h('div', { className: 'pgk-row__tools' },
               h('button', { type: 'button', className: 'pgk-icon', onClick: function () { self.move(i, -1); }, disabled: i === 0, 'aria-label': 'Move photo ' + (i + 1) + ' up' }, '↑'),
@@ -833,6 +834,47 @@
     },
   });
 
+  // The uncut source stays visible while choosing a point. The second view shows how a crop will look.
+  var focusCoordinates = function (value) {
+    var presets = { center: [50,50], top: [50,15], 'upper-third': [50,30], bottom: [50,85], left: [20,50], right: [80,50] };
+    if (value && value.toJS) value = value.toJS();
+    if (typeof value === 'string' && presets[value]) return { x: presets[value][0], y: presets[value][1] };
+    return value && typeof value.x === 'number' && typeof value.y === 'number' && isFinite(value.x) && isFinite(value.y) && value.x >= 0 && value.x <= 100 && value.y >= 0 && value.y <= 100 ? value : { x: 50, y: 50 };
+  };
+  var FocusEditor = createClass({
+    getInitialState: function () { return { ratio: '16 / 9', open: false }; },
+    choose: function (e) {
+      if (e.type === 'pointermove' && !(e.buttons & 1)) return;
+      if (e.type === 'pointerdown' && e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId);
+      var r = e.currentTarget.getBoundingClientRect();
+      this.props.onChange({ x: Math.round(Math.max(0, Math.min(100, (e.clientX-r.left)/r.width*100))), y: Math.round(Math.max(0, Math.min(100, (e.clientY-r.top)/r.height*100))) });
+    },
+    render: function () {
+      var self = this; var point = focusCoordinates(this.props.value); var position = point.x + '% ' + point.y + '%';
+      var toggle=h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-expanded':this.state.open,onClick:function(){self.setState({open:!self.state.open});}},'Adjust crop focus');
+      if(!this.state.open)return h('div',{className:'pgk-focus'},toggle);
+      return h('div', { className: 'pgk-focus' }, toggle,
+        h('p', { className: 'pgk-size-note' }, 'Click or drag the marker on the full photo, or use the sliders. A smaller vertical percentage keeps the top of the photo in view. This does not crop the original file.'),
+        this.props.src ? h('div', { className: 'pgk-focus__views' },
+          h('div', {}, h('p', {}, 'Full photo — choose the area to keep'),
+            h('div', { className: 'pgk-focus__source', onPointerDown: this.choose, onPointerMove: this.choose },
+              h('img', { src: this.props.src, alt: '', loading: 'lazy', draggable: false, onError: function (e) { retryCachedThumb(e.currentTarget); } }),
+              h('span', { className: 'pgk-focus__point', style: { left: point.x+'%', top: point.y+'%' }, 'aria-hidden': true }, '+'))),
+          h('div', {}, h('label', {}, h('span', {}, 'Preview crop'), h('select', { 'aria-label': 'Preview crop', value: this.state.ratio, onChange: function (e) { self.setState({ ratio: e.target.value }); } }, [['16 / 9','Wide (16:9)'],['4 / 3','Landscape (4:3)'],['1 / 1','Square'],['9 / 16','Portrait (9:16)']].map(function (o) { return h('option', { value:o[0], key:o[0] },o[1]); }))),
+            h('div', { className: 'pgk-focus__crop', style: { aspectRatio: this.state.ratio } }, h('img', { src: this.props.src, alt: 'Preview of the selected crop', loading:'lazy', style: { objectPosition: position } })))) : null,
+        ['x','y'].map(function (axis) { return h('label', { key: axis }, h('span', {}, (axis === 'x' ? 'Horizontal focus (left to right)' : 'Vertical focus (top to bottom)') + ' · ' + point[axis] + '%'),
+          h('input', { type: 'range', min:0, max:100, step:1, value: point[axis], 'aria-label': axis === 'x' ? 'Horizontal focus' : 'Vertical focus', onChange: function (e) { var next = {x:point.x,y:point.y}; next[axis]=Number(e.target.value); self.props.onChange(next); } })); }),
+        h('button', { type:'button', className:'pgk-btn pgk-btn--quiet', onClick:function () { self.props.onChange({x:50,y:50}); } }, 'Centre focus'));
+    },
+  });
+  var FocalControl = createClass({
+    render: function () { var self=this; var name=this.props.field.get('sourceField') || 'src'; var src=this.props.entry && this.props.entry.getIn(['data',name]);
+      return h(FocusEditor,{src: src ? thumbFor(src,this.props.getAsset,this.props.field) : null,value:this.props.value,onChange:function (v) { self.props.onChange(v); }});
+    },
+    isValid: function () { var v=this.props.value; if(v && v.toJS)v=v.toJS();return v == null || typeof v === 'string' && ['center','top','upper-third','bottom','left','right'].indexOf(v)>=0 || v && typeof v.x==='number' && typeof v.y==='number' && isFinite(v.x) && isFinite(v.y) && v.x>=0 && v.x<=100 && v.y>=0 && v.y<=100 ? true : { error:{type:'custom',message:'Choose a focal point between 0 and 100.'} }; },
+  });
+  CMS.registerWidget('pgk-focus', FocalControl);
+
   // One section of a page (a single item or a list): replace, add, reorder, take off the page. Never deletes anything.
   var SlotControl = createClass({
     getInitialState: function () { return { picking: null, busy: false, msgs: [] }; },
@@ -846,6 +888,8 @@
       if (arr.length > this.f('max')) errs.push('Choose no more than ' + this.f('max') + '.');
       arr.forEach(function (it, i) {
         var n = self.f('multiple') ? ' (item ' + (i + 1) + ')' : '';
+        if (it.fit != null && ['default','original','fill'].indexOf(it.fit)<0) errs.push('Choose a valid image fit' + n + '.');
+        if (it.focal != null && JSON.stringify(focusCoordinates(it.focal)) !== JSON.stringify(it.focal) && typeof it.focal !== 'string') errs.push('Choose a focal point between 0 and 100' + n + '.');
         if (it.size != null && ['default', 'small', 'medium', 'large'].indexOf(it.size) < 0) errs.push('Choose a valid display size' + n + '.');
         if (it.src && self.f('altMode') !== 'decorative' && !it.alt) errs.push('Describe the photo' + n + '.');
         var m = it.media ? mediaById[it.media] : null;
@@ -858,14 +902,14 @@
     pickDone: function (ids) {
       var arr = this.items(); var mode = this.state.picking;
       var add = ids.map(function (id) { return { media: id }; });
-      if (mode === 'add') arr = arr.concat(add); else if (typeof mode === 'number') arr[mode] = Object.assign({}, arr[mode].size ? { size: arr[mode].size } : {}, add[0]); else arr = add.slice(0, 1);
+      if (mode === 'add') arr = arr.concat(add); else if (typeof mode === 'number') arr[mode] = Object.assign({}, { size: arr[mode].size || 'default', fit: arr[mode].fit || 'default' }, add[0]); else arr = add.slice(0, 1);
       this.set(arr.slice(0, this.f('max'))); this.setState({ picking: null });
     },
     upload: function (e, index) {
       var self = this; var files = e.target.files; this.setState({ busy: true, msgs: [] });
       addFiles(this.props, files, this.props.field.get('label').split(':')[0]).then(function (r) {
         var arr = self.items(); var add = r.paths.map(function (p) { return { src: p, alt: '' }; });
-        if (typeof index === 'number') arr[index] = Object.assign({}, arr[index].size ? { size: arr[index].size } : {}, add[0]); else arr = self.f('multiple') ? arr.concat(add) : add.slice(0, 1);
+        if (typeof index === 'number') arr[index] = Object.assign({}, { size: arr[index].size || 'default', fit: arr[index].fit || 'default' }, add[0]); else arr = self.f('multiple') ? arr.concat(add) : add.slice(0, 1);
         self.set(arr.slice(0, self.f('max'))); self.setState({ busy: false, msgs: r.msgs });
       }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
       e.target.value = '';
@@ -887,11 +931,14 @@
             h(MediaThumb, { item: it }),
             h('div', { className: 'pgk-row__fields' },
               h(UsagePeek, { media: m }),
-              h('p', { className: 'pgk-row__title' }, h('strong', {}, name), ' ', h('span', {}, m ? [KIND_WORD[m.kind], m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.hidden ? 'hidden in the library: shown on the review site only, left out of the live site' : ''].filter(Boolean).join(' · ') : 'Photo file used only here')),
+              h('p', { className: 'pgk-row__title' }, h('strong', {}, name), ' ', h('span', {}, m ? [KIND_WORD[m.kind], m.orientation === 'vertical' ? 'Portrait' : 'Landscape', m.catLabel !== KIND_WORD[m.kind] ? m.catLabel : '', m.hidden ? 'hidden in the library: shown on the review site only, left out of the live site' : ''].filter(Boolean).join(' · ') : 'Photo file used only here')),
               it.src && self.f('altMode') !== 'decorative' ? h('label', {}, h('span', {}, 'Description (alt text)' + (it.alt ? '' : ' · needed')), h('input', { type: 'text', value: it.alt || '', onChange: function (e) { self.update(i, 'alt', e.target.value); } })) : null,
               self.f('labelled') && it.media && !(m && m.kind === 'photo') ? h('label', {}, h('span', {}, 'What a screen reader hears' + (it.label ? '' : ' · needed')), h('input', { type: 'text', value: it.label || '', placeholder: 'e.g. Beachfront estate film, muted excerpt', onChange: function (e) { self.update(i, 'label', e.target.value); } })) : null,
               h('label', {}, h('span', {}, 'Display size'), h('select', { 'aria-label': 'Display size', value: it.size || 'default', onChange: function (e) { self.update(i, 'size', e.target.value); } }, ['default', 'small', 'medium', 'large'].map(function (size) { return h('option', { key: size, value: size }, size === 'default' ? 'Default (designed layout)' : size.charAt(0).toUpperCase() + size.slice(1)); }))),
-              h('p', { className: 'pgk-size-note' }, 'Only this placement changes. Small, Medium and Large fit within its section; portraits keep their proportions. Backgrounds adjust the section height and may crop, but never stretch. Default restores the designed layout.'),
+              h('label', {}, h('span', {}, 'Image fit'), h('select', { 'aria-label':'Image fit', value:it.fit || 'default', onChange:function(e) { self.update(i,'fit',e.target.value); } },
+                h('option',{value:'default'},'Default (portrait photos keep their shape)'), h('option',{value:'original'},'Whole image (no crop)'), h('option',{value:'fill'},'Fill frame (crop)'))),
+              h(FocusEditor, { src: it.src ? thumbFor(it.src, self.props.getAsset, self.props.field) : m && (m.src || m.thumb), value:it.focal || m && m.focal, onChange:function(v) { self.update(i,'focal',v); } }),
+              h('p', { className: 'pgk-size-note' }, 'Size and crop affect only this placement. Whole image shows the complete photo. Fill frame preserves proportions and crops around your chosen focus. Backgrounds keep their designed frame unless Whole image is selected.'),
               h('div', { className: 'pgk-gallery__bar' },
                 h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: i }); } }, 'Replace from library'),
                 takesFiles(accepts) ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: self.state.busy, onClick: function () { self['in' + i].click(); } }, 'Replace with an upload') : null,
@@ -953,7 +1000,7 @@
     move: function (i, d) { var items = this.val().items.slice(); var j = i + d; if (j < 0 || j >= items.length) return; var x = items[i]; items[i] = items[j]; items[j] = x; this.setCustom(items); },
     thumb: function (id) { return this.byProject() ? h(ProjectThumb, { slug: id }) : h(MediaThumb, { item: { media: id } }); },
     title: function (id) { var x = this.byProject() ? projectById[id] : mediaById[id]; return x ? x.title : id; },
-    sub: function (id) { if (this.byProject()) { var p = projectById[id]; return p ? (p.hidden ? 'Draft project' : 'Project') : 'Not found'; } var m = mediaById[id]; return m ? [KIND_WORD[m.kind], m.catLabel, m.hidden ? 'hidden: review site only' : ''].filter(Boolean).join(' · ') : 'Not in the library any more'; },
+    sub: function (id) { if (this.byProject()) { var p = projectById[id]; return p ? (p.hidden ? 'Draft project' : 'Project') : 'Not found'; } var m = mediaById[id]; return m ? [KIND_WORD[m.kind], m.orientation === 'vertical' ? 'Portrait' : 'Landscape', m.catLabel, m.hidden ? 'hidden: review site only' : ''].filter(Boolean).join(' · ') : 'Not in the library any more'; },
     render: function () {
       var self = this; var v = this.val(); var accepts = this.f('accepts');
       // A single project (Commercial case study).
@@ -1457,7 +1504,7 @@
     '.pgk-section { border-top: 2px solid #c9d7d7; padding: 4px 0; color: #405656; } .pgk-section h2 { margin: 6px 0; font-size: 21px; font-weight: 650; } .pgk-section p:empty { display: none; } .pgk-section p { margin: 0; font-size: 14px; line-height: 1.5; }',
     '.pgk-organization input { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #c9ced6; border-radius: 5px; font: inherit; } .pgk-organization p { font-size: 13px; color: #5b6472; } .pgk-tags, .pgk-library-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; } .pgk-tags { margin-bottom: 8px; } .pgk-library-filters { padding: 10px 14px; } .pgk-library-filters select { padding: 8px; max-width: 100%; font: inherit; } .pgk-library-filters label { max-width: 100%; }',
     '.pgk-context { border-left: 3px solid #527575; background: #f4f8f7; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; } .pgk-context p { margin: 5px 0; } .pgk-usage { margin: 5px 0 10px; font-size: 13px; } .pgk-note details { margin-top: 12px; } .pgk-note summary { cursor: pointer; } .pgk-note input[type=number] { max-width: 160px; padding: 8px; }',
-    '.pgk-thumb { display: block; width: 160px; height: 110px; object-fit: cover; border-radius: 6px; background: #eef0f3; }',
+    '.pgk-thumb { display: block; width: 160px; height: 110px; object-fit: contain; border-radius: 6px; background: #eef0f3; }',
     '.pgk-thumb--empty, .pgk-thumb--missing { display: flex; align-items: center; justify-content: center; padding: 8px; font-size: 12px; line-height: 1.3; color: #5b6472; text-align: center; box-sizing: border-box; }',
     '.pgk-gallery__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }',
     '.pgk-gallery__count { font-size: 13px; color: #5b6472; }',
@@ -1487,10 +1534,10 @@
     '@media (max-width: 640px) { .pgk-statusbar { left: 12px; right: 12px; max-width: none; bottom: 52px; } }',
     '.pgk-statusbar p { margin: 0 0 6px; } .pgk-statusbar__held { color: #912018; }',
     'a.pgk-card--grid { display: flex !important; flex-direction: column; overflow: hidden; }',
-    'a.pgk-card--grid > .pgk-card-thumb { flex: 0 0 150px; display: block; width: 100%; height: 150px; margin: 0; object-fit: cover; border-radius: 5px 5px 0 0; background: #eef0f3; }',
+    'a.pgk-card--grid > .pgk-card-thumb { flex: 0 0 150px; display: block; width: 100%; height: 150px; margin: 0; object-fit: contain; border-radius: 5px 5px 0 0; background: #eef0f3; }',
     'a.pgk-card--grid > [class*="CardBody"] { flex: 1 1 auto; min-height: 0; }',
     'a.pgk-card--list { display: flex !important; align-items: center; gap: 14px; }',
-    'a.pgk-card--list > .pgk-card-thumb { flex: 0 0 72px; width: 72px; height: 54px; margin: 0; object-fit: cover; border-radius: 4px; background: #eef0f3; }',
+    'a.pgk-card--list > .pgk-card-thumb { flex: 0 0 72px; width: 72px; height: 54px; margin: 0; object-fit: contain; border-radius: 4px; background: #eef0f3; }',
     '.pgk-card-thumb--none, .pgk-card-thumb--broken { display: flex !important; align-items: center; justify-content: center; padding: 6px; box-sizing: border-box; color: #5b6472; font-size: 12px; line-height: 1.3; text-align: center; }',
     'a.pgk-card--list > .pgk-card-thumb--none { font-size: 10px; }',
     '.pgk-card-thumb--broken::after { content: "Preview not available yet"; }',
@@ -1512,6 +1559,7 @@
     '.pgk-film--failed { background: #fef3f2; color: #912018; } .pgk-film--waiting { background: #fffaeb; } .pgk-film__player { display: block; width: 100%; max-width: 480px; max-height: 360px; border-radius: 6px; background: #000; }',
     '.pgk-modal__inner { display: flex; flex-direction: column; min-height: 0; max-height: 90vh; } .pgk-modal__box--narrow { width: min(560px, 100%); } .pgk-modal__body { padding: 20px; overflow: auto; } .pgk-modal__body h2 { margin: 0 0 12px; font-size: 20px; }',
     '.pgk-modal__count, .pgk-modal__empty { margin: 0; padding: 8px 14px 0; font-size: 13px; color: #5b6472; } .pgk-modal__head select { font: inherit; padding: 8px; border: 1px solid #c9ced6; border-radius: 6px; }',
+    '.pgk-focus { margin: 10px 0; padding: 10px; border: 1px solid #c9ced6; border-radius: 6px; max-width: 100%; } .pgk-focus summary { cursor:pointer; font-weight:600; min-height:28px; } .pgk-focus__views { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:16px; margin:12px 0; align-items:start; } .pgk-focus__views p { font-size:12px; margin:0 0 8px; } .pgk-focus__source { position:relative; width:100%; max-width:180px; cursor:crosshair; touch-action:none; } .pgk-focus__source img { display:block; width:100%; height:auto; border-radius:3px; } .pgk-focus__point { position:absolute; transform:translate(-50%,-50%); display:grid !important; place-items:center; width:26px; height:26px; border:2px solid white; border-radius:50%; background:#176277; color:white !important; box-shadow:0 0 0 1px #176277; font-size:20px !important; pointer-events:none; } .pgk-focus__crop { position:relative; width:100%; max-width:280px; overflow:hidden; background:#eef0f3; } .pgk-focus__crop img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; } .pgk-row__fields { min-width:0; } .pgk-focus input[type=range] { padding:0; min-height:32px; accent-color:#176277; } @media(max-width:640px) { .pgk-focus__views { grid-template-columns:1fr; } }',
     '.pgk-pick .pgk-thumb { width: 100%; height: 100px; } .pgk-pick__meta { color: #5b6472 !important; }',
     '.pgk-files { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #dfe3e8; border-radius: 6px; } .pgk-files label { display: block; margin: 4px 0; }',
     '.pgk-confirm { display: block; margin: 0 0 12px; } .pgk-confirm span { display: block; margin-bottom: 6px; } .pgk-confirm input { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid #c9ced6; border-radius: 6px; }',

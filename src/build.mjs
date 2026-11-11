@@ -267,7 +267,7 @@ for (const f of await readdir(join(out, 'assets'))) {
     if (testOnly.has(m.project) || (!reviewMode && m.published === false)) continue;
     const thumb = m.type === 'image' ? small(m.src) : still(m) ? small(still(m)) : null;
     pickMedia.push({ id: m.id, kind: m.type === 'image' ? 'photo' : 'film', title: m.title || m.id, alt: m.alt || '', cat: m.category || '', catLabel: catName[m.category] || '', libraryFolder: m.libraryFolder || '', tags: Array.isArray(m.tags) ? m.tags : [],
-      thumb, frame: !thumb && m.src && /\.mp4$/.test(m.src) ? `${m.src}#t=${m.posterTime ?? 1}` : null, still: m.type === 'image' || !!m.poster,
+      orientation: m.orientation, width: m.width, height: m.height, focal: m.focal, src: m.type === 'image' ? m.src : still(m), thumb, frame: !thumb && m.src && /\.mp4$/.test(m.src) ? `${m.src}#t=${m.posterTime ?? 1}` : null, still: m.type === 'image' || !!m.poster,
       loop: loopIds.has(m.id), hero: pmLib.heroLoops.has(m.id), hidden: m.published === false, project: m.fromProject ? projTitle[m.project] || '' : '' });
   }
   const assetNames = new Set(work.media.map((m) => m.asset).filter(Boolean));

@@ -90,6 +90,7 @@ test('project photos become ordinary media records that inherit the project (dra
   assert.equal(out[0].id, 'shelter-island-house-great-room');
   assert.equal(out[1].id, 'shelter-island-house-great-room-2');
   assert.equal(out[0].orientation, 'vertical');
+  assert.equal(expandProjectPhotos(tmp,{...p,photos:[{...p.photos[0],orientation:'horizontal'}]})[0].orientation,'vertical','actual portrait dimensions override a stale landscape default');
   assert.equal(out[0].focal, 'top');
   assert.deepEqual(out[0].service, ['photography', 'drone']);
   assert.deepEqual(out[1].service, ['photography']);

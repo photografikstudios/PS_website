@@ -56,7 +56,7 @@ test('Page Media: the committed choices pass, and each rule refuses what it shou
   const work = await loadWork(root);
   const media = new Map(work.media.filter((m) => m.rights === 'approved').map((m) => [m.id, m]));
   const loops = new Set(Object.keys(assets.files).map((p) => p.match(/^\/v\/([\w-]+)-loop\.mp4$/)?.[1]).filter(Boolean));
-  const heroLoops = new Set([...loops].filter((id) => existsSync(join(root, 'static/images/hero', `${id}-phone.webp`))));
+  const heroLoops = new Set(Object.keys(heroStillMap(loops, media, fileExists)));
   const lib = { media, loops, heroLoops, fileExists };
   const pm = Object.fromEntries(await Promise.all(PAGES.map(async (p) => [p.file, await readJson(`content/page-media/${p.file}.json`)])));
   assert.deepEqual(checkPageMedia(pm, lib).errors, []);
@@ -68,6 +68,10 @@ test('Page Media: the committed choices pass, and each rule refuses what it shou
   assert.match(bad((x) => { x.home.hero = null; }), /cannot be empty/);
   for (const size of ['default','small','medium','large']) assert.equal(bad(x => { x.about.locationMedia.size = size; }), '', size);
   assert.match(bad(x => { x.about.locationMedia.size = 'huge'; }), /display size/);
+  assert.equal(bad(x=>{x.home.brandTile.focal={x:50,y:12};x.home.brandTile.fit='fill';}),'');
+  for(const focal of [{x:-1,y:50},{x:50,y:101},{x:'50',y:10},'url(evil)']) assert.match(bad(x=>{x.home.brandTile.focal=focal;}),/focal point/);
+  assert.match(bad(x=>{x.home.brandTile.fit='stretch';}),/image fit/);
+
   assert.match(bad((x) => { x.home.hero = { media: 'ph-dan-dan' }; }), /no moving background/);
   assert.match(bad((x) => { x['real-estate'].coverageFilm = { media: 're-hamptons-beachfront' }; }), /screen reader/);
   assert.match(bad((x) => { x['agency-partnerships'].hero = { src: x['agency-partnerships'].hero.src, alt: '' }; }), /describe the photo/);

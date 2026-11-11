@@ -24,5 +24,9 @@
     "photography",
     "team"
   ],
-  "_librarySourceDrive": "1caEyA-5Kd5uTFP1eduZo4U0APgCSnue0"
+  "_librarySourceDrive": "1caEyA-5Kd5uTFP1eduZo4U0APgCSnue0",
+  "focal": {
+    "x": 50,
+    "y": 5
+  }
 }

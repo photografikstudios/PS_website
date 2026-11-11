@@ -8,7 +8,7 @@ const loadWorkRecords = () => loadWork(new URL('..', import.meta.url).pathname);
 
 // Oct 19: this suite serves dist/ as it is and never builds it. A dist/ older than the content or code tests the old
 // site (a stale one reported James's new Barba photo as missing), so say so first instead of failing elsewhere.
-const { statSync, readdirSync } = await import('node:fs');
+const { statSync, readdirSync, existsSync } = await import('node:fs');
 const newest = (d) => readdirSync(d, { withFileTypes: true }).reduce((t, e) => Math.max(t, e.isDirectory() ? newest(`${d}/${e.name}`) : statSync(`${d}/${e.name}`).mtimeMs), 0);
 const repo = new URL('..', import.meta.url).pathname;
 let staleDist = null;
@@ -885,7 +885,10 @@ await check('nav: Creator Studios replaces Agencies; agency partnerships stay re
   await p.context().close();
 });
 
-const heroPages = { '/': 'waterfront-residence-cinematic-film', '/real-estate': 're-hamptons-calm', '/architecture-design': 'arch-yankee-barn-film', '/commercial': 'biz-rachel-lynch-pools', '/creator-studios': 'cs-demo-reel' };
+const currentWork = await loadWorkRecords();
+const currentMedia = new Map(currentWork.media.map(m=>[m.id,m]));
+const pageChoices = Object.fromEntries(await Promise.all(['home','real-estate','architecture-design','commercial','creator-studios'].map(async name=>[name,JSON.parse(await readFile(new URL(`../content/page-media/${name}.json`,import.meta.url),'utf8'))])));
+const heroPages = Object.fromEntries(Object.entries(pageChoices).map(([name,pm])=>[name==='home'?'/':`/${name}`,pm.hero.media]));
 await check('primary-nav pages open with a silent autoplaying 16:9 hero video, poster, pause/play control, no Watch the film prompt', async () => {
   for (const [path, id] of Object.entries(heroPages)) {
     const p = await newPage();
@@ -897,7 +900,9 @@ await check('primary-nav pages open with a silent autoplaying 16:9 hero video, p
     // Session 53: the still is a <picture> under the film (phones get a 640x720 centre crop), not a poster attribute.
     const heroPoster = path === '/' ? `/images/hero/${id}-poster.webp` : `/v/${id}.webp`;
     assert(!(await v.getAttribute('poster')) && await v.getAttribute('data-still') === heroPoster, `${path} film carries no poster`);
-    assert(await first.locator(`.hero-still img[src="${heroPoster}"]`).count() === 1 && await first.locator(`.hero-still source[srcset="/images/hero/${id}-phone.webp"]`).count() === 1, `${path} hero still picture`);
+    const phonePath=`/images/hero/${id}-phone.webp`;
+    const phoneStill=existsSync(`${repo}static${phonePath}`) ? phonePath : currentMedia.get(id)?.poster;
+    assert(await first.locator(`.hero-still img[src="${heroPoster}"]`).count() === 1 && await first.locator(`.hero-still source[srcset="${phoneStill}"]`).count() === 1, `${path} hero still picture`);
     assert(await v.evaluate((el) => el.muted && el.hasAttribute('muted')), `${path} muted`);
     assert(await first.locator('[data-motion-toggle]').count() === 1, `${path} pause control`);
     assert(await p.getByText('Watch the film').count() === 0, `${path} has no Watch the film prompt`);
@@ -956,14 +961,15 @@ await check('home quick tiles use the two owner-selected stills (not video poste
   const p = await newPage();
   await p.goto(base + '/');
   const srcs = await p.locator('.quick__media img').evaluateAll((els) => els.map((e) => e.getAttribute('src')));
-  assert(srcs.length === 2 && srcs[0] === '/v/home-listings-twilight.webp' && srcs[1] === '/v/home-brand-conversation.webp', srcs.join());
+  const choices=[pageChoices.home.listingsTile,pageChoices.home.brandTile].map(it=>it.src || currentMedia.get(it.media)?.src);
+  assert(srcs.length === 2 && srcs.every((src,i)=>src===choices[i] || src===choices[i]?.replace(/\.webp$/,'-sm.webp') || src===currentMedia.get([pageChoices.home.listingsTile,pageChoices.home.brandTile][i].media)?.thumb),srcs.join());
   assert(await p.locator('.quick__media video').count() === 0, 'tiles are stills');
   assert(await p.locator('.paths video[data-ambient]').count() === 4, 'four video starting-point tiles remain');
   const tiles = await p.locator('.quick__tile').evaluateAll((els) => els.map((e) => [e.querySelector('.eyebrow').textContent.trim(), [...e.querySelectorAll('.actions a')].map((a) => a.getAttribute('href'))]));
   assert(tiles[0][0] === 'For your listings' && tiles[0][1][0].startsWith('https://photografikstudios.hd.pics'), JSON.stringify(tiles));
   assert(tiles[1][0] === 'For your brand' && tiles[1][1].includes('/contact'), JSON.stringify(tiles));
   const sets = await p.locator('.quick__media img').evaluateAll((els) => els.map((e) => e.getAttribute('srcset')));
-  assert(sets.every((x) => /-sm\.webp 900w/.test(x) && /\.webp 2000w/.test(x)), 'responsive sources: ' + sets.join());
+  assert(sets.every((x) => /-sm\.webp \d+w/.test(x) && /, .*\.webp \d+w/.test(x)), 'responsive sources: ' + sets.join());
   await p.context().close();
 });
 

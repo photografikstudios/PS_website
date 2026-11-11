@@ -55,7 +55,7 @@ export function expandProjectPhotos(root, p) {
       id, type: 'image', project: p.slug, title: p.title,
       libraryFolder: p.libraryFolder || '', tags: Array.isArray(p.tags) ? [...p.tags] : [],
       service: ph.photoType === 'drone' ? ['photography', 'drone'] : ['photography'], category: p.category,
-      orientation: ph.orientation && ph.orientation !== 'auto' ? ph.orientation : size ? orientationOf(size) : 'horizontal',
+      orientation: size ? orientationOf(size) : ph.orientation && ph.orientation !== 'auto' ? ph.orientation : 'horizontal',
       src: ph.image, featured: false, rights: p.rights || 'pending', alt: ph.alt || null, location: p.location || null,
       ...(typeof ph.caption === 'string' && ph.caption.trim() ? { caption: ph.caption.trim() } : {}),
       client: p.client || null, source: 'upload', published: p.published !== false, packageIds: [], capturedYear: null,
@@ -80,6 +80,12 @@ export async function loadWork(root) {
   media.records = media.records.filter((m) => !importing.includes(m));
   // A replaced photo keeps no stale small version: the thumbnail belongs to this exact encoded still.
   for (const m of media.records) if (m.thumb && !(typeof m.src === 'string' && /^\/(?:v|images\/library)\/.+\.webp$/.test(m.src) && m.thumb === m.src.replace(/\.webp$/, '-sm.webp') && existsSync(staticFile(root, m.thumb) || ''))) delete m.thumb;
+  // A replacement upload's actual dimensions determine its shape. Stale form defaults must not turn a portrait
+  // into a landscape gallery item. No stored record, asset or gallery membership is changed here.
+  for (const m of media.records) if (m.type === 'image') {
+    const f = staticFile(root, m.src); const d = f && existsSync(f) ? imageSize(readFileSync(f)) : null;
+    if (d) { m.orientation = orientationOf(d); m.width = d.width; m.height = d.height; }
+  }
   for (const p of projects.records) {
     if (p.hero && (!p.heroOrientation || p.heroOrientation === 'auto')) {
       const f = staticFile(root, p.hero);

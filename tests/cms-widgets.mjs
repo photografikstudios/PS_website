@@ -117,6 +117,7 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); 
 const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
 // Routes added later win in Playwright, so the catch-all page goes first.
 await page.route('http://pgk.test/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' }));
+await page.route('**/v/ph-revivaluxe-portrait.webp*',async r=>r.fulfill({status:200,contentType:'image/webp',body:await readFile(join(root,'static/v/ph-revivaluxe-portrait.webp'))}));
 const manageCalls = []; let buildReply = { state: 'pending' }; const uploadsHead = '9'.repeat(40);
 await page.route('**/api/cms-manage', async (route) => {
   const b = JSON.parse(route.request().postData()); manageCalls.push(b);
@@ -826,6 +827,30 @@ await check('Phone width: Page Media rows fit without sideways scrolling', async
   assert.ok(over <= 0, 'overflow ' + over);
 });
 
+
+await check('Page Media focus: full portrait preview, pointer selection, keyboard refinement, fit and saved coordinates', async () => {
+  await page.setViewportSize({width:1280,height:900});
+  const field=await slotField('home','brandTile');
+  await page.evaluate(({field})=>{window.__focus=window.mountWidget('pgk-slot',{field,value:{media:'ph-revivaluxe-portrait',fit:'fill'},entry:{},collection:'page-media'});},{field});
+  const host=page.locator('.host-pgk-slot').last();
+  assert.equal(await host.locator('.pgk-thumb').first().evaluate(el=>getComputedStyle(el).objectFit),'contain','CMS never crops the source preview');
+  await host.getByRole('button',{name:'Adjust crop focus',exact:true}).click();
+  const source=host.locator('.pgk-focus__source');await source.scrollIntoViewIfNeeded();await source.locator('img').waitFor();
+  const rect=await source.boundingBox();assert.ok(rect.height>0);
+  await page.mouse.click(rect.x+rect.width*.5,rect.y+rect.height*.15);
+  await page.waitForTimeout(40);
+  let v=await page.evaluate(()=>window.__focus.state.value);
+  assert.ok(Math.abs(v.focal.x-50)<=1&&Math.abs(v.focal.y-15)<=1,JSON.stringify(v));
+  const horizontal=host.getByLabel('Horizontal focus',{exact:true});await horizontal.focus();await horizontal.press('Home');await horizontal.press('ArrowRight');
+  await page.waitForTimeout(40);v=await page.evaluate(()=>window.__focus.state.value);
+  assert.equal(v.focal.x,1,'native keyboard control persists a fine adjustment');
+  assert.equal(await host.locator('.pgk-focus__crop img').evaluate(el=>getComputedStyle(el).objectPosition),`1% ${v.focal.y}%`);
+  await host.getByLabel('Image fit',{exact:true}).selectOption('original');
+  const stored=await page.evaluate(()=>window.__focus.state.value);assert.equal(stored.fit,'original');
+  await page.evaluate(({field,stored})=>{window.__focus=window.mountWidget('pgk-slot',{field,value:JSON.parse(JSON.stringify(stored)),entry:{},collection:'page-media'});},{field,stored});
+  assert.deepEqual(await page.evaluate(()=>window.__focus.state.value),stored,'save/reload serialization retains coordinates and fit');
+  assert.equal(await page.evaluate(()=>window.__focus.instance.isValid()),true);
+});
 
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-390.png'), fullPage: true });
 await browser.close();

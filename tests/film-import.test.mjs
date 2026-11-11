@@ -170,6 +170,7 @@ test('replacing a film used as a moving background also makes its phone still, s
   const dir = await tempDir('pgk-film-hero-');
   for (const d of ['content', 'src', 'scripts', 'static', 'package.json']) await cp(join(root, d), join(dir, d), { recursive: true });
   const id = 're-hamptons-calm'; // the Real Estate hero and a Home path tile
+  const pagePath=join(dir,'content/page-media/real-estate.json'); const pageMedia=JSON.parse(await readFile(pagePath,'utf8'));pageMedia.hero={media:id};await writeFile(pagePath,JSON.stringify(pageMedia)); // isolate the fixture from owner CMS curation
   const drive = join(dir, 'drive'); await mkdir(drive);
   const link = 'QAheroReplaceAAAAAAAAAAAAAAAAA1';
   execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1920x1080:rate=25', '-t', '5', '-c:v', 'libx264', '-f', 'mp4', join(drive, link)]);

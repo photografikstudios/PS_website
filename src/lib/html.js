@@ -1,4 +1,6 @@
 // Small HTML helpers used by the page templates.
+import { focalPosition } from './focal.js';
+export { focalPosition } from './focal.js';
 
 export const esc = (s) => String(s ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -11,9 +13,7 @@ export const attrs = (o) => Object.entries(o)
 export const join = (arr, fn) => arr.map(fn).join('');
 
 // Focal point chosen in /admin for a cropped photo: which part stays in frame when a card crops it.
-const FOCAL = { top: '50% 15%', 'upper-third': '50% 30%', bottom: '50% 85%', left: '20% 50%', right: '80% 50%' };
-export const focalPosition = (f) => FOCAL[f] || null;
-export const focalAttr = (f) => (FOCAL[f] ? ` style="object-position: ${FOCAL[f]}"` : '');
+export const focalAttr = (f) => (focalPosition(f) ? ` style="object-position: ${focalPosition(f)}"` : '');
 
 // Portrait phones: hero films are cropped by object-fit: cover to well under 640 of their 1280 px width (hero aspect
 // stays below 0.89 when the viewport is narrower than 3:5, even with 78svh heroes and browser toolbars showing).
