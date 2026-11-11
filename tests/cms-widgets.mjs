@@ -712,6 +712,27 @@ await check('Page Media gallery: leave out on this page only, own selection with
   assert.deepEqual(await page.evaluate(() => window.__g2.state.value), { project: 'torella-pools' });
 });
 
+await check('Gallery library settings: hidden films have a direct activation path; Architecture removals stay excluded through reorder and re-add',async()=>{
+ const id=await page.evaluate(()=>window.PHOTOGRAFIK_MEDIA.find(m=>m.kind==='film'&&m.hidden).id);
+ const field=await slotField('architecture-design','selectedWork');
+ const value={mode:'custom',items:[{media:id},{media:'oct15-stair-install-reel-2-30s'},{media:'oct15-stair-install-horizontal-60s'}]};
+ await page.evaluate(({field,value})=>{window.__activation=window.mountWidget('pgk-gallery-slot',{field,value,entry:{slug:'architecture-design',data:{selectedWork:value}},collection:'pages'});},{field,value});
+ const host=page.locator('.host-pgk-gallery-slot').last(),row=host.locator('.pgk-row').first(),link=row.getByRole('link',{name:/^Open film settings/});
+ assert.equal(await link.getAttribute('href'),'#/collections/films/entries/'+encodeURIComponent(id));
+ assert.equal(await link.getAttribute('target'),'_blank','page edits remain open');
+ assert.match(await row.innerText(),/Hidden in library/);assert.match(await row.innerText(),/Turn on Show on site, then Save/);
+ await row.getByRole('button',{name:'Take off this page',exact:true}).click();await page.waitForTimeout(40);
+ let saved=await page.evaluate(()=>window.__activation.state.value);assert.ok(saved.exclude.includes(id));
+ await host.getByRole('button',{name:'Move item 2 up',exact:true}).click();await page.waitForTimeout(40);
+ saved=await page.evaluate(()=>window.__activation.state.value);assert.ok(saved.exclude.includes(id),'reorder keeps explicit page exclusion');
+ // Re-adding a locally excluded film clears that exclusion; it can take its place again.
+ await host.getByRole('button',{name:'Add from library',exact:true}).click();
+ await page.getByRole('dialog').last().getByRole('searchbox',{name:'Search the library',exact:true}).fill(await page.evaluate(id=>window.PHOTOGRAFIK_MEDIA.find(m=>m.id===id).title,id));
+ await page.getByRole('dialog').last().locator('.pgk-pick').first().click();await page.getByRole('dialog').last().getByRole('button',{name:'Add 1',exact:true}).click();await page.waitForTimeout(40);
+ saved=await page.evaluate(()=>window.__activation.state.value);assert.ok(saved.items.some(x=>x.media===id));assert.ok(!(saved.exclude||[]).includes(id));
+ await page.evaluate(()=>window.__activation.unmount());
+});
+
 
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-1280.png'), fullPage: true });
 await check('Uploaded files: an upload taken off every page is found, deleted only by its exact name, and Undo puts it back; Escape returns focus', async () => {

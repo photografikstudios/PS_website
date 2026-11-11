@@ -1,7 +1,7 @@
 {
   "type": "video",
   "title": "Stair Install Horizontal 60s",
-  "published": false,
+  "published": true,
   "drive": "https://drive.google.com/file/d/1QWznKsa3I28hVaPQuVThYTsqO1-sV4Aw/view?usp=drivesdk",
   "import": {
     "state": "ready",

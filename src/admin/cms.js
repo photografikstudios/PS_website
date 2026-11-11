@@ -996,11 +996,12 @@
     auto: function () { return GALLERIES[this.f('galleryKey')] || []; },
     // Same limit as the build (GALLERY_MAX in page-media-core.js). An empty own selection is allowed: nothing shows here.
     isValid: function () { var v = this.val(); return v && v.mode === 'custom' && (v.items || []).length > 400 ? { error: { type: 'custom', message: 'Choose no more than 400.' } } : true; },
-    setCustom: function (items) { this.props.onChange({ mode: 'custom', items: items }); },
+    refills: function () { return this.f('galleryKey') === 'architecture-design.selectedWork'; },
+    setCustom: function (items, exclude) { var next = { mode: 'custom', items: items }; var ex = exclude || (this.val() || {}).exclude || []; if (this.refills() && ex.length) next.exclude = ex; this.props.onChange(next); },
     move: function (i, d) { var items = this.val().items.slice(); var j = i + d; if (j < 0 || j >= items.length) return; var x = items[i]; items[i] = items[j]; items[j] = x; this.setCustom(items); },
     thumb: function (id) { return this.byProject() ? h(ProjectThumb, { slug: id }) : h(MediaThumb, { item: { media: id } }); },
     title: function (id) { var x = this.byProject() ? projectById[id] : mediaById[id]; return x ? x.title : id; },
-    sub: function (id) { if (this.byProject()) { var p = projectById[id]; return p ? (p.hidden ? 'Draft project' : 'Project') : 'Not found'; } var m = mediaById[id]; return m ? [KIND_WORD[m.kind], m.orientation === 'vertical' ? 'Portrait' : 'Landscape', m.catLabel, m.hidden ? 'hidden: review site only' : ''].filter(Boolean).join(' · ') : 'Not in the library any more'; },
+    sub: function (id) { if (this.byProject()) { var p = projectById[id]; return p ? (p.hidden ? 'Draft project' : 'Project') : 'Not found'; } var m = mediaById[id]; return m ? [KIND_WORD[m.kind], m.orientation === 'vertical' ? 'Portrait' : 'Landscape', m.catLabel, m.hidden ? 'Hidden in library' : ''].filter(Boolean).join(' · ') : 'Not in the library any more'; },
     render: function () {
       var self = this; var v = this.val(); var accepts = this.f('accepts');
       // A single project (Commercial case study).
@@ -1023,17 +1024,20 @@
         h(SlotContext, { field: this.props.field }),
         h('fieldset', { className: 'pgk-files' }, h('legend', {}, 'What this gallery shows'),
           radio('automatic', 'Automatic: ' + this.f('auto')),
-          radio('custom', 'My own selection and order (starts from what it shows now)')),
+          radio('custom', this.refills() ? 'My preferred selection and order (other matching work stays available)' : 'My own selection and order (starts from what it shows now)')),
         !custom && exclude.length ? h('p', { className: 'pgk-slot__kind' }, exclude.length + ' left out on this page only.') : null,
         h('ol', { className: 'pgk-gallery__list' }, shown.map(function (id, i) {
           var out = !custom && exclude.indexOf(id) >= 0;
           return h('li', { key: id + i, className: 'pgk-row' + (out ? ' pgk-row--out' : '') },
             self.thumb(id),
-            h('div', { className: 'pgk-row__fields' }, h('p', { className: 'pgk-row__title' }, h('strong', {}, self.title(id)), ' ', h('span', {}, out ? 'Left out on this page' : self.sub(id)))),
+            h('div', { className: 'pgk-row__fields' }, h('p', { className: 'pgk-row__title' }, h('strong', {}, self.title(id)), ' ', h('span', {}, out ? 'Left out on this page' : self.sub(id))),
+              !self.byProject() && mediaById[id] && ['film','photo'].includes(mediaById[id].kind) ? h('p', { className: 'pgk-library-settings' },
+                h('a', { href: '#/collections/' + (mediaById[id].kind === 'film' ? 'films' : 'photos') + '/entries/' + encodeURIComponent(id), target: '_blank', rel: 'noopener', 'aria-label': 'Open ' + mediaById[id].kind + ' settings for ' + self.title(id) }, mediaById[id].kind === 'film' ? 'Film settings ↗' : 'Photo settings ↗'),
+                mediaById[id].hidden ? ' — Turn on Show on site, then Save. This controls the library item across the website; keep this page open until its edits are saved.' : '') : null),
             h('div', { className: 'pgk-row__tools' },
               custom ? h('button', { type: 'button', className: 'pgk-icon', onClick: function () { self.move(i, -1); }, disabled: i === 0, 'aria-label': 'Move item ' + (i + 1) + ' up' }, '↑') : null,
               custom ? h('button', { type: 'button', className: 'pgk-icon', onClick: function () { self.move(i, 1); }, disabled: i === list.length - 1, 'aria-label': 'Move item ' + (i + 1) + ' down' }, '↓') : null,
-              custom ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () { var items = v.items.slice(); items.splice(i, 1); self.setCustom(items); } }, 'Take off this page')
+              custom ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () { var items = v.items.slice(); items.splice(i, 1); self.setCustom(items, self.refills() ? Array.from(new Set((v.exclude || []).concat([id]))) : undefined); } }, 'Take off this page')
                 : h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () {
                   var ex = out ? exclude.filter(function (x) { return x !== id; }) : exclude.concat([id]);
                   self.props.onChange(ex.length ? { mode: 'automatic', exclude: ex } : CLEARED);
@@ -1045,7 +1049,7 @@
         h('p', { className: 'pgk-slot__note' }, 'Changes here affect this page only. The library and every other page stay as they are.'),
         this.state.picking ? (this.byProject()
           ? h(ProjectPicker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (ids) { self.setCustom(v.items.concat(ids.filter(function (id) { return list.indexOf(id) < 0; }).map(function (id) { return self.item(id); }))); self.setState({ picking: false }); } })
-          : h(LibraryPicker, { accepts: accepts, multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (ids) { self.setCustom(v.items.concat(ids.filter(function (id) { return list.indexOf(id) < 0; }).map(function (id) { return self.item(id); }))); self.setState({ picking: false }); } })) : null);
+          : h(LibraryPicker, { accepts: accepts, multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (ids) { self.setCustom(v.items.concat(ids.filter(function (id) { return list.indexOf(id) < 0; }).map(function (id) { return self.item(id); })), (v.exclude || []).filter(function (id) { return ids.indexOf(id) < 0; })); self.setState({ picking: false }); } })) : null);
     },
   });
   CMS.registerWidget('pgk-gallery-slot', GallerySlot);

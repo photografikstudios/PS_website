@@ -1,7 +1,7 @@
 {
   "type": "video",
   "title": "Stair Install Reel 2 30s",
-  "published": false,
+  "published": true,
   "drive": "https://drive.google.com/file/d/1b7mr3BTjgyFC8VtQMXHJOQxqpG9ogLDK/view?usp=drivesdk",
   "import": {
     "state": "ready",

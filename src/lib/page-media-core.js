@@ -110,7 +110,7 @@ export const PAGES = [
       S('stepPlan', '“How it works”, 02 Plan: picture', 'still'),
       S('stepProduce', '“How it works”, 03 Produce: picture', 'still'),
       S('closing', 'Closing band: background photo', 'photo', { alt: 'decorative' }),
-      G('selectedWork', 'Selected work', 'gallery', { auto: 'One card per Architecture & Design project plus uncredited photos and films; the three photos chosen above are left out so nothing repeats.' }),
+      G('selectedWork', 'Selected work', 'gallery', { auto: 'All eligible Architecture & Design photos and films. Filters search the full collection, then show the first six matches. Project representatives lead for variety.' }),
     ],
     automatic: [
       ['“Project film” picture', 'The first film in Selected work.', '#/collections/films'],

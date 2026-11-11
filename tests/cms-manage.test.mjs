@@ -161,8 +161,8 @@ test('where-used: in-use items are protected, unused ones list only their own un
   // A photo used by page sections cannot be deleted; the answer names the sections.
   const used = whereUsed({ collection: 'photos', key: 'ph-clos-lighting' }, repo);
   assert.ok(used.blocking.some((b) => /Pages › Commercial: “What we do”, Recurring production/.test(b.text)), JSON.stringify(used.blocking));
-  // The replacement film is used in three sections; the replaced JM2 clip in none.
-  assert.equal(whereUsed({ collection: 'films', key: 'cs-podcast-ep23-short' }, repo).blocking.length, 3);
+  // The owner replaced Architecture's Brand story picture with a dining-room photo; the film retains two Home uses.
+  assert.equal(whereUsed({ collection: 'films', key: 'cs-podcast-ep23-short' }, repo).blocking.length, 2);
   assert.equal(whereUsed({ collection: 'films', key: 'cs-jm2-architecture' }, repo).blocking.length, 0);
   // An unused synthetic photo: its own upload can go with it.
   const qa = whereUsed({ collection: 'photos', key: 'qa-unused-photo' }, repo);
