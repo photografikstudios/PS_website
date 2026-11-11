@@ -22,7 +22,9 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
   const emptyTitle = empty.querySelector('.h3');
   const more = root.querySelector('.regallery__more button');
   // Phones get a shorter first batch so the page stays scannable.
-  const BATCH = matchMedia('(max-width: 620px)').matches ? Number(root.dataset.batchPhone) || 6 : Number(root.dataset.batch) || 9;
+  const fixedLimit = Number(root.dataset.fixedLimit) || 0;
+  const compactColumns = matchMedia('(max-width: 1000px)');
+  const BATCH = fixedLimit || (matchMedia('(max-width: 620px)').matches ? Number(root.dataset.batchPhone) || 6 : Number(root.dataset.batch) || 9);
 
   const params = new URLSearchParams(location.search);
   let mode = root.dataset.player === 'lightbox' ? 'lightbox' : 'inline';
@@ -107,6 +109,15 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     }
     const n = current.length;
     grid.dataset.shown = String(on.size);
+    // A short final row fills the available width, without placeholder tiles or unrelated media.
+    if (fixedLimit) {
+      const cols = compactColumns.matches ? 2 : 3;
+      const visible = cards.filter((card) => !card.hidden);
+      visible.forEach((card, i) => {
+        const rowSize = Math.min(cols, visible.length - Math.floor(i / cols) * cols);
+        card.style.gridColumn = `span ${6 / rowSize}`;
+      });
+    }
     count.textContent = n === 1 ? '1 result' : `${n} results`; // screen-reader only (visually hidden)
     empty.hidden = n > 0;
     if (!n) {
@@ -116,8 +127,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
         : f.seg ? `Nothing for ${lab('seg')}${typeWord} yet.` : 'Nothing matches this filter yet.';
     }
     const left = n - Math.min(shown, n);
-    more.hidden = left <= 0;
-    more.textContent = 'Load more';
+    if (more) { more.hidden = !!fixedLimit || left <= 0; more.textContent = 'Load more'; }
     resetBtn.hidden = !Object.values(f).some(Boolean);
     for (const sel of sels()) {
       const labels = labelsOf(sel);
@@ -144,7 +154,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     if (!sels().some((s) => KEYS[s.name] !== 'type') && typeSel) typeSel.value = '';
     shown = BATCH; render({ source: 'show_all' }); first()?.focus();
   });
-  more.addEventListener('click', () => {
+  more?.addEventListener('click', () => {
     const firstNew = current[shown];
     shown += BATCH;
     render({ push: false });
@@ -152,6 +162,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     root.querySelector(`.gcard[data-i="${firstNew}"] .gcard__open, .gcard[data-i="${firstNew}"] video`)?.focus?.();
     track('gallery_load_more', { where, shown: Math.min(shown, current.length) });
   });
+  if (fixedLimit) compactColumns.addEventListener('change', () => render({ push: false }));
 
   render({ push: false });
 }

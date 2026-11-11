@@ -17,8 +17,9 @@ import { loadWork, staticFile } from './lib/work-load.js';
 import { checkContent, holdDashboardProjects, applyReviewOnly, dashboardStatus } from './lib/content-check.js';
 import { imageSize } from './lib/image-size.js';
 import { structuredData } from './lib/seo-core.js';
-import { PAGES as PAGE_MEDIA, checkPageMedia, heroStillMap } from './lib/page-media-core.js';
-import { pageEditingModel, pageEditProblems } from './lib/page-editor-core.js';
+import { PAGES as PAGE_MEDIA, checkPageMedia, heroStillMap, itemProblem } from './lib/page-media-core.js';
+import { renderSectionMedia } from './lib/page-sections-render.js';
+import { pageEditingModel, pageEditProblems, sectionMediaGroups, sectionLayout, sectionInstanceValues, sectionHtmlParts, composePageSections, plain } from './lib/page-editor-core.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -147,16 +148,31 @@ const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal
 ctx.galleryAuto = {}; // filled by buildPages: what each gallery shows automatically today (for the dashboard)
 const pages = buildPages(ctx);
 const pageEditors = {};
-function preparePageEditors(pages, collect = false) {
+function preparePageEditors(pages, collect = false, variant = undefined) {
   for (const pg of PAGE_MEDIA) {
     const page = pages[pg.route]; if (!page) continue;
     const values = pageMedia[pg.file] || {};
     const model = pageEditingModel(page.body, pg, values);
+    model.sections = sectionMediaGroups(model.sections, pg.slots);
     const problems = pageEditProblems(values, model);
     if (problems.length) throw new Error(`Pages → ${pg.label}: ${problems.join(' ')}`);
     const baseSeo = page.seo || seo[pg.route] || seo['/'];
     page.seo = { ...baseSeo, ...(values._seo || {}) };
-    page.body = model.body;
+    const renderCopy = (instance, source) => {
+      const cloneValues = sectionInstanceValues(instance, values);
+      const check = checkPageMedia({...pageMedia,[pg.file]:cloneValues}, pmLib);
+      if(check.errors.length) throw new Error(check.errors.join(' '));
+      const raw = buildPages({...ctx,variant,pageMedia:{...pageMedia,[pg.file]:cloneValues},galleryAuto:{}})[pg.route];
+      const copied = pageEditingModel(raw.body,pg,cloneValues);
+      return sectionHtmlParts(copied.body).find(s=>s.key===source.key)?.html || source.html;
+    };
+    for(const section of sectionLayout(model,values)) if(section.type) {
+      const items=section.type==='gallery'?(section.items||[]):section.media?[section.media]:[];
+      for(const item of items){const error=itemProblem({accepts:'photoOrFilm'},item,pmLib);if(error)throw new Error(`Pages → ${pg.label}: ${error}`);}
+    }
+    page.body = composePageSections(model.body,model,values,renderCopy,(item,index)=>renderSectionMedia(ctx,item,index));
+    if(sectionLayout(model,values).some(s=>s.type&&['gallery','media','split'].includes(s.type)&&!s.hidden))page.scripts=[...new Set([...(page.scripts||[]),'sections.js'])];
+    if(page.faqs){const visibleCopy=plain(page.body.replace(/<[^>]*>/g,' ')).replace(/\s+/g,' ');page.faqs=page.faqs.filter(f=>visibleCopy.includes(f.q)&&visibleCopy.includes(f.a));}
     if (collect) pageEditors[pg.file] = { label: pg.label, route: pg.route, body: model.body, sections: model.sections, seo: baseSeo,
       reviews: pg.file === 'about' ? testimonials.reviews : undefined,
       faqs: pg.file === 'real-estate' ? editableFaqs : undefined };
@@ -186,7 +202,7 @@ for (const [route, page] of Object.entries(pages)) {
 // replacement left out and four slots swapped to approved Creator media. Not in the sitemap; review pages are noindex.
 if (reviewMode) {
   const variantPages = buildPages({ ...ctx, variant: { omitPendingReplacements: true } });
-  preparePageEditors(variantPages);
+  preparePageEditors(variantPages,false,{omitPendingReplacements:true});
   const note = '<div class="review-bar" role="note" style="background:#7a3b2a"><strong>Variant for James</strong> · Old podcast clips (JM2 Architecture, Noah Knows, The Tick) left out; four slots use approved Creator media. Compare with the live review pages.</div>';
   for (const route of ['/', '/creator-studios', '/creator-studios/sessions', '/architecture-design']) {
     const page = variantPages[route]; if (!page) continue;
@@ -304,7 +320,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_CMS_VERSION = ${safe(version)};\nwindow.PHOTOGRAFIK_PAGE_EDITORS = ${safe(pageEditors)};\nwindow.PHOTOGRAFIK_GALLERIES = ${safe(ctx.galleryAuto)};\nwindow.PHOTOGRAFIK_PROJECTS = ${safe(pickProjects)};\nwindow.PHOTOGRAFIK_MEDIA = ${safe(pickMedia)};\nwindow.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
   const editorCore = (await readFile(join(root, 'src/lib/page-editor-core.js'), 'utf8')).replace(/^export /gm, '');
-  await writeFile(join(out, 'admin/page-editing.js'), `(function(){${editorCore}\nwindow.PHOTOGRAFIK_EDITOR_CORE={pageEditProblems,safePageUrl,renderInline};})();`);
+  await writeFile(join(out, 'admin/page-editing.js'), `(function(){${editorCore}\nwindow.PHOTOGRAFIK_EDITOR_CORE={pageEditProblems,safePageUrl,renderInline,SECTION_LIBRARY,sectionMediaGroups,sectionLayout,newPageSection,duplicatePageSection,sectionInstanceValues,sectionCapabilities,composePageSections,renderNewSection,isolateSectionHtml};})();`);
   // The dashboard checks Page Media choices with the same rules as the build.
   await cp(join(root, 'src/lib/page-media-core.js'), join(out, 'admin/page-media-core.js'));
   await cp(join(root, 'src/admin/login.html'), join(out, 'admin/login.html'));

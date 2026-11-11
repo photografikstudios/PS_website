@@ -980,15 +980,16 @@ button.gcard__open:hover .sw-card__play { transform: scale(1.06); }
 .story-guide__fig .still { aspect-ratio: 16 / 9; display: block; position: relative; }
 .story-guide__fig img, .story-guide__fig video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .story-guide__fig figcaption { padding: 8px clamp(24px, 2.4vw, 36px) 0; }
-.regallery--arch .regallery__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.regallery--arch .regallery__grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.regallery--arch .gcard { grid-column: span 2; min-width: 0; }
 .gcard__title a { color: inherit; text-decoration: none; } .gcard__title a:hover, .gcard__title a:focus-visible { text-decoration: underline; }
 .gcard__go { color: inherit; white-space: nowrap; }
-@media (max-width: 1000px) { .regallery--arch .regallery__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1000px) { .regallery--arch .gcard { grid-column: span 3; } }
 @media (max-width: 800px) { .pair { grid-template-columns: 1fr; } .pair__media--sticky { position: static; } #why .why-list { grid-template-columns: 1fr; } }
-@media (max-width: 620px) { .regallery--arch .regallery__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; } .regallery--arch .gcard__sub { font-size: 12.5px; } }
+@media (max-width: 620px) { .regallery--arch .regallery__grid { gap: 16px 12px; } .regallery--arch .gcard__sub { font-size: 12.5px; } }
 .pair-fig figcaption a { display: inline-block; padding: 4px 0; min-height: 24px; }
 /* One filtered result on a phone uses a comfortable full column; several keep two compact columns. */
-@media (max-width: 620px) { .regallery--arch .regallery__grid[data-shown="1"] { grid-template-columns: minmax(0, 1fr); } .regallery--arch .regallery__grid[data-shown="1"] .gcard__title { font-size: 18px; } }
+@media (max-width: 620px) { .regallery--arch .regallery__grid[data-shown="1"] .gcard__title { font-size: 18px; } }
 
 /* James, Sep 28 2026: gallery tiles show the media only; project pages stay one click away in this plain list. */
 .gallery-projects { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 22px; margin-top: clamp(22px, 3vw, 34px); }
@@ -1314,3 +1315,6 @@ video[data-media-layout="natural"] { height: auto; }
 .story-guide__fig[data-media-shape="vertical"][data-media-fit="default"] { max-width:none; }
 .story-guide__fig[data-media-shape="vertical"][data-media-fit="default"] .still { aspect-ratio:16 / 9; }
 .story-guide__fig[data-media-shape="vertical"][data-media-fit="default"] img { width:100%; height:100%; aspect-ratio:auto; object-fit:contain; }
+
+/* Editable page sections reuse the site's typography, palette and spacing. */
+.page-section__wrap{display:grid;gap:30px}.page-section__wrap--wide{max-width:1500px}.page-section__text>p:last-child{margin-bottom:0}.page-section__split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(28px,5vw,80px)}.page-section__split--left .page-section__media{grid-column:1;grid-row:1}.page-section__split--left .page-section__text{grid-column:2;grid-row:1}.page-section__media{min-width:0}.page-section__asset{width:100%;margin-inline:auto}.page-section__asset img{display:block;width:100%;height:auto;object-fit:contain}.page-section__asset .vplayer{margin-inline:auto}.page-section__asset[data-media-shape=vertical]{max-width:440px}.page-section__asset[data-media-size=small]{max-width:320px}.page-section__asset[data-media-size=medium]{max-width:620px}.page-section__asset[data-media-size=large]{max-width:100%}.page-section__asset[data-media-fit=fill]{aspect-ratio:3/2;overflow:hidden}.page-section__asset[data-media-fit=fill]>a,.page-section__asset[data-media-fit=fill] img{height:100%;display:block;object-fit:cover;object-position:var(--pm-focus,50% 50%)}.page-section__gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}.page-section__gallery-item{min-width:0}.page-section__gallery .page-section__asset{max-width:100%}.page-section--cta .page-section__text{max-width:850px}.page-section-anchor{display:block;scroll-margin-top:100px}.page-section-viewer{border:0;padding:60px 70px 40px;width:min(96vw,1500px);height:94dvh;max-width:96vw;max-height:96dvh;background:#151c18;color:#fff;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:20px}.page-section-viewer[open]{display:grid}.page-section-viewer::backdrop{background:#000d}.page-section-viewer img{width:100%;height:100%;max-height:76dvh;object-fit:contain;grid-column:2;grid-row:1}.page-section-viewer button{border:1px solid #fff8;background:#1b2b22;color:white;padding:12px;font:inherit;cursor:pointer}.page-section-viewer [data-close]{position:absolute;top:10px;right:12px}.page-section-viewer [data-position]{position:absolute;bottom:0;left:50%;transform:translateX(-50%)}@media(max-width:700px){.page-section__split{grid-template-columns:minmax(0,1fr)}.page-section__split--left .page-section__media,.page-section__split--left .page-section__text{grid-column:auto;grid-row:auto}.page-section__split--left .page-section__media{order:-1}.page-section__gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.page-section-viewer{padding:60px 8px 40px;gap:6px}.page-section-viewer button{padding:8px}.page-section-viewer img{max-height:70dvh}}@media(max-width:420px){.page-section__gallery{grid-template-columns:minmax(0,1fr)}}

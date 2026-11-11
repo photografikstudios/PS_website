@@ -52,7 +52,7 @@ export function pageEditingModel(html, page, values={}) {
   const edits=[], model=[]; const copy=values._copy||{}, links=values._links||{}; const counts={};
   sections.forEach((sec,index)=>{
     const heading=all(sec).find(n=>/^h[1-3]$/.test(n.tag));
-    const base=sec.attrs.id||(sec.attrs['aria-labelledby']||'').replace(/-h$/,'')||(index===0?'top':(sec.attrs.class||'').split(/\s+/).filter(s=>!['section','section--tint','on-dark','section--ink','reveal'].includes(s))[0])||'section-'+(index+1);
+    const base=sec.attrs.id||(sec.attrs['aria-labelledby']||'').replace(/-h$/,'')||(index===0?'top':(sec.attrs.class||'').split(/\s+/).filter(s=>!['section','section--tint','on-dark','section--ink','reveal'].includes(s))[0])||'content-'+hash(heading?html.slice(heading.openEnd,heading.closeStart).replace(/\s+/g,' ').trim():sec.attrs['aria-label']||html.slice(sec.start,sec.openEnd));
     const count=counts[base]=(counts[base]||0)+1, key=base+(count>1?'-'+count:'');
     const group={key,label:index===0?'Top of page':shorten(heading?text(html,heading):sec.attrs['aria-label']||'Section '+(index+1)),fields:[],media:[],html:undefined};
     const descendants=all(sec);
@@ -90,6 +90,8 @@ export function pageEditingModel(html, page, values={}) {
     group.media=[...new Set(group.media)];model.push(group);
   });
   let body=html;for(const e of edits.sort((a,b)=>b.start-a.start))body=body.slice(0,e.start)+e.text+body.slice(e.end);
+  const parts=sectionHtmlParts(body);
+  for(const section of model){section.html=parts.find(p=>p.key===section.key)?.html||'';section.capabilities=sectionCapabilities(section);}
   return {body,sections:model};
 }
 export function pageEditProblems(values, model) {
@@ -107,5 +109,136 @@ export function pageEditProblems(values, model) {
   if(seo.title!=null&&(typeof seo.title!=='string'||!seo.title.trim()||seo.title.length>70))errors.push('SEO title must be 1–70 characters.');
   if(seo.description!=null&&(typeof seo.description!=='string'||!seo.description.trim()||seo.description.length>180))errors.push('Search description must be 1–180 characters.');
   if(seo.image&&!safePageUrl(seo.image))errors.push('Choose a valid social image.');
+  errors.push(...sectionLayoutProblems(values,model));
   return errors;
+}
+
+// Page section instances. Original sections retain their keys; copies own their text/media
+// snapshots. Removed entries stay in this list so Restore also works after Save/reload.
+export const SECTION_LIBRARY = [
+  {type:'text',label:'Text',description:'A heading, paragraphs and an optional button.'},
+  {type:'split',label:'Text + photo or video',description:'Text beside a photo or film; choose the media side.'},
+  {type:'media',label:'Photo or video',description:'A full photo or playable film, with an optional heading.'},
+  {type:'gallery',label:'Gallery',description:'Your own selection of photos and films, in your order.'},
+  {type:'cta',label:'Call to action',description:'A clear next step with a button.'},
+];
+const clone = (v) => v == null ? v : JSON.parse(JSON.stringify(v));
+export function sectionMediaGroups(sections, slots=[]) {
+  const groups=sections.map(s=>({...s,media:[...(s.media||[])]})),used=new Set(groups.flatMap(s=>s.media));
+  const fallbacks={teamMedia:'about-james',locationMedia:'about-purpose',studioMedia:'about-studio',clientVideo:'reviews',closing:'closing',selectedWork:'selected-work',portfolio:'portfolio',introMedia:'project-inquiry',hero:'top',caseStudy:'case-study',clientWork:'portfolio',examples:'portfolio',openingExamples:'cs-story',sessionOther:'sessions',askFirstMedia:'agency-ask',introPhoto:'approach',storyPhoto:'which-story',storyBrand:'which-story',detailPhoto:'why',designDetail:'arch-detail',stepTell:'how-it-works',stepPlan:'how-it-works',stepProduce:'how-it-works',listingsTile:'quick',brandTile:'quick',pathRealEstate:'paths',pathArchitecture:'paths',pathCommercial:'paths',pathCreator:'paths',coverageFilm:'re-coverage',featurePhotography:'re-coverage',featureVideo:'re-coverage',featureDrone:'re-coverage',featureFloorPlan:'re-coverage',featureTwilight:'re-coverage',featureAgent:'re-coverage',loopLuxury:'section--pricing',loopSignature:'section--pricing',loopSocial:'section--pricing',starterStills:'section--pricing',rowPhotography:'section--pricing',rowPhotoFloorPlan:'section--pricing',rowFloorPlan:'section--pricing',rowExteriorDrone:'section--pricing',rowTwilight:'section--pricing',whyFilm:'ac-why',shootDayPhoto:'ac-day',featureBrand:'com-value',featureFilm:'com-value',featureStudio:'com-value',featureRecurring:'com-value',agencyPhoto:'agencies',sessionPodcast:'sessions',sessionContent:'sessions',sessionMonthly:'sessions',spaceReel:'cs-space',formatPodcasts:'formats',formatMulticam:'formats',formatLongform:'formats',formatSolo:'formats',formatShort:'formats',formatPlanned:'formats',conversations:'cs-conv'};
+  for(const slot of slots) {
+    const name=slot.key||slot.name;if(used.has(name))continue;
+    let group=groups.find(s=>s.key===fallbacks[name]);
+    if(!group&&name==='selectedWork')group=groups.find(s=>s.key==='portfolio');
+    if(!group&&name==='closing')group=groups[groups.length-1];
+    if(group){group.media.push(name);used.add(name);}
+  }
+  return groups;
+}
+export function sectionCapabilities(section) {
+  const html=section.html||'',top=section.key==='top'||/<h1\b/i.test(html);
+  const form=/<form\b/i.test(html),pricing=/section--pricing|id="sqft"/.test(html),policy=section.key==='about-details';
+  const interactive=/data-showcase|data-gallery-items|data-work-gallery|data-tabs|class="[^"]*\b(?:faq|reviews|pgrid|case|client-logos)\b/.test(html);
+  return {move:!top,remove:!top&&!form&&!pricing&&!policy,duplicate:!top&&!form&&!pricing&&!policy&&!interactive,
+    reason:top?'The page opening stays first so the page keeps one main heading.':form?'The project form stays on this page.':pricing?'Keep one working pricing calculator.':policy?'Approved usage information stays available.':interactive?'This section uses shared or interactive content. Add a new gallery, media or text section for another block.':''};
+}
+export function sectionLayout(model, values={}) {
+  return Array.isArray(values._sections)?clone(values._sections):model.sections.map(s=>({id:s.key,source:s.key}));
+}
+export function sectionId() {return 'section-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);}
+export function newPageSection(type,id=sectionId()) {
+  if(!SECTION_LIBRARY.some(t=>t.type===type))throw new Error('Choose a section from the section library.');
+  return {id,type,title:'',body:'',theme:'light',width:'standard',side:'right',...(type==='gallery'?{items:[]}:{}),...(['split','media'].includes(type)?{media:null}:{}),...(type==='cta'?{button:{label:'Send a Project Brief',href:'/contact'}}:{})};
+}
+export function duplicatePageSection(instance, model, values={}, id=sectionId()) {
+  if(instance.type)return {...clone(instance),id,hidden:false};
+  const source=model.sections.find(s=>s.key===instance.source);
+  if(!source||!sectionCapabilities(source).duplicate)throw new Error('This section cannot be duplicated.');
+  if(instance.id!==instance.source)return {...clone(instance),id,hidden:false};
+  const copy={},links={},media={};
+  for(const f of source.fields){copy[f.key]=Object.prototype.hasOwnProperty.call(values._copy||{},f.key)?values._copy[f.key]:f.value;if(f.href)links[f.key]=(values._links||{})[f.key]||f.href;}
+  for(const k of source.media||[])media[k]=clone(values[k]??null);
+  return {id,source:instance.source,copy,links,media};
+}
+export function sectionInstanceValues(instance,values={}) {
+  return instance&&instance.source&&instance.id!==instance.source?{...values,...clone(instance.media||{}),_copy:{...(values._copy||{}),...(instance.copy||{})},_links:{...(values._links||{}),...(instance.links||{})}}:values;
+}
+export function sectionLayoutProblems(values,model) {
+  if(values._sections==null)return [];
+  if(!Array.isArray(values._sections))return ['The page section list is invalid.'];
+  const errors=[],ids=new Set(),native=new Map(model.sections.map(s=>[s.key,s]));
+  if(values._sections.length>50)errors.push('Use no more than 50 sections on one page, including removed sections.');
+  for(const [i,s] of values._sections.entries()) {
+    if(!s||typeof s!=='object'||Array.isArray(s)){errors.push('A section is invalid.');continue;}
+    if(!/^[a-zA-Z0-9][\w-]{0,99}$/.test(s.id||'')||ids.has(s.id))errors.push('Every section needs a unique identifier.');ids.add(s.id);
+    if(s.hidden!=null&&typeof s.hidden!=='boolean')errors.push('A removed-section setting is invalid.');
+    if(s.source) {
+      const source=native.get(s.source);if(!source){if(s.id!==s.source)errors.push('A source section has moved. Reload before saving.');continue;}
+      const caps=sectionCapabilities(source);
+      if(s.id!==s.source&&!caps.duplicate)errors.push('This shared or required section cannot be duplicated.');
+      if(s.id===s.source&&s.hidden&&!caps.remove)errors.push('This required section must stay on the page.');
+      if(s.id===s.source&&!caps.move&&i!==0)errors.push('The page opening must stay first.');
+      for(const [key,v] of Object.entries(s.copy||{}))if(!source.fields.some(f=>f.key===key)||typeof v!=='string'||!v.trim()||v.length>3000)errors.push('A duplicated text field is invalid.');
+      for(const [key,v] of Object.entries(s.links||{}))if(!source.fields.some(f=>f.key===key&&f.href)||!safePageUrl(v))errors.push('A duplicated link destination is invalid.');
+      for(const key of Object.keys(s.media||{}))if(!(source.media||[]).includes(key))errors.push('A duplicated media placement is invalid.');
+    } else {
+      if(!SECTION_LIBRARY.some(t=>t.type===s.type))errors.push('Choose a supported section type.');
+      for(const k of ['title','body','eyebrow'])if(s[k]!=null&&(typeof s[k]!=='string'||s[k].length>(k==='body'?5000:200)))errors.push('Keep section text within its field limit.');
+      if(!['light','tint','dark'].includes(s.theme||'light')||!['narrow','standard','wide'].includes(s.width||'standard')||!['left','right'].includes(s.side||'right'))errors.push('Choose a valid section appearance.');
+      if(!s.hidden&&['text','split','cta'].includes(s.type)&&!(s.title||'').trim()&&!(s.body||'').trim())errors.push('Add a heading or text to the new section.');
+      if(!s.hidden&&['split','media'].includes(s.type)&&!s.media)errors.push('Choose a photo or film for the new section.');
+      if(s.type==='gallery'&&(!Array.isArray(s.items)||s.items.length>24||(!s.hidden&&!s.items.length)))errors.push('Choose 1–24 gallery items.');
+      if(s.button&&(typeof s.button.label!=='string'||!s.button.label.trim()||s.button.label.length>100||!safePageUrl(s.button.href)))errors.push('Add button text and a valid destination.');
+      if(s.type==='cta'&&!s.button)errors.push('The call to action needs a button.');
+    }
+  }
+  for(const s of model.sections)if(!sectionCapabilities(s).remove&&!values._sections.some(x=>x&&x.id===s.key&&x.source===s.key&&!x.hidden))errors.push('Restore the required '+s.label+' section.');
+  return [...new Set(errors)];
+}
+export function sectionHtmlParts(body) {
+  const nodes=all(pageTree(body)).filter(n=>n.tag==='section'&&n.attrs['data-page-section']&&!ancestors(n).some(p=>p.tag==='section'));
+  return nodes.map(n=>({key:n.attrs['data-page-section'],start:n.start,end:n.end,html:body.slice(n.start,n.end)}));
+}
+export function isolateSectionHtml(html,id) {
+  const nodes=all(pageTree(html)),ids=new Map(nodes.filter(n=>n.attrs.id).map(n=>[n.attrs.id,n.attrs.id+'--'+id]));
+  const edits=[];
+  for(const n of nodes) {
+    const open=html.slice(n.start,n.openEnd);let next=open;
+    next=next.replace(/\b(id|for|aria-labelledby|aria-describedby|aria-controls|href)="([^"]*)"/g,(m,k,v)=>{
+      const prefix=k==='href'?'#':'';if(prefix&&!v.startsWith('#'))return m;
+      const parts=(prefix?v.slice(1):v).split(/\s+/).map(t=>ids.get(t)||t);return `${k}="${prefix}${parts.join(' ')}"`;
+    });
+    next=next.replace(/url\(#([^)]+)\)/g,(m,k)=>ids.has(k)?'url(#'+ids.get(k)+')':m);
+    if(next!==open)edits.push({start:n.start,end:n.openEnd,text:next});
+  }
+  let result=html;for(const e of edits.sort((a,b)=>b.start-a.start))result=result.slice(0,e.start)+e.text+result.slice(e.end);
+  return result.replace(/data-page-section="[^"]*"/,`data-page-section="${escape(id)}"`);
+}
+export function renderNewSection(s, renderMedia=(it)=>it&&it.src?`<img src="${escape(it.src)}" alt="${escape(it.alt||'')}">`:'') {
+  const theme=s.theme==='dark'?' section--ink on-dark':s.theme==='tint'?' section--tint':'';
+  const heading=s.title?`<h2 class="h2" id="${escape(s.id)}-heading">${renderInline(s.title,'')}</h2>`:'';
+  const body=(s.body||'').split(/\n\s*\n/).filter(x=>x.trim()).map(x=>`<p>${renderInline(x,'')}</p>`).join('');
+  const button=s.button?`<p class="actions"><a class="btn ${s.theme==='dark'?'btn--gold':'btn--solid'}" href="${escape(s.button.href)}" data-track="project_click" data-track-location="custom_section">${escape(s.button.label)}</a></p>`:'';
+  const writing=`<div class="page-section__text">${s.eyebrow?`<p class="eyebrow">${escape(s.eyebrow)}</p>`:''}${heading}${body}${button}</div>`;
+  let contents=writing;
+  if(s.type==='split')contents=`<div class="page-section__split${s.side==='left'?' page-section__split--left':''}">${writing}<div class="page-section__media">${renderMedia(s.media,0)}</div></div>`;
+  if(s.type==='media')contents=writing+`<div class="page-section__media">${renderMedia(s.media,0)}</div>`;
+  if(s.type==='gallery')contents=writing+`<div class="page-section__gallery">${(s.items||[]).map((it,i)=>`<div class="page-section__gallery-item">${renderMedia(it,i)}</div>`).join('')}</div>`;
+  return `<section class="section page-section page-section--${escape(s.type)}${theme}" id="${escape(s.id)}" data-page-section="${escape(s.id)}"${s.title?` aria-labelledby="${escape(s.id)}-heading"`:''}><div class="wrap page-section__wrap${s.width==='narrow'?' narrow':s.width==='wide'?' page-section__wrap--wide':''}">${contents}</div></section>`;
+}
+export function composePageSections(body,model,values={},renderCopy=(instance,source)=>source.html,renderMedia, options={}) {
+  if(values._sections==null)return body;
+  const errors=options.draft?[]:sectionLayoutProblems(values,model);if(errors.length)throw new Error(errors.join(' '));
+  const parts=sectionHtmlParts(body);if(!parts.length)return body;
+  const sources=new Map(model.sections.map(s=>[s.key,s]));
+  const chunks=sectionLayout(model,values).map(instance=>{
+    const source=instance.source&&sources.get(instance.source);
+    if(instance.hidden){if(!source||instance.id!==instance.source)return '';const nodes=all(pageTree(source.html));return nodes.filter(n=>n.attrs.id&&(/^(?:section|h[1-6])$/.test(n.tag))).map(n=>`<span id="${escape(n.attrs.id)}" class="page-section-anchor" aria-hidden="true"></span>`).join('');}
+    if(instance.source&&!source)return '';
+    if(instance.type)return renderNewSection(instance,renderMedia);
+    return instance.id===instance.source?source.html:isolateSectionHtml(renderCopy(instance,source),instance.id);
+  });
+  // Non-section content is kept once; native template sections are replaced only when a layout was saved.
+  const gaps=parts.slice(0,-1).map((p,i)=>body.slice(p.end,parts[i+1].start)).filter(s=>s.trim()).join('');
+  return body.slice(0,parts[0].start)+chunks.join('\n')+gaps+body.slice(parts[parts.length-1].end);
 }

@@ -299,7 +299,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         name: pg.file, label: pg.label, file: `content/page-media/${pg.file}.json`, preview_path: pg.route,
         fields: [
           { name: '_page', label: 'Page editor', widget: 'pgk-page', required: false, pageFile: pg.file, pageLabel: pg.label, route: pg.route, slots, automatic: pg.automatic || [], media_folder: '/static/images/library', public_folder: '/images/library' },
-          ...['_about', '_copy', '_links', '_seo', '_reviews', '_faqs', ...slots.map(s => s.name)].map(name => ({ name, widget: 'hidden', required: false })),
+          ...['_about', '_copy', '_links', '_seo', '_reviews', '_faqs', '_sections', ...slots.map(s => s.name)].map(name => ({ name, widget: 'hidden', required: false })),
         ],
       };
     }),

@@ -887,39 +887,41 @@ ${agentMonthly.length ? `<section class="section section--tint">
     // James, Sep 29 2026 (Vercel comment): no caption beneath these photos; each keeps its alt text.
     return `<figure class="pair-fig ${cls}"${pmAttrs(it)} data-media="${esc(m.id)}"><div class="still still--${m.orientation}">${img(m.src, { alt: m.alt || m.title, thumb: m.thumb, sizes })}</div></figure>`;
   };
-  // Gallery (Home Selected Work style, same work.json collection): ONE item per project (its lead asset; the rest stay
-  // on the project page) plus approved work without a verified project. Segments come from the project, never a house name.
+  // A varied opening set, then the complete eligible collection. Filters search the full pool before taking six;
+  // otherwise a discipline with many photos could be limited to its handful of project representatives.
+  // Segments come from the verified project, never a house name.
   const archProjects = work.projects.filter((p) => p.category === 'architecture-design' && visible(p) && !testOnly.has(p.slug))
     .map((p) => ({ p, rep: repOf(archMedia.filter((m) => m.project === p.slug)) })).filter((x) => x.rep);
-  // A project with both a film and photos gets a film-led card (All + Video) and a still-led card (Photo only), so each
-  // filtered view shows the project once, with the same project-page destination (Codex review of 8184566).
   const archEntries = [];
+  const archSeen = new Set();
+  const addArch = (m) => { if (m && !archSeen.has(m.id)) { archSeen.add(m.id); archEntries.push({ m }); } };
   for (const x of archProjects) {
     const pm = archMedia.filter((m) => m.project === x.p.slug && !archUsed.has(m.id) && (m.type !== 'video' || m.poster));
     const lead = pm.includes(x.rep) ? x.rep : repOf(pm);
     if (!lead) continue;
-    const still = lead.type === 'video' ? [...pm.filter((m) => m.type === 'image')].sort((u, v) => (v.orientation === 'horizontal') - (u.orientation === 'horizontal') || (v.sortPriority || 0) - (u.sortPriority || 0))[0] : null;
-    archEntries.push({ m: lead, views: still ? ['', 'video'] : null });
-    if (still) archEntries.push({ m: still, views: ['photo'] });
+    addArch(lead);
   }
-  for (const m of editorialOrder(archMedia.filter((m) => !m.project || !projectBySlug[m.project] || !visible(projectBySlug[m.project]))).sort((x, y) => (y.type === 'video') - (x.type === 'video'))) {
-    if (!archUsed.has(m.id) && (m.type !== 'video' || m.poster)) archEntries.push({ m, views: null });
-  }
-  { const chosen = curate('architecture-design', 'selectedWork', archEntries, media.filter((m) => m.type !== 'video' || m.poster).map((m) => ({ m, views: null })), (e) => e.m.id);
-    archEntries.splice(0, archEntries.length, ...chosen); }
+  for (const m of editorialOrder(archMedia.filter((m) => m.type !== 'video' || m.poster))) addArch(m);
+  { const automatic = archEntries.slice(), excluded = new Set(PM['architecture-design']?.selectedWork?.exclude || []);
+    const chosen = curate('architecture-design', 'selectedWork', automatic, automatic, (e) => e.m.id);
+    const seen = new Set(chosen.map(e => e.m.id)), ordered = [...chosen, ...automatic.filter(e => !seen.has(e.m.id) && !excluded.has(e.m.id))];
+    // The CMS selection leads the order; the rest remains available to filters. Keep the opening project mix varied,
+    // including older custom selections that listed a film and its photo-only representative beside each other.
+    const projects = new Set(), leads = [], rest = [];
+    for (const e of ordered) { const key = e.m.project || e.m.id; if(projects.has(key))rest.push(e);else{projects.add(key);leads.push(e);} }
+    archEntries.splice(0, archEntries.length, ...leads, ...rest); }
   const archGallery = archEntries.map((e) => e.m);
-  const archFacts = archEntries.map((e) => facts(e.m, segmentsOf(e.m, projectBySlug), e.views || undefined));
+  const archFacts = archEntries.map((e) => facts(e.m, segmentsOf(e.m, projectBySlug)));
   const segOptions = (work.taxonomy.segment || []);
   const segCounts = optionCounts(archFacts, { type: '' }, 'seg', ['', ...segOptions.map((x) => x.id)]);
   const segLive = segOptions.filter((x) => segCounts[x.id] > 0);
   const archTypes = TYPE_FILTERS.filter((t) => t.id !== 'drone');
   const archTypeCounts = optionCounts(archFacts, { seg: '' }, 'type', archTypes.map((t) => t.id));
   const archVideo = archGallery.find((m) => m.type === 'video');
-  const archCard = (m, i, views) => {
+  const archCard = (m, i) => {
     const pr = m.project && projectBySlug[m.project] && visible(projectBySlug[m.project]) ? projectBySlug[m.project] : null;
     const kind = m.type === 'video' ? 'video' : 'image';
-    // Photo-only variants start hidden so no project appears twice before the script runs.
-    return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" style="--photo-ratio:${m.width || 9}/${m.height || 16}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${views ? ` data-views="${esc(views.join(' '))}"` : ''}${views && !views.includes('') ? ' hidden' : ''}>
+    return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" style="--photo-ratio:${m.width || 9}/${m.height || 16}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${i >= 6 ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${kind === 'video' ? 'Play' : 'View'} ${esc(pr ? (pr.client || pr.title) : m.title)}">
         <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
         ${kind === 'video' ? playIcon : ''}
@@ -976,7 +978,7 @@ ${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby
   </div>
 </section>
 
-<section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-photo-lightbox data-batch="8" data-batch-phone="6">
+<section class="section section--ink on-dark regallery regallery--arch" id="portfolio" aria-labelledby="ag-h" data-regallery data-where="architecture" data-player="inline" data-photo-lightbox data-fixed-limit="6">
   <div class="wrap">
     <div class="section-head"><div><p class="eyebrow">Selected work</p><h2 class="h2 reveal" id="ag-h">Recent projects, <em>by discipline.</em></h2></div></div>
     <form class="filters filters--inline" data-rg-filters aria-label="Filter architecture and design work" onsubmit="return false">
@@ -988,13 +990,12 @@ ${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby
     </form>
     <p class="filters__count sr-only" id="ag-count" aria-live="polite">${archFacts.filter((f) => !f.views || f.views.includes('')).length} results</p>
     <p class="regallery__note">Explore project photography and film. Choose a discipline or media type.</p>
-    <div class="regallery__grid" id="ag-grid">${join(archEntries, (e, i) => archCard(e.m, i, e.views))}</div>
+    <div class="regallery__grid" id="ag-grid">${join(archEntries, (e, i) => archCard(e.m, i))}</div>
     <div class="empty" id="ag-empty" hidden>
       <p class="h3" id="ag-empty-title">Nothing matches this filter yet.</p>
       <p>Try another discipline or media type, or ask us for examples like your project.</p>
       <p><button type="button" class="btn btn--gold" data-rg-show-all>Show all work</button></p>
     </div>
-    <div class="regallery__more"><button type="button" class="btn btn--light" id="ag-more" hidden>Load more</button></div>
     <nav class="gallery-projects" aria-label="Architecture and design projects"><span class="gallery-projects__label">Projects</span>${join(archProjects.map((x) => x.p), (p) => `<a href="${projectPath(p)}" data-track="project_click" data-track-location="arch_gallery">${esc(p.client || p.title)}</a>`)}</nav>
   </div>
   ${lightboxDialog()}
@@ -1173,7 +1174,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     </div>
   </div>
 </section>
-<section class="section section--tint">
+<section class="section section--tint" id="agency-ask">
   <div class="wrap narrow">
     <p class="eyebrow">What we ask first</p>
     <h2 class="h2 reveal">So we can quote accurately.</h2>
@@ -1583,7 +1584,7 @@ ${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('ab
     <p class="lede">Use this for architecture, commercial, agency, content and custom production. Tell us what needs to be created, where it will be used and when you need it. We'll follow up with scope, timing and a clear next step. Booking a standard listing? <a href="${booking}" data-track="book_click" data-track-location="contact_intro">Book a Shoot directly</a>.</p>
   </div>
 </section>
-<section class="section">
+<section class="section" id="project-inquiry">
   <div class="wrap narrow">${pmExtra(pmv('contact', 'introMedia'))}
     <form class="form" id="inquiry" novalidate action="/api/inquiry" method="post">
       <p class="form__req"><span aria-hidden="true">*</span> Required</p>

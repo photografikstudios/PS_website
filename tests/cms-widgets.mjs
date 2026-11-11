@@ -169,7 +169,7 @@ const slotField = async (file, key) => {
   return cfg.collections.find((c) => c.name === 'pages').files.find((f) => f.name === file).fields.find(x=>x.name==='_page').slots.find((x) => x.name === key);
 };
 const results = [];
-const check = async (name, fn) => { console.log('… ' + name); try { await fn(); results.push(['ok', name]); } catch (e) { results.push(['FAIL', name, e.message.slice(0, 900)]); } };
+const check = async (name, fn) => { if(process.env.CMS_TEST_FILTER&&!name.includes(process.env.CMS_TEST_FILTER))return; console.log('… ' + name); try { await fn(); results.push(['ok', name]); } catch (e) { results.push(['FAIL', name, e.message.slice(0, 900)]); } };
 const valid = (cls) => page.evaluate((c) => { const m = window.__mounts?.[c]; return null; }, cls);
 
 await check('registered widgets', async () => {
@@ -915,6 +915,59 @@ await check('Pages workspace: search controls, client reviews and FAQs are avail
   await faqHost.locator('fieldset').nth(originalFaqCount).waitFor({state:'detached'});
   assert.equal(await faqHost.locator('fieldset').count(),originalFaqCount,'removing a question preserves the other answers');
   await page.evaluate(()=>window.__workspace.unmount());
+});
+
+await check('Sections: add, duplicate independently, move, remove, undo and restore survive the canonical page save',async()=>{
+ await page.setViewportSize({width:1500,height:1000});
+ const data=await pm('about'),field=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='about').fields.find(f=>f.name==='_page'));
+ await page.evaluate(({field,data})=>{window.__sections=window.mountWidget('pgk-page',{field,entry:{slug:'about',data},collection:'pages'});},{field,data});
+ const host=page.locator('.host-pgk-page').last();
+ await host.getByRole('button',{name:'Add section',exact:true}).click();
+ await page.getByRole('dialog',{name:'Add a section',exact:true}).getByRole('button',{name:/^Text A heading/}).click();
+ await host.getByLabel('Section heading',{exact:true}).fill('Independent new section');
+ await host.getByLabel('Section text',{exact:true}).fill('Useful new copy for this page.');
+ let layout=await page.evaluate(()=>window.__sections.state.value._sections);const added=layout.find(s=>s.type==='text');assert.ok(added);
+ await host.getByRole('button',{name:'Duplicate section',exact:true}).click();
+ await page.waitForFunction(id=>{const x=window.__sections.instance.instance();return x&&x.id!==id;},added.id);
+ await host.getByLabel('Section heading',{exact:true}).fill('Independent copy');
+ layout=await page.evaluate(()=>window.__sections.state.value._sections);assert.equal(layout.find(s=>s.id===added.id).title,'Independent new section');
+ const copied=layout.find(s=>s.title==='Independent copy');assert.ok(copied&&copied.id!==added.id);
+ await host.getByRole('button',{name:'Move section down',exact:true}).click();
+ await host.getByLabel('Section text',{exact:true}).fill('Text edited after moving.');
+ await host.getByRole('button',{name:'Undo section change',exact:true}).click();
+ await host.getByRole('button',{name:new RegExp('Independent copy')}).click();
+ await host.getByLabel('Section text',{exact:true}).waitFor();assert.equal(await host.getByLabel('Section text',{exact:true}).inputValue(),'Text edited after moving.','undoing order preserves later text edits');
+ await host.getByRole('button',{name:'Remove section',exact:true}).click();
+ layout=await page.evaluate(()=>window.__sections.state.value._sections);assert.equal(layout.find(s=>s.id===copied.id).hidden,true);
+ await host.getByRole('button',{name:'Undo section change',exact:true}).click();
+ layout=await page.evaluate(()=>window.__sections.state.value._sections);assert.equal(!!layout.find(s=>s.id===copied.id).hidden,false);
+ // Remove once more, save, reopen, and restore from the persistent removal bin.
+ await host.getByRole('button',{name:new RegExp('Independent copy')}).click();
+ await host.getByRole('button',{name:'Remove section',exact:true}).click();
+ const saved=await page.evaluate(({data})=>{const value=window.__sections.state.value;return window.__events.preSave({entry:window.__wrapForTest({slug:'about',data:{...data,_page:value}})}).toJS();},{data});
+ assert.equal(saved._page,undefined);assert.ok(saved._sections.find(s=>s.id===copied.id).hidden);
+ await page.evaluate(({field,saved})=>{window.__sections.unmount();window.__sections=window.mountWidget('pgk-page',{field,entry:{slug:'about',data:saved},collection:'pages'});},{field,saved});
+ const reopened=page.locator('.host-pgk-page').last();await reopened.locator('.pgk-removed-sections summary').click();
+ await reopened.getByRole('button',{name:'Restore Independent copy',exact:true}).click();
+ await reopened.getByLabel('Section heading',{exact:true}).waitFor();assert.equal(await reopened.getByLabel('Section heading',{exact:true}).inputValue(),'Independent copy');
+ assert.equal(await page.evaluate(()=>window.__sections.instance.isValid()),true);
+ await page.evaluate(()=>window.__sections.unmount());
+});
+
+await check('Sections: native duplicate snapshot edits its own media, and required sections stay protected',async()=>{
+ const data=await pm('about'),field=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='about').fields.find(f=>f.name==='_page'));
+ await page.evaluate(({field,data})=>{window.__sections=window.mountWidget('pgk-page',{field,entry:{slug:'about',data},collection:'pages'});},{field,data});
+ const host=page.locator('.host-pgk-page').last();assert.equal(await host.getByRole('button',{name:'Remove section',exact:true}).isDisabled(),true);
+ await host.getByRole('button',{name:/02 You did great work/}).click();await page.waitForFunction(()=>window.__sections.instance.instance()?.source==='about-purpose');await host.getByRole('button',{name:'Duplicate section',exact:true}).click();await page.waitForFunction(()=>{const i=window.__sections.instance.instance();return i&&i.id!==i.source;});
+ await host.getByLabel('Display size',{exact:true}).selectOption('large');
+ await page.waitForTimeout(40);let value=await page.evaluate(()=>window.__sections.state.value);const copy=value._sections.find(s=>s.id!==s.source&&s.source==='about-purpose');
+ assert.equal(copy.media.locationMedia.size,'large');assert.deepEqual(value.locationMedia,data.locationMedia,'source media is unchanged');
+ await host.getByRole('button',{name:'Whole page',exact:true}).click();await page.waitForTimeout(80);
+ await page.waitForFunction(()=>{const d=document.querySelector('.host-pgk-page:last-of-type iframe')?.contentDocument;return d&&[...d.querySelectorAll('[data-page-section]')].filter(e=>d.defaultView.getComputedStyle(e).display!=='none').length>2;});
+ const visibleSections=await host.locator('iframe').evaluate(f=>[...f.contentDocument.querySelectorAll('[data-page-section]')].filter(e=>f.contentWindow.getComputedStyle(e).display!=='none').length);
+ assert.ok(visibleSections>2,'Whole page displays more than the selected section');
+ await page.setViewportSize({width:390,height:844});await page.waitForTimeout(60);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'section tools fit phone width');
+ await page.evaluate(()=>window.__sections.unmount());
 });
 
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-390.png'), fullPage: true });

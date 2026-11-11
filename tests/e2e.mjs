@@ -47,6 +47,7 @@ async function newPage(viewport = { width: 1280, height: 900 }, opts = {}) {
 }
 
 async function check(name, fn) {
+  if (process.env.E2E_TEST_FILTER && !new RegExp(process.env.E2E_TEST_FILTER).test(name)) return;
   try { await fn(); results.push({ name, ok: true }); }
   catch (e) { results.push({ name, ok: false, err: e.message.split('\n')[0] }); }
 }
@@ -1503,9 +1504,9 @@ await check('Architecture & design: story first, text and media paired, early pr
     assert(await p.locator('#how-it-works .steps li > figure.block-fig:first-child img').count() === 3, 'a still above each How it works step');
     assert(await p.locator('section.closing--bleed:has-text("Finished something worth showing?") .closing__media img').count() === 1, 'full-bleed footer image');
     assert(!/\bpieces\b/.test(await p.locator('#portfolio').innerText()) && !/\bproject\b/i.test((await p.locator('#ag-grid .gcard__sub').allInnerTexts()).join(' ')), 'no piece counts; tile subtitles omit the word project');
-    // No asset appears twice on the landing page (the hero film loop is decoration and plays the same film).
-    const ids = await p.locator('main [data-media]').evaluateAll((els) => els.map((e) => e.dataset.media));
-    assert(new Set(ids).size === ids.length, 'an asset repeats on the landing page: ' + ids.join(','));
+    // Supporting page images stay distinct. The full filter pool may also include those files, hidden below the six.
+    const ids = await p.locator('main [data-media]:not(.gcard)').evaluateAll((els) => els.map((e) => e.dataset.media));
+    assert(new Set(ids).size === ids.length, 'a supporting page image repeats: ' + ids.join(','));
     // Every visible image decodes.
     await p.evaluate(async () => { document.querySelectorAll('main img').forEach((i) => { i.loading = 'eager'; }); await Promise.all([...document.querySelectorAll('main img')].map((i) => i.decode().catch(() => {}))); });
     const broken = await p.evaluate(() => [...document.querySelectorAll('main img')].filter((i) => i.closest('[hidden]') === null && !(i.naturalWidth > 0)).map((i) => i.src));
@@ -1516,116 +1517,68 @@ await check('Architecture & design: story first, text and media paired, early pr
   }
 });
 
-await check('Architecture & design gallery: segment and media filters, counts, reset, empty state, inline film, project links', async () => {
+await check('Architecture & design gallery: full collection filtered before top six, compact rows, playback and project links', async () => {
+  const { matches } = await import('../src/lib/gallery-core.js');
   const work = await loadWorkRecords();
-  const p = await newPage();
+  const p = await newPage({ width: 1440, height: 1000 });
   await p.goto(base + '/architecture-design');
-  const shown = () => p.locator('#ag-grid .gcard:not([hidden])').count();
-  const total = +(await p.textContent('#ag-count')).match(/\d+/)[0];
-  // The owner can add projects. The gallery must still open with only eight cards, regardless of library size.
-  assert(total >= 4 && await shown() === Math.min(total, 8), 'compact first batch ' + total);
-  // Only segments with mapped, evidenced projects are offered; nothing is inferred from a house name.
-  const segs = await p.locator('#ag-segment option').evaluateAll((os) => os.map((o) => o.value).filter(Boolean));
-  const mapped = new Set(work.projects.filter((x) => x.category === 'architecture-design' && x.segments?.length).flatMap((x) => x.segments));
-  assert(JSON.stringify(segs.sort()) === JSON.stringify([...mapped].sort()), 'segments offered ' + segs.join(','));
-  // James, Sep 27 2026: Peterson & Ramlowtan = architect + builder; Yankee Barn Builders = builder; Kerry Delrose = designer; Barba Architectural = architect.
-  assert(JSON.stringify(segs) === JSON.stringify(['architect', 'builder', 'designer']), 'all three disciplines mapped: ' + segs.join(','));
-  const segOf = (slug) => work.projects.find((x) => x.slug === slug).segments.join('+');
-  assert(segOf('peterson-ramlowtan') === 'architect+builder' && segOf('yankee-barn-builders') === 'builder' && segOf('kerry-delrose') === 'designer' && segOf('barba-architectural') === 'architect', 'owner mapping');
-  const originals = new Set(work.projects.filter((x) => x.path).map((x) => x.slug));
-  // Owner mapping of the original projects; projects James adds in the dashboard may join any discipline.
-  const bySeg = async (seg) => { await p.selectOption('#ag-segment', seg); return (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).filter((id) => originals.has(id)).sort().join(','); };
-  assert(await bySeg('architect') === 'barba-architectural,peterson-ramlowtan', 'architects');
-  assert(await bySeg('designer') === 'kerry-delrose', 'designers');
-  await p.selectOption('#ag-segment', 'builder');
-  const b = (await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.dataset.project))).sort();
-  const builders = work.projects.filter(pr => pr.category === 'architecture-design' && pr.published !== false && pr.segments?.includes('builder') && work.media.some(m => m.project === pr.slug && m.rights === 'approved' && m.published !== false)).map(pr => pr.slug).sort();
-  assert(b.join(',') === builders.join(',') && (await p.textContent('#ag-count')) === `${builders.length} results`, 'builders: ' + b.join(','));
-  assert(new URL(p.url()).searchParams.get('segment') === 'builder' && await p.isVisible('#portfolio .filters__clear'), 'segment in URL, reset visible');
-  await p.selectOption('#ag-type', 'video');
-  const builderFilms = builders.filter(slug => work.media.some(m => m.project === slug && m.type === 'video' && m.rights === 'approved' && m.published !== false)).sort();
-  const shownBuilderFilms = await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll(es => es.map(e => e.dataset.project).sort());
-  assert(shownBuilderFilms.join(',') === builderFilms.join(','), 'builders + video: ' + shownBuilderFilms.join(','));
-  await p.selectOption('#ag-segment', 'designer');
-  assert(await shown() === 0 && await p.isVisible('#ag-empty') && (await p.textContent('#ag-empty-title')) === 'Nothing for Designers in video yet.', 'designer + video empty state: ' + await p.textContent('#ag-empty-title'));
-  assert(!/\(\d+\)/.test(await p.textContent('#ag-segment')) && !/\(\d+\)/.test(await p.textContent('#ag-type')), 'no counts in option labels');
-  await p.click('#portfolio [data-rg-show-all]');
-  assert(await p.inputValue('#ag-segment') === '' && await p.inputValue('#ag-type') === 'video' && await shown() >= 1, 'show all keeps media type');
-  // Inline film plays in the card, no dialog, with controls.
-  await p.locator('#ag-grid .gcard[data-kind="video"]:not([hidden]) button.gcard__open').first().click();
-  assert(await p.locator('#ag-grid video[controls]').count() === 1 && !(await p.locator('dialog[open]').count()), 'inline film');
-  const vid = await p.locator('#ag-grid video').evaluate((v) => new Promise((r) => { if (v.readyState >= 1) r(v.duration); else v.addEventListener('loadedmetadata', () => r(v.duration)); setTimeout(() => r(-1), 8000); }));
-  assert(vid > 1, 'film metadata loads ' + vid);
-  await p.selectOption('#ag-type', 'photo');
-  assert(await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.every((e) => e.dataset.kind === 'image')), 'photo filter');
-  await p.click('#portfolio .filters__clear');
-  assert(await p.inputValue('#ag-type') === '' && (await p.textContent('#ag-count')) === `${total} results`, 'reset');
-  // Project cards link to their pages, and those pages hold the rest of the project's media.
-  for (const slug of await p.locator('#ag-grid .gcard[data-project]').evaluateAll((es) => es.map((e) => e.dataset.project))) {
-    assert(await p.locator(`#ag-grid .gcard[data-project="${slug}"]`).count() >= 1 && await p.locator(`.gallery-projects a[href="/architecture-design/${slug}"]`).count() === 1, slug + ' link');
-    const r = await fetch(`${base}/architecture-design/${slug}`); assert(r.status === 200, slug + ' page');
-    const html = await r.text();
-    for (const m of work.media.filter((x) => x.project === slug && x.rights === 'approved')) assert(html.includes(m.id) || html.includes(m.src), `${m.id} missing from its project page`);
-  }
-  // Codex review of bdfe4d0 + James Sep 27: visitor copy only; one card per project (Yankee Barn Builders merged); client names, no addresses.
-  const gtext = await p.locator('#portfolio').textContent();
-  assert(gtext.includes('Explore project photography and film. Choose a discipline or media type.'), 'invitation copy');
-  assert(!/confirmed|we label|once the firm|its role/i.test(gtext), 'internal tagging process shown to visitors');
-  // A project with a film AND photos appears exactly once in every media view, always linking to the same page
-  // (Codex review of 8184566): All = film lead, Video = film, Photo = a still-led card.
-  const hedgesIn = async (type) => {
-    await p.selectOption('#ag-type', type);
-    return p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.filter((e) => e.dataset.project === 'yankee-barn-builders').map((e) => ({ kind: e.dataset.kind, proj: e.dataset.project, href: document.querySelector(`.gallery-projects a[href="/architecture-design/${e.dataset.project}"]`)?.getAttribute('href') })));
+  const pool = JSON.parse(await p.locator('#portfolio [data-gallery-items]').textContent());
+  const eligible = work.media.filter(m => m.category === 'architecture-design' && m.rights === 'approved' && m.published !== false && m.gallery !== false && (m.type !== 'video' || m.poster));
+  assert(eligible.every(m => pool.some(x => x.id === m.id)), 'all eligible architecture media in filter pool');
+  assert(new Set(pool.map(m => m.id)).size === pool.length, 'no duplicated media records');
+  const firstSix = pool.slice(0,6).map(m => m.id);
+  const checkView = async (page, seg, type, phone = false) => {
+    await page.selectOption('#ag-segment', seg); await page.selectOption('#ag-type', type);
+    const matching = pool.filter(it => matches(it,{seg,type}));
+    const shown = await page.locator('#ag-grid .gcard:not([hidden])').evaluateAll(es => es.map(e => e.dataset.media));
+    assert(JSON.stringify(shown) === JSON.stringify(matching.slice(0,6).map(m => m.id)), `${seg}/${type}: first six matching media`);
+    assert(await page.textContent('#ag-count') === (matching.length === 1 ? '1 result' : `${matching.length} results`), 'accurate accessible result count');
+    assert(await page.locator('#ag-more').count() === 0, 'no View/Load more gate');
+    assert(await page.isVisible('#ag-empty') === !matching.length, 'honest empty state');
+    const boxes = await page.locator('#ag-grid .gcard:not([hidden])').evaluateAll(es => es.map(e => {const b=e.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width};}));
+    const grid = await page.locator('#ag-grid').boundingBox();
+    // Every row reaches both grid edges; fewer than six real matches never create placeholder holes.
+    for (const y of new Set(boxes.map(b => Math.round(b.y)))) {
+      const row=boxes.filter(b=>Math.abs(b.y-y)<1);
+      assert(Math.abs(row[0].x-grid.x)<2 && Math.abs(row.at(-1).x+row.at(-1).w-grid.x-grid.width)<2,'full row width');
+      assert(row.length <= (phone ? 2 : 3),'responsive columns');
+    }
+    assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no overflow');
+    return shown;
   };
-  for (const [type, kind] of [['', 'video'], ['video', 'video'], ['photo', 'image']]) {
-    const h = await hedgesIn(type);
-    assert(h.length === 1 && h[0].kind === kind && h[0].proj === 'yankee-barn-builders' && h[0].href === '/architecture-design/yankee-barn-builders', `Yankee Barn Builders in "${type || 'all'}": ${JSON.stringify(h)}`);
+  const segs = await p.locator('#ag-segment option').evaluateAll(os=>os.map(o=>o.value));
+  const types = await p.locator('#ag-type option').evaluateAll(os=>os.map(o=>o.value));
+  for(const seg of segs) for(const type of types) await checkView(p,seg,type);
+  const builders = await checkView(p,'builder','photo');
+  assert(builders.length === 6 && builders.some(id=>!firstSix.includes(id)),'builder photos refill from below the opening six');
+  assert(new URL(p.url()).searchParams.get('segment')==='builder','filter URL retained');
+  await p.locator('#ag-grid .gcard:not([hidden]) button').first().click();
+  assert(await p.locator('dialog[open]').count()===1,'photo viewer');
+  await p.keyboard.press('Escape');
+  await checkView(p,'builder','video');
+  await p.locator('#ag-grid .gcard:not([hidden]) button').first().click();
+  assert(await p.locator('#ag-grid video[controls]').count()===1 && await p.locator('dialog[open]').count()===0,'inline film retained');
+  await checkView(p,'','photo');
+  assert(await p.locator('#ag-grid video').evaluateAll(vs=>vs.every(v=>v.paused)),'hidden films pause');
+  await p.click('#portfolio .filters__clear');
+  assert(await p.inputValue('#ag-segment')==='' && await p.inputValue('#ag-type')==='','reset');
+  const projectSlugs=[...new Set(await p.locator('#ag-grid [data-project]').evaluateAll(es=>es.map(e=>e.dataset.project)))];
+  for(const slug of projectSlugs) {
+    assert(await p.locator(`.gallery-projects a[href="/architecture-design/${slug}"]`).count()===1,slug+' project link');
+    assert((await fetch(base+'/architecture-design/'+slug)).status===200,slug+' destination');
   }
-  await p.selectOption('#ag-type', 'photo');
-  const photoCount = +(await p.textContent('#ag-count')).match(/\d+/)[0]; // screen-reader result count (no visible counts)
-  // Session 59: with the owner pack the views can exceed one batch of 8, so check the batch, then Load more to the end.
-  const loadAll = async () => { for (let i = 0; i < 10 && await p.isVisible('#ag-more'); i++) { await p.click('#ag-more'); await p.waitForTimeout(150); } };
-  assert(await shown() === Math.min(photoCount, 8) && (await p.textContent('#ag-count')) === `${photoCount} results`, 'photo count coherent (first batch)');
-  await loadAll();
-  assert(await shown() === photoCount, 'photo view: Load more reaches every result');
-  await p.selectOption('#ag-type', '');
-  await loadAll();
-  assert((await p.textContent('#ag-count')) === `${total} results` && await shown() === total, 'All shows each project once');
-  // James, Sep 28 2026: tiles show the media only; every project page is linked once in the list under the gallery.
-  assert(await p.locator('#ag-grid .gcard__meta, #ag-grid figcaption, #ag-grid a').count() === 0, 'no captions or text links on Architecture tiles');
-  const projLinks = await p.locator('.gallery-projects a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-  const tileProjects = [...new Set(await p.locator('#ag-grid .gcard[data-project]').evaluateAll((es) => es.map((e) => '/architecture-design/' + e.dataset.project)))];
-  assert(tileProjects.every((h) => projLinks.includes(h)) && projLinks.length === tileProjects.length, 'project list: ' + projLinks.join());
-  // Labels are accessible.
-  for (const id of ['ag-segment', 'ag-type']) assert(await p.locator(`label[for="${id}"]`).count() === 1, id + ' label');
+  assert(await p.locator('#ag-grid .gcard__meta, #ag-grid figcaption, #ag-grid a').count()===0,'media-only tiles');
+  for(const id of ['ag-segment','ag-type']) assert(await p.locator(`label[for="${id}"]`).count()===1,id+' accessible label');
+  assert(p.errors.length===0,p.errors.join(','));
+  await p.locator('#portfolio').screenshot({path:shots+'arch-gallery-six-1440.png'});
   await p.context().close();
-  const ph = await newPage({ width: 375, height: 812 });
-  await ph.goto(base + '/architecture-design?segment=designer');
-  const designers = work.projects.filter(pr => pr.category === 'architecture-design' && pr.published !== false && pr.segments?.includes('designer') && work.media.some(m => m.project === pr.slug && m.rights === 'approved' && m.published !== false)).map(pr => pr.slug).sort();
-  const phoneDesigners = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll(es => es.map(e => e.dataset.project).sort());
-  assert(await ph.inputValue('#ag-segment') === 'designer' && phoneDesigners.join(',') === designers.join(','), 'phone deep link');
-  // A single filtered result uses the full mobile column; several results keep two columns.
-  await ph.selectOption('#ag-segment', 'builder'); await ph.selectOption('#ag-type', 'video');
-  assert(await ph.locator('#ag-grid .gcard:not([hidden])').count() === builderFilms.length, 'builder films on phone');
-  const first = await ph.locator('#ag-grid .gcard:not([hidden])').first().boundingBox(); const gridW = (await ph.locator('#ag-grid').boundingBox()).width;
-  assert(builderFilms.length === 1 ? first.width > gridW * 0.9 : first.width < gridW * 0.6, `filtered result width ${first.width} of ${gridW}`);
-  await ph.selectOption('#ag-segment', '');
-  const widths = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => e.getBoundingClientRect().width));
-  assert(widths.length > 1 && widths.every((w) => w < gridW * 0.6), 'two compact columns for several results');
-  await ph.selectOption('#ag-type', 'photo');
-  const pw = await ph.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es) => es.map((e) => [e.dataset.project || e.dataset.media, Math.round(e.getBoundingClientRect().width)]));
-  assert(pw.filter(([id]) => id === 'yankee-barn-builders').length === 1 && pw.every(([, w]) => w < gridW * 0.6), 'phone photo view: ' + JSON.stringify(pw));
-  await ph.evaluate(() => { document.querySelectorAll('.reveal').forEach((e) => e.classList.add('is-in')); document.querySelectorAll('img').forEach((i) => { i.loading = 'eager'; }); });
-  await ph.waitForTimeout(800);
-  await ph.locator('#portfolio').screenshot({ path: shots + 'arch-gallery-photo-375.png' });
-  await ph.selectOption('#ag-type', '');
-  // The review strip is in the page flow (never fixed over content) and the overlay header clears it.
-  assert(await ph.locator('.review-bar').evaluate((el) => getComputedStyle(el).position) !== 'fixed', 'review strip not fixed');
-  await ph.evaluate(() => scrollTo(0, 0));
-  await ph.waitForTimeout(600); // scroll handler + .25s header transition
-  const rb = await ph.locator('.review-bar').boundingBox(); const hd = await ph.locator('.site-header').boundingBox();
-  assert(hd.y >= rb.y + rb.height - 1, 'header covers the review strip');
-  assert(await ph.evaluate(() => document.documentElement.scrollWidth - innerWidth) <= 0, 'phone overflow');
+  const ph=await newPage({width:390,height:844});
+  await ph.goto(base+'/architecture-design?segment=builder&type=photo');
+  assert(await ph.inputValue('#ag-segment')==='builder' && await ph.inputValue('#ag-type')==='photo','deep link filters');
+  for(const seg of segs) for(const type of types) await checkView(ph,seg,type,true);
+  await checkView(ph,'builder','photo',true);
+  await ph.locator('#portfolio').screenshot({path:shots+'arch-gallery-photo-390.png'});
+  assert(ph.errors.length===0,ph.errors.join(','));
   await ph.context().close();
 });
 

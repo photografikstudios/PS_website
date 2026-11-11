@@ -2,14 +2,24 @@
 
 Open `/admin#/collections/pages`. Choose Home, About or another page. The former Page Text and Page Media screens are now one **Pages** workspace; old Page Media bookmarks open the matching page.
 
-1. Choose a section in **On this page**. Sections follow the website's order.
+1. Choose a section in **On this page**. Sections follow the website's saved order.
 2. Edit its labels, headings, paragraphs and button text beside its media. Bold and Italic format the selected text. Existing links and tracking are retained; editable buttons have a destination field.
 3. Choose or upload a photo, select a film, set size/fit/focus, or arrange that page's gallery in the same section. Reusable files still belong to the Photo/Film library; taking a placement off the page does not delete its source.
-4. Use Desktop or Phone in **Section preview**. This is an unsaved section preview. Gallery order is shown in its thumbnails; review the finished page after saving. New source photo files are not cropped or stretched.
+4. Use Desktop or Phone in **Section preview**, or choose **Whole page** to check the complete unsaved arrangement. Gallery order is shown in its thumbnails; review the finished page after saving. New source photo files are not cropped or stretched.
 5. **Save once** for the page's text and media together. Wait for **Website updated**, then use **Open saved page**. Saving and a completed preview deployment are separate states. The preview remains separate from public launch approval.
 
 About includes its client reviews and Real Estate includes its general FAQs. Reviews are shared with Home, so keep quotes verbatim and write a faithful optional Home excerpt. Cancellation/licensing answers stay with the approved policies. Project stories and article bodies already have their own combined text/media editors; use the shared-content links when editing those records.
 
+## Adding and arranging sections
+
+The eleven page entries support **Add section**, **Duplicate section**, **Move up**, **Move down**, and **Remove section**. Add a Text, Text + photo or video, Photo or video, Gallery, or Call to action block. It appears after the selected section. Set its text and media together, choose a light/tinted/dark background and content width, and choose the media side for split blocks. Photos retain their proportions by default; size, fit and focal controls are available on each placement. New galleries accept up to 24 existing or uploaded photos and films.
+
+A duplicated ordinary section starts with its current text and media, then edits independently. Removing a section takes it off the page without deleting its files. **Removed sections** retains it for **Restore**, including after Save and reload. **Undo section change** reverses the latest arrangement action while keeping subsequent text edits. Save commits the complete layout and page edits together.
+
+The opening stays first with one H1. Forms, pricing calculators and approved About usage information remain available. Shared or interactive sections such as filters, FAQs, reviews and client logos cannot be duplicated; add a gallery, media or text block for another section. These restrictions are explained beside the controls. Shared site navigation and footer remain outside page editing.
+
+Architecture & Design's Selected Work gallery searches the full eligible collection before displaying the first six matches. Changing discipline or media type brings matching work into those six positions immediately. A short final row fills the grid width; an empty state appears only when no actual media matches. Project links and full project galleries remain available. Real Estate keeps its existing Load more behavior. Architecture's custom selection sets the preferred order, followed by remaining eligible work; project representatives lead so the opening stays varied. Explicit exclusions stay excluded.
+
 **Search & social appearance** edits this page's SEO title, description and optional sharing image without changing its visible heading. No URL moves, pricing changes, global layout changes or production publication are part of this editor update.
 
-The original page content is preserved until a change is saved. Text defaults remain in templates/`content/pages.json`; this page's changes, media, SEO, review/FAQ overrides are committed together in `content/page-media/<page>.json`. Stored copy keys are checked against current named template targets. If a target moves, the build stops with a reload/fix message instead of silently putting text in another location. `_page` is the temporary form value and is flattened by preSave; it is never stored in site content.
+The original page content is preserved until a change is saved. Text defaults remain in templates/`content/pages.json`; this page's changes, media, SEO, review/FAQ overrides and optional `_sections` layout are committed together in `content/page-media/<page>.json`. With no saved layout the native page stays unchanged. Copies have independent text/link/media snapshots. Stored copy keys are checked against current named template targets. If a target moves, the build stops with a reload/fix message instead of silently putting text in another location. `_page` is the temporary form value and is flattened by preSave; it is never stored in site content.

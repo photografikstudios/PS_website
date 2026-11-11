@@ -20,6 +20,7 @@
     "pin:media": "node scripts/pin-media.mjs",
     "test:guidance": "node tests/guidance-browser.mjs",
     "test:media-sizing": "node tests/media-sizing.mjs",
-    "test:media-focus": "node tests/media-focus.mjs"
+    "test:media-focus": "node tests/media-focus.mjs",
+    "test:sections": "node tests/sections.mjs"
   }
 }
