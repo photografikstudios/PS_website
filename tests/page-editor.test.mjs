@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {pageEditingModel,pageEditProblems,safePageUrl,renderInline} from '../src/lib/page-editor-core.js';
 const page={file:'about'};
-const html='<section aria-labelledby="purpose-h"><h2 id="purpose-h">Your work. <em>Your people.</em></h2><p>Meet <a href="/creator-studios" data-track="creator_click">the studio</a>.</p><div data-page-media="about.locationMedia"><img src="/images/a.webp" alt="Original"></div><p class="photo-caption">Original caption</p></section><section id="reviews"><blockquote><p>Client quote verbatim.</p></blockquote><p class="plan__price">$249</p></section>';
+const html='<section aria-labelledby="purpose-h"><h2 id="purpose-h">Your work. <em>Your people.</em></h2><p>Meet <a href="/creator-studios" data-track="creator_click">the studio</a>.</p><div data-page-media="about.locationMedia"><img src="/images/a.webp" alt="Original"></div><p class="photo-caption">Original caption</p></section><section id="reviews"><blockquote><p>Client quote verbatim.</p></blockquote><p class="plan__price">$249</p><article class="package-card"><h3>Luxury Media</h3><ul><li>Photography and floor plan</li></ul></article></section>';
 test('page editor targets copy and media in page order, preserves source quotes, prices and captions',()=>{
  const m=pageEditingModel(html,page);assert.equal(m.sections.length,2);assert.deepEqual(m.sections[0].media,['locationMedia']);
  assert.equal(m.sections[0].fields.length,2);assert.equal(m.sections[0].fields[0].value,'Your work. *Your people.*');assert.equal(m.sections[1].fields.length,0);

@@ -24,6 +24,7 @@ const text = (html,n) => plain(html.slice(n.openEnd,n.closeStart).replace(/<[^>]
 const ancestors = (n) => {const a=[];for(let p=n.parent;p&&p.tag!=='#root';p=p.parent)a.push(p);return a;};
 const blocked = (n) => {
   const cls=n.attrs.class||'';
+  if (/(?:^|\s)(?:package|pkg|plan|price|rate|sizer)(?:[-_\s]|$)/.test(cls)) return true;
   return ['script','style','svg','select','button','label','form','blockquote','figcaption'].includes(n.tag) || n.attrs['aria-hidden']==='true' || n.attrs.hidden!==undefined || /(?:^|\s)(?:sr-only|photo-caption|pgrid(?:__\S+)?|case(?:__\S+)?|sizer(?:__\S+)?|package(?:__\S+|--\S+)?|pricing-notes|review(?:__\S+)?|review--\S+|reviews__rating|reviews__more|reviews__list|fn-card(?:__\S+)?|project-card(?:__\S+)?|sw-card|cpm(?:__\S+)?|pkg(?:__\S+|--\S+)?|plan(?:__\S+|--\S+)?|price-\S+|rate-\S+|needs-approval|client-logos(?:__\S+)?|faq)(?:\s|$)/.test(cls) || n.attrs['data-items']!==undefined || n.attrs['data-project']!==undefined || n.attrs.id==='com-case-h';
 };
 const inlineTags = new Set(['em','strong','b','i','br','a','span']);
