@@ -5,7 +5,83 @@
   "introPhoto": {
     "media": "laura-grollmus-interiors-waterfront-living-room-with-curved-seating-01"
   },
-  "selectedWork": null,
+  "selectedWork": {
+    "mode": "custom",
+    "items": [
+      {
+        "media": "arch-yankee-barn-film"
+      },
+      {
+        "media": "yankee-lead"
+      },
+      {
+        "media": "peterson-lead"
+      },
+      {
+        "media": "ph-kerry-delrose-pool"
+      },
+      {
+        "media": "ph-barba-waterfront"
+      },
+      {
+        "media": "bellard-brothers-white-farmhouse-front-elevation-01"
+      },
+      {
+        "media": "goldin-luxury-residence-film"
+      },
+      {
+        "media": "goldin-luxury-ceiling-beams-and-stairwell-lighting-03"
+      },
+      {
+        "media": "laura-grollmus-interiors-open-living-space-and-colorful-artwork-02"
+      },
+      {
+        "media": "ad26-firehouse-front"
+      },
+      {
+        "media": "nitelite-landscapes-landscape-lighting-film"
+      },
+      {
+        "media": "nitelite-landscapes-illuminated-shingle-residence-at-night-01"
+      },
+      {
+        "media": "oct15-stair-install-reel-2-30s"
+      },
+      {
+        "media": "oct15-stair-install-horizontal-60s"
+      },
+      {
+        "media": "ad26-glass-house-pool"
+      },
+      {
+        "media": "ad26-open-staircase"
+      },
+      {
+        "media": "ad26-powder-room"
+      },
+      {
+        "media": "ad26-wood-kitchen"
+      },
+      {
+        "media": "ad26-wood-stair-glass"
+      },
+      {
+        "media": "ad26-window-seat"
+      },
+      {
+        "media": "ad26-glass-house-dusk"
+      },
+      {
+        "media": "ad26-minimal-kitchen"
+      },
+      {
+        "media": "ad26-firehouse-bay"
+      },
+      {
+        "media": "ad26-construction-progress"
+      }
+    ]
+  },
   "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
   "designDetail": [
     {
