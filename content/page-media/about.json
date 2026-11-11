@@ -9,28 +9,8 @@
       "source": "top"
     },
     {
-      "id": "section-mwclvmeo-z3b891",
-      "type": "text",
-      "title": "Section editing check",
-      "body": "Temporary preview verification. This section will be removed before handoff.",
-      "theme": "light",
-      "width": "standard",
-      "side": "right",
-      "hidden": true
-    },
-    {
       "id": "about-purpose",
       "source": "about-purpose"
-    },
-    {
-      "id": "section-mwclvvsn-l065xn",
-      "type": "text",
-      "title": "Independent section check",
-      "body": "Temporary preview verification. This section will be removed before handoff.",
-      "theme": "light",
-      "width": "standard",
-      "side": "right",
-      "hidden": true
     },
     {
       "id": "about-approach",
