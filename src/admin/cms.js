@@ -1391,7 +1391,7 @@
     var e = o && o.entry; var data = e && e.get('data'); if (!data || !data.set) return;
     // The unified workspace owns one field while editing, then saves canonical page keys together in one commit.
     var page = data.get('_page');
-    if (page && o.collection && o.collection.get('name') === 'pages') return data.merge(page).delete('_page');
+    if (page && PAGE_MODELS[e.get('slug')]) return data.merge(page).delete('_page');
     // Keep a published address protected even after Hide → Save → reopen. Only the mounted project editor can
     // add this hidden marker; every other data key is returned unchanged. New, never-shown drafts stay editable.
     var form = PROJECT_CATEGORY_FORMS.find(function (f) { var a = f.props.entry; return a && (a.get('slug') === e.get('slug') || (a.get('newRecord') && e.get('newRecord'))); });
@@ -1403,7 +1403,7 @@
   if (CMS.registerEventListener) CMS.registerEventListener({ name: 'postSave', handler: function (o) {
     var e = o && o.entry; var data = e && e.get && e.get('data');
     var imp = data && data.get && data.get('import'); imp = imp && imp.toJS ? imp.toJS() : imp;
-    siteState.savedMessage = o.collection && o.collection.get('name') === 'pages' ? 'Page saved in Git; awaiting preview website update.' : data && data.get('published') === true ? 'Content saved in Git; awaiting validation and website update.' : 'Draft saved in Git; awaiting validation and website update.';
+    siteState.savedMessage = e && PAGE_MODELS[e.get('slug')] && window.location.hash.indexOf('#/collections/pages') === 0 ? 'Page saved in Git; awaiting preview website update.' : data && data.get('published') === true ? 'Content saved in Git; awaiting validation and website update.' : 'Draft saved in Git; awaiting validation and website update.';
     siteState.head = null; siteState.build = null; drawPill(); checkHead();
     if (!pendingState(imp)) return;
     var drive = data.get('drive');

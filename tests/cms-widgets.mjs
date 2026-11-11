@@ -876,7 +876,7 @@ await check('Pages workspace: text and media share one save, serialize cleanly, 
   assert.equal(value.locationMedia.size,'large');assert.equal(value.locationMedia.fit,'original');
   assert.deepEqual(value.studioMedia,data.studioMedia);assert.deepEqual(value.closing,data.closing);
   assert.equal(await page.evaluate(()=>window.__workspace.instance.isValid()),true);
-  const saved=await page.evaluate(({data,value})=>window.__events.preSave({collection:window.__wrapForTest({name:'pages'}),entry:window.__wrapForTest({slug:'about',data:{...data,_page:value}})}).toJS(),{data,value});
+  const saved=await page.evaluate(({data,value})=>window.__events.preSave({entry:window.__wrapForTest({slug:'about',data:{...data,_page:value}})}).toJS(),{data,value});
   assert.equal(saved._page,undefined);assert.equal(saved._copy[heading.key],'People and *purpose.*');assert.equal(saved.locationMedia.size,'large');assert.deepEqual(saved.studioMedia,data.studioMedia);
   await page.evaluate(({field,saved})=>{window.__workspace.unmount();window.__workspace=window.mountWidget('pgk-page',{field,value:undefined,entry:{slug:'about',data:saved},collection:'pages'});},{field,saved});
   assert.equal(await page.locator('.host-pgk-page').last().getByLabel('Heading '+heading.key,{exact:true}).inputValue(),'People and *purpose.*');
