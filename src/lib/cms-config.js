@@ -254,6 +254,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'hero', label: 'Hero image', widget: 'pgk-photo', ...notesMedia, hint: 'A web JPG or WebP about 2,400 pixels wide is plenty (5 MB limit). The site makes smaller sizes automatically.' },
           { name: 'heroAlt', label: 'Hero image description (alt text)', widget: 'string', hint: 'Describe the picture for people who cannot see it, e.g. “Kitchen with an island and pendant lights”.' },
           { name: 'answer', label: 'Short answer under the title', widget: 'text', required: false, hint: 'Optional. The direct answer in two or three sentences. If empty, the excerpt is shown.' },
+          { name: 'editorialNotes', label: 'Editorial notes (editor only)', widget: 'text', required: false, hint: 'Photo suggestions, remaining shots and review notes. These notes never appear in the article on the website.' },
           { name: 'body', label: 'Article', widget: 'markdown', modes: ['rich_text', 'raw'], buttons: ['bold', 'italic', 'link', 'heading-two', 'heading-three', 'quote', 'bulleted-list', 'numbered-list'], editor_components: ['image', 'libraryMedia'], hint: 'Use Heading 2 for each section. Quote = a highlighted note. Add pictures with the + button.' },
           { name: 'photos', label: 'Photo gallery (optional)', widget: 'pgk-gallery', required: false, default: [], ...notesMedia, hint: 'Choose several photos at once; each needs a short description. They appear as a gallery after the article text.' },
           { name: 'seoTitle', label: 'SEO title', widget: 'string', required: false, pattern: max(70, 'SEO title'), hint: 'Optional. Defaults to the title.' },
@@ -273,7 +274,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'sources', label: 'Sources', widget: 'hidden', required: false },
           MANAGE,
         ], [
-          ['writing', 'Writing', ['title', 'category', 'hero', 'heroAlt', 'excerpt', 'answer', 'body', 'photos']],
+          ['writing', 'Writing', ['title', 'category', 'hero', 'heroAlt', 'excerpt', 'answer', 'body', 'photos', 'editorialNotes']],
           ['publishing', 'Publishing', ['published', 'date', 'updated', 'featured']],
           ['related', 'Related content', ['relatedService', 'cta']],
           ['seo', 'SEO (optional)', ['seoTitle', 'seoDescription', 'ogImage']],

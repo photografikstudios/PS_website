@@ -67,7 +67,7 @@ test('bad URL names and duplicates always fail', () => {
 });
 
 test('uploaded images must be committed; outside image links are refused', () => {
-  const a = { ...fn.articles[0], slug: 'img-test', legacyUrls: [], hero: '/images/field-notes/missing.jpg', body: '## A\n\n![Alt](https://example.com/x.jpg)' };
+  const a = { ...fn.articles.find((a) => a.published), slug: 'img-test', legacyUrls: [], hero: '/images/field-notes/missing.jpg', body: '## A\n\n![Alt](https://example.com/x.jpg)' };
   const errs = validateFieldNotes({ ...fn, articles: [...fn.articles, a] }, legacy, work, { fileExists });
   assert.ok(errs.some((e) => e.includes('missing.jpg')) && errs.some((e) => e.includes('outside link')), errs.join('\n'));
 });
