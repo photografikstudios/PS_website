@@ -891,6 +891,13 @@ await check('Pages workspace: search controls, client reviews and FAQs are avail
   const host=page.locator('.host-pgk-page').last();
   await host.getByRole('button',{name:/Client reviews|In our clients/}).click();
   await host.getByLabel('Review 1 quote',{exact:true}).waitFor();
+  await host.getByRole('button',{name:'Add review',exact:true}).click();
+  await page.waitForTimeout(40);
+  assert.equal(await page.evaluate(()=>window.__workspace.instance.isValid()===true),false,'an empty new review cannot be saved');
+  const reviewCount=await page.evaluate(()=>window.__workspace.state.value._reviews.length);
+  await host.getByLabel('Review '+reviewCount+' name',{exact:true}).fill('QA client');
+  await host.getByLabel('Review '+reviewCount+' quote',{exact:true}).fill('QA original client quotation.');
+  assert.equal(await host.getByLabel('Review '+reviewCount+' source',{exact:true}).inputValue(),'site');
   await host.getByRole('button',{name:/Search & social appearance/}).click();
   await host.getByLabel('SEO title',{exact:true}).fill('People and Purpose | Photografik Studios');
   assert.equal(await page.evaluate(()=>window.__workspace.state.value._seo.title),'People and Purpose | Photografik Studios');
@@ -901,6 +908,12 @@ await check('Pages workspace: search controls, client reviews and FAQs are avail
   await page.evaluate(({field,data})=>{window.__workspace=window.mountWidget('pgk-page',{field,entry:{slug:'real-estate',data},collection:'pages'});},{field:reField,data:reData});
   await page.locator('.host-pgk-page').last().getByRole('button',{name:/Questions and answers/}).click();
   await page.locator('.host-pgk-page').last().getByLabel('FAQ 1 q',{exact:true}).waitFor();
+  const faqHost=page.locator('.host-pgk-page').last();
+  const originalFaqCount=await faqHost.locator('fieldset').count();
+  await faqHost.getByRole('button',{name:'Add question',exact:true}).click();
+  await faqHost.getByRole('button',{name:'Remove question '+(originalFaqCount+1),exact:true}).click();
+  await faqHost.locator('fieldset').nth(originalFaqCount).waitFor({state:'detached'});
+  assert.equal(await faqHost.locator('fieldset').count(),originalFaqCount,'removing a question preserves the other answers');
   await page.evaluate(()=>window.__workspace.unmount());
 });
 
