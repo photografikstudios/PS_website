@@ -195,7 +195,7 @@ export function checkPageMedia(pm, lib) {
   for (const page of PAGES) {
     const values = pm[page.file];
     if (!values) { errors.push(`Page Media: the ${page.label} page file is missing (content/page-media/${page.file}.json)`); continue; }
-    const known = new Set(['_about', '_copy', '_links', '_seo', '_reviews', '_faqs', '_sections', ...page.slots.map((s) => s.key)]);
+    const known = new Set(['_about', '_copy', '_links', '_seo', '_reviews', '_faqs', '_sections', '_clients', ...page.slots.map((s) => s.key)]);
     for (const k of Object.keys(values)) if (!known.has(k)) errors.push(`Page Media ${page.label}: “${k}” is not a section of this page`);
     for (const slot of page.slots) {
       const where = `Page Media ${page.label}, ${slot.label}`;
@@ -305,6 +305,7 @@ export function pageMediaRefs(pm) {
   for (const page of PAGES) {
     const values = (pm && pm[page.file]) || {};
     if(values._seo?.image) out.push({ page: page.label, route: page.route, file: page.file, key: '_seo', label: 'Social sharing image', src: values._seo.image, media: null, project: null });
+    for(const c of Array.isArray(values._clients)?values._clients:[])if(c.logo)out.push({page:page.label,route:page.route,file:page.file,key:'_clients',label:'Client brand: '+c.name,src:c.logo,media:null,project:null});
     for(const section of Array.isArray(values._sections)?values._sections:[]) {
       const own=section.type?(section.type==='gallery'?section.items||[]:section.media?[section.media]:[]):Object.values(section.media||{}).flatMap(v=>Array.isArray(v)?v:v?.items||v?.project?[...(v.items||[]),...(v.project?[v]:[])]:v?[v]:[]);
       for(const it of own)if(isItem(it))out.push({page:page.label,route:page.route,file:page.file,key:'_sections.'+section.id,label:(section.hidden?'Removed section (kept for restore): ':'Section: ')+(section.title||section.source||section.type),media:it.media||null,src:it.src||null,project:it.project||null});

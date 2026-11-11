@@ -10,6 +10,8 @@ Open `/admin#/collections/pages`. Choose Home, About or another page. The former
 
 About includes its client reviews and Real Estate includes its general FAQs. Reviews are shared with Home, so keep quotes verbatim and write a faithful optional Home excerpt. Cancellation/licensing answers stay with the approved policies. Project stories and article bodies already have their own combined text/media editors; use the shared-content links when editing those records.
 
+To add a client brand, open **Pages → Architecture & Design → Clients we work with → Add brand**. Enter the brand name and optionally upload a PNG, WebP or JPG logo (up to 5 MB); without a logo the strip shows the name as text. Use Move up/down for order, Logo size and Logo appearance for presentation, or Show this brand to hide it temporarily. Remove brand takes it off this strip without deleting its image file. Save the page, wait for Website updated, and open the saved page to check it. The existing eight brands are the starting list; no new relationship is added automatically.
+
 ## Adding and arranging sections
 
 The eleven page entries support **Add section**, **Duplicate section**, **Move up**, **Move down**, and **Remove section**. Add a Text, Text + photo or video, Photo or video, Gallery, or Call to action block. It appears after the selected section. Set its text and media together, choose a light/tinted/dark background and content width, and choose the media side for split blocks. Photos retain their proportions by default; size, fit and focal controls are available on each placement. New galleries accept up to 24 existing or uploaded photos and films.

@@ -109,8 +109,42 @@ export function pageEditProblems(values, model) {
   if(seo.title!=null&&(typeof seo.title!=='string'||!seo.title.trim()||seo.title.length>70))errors.push('SEO title must be 1–70 characters.');
   if(seo.description!=null&&(typeof seo.description!=='string'||!seo.description.trim()||seo.description.length>180))errors.push('Search description must be 1–180 characters.');
   if(seo.image&&!safePageUrl(seo.image))errors.push('Choose a valid social image.');
+  if(values._clients!=null)errors.push(...clientListProblems(values._clients));
   errors.push(...sectionLayoutProblems(values,model));
   return errors;
+}
+
+// The Architecture client board is edited in its page, alongside the other page content.
+export function clientListProblems(list) {
+  if(!Array.isArray(list)||list.length>100)return ['Use a list of up to 100 client brands.'];
+  const errors=[];
+  for(const [i,c] of list.entries()) {
+    const where='Brand '+(i+1)+': ';
+    if(!c||typeof c!=='object'||Array.isArray(c)){errors.push(where+'add a brand name.');continue;}
+    if(typeof c.name!=='string'||!c.name.trim()||c.name.length>120)errors.push(where+'use a name of 1–120 characters.');
+    if(c.wordmark!=null&&(typeof c.wordmark!=='string'||c.wordmark.length>120))errors.push(where+'keep the displayed name to 120 characters.');
+    if(c.logo&&(typeof c.logo!=='string'||!safePageUrl(c.logo)||!/^\/images\/[^?#]+\.(?:png|jpe?g|webp|avif|svg)$/i.test(c.logo)||c.logo.includes('..')))errors.push(where+'choose a logo image from this website or upload one.');
+    if(c.hidden!=null&&typeof c.hidden!=='boolean')errors.push(where+'choose whether to show the brand.');
+    if(c.size!=null&&!['default','small','medium','large'].includes(c.size))errors.push(where+'choose a valid logo size.');
+    if(c.tone!=null&&!['default','original','dark'].includes(c.tone))errors.push(where+'choose a valid logo appearance.');
+    if(c.style!=null&&!/^[a-z-]{1,40}$/.test(c.style))errors.push(where+'choose a valid brand style.');
+    for(const k of ['width','height'])if(c[k]!=null&&(!Number.isInteger(c[k])||c[k]<=0||c[k]>20000))errors.push(where+'the logo dimensions are invalid.');
+  }
+  return [...new Set(errors)];
+}
+export function renderClientBrands(list) {
+  return (list||[]).filter(c=>!c.hidden).map(c=>`<li class="client-logos__item client-logos__item--${escape(c.style||'standard')}"${c.size&&c.size!=='default'?` data-brand-size="${escape(c.size)}"`:''}${c.tone&&c.tone!=='default'?` data-logo-tone="${escape(c.tone)}"`:''}>${c.logo
+    ? `<img src="${escape(c.logo)}" alt="${escape(c.name)}"${c.width&&c.height?` width="${c.width}" height="${c.height}"`:''} loading="lazy" decoding="async">`
+    : `<span class="client-logos__wordmark">${escape(c.wordmark||c.name)}${c.wordmark&&c.name!==c.wordmark?`<small>${escape(c.name)}</small>`:''}</span>`}</li>`).join('');
+}
+export function renderClientBoard(list) {
+  const brands=renderClientBrands(list);if(!brands)return '';
+  return `<section class="client-logos" data-client-logos aria-labelledby="arch-clients-h">
+  <div class="wrap client-logos__heading"><h2 class="eyebrow" id="arch-clients-h">Clients we work with</h2><button type="button" class="client-logos__toggle" data-client-logos-toggle aria-controls="arch-client-board" aria-pressed="false" hidden>Pause scrolling</button></div>
+  <div class="client-logos__viewport" id="arch-client-board" tabindex="0" role="region" aria-label="Client logos. Scroll to see all clients.">
+    <div class="client-logos__track"><ul class="client-logos__group" role="list">${brands}</ul><ul class="client-logos__group client-logos__copy" aria-hidden="true" inert>${brands}</ul></div>
+  </div>
+</section>`;
 }
 
 // Page section instances. Original sections retain their keys; copies own their text/media

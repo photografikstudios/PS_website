@@ -938,6 +938,36 @@ await check('Pages workspace: search controls, client reviews and FAQs are avail
   await page.evaluate(()=>window.__workspace.unmount());
 });
 
+await check('Client brands: add, upload logo, reorder, hide, remove, save/reopen and preview in the page',async()=>{
+ await page.setViewportSize({width:1440,height:1000});
+ const data=await pm('architecture-design'),field=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='architecture-design').fields.find(f=>f.name==='_page'));
+ await page.evaluate(({field,data})=>{window.__brands=window.mountWidget('pgk-page',{field,entry:{slug:'architecture-design',data},collection:'pages'});},{field,data});
+ let host=page.locator('.host-pgk-page').last();await host.getByRole('button',{name:/Clients we work with/}).click();await host.getByLabel('Brand 1 name',{exact:true}).waitFor();
+ const count=await host.locator('.pgk-client-editor fieldset').count();assert.equal(count,8,'original brands remain editable');
+ await host.getByRole('button',{name:'Add brand',exact:true}).click();await host.getByLabel('Brand '+(count+1)+' name',{exact:true}).waitFor();
+ assert.notEqual(await page.evaluate(()=>window.__brands.instance.isValid()),true,'blank new brand cannot save');
+ await host.getByLabel('Brand '+(count+1)+' name',{exact:true}).fill('QA client brand');
+ await host.getByLabel('Brand '+(count+1)+' displayed name',{exact:true}).fill('QA brand');
+ await host.getByLabel('Brand '+(count+1)+' logo size',{exact:true}).selectOption('small');
+ const row=host.locator('.pgk-client-editor fieldset').last();
+ await row.locator('input[type=file]').setInputFiles({name:'logo.png',mimeType:'image/png',buffer:await readFile(join(root,'static/images/clients/bellard-brothers.png'))});
+ await page.waitForFunction(()=>window.__brands.state.value?._clients?.at(-1)?.logo?.startsWith('/images/library/qa-client-brand-'));
+ await host.getByRole('button',{name:'Move brand '+(count+1)+' up',exact:true}).click();await page.waitForTimeout(40);
+ await host.getByLabel('Show brand '+count,{exact:true}).uncheck();await page.waitForTimeout(40);
+ let value=await page.evaluate(()=>window.__brands.state.value);assert.equal(value._clients[count-1].name,'QA client brand');assert.equal(value._clients[count-1].hidden,true);assert.ok(value._clients[count-1].logo);
+ await host.getByLabel('Show brand '+count,{exact:true}).check();
+ assert.equal(await page.evaluate(()=>window.__brands.instance.isValid()),true);
+ const saved=await page.evaluate(data=>window.__events.preSave({entry:window.__wrapForTest({slug:'architecture-design',data:{...data,_page:window.__brands.state.value}})}).toJS(),data);
+ assert.equal(saved._page,undefined);assert.equal(saved._clients[count-1].name,'QA client brand');assert.deepEqual(saved.hero,data.hero);assert.deepEqual(saved.selectedWork,data.selectedWork);
+ await page.evaluate(({field,saved})=>{window.__brands.unmount();window.__brands=window.mountWidget('pgk-page',{field,entry:{slug:'architecture-design',data:saved},collection:'pages'});},{field,saved});
+ host=page.locator('.host-pgk-page').last();await host.getByRole('button',{name:/Clients we work with/}).click();
+ assert.equal(await host.getByLabel('Brand '+count+' name',{exact:true}).inputValue(),'QA client brand');
+ await host.getByRole('button',{name:'Remove brand '+count,exact:true}).click();await page.waitForTimeout(40);
+ assert.equal((await page.evaluate(()=>window.__brands.state.value))._clients.length,count);
+ await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ await page.evaluate(()=>window.__brands.unmount());
+});
+
 await check('Sections: add, duplicate independently, move, remove, undo and restore survive the canonical page save',async()=>{
  await page.setViewportSize({width:1500,height:1000});
  const data=await pm('about'),field=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='about').fields.find(f=>f.name==='_page'));

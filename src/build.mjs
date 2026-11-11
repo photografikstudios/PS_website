@@ -19,7 +19,7 @@ import { imageSize } from './lib/image-size.js';
 import { structuredData } from './lib/seo-core.js';
 import { PAGES as PAGE_MEDIA, checkPageMedia, heroStillMap, itemProblem } from './lib/page-media-core.js';
 import { renderSectionMedia } from './lib/page-sections-render.js';
-import { pageEditingModel, pageEditProblems, sectionMediaGroups, sectionLayout, sectionInstanceValues, sectionHtmlParts, composePageSections, plain } from './lib/page-editor-core.js';
+import { pageEditingModel, pageEditProblems, sectionMediaGroups, sectionLayout, sectionInstanceValues, sectionHtmlParts, composePageSections, plain, clientListProblems } from './lib/page-editor-core.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -146,6 +146,12 @@ if (!reviewMode && !prodCheck) {
 const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).slice(0, 8);
 const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, architectureClients, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel, heroStills, imageInfo }) };
 ctx.galleryAuto = {}; // filled by buildPages: what each gallery shows automatically today (for the dashboard)
+const clients = pageMedia['architecture-design']?._clients ?? architectureClients;
+const clientErrors = clientListProblems(clients);
+for(const c of Array.isArray(clients)?clients:[])if(c.logo&&!fileExists(c.logo))clientErrors.push('Client brand '+c.name+': logo image is missing. Choose it again before saving.');
+if(clientErrors.length)throw new Error(clientErrors.join(' '));
+
+ctx.architectureClients = pageMedia['architecture-design']?._clients ?? architectureClients;
 const pages = buildPages(ctx);
 const pageEditors = {};
 function preparePageEditors(pages, collect = false, variant = undefined) {
@@ -175,7 +181,8 @@ function preparePageEditors(pages, collect = false, variant = undefined) {
     if(page.faqs){const visibleCopy=plain(page.body.replace(/<[^>]*>/g,' ')).replace(/\s+/g,' ');page.faqs=page.faqs.filter(f=>visibleCopy.includes(f.q)&&visibleCopy.includes(f.a));}
     if (collect) pageEditors[pg.file] = { label: pg.label, route: pg.route, body: model.body, sections: model.sections, seo: baseSeo,
       reviews: pg.file === 'about' ? testimonials.reviews : undefined,
-      faqs: pg.file === 'real-estate' ? editableFaqs : undefined };
+      faqs: pg.file === 'real-estate' ? editableFaqs : undefined,
+      clients: pg.file === 'architecture-design' ? clients : undefined };
   }
 }
 preparePageEditors(pages, true);
@@ -320,7 +327,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_CMS_VERSION = ${safe(version)};\nwindow.PHOTOGRAFIK_PAGE_EDITORS = ${safe(pageEditors)};\nwindow.PHOTOGRAFIK_GALLERIES = ${safe(ctx.galleryAuto)};\nwindow.PHOTOGRAFIK_PROJECTS = ${safe(pickProjects)};\nwindow.PHOTOGRAFIK_MEDIA = ${safe(pickMedia)};\nwindow.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
   const editorCore = (await readFile(join(root, 'src/lib/page-editor-core.js'), 'utf8')).replace(/^export /gm, '');
-  await writeFile(join(out, 'admin/page-editing.js'), `(function(){${editorCore}\nwindow.PHOTOGRAFIK_EDITOR_CORE={pageEditProblems,safePageUrl,renderInline,SECTION_LIBRARY,sectionMediaGroups,sectionLayout,newPageSection,duplicatePageSection,sectionInstanceValues,sectionCapabilities,composePageSections,renderNewSection,isolateSectionHtml};})();`);
+  await writeFile(join(out, 'admin/page-editing.js'), `(function(){${editorCore}\nwindow.PHOTOGRAFIK_EDITOR_CORE={pageEditProblems,safePageUrl,renderInline,SECTION_LIBRARY,sectionMediaGroups,sectionLayout,newPageSection,duplicatePageSection,sectionInstanceValues,sectionCapabilities,composePageSections,renderNewSection,isolateSectionHtml,clientListProblems,renderClientBrands,renderClientBoard};})();`);
   // The dashboard checks Page Media choices with the same rules as the build.
   await cp(join(root, 'src/lib/page-media-core.js'), join(out, 'admin/page-media-core.js'));
   await cp(join(root, 'src/admin/login.html'), join(out, 'admin/login.html'));

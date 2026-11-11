@@ -1,3 +1,4 @@
+import { renderClientBoard } from './lib/page-editor-core.js';
 import { esc, join, focalAttr, focalPosition } from './lib/html.js';
 import { renderArticle, bodyRefs, inline as inlineMd } from './lib/markdown.js';
 import { numberSections } from './lib/legal-core.js';
@@ -928,9 +929,6 @@ ${agentMonthly.length ? `<section class="section section--tint">
       </button>
     </article>`;
   };
-  const clientLogos = join(ctx.architectureClients || [], (client) => `<li class="client-logos__item client-logos__item--${esc(client.style)}">${client.logo
-    ? `<img src="${esc(client.logo)}" alt="${esc(client.name)}" width="${client.width}" height="${client.height}" loading="lazy" decoding="async">`
-    : `<span class="client-logos__wordmark">${esc(client.wordmark)}${client.name !== client.wordmark ? `<small>${esc(client.name)}</small>` : ''}</span>`}</li>`);
   pages['/architecture-design'] = {
     overlay: true,
     scripts: ['re-gallery.js', 'client-logos.js'],
@@ -939,12 +937,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
       cta: `<a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_hero">Plan the Next Project</a>`,
       video: loopOf('architecture-design', 'hero'),
     })}
-${clientLogos ? `<section class="client-logos" data-client-logos aria-labelledby="arch-clients-h">
-  <div class="wrap client-logos__heading"><h2 class="eyebrow" id="arch-clients-h">Clients we work with</h2><button type="button" class="client-logos__toggle" data-client-logos-toggle aria-controls="arch-client-board" aria-pressed="false" hidden>Pause scrolling</button></div>
-  <div class="client-logos__viewport" id="arch-client-board" tabindex="0" role="region" aria-label="Client logos. Scroll to see all clients.">
-    <div class="client-logos__track"><ul class="client-logos__group" role="list">${clientLogos}</ul><ul class="client-logos__group client-logos__copy" aria-hidden="true" inert>${clientLogos}</ul></div>
-  </div>
-</section>` : ''}
+${renderClientBoard(ctx.architectureClients)}
 <section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
   <div class="wrap pair">
     <div class="pair__text">
