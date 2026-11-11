@@ -1,26 +1,80 @@
 {
-  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
   "teamMedia": {
     "src": "/images/library/led-by-james-calandrino-62706a4abf.jpg",
     "alt": "james-calandrino-behind-the-scenes"
   },
-  "clientVideo": {
-    "media": "testimonial-jack-richardson"
-  },
-  "closing": {
-    "src": "/images/photografik-2027/curated/home-estate-exterior.webp",
-    "alt": ""
+  "_sections": [
+    {
+      "id": "top",
+      "source": "top"
+    },
+    {
+      "id": "section-mwclvmeo-z3b891",
+      "type": "text",
+      "title": "Section editing check",
+      "body": "Temporary preview verification. This section will be removed before handoff.",
+      "theme": "light",
+      "width": "standard",
+      "side": "right",
+      "hidden": true
+    },
+    {
+      "id": "about-purpose",
+      "source": "about-purpose"
+    },
+    {
+      "id": "section-mwclvvsn-l065xn",
+      "type": "text",
+      "title": "Independent section check",
+      "body": "Temporary preview verification. This section will be removed before handoff.",
+      "theme": "light",
+      "width": "standard",
+      "side": "right",
+      "hidden": true
+    },
+    {
+      "id": "about-approach",
+      "source": "about-approach"
+    },
+    {
+      "id": "about-james",
+      "source": "about-james"
+    },
+    {
+      "id": "about-studio",
+      "source": "about-studio"
+    },
+    {
+      "id": "reviews",
+      "source": "reviews"
+    },
+    {
+      "id": "about-details",
+      "source": "about-details"
+    },
+    {
+      "id": "closing",
+      "source": "closing"
+    }
+  ],
+  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
+  "studioMedia": {
+    "media": "cs-ph-solo-bts"
   },
   "locationMedia": {
     "media": "oct15-in-house-v2",
     "size": "medium",
     "fit": "default"
   },
-  "studioMedia": {
-    "media": "cs-ph-solo-bts"
+  "clientVideo": {
+    "media": "testimonial-jack-richardson"
   },
   "_copy": {
     "about-purpose.about-purpose-h": "You did great work. *Now what?*",
     "about-purpose.c-5pej2q": "A marketing perspective"
+  },
+  "closing": {
+    "src": "/images/photografik-2027/curated/home-estate-exterior.webp",
+    "alt": ""
   }
 }
