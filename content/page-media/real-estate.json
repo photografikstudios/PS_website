@@ -1,30 +1,30 @@
 {
-  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
-  "hero": {
-    "media": "re-hamptons-calm"
-  },
-  "coverageFilm": {
-    "media": "re-hamptons-beachfront",
-    "label": "Beachfront estate film, muted excerpt"
-  },
-  "featurePhotography": {
-    "media": "re26-white-kitchen-range-hood"
+  "featureDrone": {
+    "media": "re26-shoreline-aerial"
   },
   "featureVideo": {
     "media": "re-hamptons-standout"
   },
-  "featureDrone": {
-    "media": "re26-shoreline-aerial"
-  },
-  "featureFloorPlan": {
-    "media": "re-floorplan"
-  },
   "featureTwilight": {
     "media": "re26-driveway-twilight"
   },
+  "featurePhotography": {
+    "media": "re26-white-kitchen-range-hood"
+  },
+  "portfolio": null,
+  "coverageFilm": {
+    "media": "re-hamptons-beachfront",
+    "label": "Beachfront estate film, muted excerpt"
+  },
+  "_about": "Chosen in the dashboard under Page Media. Each section takes a library photo or film by its id, or a photo file with its description. The build checks every choice; see src/lib/page-media-core.js.",
   "featureAgent": {
     "src": "/v/agent-expertise-hero.webp",
     "alt": "Agent speaking to camera, a frame from an Agent Engine clip"
   },
-  "portfolio": null
+  "hero": {
+    "media": "oct15-listing-reel-westhampton"
+  },
+  "featureFloorPlan": {
+    "media": "re-floorplan"
+  }
 }
