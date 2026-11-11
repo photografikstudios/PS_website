@@ -107,7 +107,9 @@
     "media": "long-island-building-systems-fire-station-angled-facade-02"
   },
   "closing": {
-    "media": "ph-barba-waterfront"
+    "size": "default",
+    "fit": "default",
+    "media": "re-southampton-bedroom"
   },
   "hero": {
     "media": "arch-yankee-barn-film"
