@@ -1303,6 +1303,7 @@ video[data-media-layout="natural"] { height: auto; }
 [data-media-layout="background"][data-media-fit="original"] img { width: 100%; height: 100%; max-height: none; position: absolute; inset: 0; aspect-ratio: auto; object-fit: contain; scale: 1; }
 [data-page-media][data-media-fit="fill"] img,
 [data-page-media][data-media-fit="fill"] video { object-fit: cover; scale: 1; }
+[data-page-media][data-media-fit="original"] video { object-fit: contain; scale: 1; }
 [data-media-layout="natural"][data-media-fit="fill"] img { height: auto; aspect-ratio: 4 / 3; }
 
 /* Ordinary portrait gallery photos use the file ratio, including 2:3 / 4:5 uploads. */
