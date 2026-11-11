@@ -18,7 +18,7 @@ import { expandProjectPhotos } from './work-load.js';
 
 const SERVICE_ROUTE = { 'real-estate': '/real-estate', 'agent-content': '/agent-content', 'architecture-design': '/architecture-design', commercial: '/commercial', 'creator-studios': '/creator-studios' };
 export const projectRoute = (p) => p.path || `${SERVICE_ROUTE[p.category] || ''}/${p.slug}`;
-const pmHref = (file) => `#/collections/page-media/entries/${file}`;
+const pmHref = (file) => `#/collections/pages/entries/${file}`;
 const name = (r, fallback) => r.title || r.client || fallback;
 
 /** A site path as the renderer serves it: no query, no fragment, decoded, without the site's own address in front. */
@@ -61,7 +61,7 @@ function fileRefs(path, repo, self) {
     const f = n.front;
     if (same(f.hero) || same(f.ogImage) || (Array.isArray(f.photos) && f.photos.some((x) => x && same(x.image))) || noteRefs(n).images.includes(path)) out.push(`Field Note “${f.title || n.slug}”`);
   }
-  for (const r of pageMediaRefs(repo.pageMedia)) if (same(r.src)) out.push(`Page Media › ${r.page}: ${r.label}`);
+  for (const r of pageMediaRefs(repo.pageMedia)) if (same(r.src)) out.push(`Pages › ${r.page}: ${r.label}`);
   for (const [route, pg] of Object.entries((repo.pageText && repo.pageText.pages) || {})) if (pg && same(pg.image)) out.push(`Page text › ${route}`);
   return out;
 }
@@ -125,7 +125,7 @@ export function whereUsed(target, repo) {
 
   if (collection === 'photos' || collection === 'films') {
     const id = rec.id;
-    for (const r of pageMediaRefs(repo.pageMedia)) if (r.media === id) blocking.push({ text: `Page Media › ${r.page}: ${r.label}`, href: pmHref(r.file) });
+    for (const r of pageMediaRefs(repo.pageMedia)) if (r.media === id) blocking.push({ text: `Pages › ${r.page}: ${r.label}`, href: pmHref(r.file) });
     for (const p of repo.projects) if (Array.isArray(p.films) && p.films.includes(id)) blocking.push({ text: `Project “${name(p, p.slug)}”, Films from the library`, href: `#/collections/projects/entries/${p.slug}` });
     for (const n of repo.notes) if (noteRefs(n).media.includes(id)) blocking.push({ text: `Field Note “${n.front.title || n.slug}”, in the article text`, href: `#/collections/field-notes/entries/${n.slug}` });
     if (rec.project) {
@@ -137,7 +137,7 @@ export function whereUsed(target, repo) {
 
   if (collection === 'projects') {
     const route = projectRoute(rec);
-    for (const r of pageMediaRefs(repo.pageMedia)) if (r.project === rec.slug) blocking.push({ text: `Page Media › ${r.page}: ${r.label}`, href: pmHref(r.file) });
+    for (const r of pageMediaRefs(repo.pageMedia)) if (r.project === rec.slug) blocking.push({ text: `Pages › ${r.page}: ${r.label}`, href: pmHref(r.file) });
     const own = repo.media.filter((m) => m.project === rec.slug);
     for (const m of own) blocking.push({ text: `${m.type === 'video' ? 'Film' : 'Photo'} “${name(m, m.id)}” belongs to this project. Delete it, or choose another project for it`, href: `#/collections/${m.type === 'video' ? 'films' : 'photos'}/entries/${m.id}` });
     for (const n of repo.notes) if (noteRefs(n).links.includes(route)) blocking.push({ text: `Field Note “${n.front.title || n.slug}” links to this project page`, href: `#/collections/field-notes/entries/${n.slug}` });

@@ -160,7 +160,7 @@ test('where-used: in-use items are protected, unused ones list only their own un
   const repo = repoFrom(withSynthetic(await diskFiles()));
   // A photo used by page sections cannot be deleted; the answer names the sections.
   const used = whereUsed({ collection: 'photos', key: 'ph-clos-lighting' }, repo);
-  assert.ok(used.blocking.some((b) => /Page Media › Commercial: “What we do”, Recurring production/.test(b.text)), JSON.stringify(used.blocking));
+  assert.ok(used.blocking.some((b) => /Pages › Commercial: “What we do”, Recurring production/.test(b.text)), JSON.stringify(used.blocking));
   // The replacement film is used in three sections; the replaced JM2 clip in none.
   assert.equal(whereUsed({ collection: 'films', key: 'cs-podcast-ep23-short' }, repo).blocking.length, 3);
   assert.equal(whereUsed({ collection: 'films', key: 'cs-jm2-architecture' }, repo).blocking.length, 0);
@@ -444,8 +444,8 @@ test('uploaded files: an upload used by a page, a project, an article or a photo
   const base = withSynthetic(await diskFiles());
   const placed = repoFrom(onContact(base, { src: QA_UPLOAD, alt: 'QA' }));
   const u = uploadUsage(QA_UPLOAD + '?v=2', placed);
-  assert.equal(u.removable, false); assert.match(u.shared.join(), /Page Media › .*contact/i);
-  assert.match(planFileDeletion({ path: QA_UPLOAD, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, placed).errors.join(), /still used: Page Media/);
+  assert.equal(u.removable, false); assert.match(u.shared.join(), /Pages › .*contact/i);
+  assert.match(planFileDeletion({ path: QA_UPLOAD, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, placed).errors.join(), /still used: Pages/);
   // Taken off the page and saved: unused, so it can go once its exact file name is typed.
   const off = repoFrom(onContact(base, null));
   assert.equal(uploadUsage(QA_UPLOAD, off).removable, true);
@@ -473,7 +473,7 @@ test('uploaded files workflow: upload on a page, take it off, find it, delete it
     const placed = onContact(base, { src: QA_UPLOAD, alt: 'QA' });
     const list1 = await call({ action: 'files' }, { files: placed });
     assert.equal(list1.status, 200); const row1 = list1.body.files.find((f) => f.path === QA_UPLOAD);
-    assert.ok(row1 && !row1.removable && /Page Media/.test(row1.shared.join()), JSON.stringify(row1));
+    assert.ok(row1 && !row1.removable && /Pages/.test(row1.shared.join()), JSON.stringify(row1));
     const refused = await call({ action: 'deleteFile', path: QA_UPLOAD, head: list1.body.head, confirm: 'qa-direct-upload-5f5f5f5f5f.jpg' }, { files: placed });
     assert.equal(refused.status, 409); assert.match(refused.body.message, /still used/); assert.ok(!refused.gh.calls.some((c) => c.method !== 'GET' && c.path !== '/graphql'));
     // 2. Taken off the page and saved: listed first, as not used anywhere.
@@ -522,7 +522,31 @@ test('Page Media usage recognizes inline project photos without making them dele
   const photo = expandProjectPhotos('/nonexistent', project)[0];
   repo.pageMedia.contact = { introMedia: { media: photo.id } };
   const usage = whereUsed({ collection: 'photos', key: photo.id }, repo);
-  assert.ok(usage.blocking.some((x) => /Page Media/.test(x.text)));
+  assert.ok(usage.blocking.some((x) => /Pages/.test(x.text)));
   assert.ok(usage.notes.some((x) => /Inline usage test/.test(x)));
   assert.ok(planDeletion({ collection: 'photos', key: photo.id, confirm: photo.title }, repo).errors.length, 'derived photo is not a deletable standalone record');
+});
+
+test('Unified Pages: one saved file updates text, media and SEO; another page is unchanged; removing edits restores output', {timeout:120000}, async()=>{
+  const {runInNewContext}=await import('node:vm');
+  const dir=await mkdtemp(join(tmpdir(),'pgk-page-edit-'));
+  try {
+    for(const d of ['content','src','scripts','static','package.json'])await cp(join(root,d),join(dir,d),{recursive:true});
+    const env={...process.env,VERCEL_GIT_COMMIT_SHA:'page-edit-test'};
+    const build=()=>execFileSync('node',['src/build.mjs'],{cwd:dir,env,stdio:'pipe'});
+    build();
+    const before=await readFile(join(dir,'dist/about.html'),'utf8'),home=await readFile(join(dir,'dist/index.html'),'utf8');
+    const scope={window:{}};runInNewContext(await readFile(join(dir,'dist/admin/config.js'),'utf8'),scope);
+    const heading=scope.window.PHOTOGRAFIK_PAGE_EDITORS.about.sections[0].fields.find(f=>f.type==='heading');
+    const path=join(dir,'content/page-media/about.json'),original=await readFile(path,'utf8'),value=JSON.parse(original);
+    value._copy={[heading.key]:'People and *purpose.*'};value._seo={title:'People and Purpose | Photografik Studios',description:'Marketing led photography and film for the people behind the work.'};value.locationMedia={...value.locationMedia,size:'small',fit:'original'};
+    await writeFile(path,JSON.stringify(value));build();
+    const after=await readFile(join(dir,'dist/about.html'),'utf8');
+    assert.match(after,/People and <em>purpose\.<\/em>/);assert.match(after,/<title>People and Purpose \| Photografik Studios<\/title>/);
+    assert.match(after,/data-page-media="about.locationMedia" data-media-size="small" data-media-fit="original"/);
+    assert.equal(await readFile(join(dir,'dist/index.html'),'utf8'),home,'a page edit cannot overwrite Home');
+    const refs=pageMediaRefs({about:{...value,_seo:{image:'/images/library/qa-sharing.jpg'}}});
+    assert.ok(refs.some(r=>r.src==='/images/library/qa-sharing.jpg'),'the upload cannot be deleted while used as a social image');
+    await writeFile(path,original);build();assert.equal(await readFile(join(dir,'dist/about.html'),'utf8'),before,'reset restores the previous visible page');
+  } finally {await rm(dir,{recursive:true,force:true});}
 });

@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const configJs = await readFile(join(root, 'dist/admin/config.js'), 'utf8');
+const editorCoreJs = await readFile(join(root, 'dist/admin/page-editing.js'), 'utf8');
 const cmsJs = await readFile(join(root, 'src/admin/cms.js'), 'utf8');
 
 const harness = `
@@ -60,7 +61,7 @@ function renderNode(v, path) {
   if (el.tagName === 'SELECT' && v.props.value != null) el.value = v.props.value;
   return el;
 }
-const wrap = (x) => (x !== null && typeof x === 'object' ? { get: (k) => wrap(x[k]), getIn: (p) => p.reduce((a, k) => (a == null ? a : a[k]), x) && wrap(p.reduce((a, k) => (a == null ? a : a[k]), x)), toJS: () => JSON.parse(JSON.stringify(x)), _raw: x } : x);
+const wrap = (x) => (x !== null && typeof x === 'object' ? { get: (k) => wrap(x[k]), getIn: (p) => p.reduce((a, k) => (a == null ? a : a[k]), x) && wrap(p.reduce((a, k) => (a == null ? a : a[k]), x)), toJS: () => JSON.parse(JSON.stringify(x)), set: (k,v) => wrap(Object.assign({},x,{[k]:v})), merge: (v) => wrap(Object.assign({},x,v&&v.toJS?v.toJS():v)), delete: (k) => {const n=Object.assign({},x);delete n[k];return wrap(n);}, _raw: x } : x);
 // Two behaviours of the real Decap 3.16.3 that the acceptance walk on 94d5fb1 hit (opt in with decap: { stored }):
 // - A control's props.entry, as its isValid sees it on Save, keeps the sibling values from when the control's own value
 //   last changed (observed in real Decap 3.16.3 on Oct 14, with and without the control's own shouldComponentUpdate).
@@ -160,11 +161,12 @@ await page.route('https://api.github.com/**', (r) => {
 await page.goto('http://pgk.test/admin/');
 await page.addScriptTag({ content: harness });
 await page.addScriptTag({ content: configJs });
+await page.addScriptTag({ content: editorCoreJs });
 await page.addScriptTag({ content: cmsJs });
 const pm = (f) => readFile(join(root, 'content/page-media', f + '.json'), 'utf8').then(JSON.parse);
 const slotField = async (file, key) => {
   const cfg = JSON.parse(configJs.match(/PHOTOGRAFIK_CMS_CONFIG = (\{.*\});/)[1]);
-  return cfg.collections.find((c) => c.name === 'page-media').files.find((f) => f.name === file).fields.find((x) => x.name === key);
+  return cfg.collections.find((c) => c.name === 'pages').files.find((f) => f.name === file).fields.find(x=>x.name==='_page').slots.find((x) => x.name === key);
 };
 const results = [];
 const check = async (name, fn) => { console.log('… ' + name); try { await fn(); results.push(['ok', name]); } catch (e) { results.push(['FAIL', name, e.message.slice(0, 900)]); } };
@@ -850,6 +852,56 @@ await check('Page Media focus: full portrait preview, pointer selection, keyboar
   await page.evaluate(({field,stored})=>{window.__focus=window.mountWidget('pgk-slot',{field,value:JSON.parse(JSON.stringify(stored)),entry:{},collection:'page-media'});},{field,stored});
   assert.deepEqual(await page.evaluate(()=>window.__focus.state.value),stored,'save/reload serialization retains coordinates and fit');
   assert.equal(await page.evaluate(()=>window.__focus.instance.isValid()),true);
+});
+
+await check('Pages workspace: text and media share one save, serialize cleanly, and reopen without losing other sections', async () => {
+  await page.setViewportSize({width:1600,height:1100});
+  const data=await pm('about');
+  const field=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='about').fields.find(f=>f.name==='_page'));
+  const model=await page.evaluate(()=>window.PHOTOGRAFIK_PAGE_EDITORS.about);
+  await page.evaluate(({field,data})=>{window.__workspace=window.mountWidget('pgk-page',{field,value:undefined,entry:{slug:'about',data},collection:'pages'});},{field,data});
+  const host=page.locator('.host-pgk-page').last();
+  assert.equal(await host.getByRole('navigation',{name:'Choose a page'}).getByRole('link').count(),11);
+  const heading=model.sections[0].fields.find(f=>f.type==='heading');
+  await host.getByLabel('Heading '+heading.key,{exact:true}).fill('People and *purpose.*');
+  const purpose=model.sections.find(s=>s.key==='about-purpose');
+  await host.getByRole('button',{name:new RegExp(purpose.label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))}).click();
+  await host.getByLabel('Display size',{exact:true}).waitFor();
+  await host.getByLabel('Display size',{exact:true}).selectOption('large');
+  await host.getByLabel('Image fit',{exact:true}).selectOption('original');
+  await page.waitForTimeout(60);
+  if(process.env.SHOTS)await host.screenshot({path:join(process.env.SHOTS,'pages-workspace-desktop.png')});
+  const value=await page.evaluate(()=>window.__workspace.state.value);
+  assert.equal(value._copy[heading.key],'People and *purpose.*');
+  assert.equal(value.locationMedia.size,'large');assert.equal(value.locationMedia.fit,'original');
+  assert.deepEqual(value.studioMedia,data.studioMedia);assert.deepEqual(value.closing,data.closing);
+  assert.equal(await page.evaluate(()=>window.__workspace.instance.isValid()),true);
+  const saved=await page.evaluate(({data,value})=>window.__events.preSave({collection:window.__wrapForTest({name:'pages'}),entry:window.__wrapForTest({slug:'about',data:{...data,_page:value}})}).toJS(),{data,value});
+  assert.equal(saved._page,undefined);assert.equal(saved._copy[heading.key],'People and *purpose.*');assert.equal(saved.locationMedia.size,'large');assert.deepEqual(saved.studioMedia,data.studioMedia);
+  await page.evaluate(({field,saved})=>{window.__workspace.unmount();window.__workspace=window.mountWidget('pgk-page',{field,value:undefined,entry:{slug:'about',data:saved},collection:'pages'});},{field,saved});
+  assert.equal(await page.locator('.host-pgk-page').last().getByLabel('Heading '+heading.key,{exact:true}).inputValue(),'People and *purpose.*');
+  await page.evaluate(()=>window.__workspace.unmount());
+});
+
+await check('Pages workspace: search controls, client reviews and FAQs are available in the page; phone editor fits',async()=>{
+  await page.setViewportSize({width:390,height:844});
+  const data=await pm('about');
+  const field=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='about').fields.find(f=>f.name==='_page'));
+  await page.evaluate(({field,data})=>{window.__workspace=window.mountWidget('pgk-page',{field,entry:{slug:'about',data},collection:'pages'});},{field,data});
+  const host=page.locator('.host-pgk-page').last();
+  await host.getByRole('button',{name:/Client reviews|In our clients/}).click();
+  await host.getByLabel('Review 1 quote',{exact:true}).waitFor();
+  await host.getByRole('button',{name:/Search & social appearance/}).click();
+  await host.getByLabel('SEO title',{exact:true}).fill('People and Purpose | Photografik Studios');
+  assert.equal(await page.evaluate(()=>window.__workspace.state.value._seo.title),'People and Purpose | Photografik Studios');
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no phone overflow');
+  await page.evaluate(()=>window.__workspace.unmount());
+  const reData=await pm('real-estate');
+  const reField=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='real-estate').fields.find(f=>f.name==='_page'));
+  await page.evaluate(({field,data})=>{window.__workspace=window.mountWidget('pgk-page',{field,entry:{slug:'real-estate',data},collection:'pages'});},{field:reField,data:reData});
+  await page.locator('.host-pgk-page').last().getByRole('button',{name:/Questions and answers/}).click();
+  await page.locator('.host-pgk-page').last().getByLabel('FAQ 1 q',{exact:true}).waitFor();
+  await page.evaluate(()=>window.__workspace.unmount());
 });
 
 if (process.env.SHOTS) await page.screenshot({ path: join(process.env.SHOTS, 'dashboard-widgets-390.png'), fullPage: true });

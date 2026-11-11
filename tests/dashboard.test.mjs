@@ -108,7 +108,7 @@ test('project photos become ordinary media records that inherit the project (dra
 test('dashboard config: sections, no pricing/legal/booking, every existing field kept, policy FAQs not editable', async () => {
   const { config } = cmsConfig({ site, fieldNotes, work, branch: 'redesign/2027-preview', repo: 'photografikstudios/PS_website', testimonials });
   const names = config.collections.map((c) => c.name);
-  assert.deepEqual(names, ['projects', 'photos', 'films', 'page-media', 'page-text', 'testimonials', 'faqs', 'field-notes']);
+  assert.deepEqual(names, ['pages', 'projects', 'photos', 'films', 'field-notes']);
   const files = JSON.stringify(config.collections.map((c) => c.folder || c.files.map((f) => f.file)));
   // Whole paths: Page Media's own content/page-media/real-estate-pricing.json holds only that page's pictures.
   for (const f of ['pricing.json', 'legal.json', 'offers.json', 'site.json', 'faqs-policy.json', 'seo.json']) assert.ok(!files.includes(`"content/${f}"`), f);
@@ -414,14 +414,11 @@ test('usability: flat fields retain data keys, Film essentials come first, secti
   assert.equal(col('projects').fields.find((f) => f.name === 'category').widget, 'pgk-category');
   assert.equal(col('projects').fields.find((f) => f.name === 'order').direction, 'ascending');
   for (const name of ['films', 'photos', 'projects']) assert.equal(col(name).fields.find((f) => f.name === 'sortPriority').widget, 'pgk-placement');
-  const review = col('testimonials').files[0].fields.find((f) => f.name === 'reviews');
-  assert.equal(review.fields.find((f) => f.name === 'featured').widget, 'pgk-review-display');
-  assert.equal(review.fields.find((f) => f.name === 'approval').widget, 'hidden');
   for (const name of ['projects', 'photos', 'films', 'field-notes']) {
     const names = col(name).fields.map((f) => f.name); assert.equal(names.length, new Set(names).size, 'no repeated data keys');
     for (const f of col(name).fields.filter((f) => f.widget === 'pgk-section')) assert.equal(f.default, undefined, 'display-only section has no saved default');
   }
-  for (const page of col('page-media').files) for (const f of page.fields.filter((f) => f.galleryKey)) {
+  for (const page of col('pages').files) for (const f of page.fields.find(f=>f.name==='_page').slots) {
     assert.ok(f.pageLabel && f.sectionLabel && f.device, page.name + '.' + f.name);
   }
 });

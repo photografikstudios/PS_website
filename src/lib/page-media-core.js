@@ -195,7 +195,7 @@ export function checkPageMedia(pm, lib) {
   for (const page of PAGES) {
     const values = pm[page.file];
     if (!values) { errors.push(`Page Media: the ${page.label} page file is missing (content/page-media/${page.file}.json)`); continue; }
-    const known = new Set(['_about', ...page.slots.map((s) => s.key)]);
+    const known = new Set(['_about', '_copy', '_links', '_seo', '_reviews', '_faqs', ...page.slots.map((s) => s.key)]);
     for (const k of Object.keys(values)) if (!known.has(k)) errors.push(`Page Media ${page.label}: “${k}” is not a section of this page`);
     for (const slot of page.slots) {
       const where = `Page Media ${page.label}, ${slot.label}`;
@@ -304,6 +304,7 @@ export function pageMediaRefs(pm) {
   const out = [];
   for (const page of PAGES) {
     const values = (pm && pm[page.file]) || {};
+    if(values._seo?.image) out.push({ page: page.label, route: page.route, file: page.file, key: '_seo', label: 'Social sharing image', src: values._seo.image, media: null, project: null });
     for (const slot of page.slots) {
       const v = values[slot.key];
       // A gallery uses only what James chose himself (an automatic gallery depends on the library, not on one item).

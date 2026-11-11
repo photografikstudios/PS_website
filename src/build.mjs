@@ -18,6 +18,7 @@ import { checkContent, holdDashboardProjects, applyReviewOnly, dashboardStatus }
 import { imageSize } from './lib/image-size.js';
 import { structuredData } from './lib/seo-core.js';
 import { PAGES as PAGE_MEDIA, checkPageMedia, heroStillMap } from './lib/page-media-core.js';
+import { pageEditingModel, pageEditProblems } from './lib/page-editor-core.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Rights-pending candidates are a local, owner-only review. They can never be built on Vercel or CI, and they go to a
@@ -45,6 +46,11 @@ const onVercel = !!process.env.VERCEL && process.env.LOCAL_IMAGES !== '1';
 const [site, pricing, offers, faqs, seo, legacyArticles, testimonials, mediaAssets, legal, pageText, faqsPolicy, architectureClients] = await Promise.all(
   ['site.json', 'pricing.json', 'offers.json', 'faqs.json', 'seo.json', 'legacy-articles.json', 'testimonials.json', 'media-assets.json', 'legal.json', 'pages.json', 'faqs-policy.json', 'architecture-clients.json'].map(readJSON),
 );
+const pageMedia = Object.fromEntries(await Promise.all(PAGE_MEDIA.map(async (pg) => [pg.file, existsSync(join(root, 'content/page-media', `${pg.file}.json`)) ? JSON.parse(await readFile(join(root, 'content/page-media', `${pg.file}.json`), 'utf8')) : null])));
+// Page-scoped review/FAQ edits keep the shared source and policy FAQ records intact.
+const editableFaqs = structuredClone(faqs['real-estate'] || []);
+if (pageMedia.about?._reviews) testimonials.reviews = pageMedia.about._reviews;
+if (pageMedia['real-estate']?._faqs) faqs['real-estate'] = pageMedia['real-estate']._faqs;
 // Portfolio: one file per project and per photo/film (content/projects, content/media), edited through /admin.
 const work = await loadWork(root);
 if (work.loadErrors.length) { console.error('Portfolio file errors:\n - ' + work.loadErrors.join('\n - ')); process.exit(1); }
@@ -90,7 +96,7 @@ if (mediaErrors.length) { console.error('Media metadata errors:\n - ' + mediaErr
 
 // Page Media (content/page-media/<page>.json, /admin → Page Media): checked against the rights-approved library, the
 // film loops that exist (/v/<id>-loop.mp4) and the committed phone stills; a bad choice stops the build with the reason.
-const pageMedia = Object.fromEntries(await Promise.all(PAGE_MEDIA.map(async (pg) => [pg.file, existsSync(join(root, 'content/page-media', `${pg.file}.json`)) ? JSON.parse(await readFile(join(root, 'content/page-media', `${pg.file}.json`), 'utf8')) : null])));
+
 const loopIds = new Set(Object.keys(mediaAssets.files || {}).map((f) => f.match(/^\/v\/([\w-]+)-loop\.mp4$/)?.[1]).filter(Boolean));
 // A replaced film plays its fresh files (<id>-rN, record.asset); its own id stays the name page sections use.
 for (const m of work.media) if (m.asset && loopIds.has(m.asset)) loopIds.add(m.id);
@@ -140,6 +146,23 @@ const version = (process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(36)).s
 const ctx = { site, pricing, work, offers, faqs, fieldNotes, testimonials, legal, pageText, pageMedia, architectureClients, reviewMode, visible, version, ...createContext({ site, reviewMode, onVercel, heroStills, imageInfo }) };
 ctx.galleryAuto = {}; // filled by buildPages: what each gallery shows automatically today (for the dashboard)
 const pages = buildPages(ctx);
+const pageEditors = {};
+function preparePageEditors(pages, collect = false) {
+  for (const pg of PAGE_MEDIA) {
+    const page = pages[pg.route]; if (!page) continue;
+    const values = pageMedia[pg.file] || {};
+    const model = pageEditingModel(page.body, pg, values);
+    const problems = pageEditProblems(values, model);
+    if (problems.length) throw new Error(`Pages → ${pg.label}: ${problems.join(' ')}`);
+    const baseSeo = page.seo || seo[pg.route] || seo['/'];
+    page.seo = { ...baseSeo, ...(values._seo || {}) };
+    page.body = model.body;
+    if (collect) pageEditors[pg.file] = { label: pg.label, route: pg.route, body: model.body, sections: model.sections, seo: baseSeo,
+      reviews: pg.file === 'about' ? testimonials.reviews : undefined,
+      faqs: pg.file === 'real-estate' ? editableFaqs : undefined };
+  }
+}
+preparePageEditors(pages, true);
 // Field Notes appears in navigation only when it has at least one visible article.
 if (!pages['/field-notes']) {
   site.nav = site.nav.filter((n) => n.href !== '/field-notes');
@@ -163,6 +186,7 @@ for (const [route, page] of Object.entries(pages)) {
 // replacement left out and four slots swapped to approved Creator media. Not in the sitemap; review pages are noindex.
 if (reviewMode) {
   const variantPages = buildPages({ ...ctx, variant: { omitPendingReplacements: true } });
+  preparePageEditors(variantPages);
   const note = '<div class="review-bar" role="note" style="background:#7a3b2a"><strong>Variant for James</strong> · Old podcast clips (JM2 Architecture, Noah Knows, The Tick) left out; four slots use approved Creator media. Compare with the live review pages.</div>';
   for (const route of ['/', '/creator-studios', '/creator-studios/sessions', '/architecture-design']) {
     const page = variantPages[route]; if (!page) continue;
@@ -204,7 +228,7 @@ for (const f of await readdir(join(out, 'assets'))) {
   const decap = JSON.parse(await readFile(join(root, 'src/admin/decap.json'), 'utf8'));
   const branch = process.env.CMS_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || 'redesign/2027-preview';
   const repo = process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}` : 'photografikstudios/PS_website';
-  const { config, library, categories } = cmsConfig({ site, fieldNotes, work, branch, repo, testimonials, reviewMode });
+  const { config, library, categories } = cmsConfig({ site, fieldNotes, work, branch, repo, testimonials, reviewMode, pageEditors });
   const safe = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
   await mkdir(join(out, 'admin'), { recursive: true });
   const adminHtml = (await readFile(join(root, 'src/admin/index.html'), 'utf8'))
@@ -277,8 +301,10 @@ for (const f of await readdir(join(out, 'assets'))) {
   // Projects for the Commercial gallery choices (published ones only in production).
   const pickProjects = work.projects.filter((p) => !testOnly.has(p.slug) && (reviewMode || p.published !== false))
     .map((p) => ({ slug: p.slug, title: p.client || p.title, cat: p.category, catLabel: catName[p.category] || '', thumb: thumbs.projects[p.slug] || null, hidden: p.published === false }));
-  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_GALLERIES = ${safe(ctx.galleryAuto)};\nwindow.PHOTOGRAFIK_PROJECTS = ${safe(pickProjects)};\nwindow.PHOTOGRAFIK_MEDIA = ${safe(pickMedia)};\nwindow.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
+  await writeFile(join(out, 'admin/config.js'), `window.PHOTOGRAFIK_CMS_VERSION = ${safe(version)};\nwindow.PHOTOGRAFIK_PAGE_EDITORS = ${safe(pageEditors)};\nwindow.PHOTOGRAFIK_GALLERIES = ${safe(ctx.galleryAuto)};\nwindow.PHOTOGRAFIK_PROJECTS = ${safe(pickProjects)};\nwindow.PHOTOGRAFIK_MEDIA = ${safe(pickMedia)};\nwindow.PHOTOGRAFIK_THUMBS = ${safe(thumbs)};\nwindow.PHOTOGRAFIK_CMS_CONFIG = ${safe(config)};\nwindow.PHOTOGRAFIK_LIBRARY = ${safe(library)};\nwindow.PHOTOGRAFIK_CATEGORIES = ${safe(categories)};\nwindow.PHOTOGRAFIK_WORK_CATEGORIES = ${safe(work.taxonomy.category.map((c) => ({ label: c.label, value: c.id })))};\n`);
   await cp(join(root, 'src/admin/cms.js'), join(out, 'admin/cms.js'));
+  const editorCore = (await readFile(join(root, 'src/lib/page-editor-core.js'), 'utf8')).replace(/^export /gm, '');
+  await writeFile(join(out, 'admin/page-editing.js'), `(function(){${editorCore}\nwindow.PHOTOGRAFIK_EDITOR_CORE={pageEditProblems,safePageUrl,renderInline};})();`);
   // The dashboard checks Page Media choices with the same rules as the build.
   await cp(join(root, 'src/lib/page-media-core.js'), join(out, 'admin/page-media-core.js'));
   await cp(join(root, 'src/admin/login.html'), join(out, 'admin/login.html'));

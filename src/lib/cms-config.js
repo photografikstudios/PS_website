@@ -39,7 +39,7 @@ function keep(records, shown) {
   return [...keys].sort().map((k) => ({ name: k, label: k, widget: 'hidden', required: false }));
 }
 
-export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials = { reviews: [] }, reviewMode = false }) {
+export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials = { reviews: [] }, reviewMode = false, pageEditors = {} }) {
   const cats = fieldNotes.categories.map((c) => ({ label: c.label, value: c.id }));
   const workCats = work.taxonomy.category.map((c) => ({ label: c.label, value: c.id }));
   const services = work.taxonomy.service.map((c) => ({ label: c.label, value: c.id }));
@@ -99,7 +99,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
     { name: 'heroFocal', label: 'Main image focus', widget: 'pgk-focus', required: false, default: 'center', sourceField: 'hero', hint: hint.focal },
     { name: 'heroOrientation', label: 'Main image shape', widget: 'select', required: false, default: 'auto', options: ORIENT },
     ...organizationFields(),
-    { name: 'photos', label: 'Photos', widget: 'pgk-gallery', required: false, default: [], ...projectMedia, hint: `Choose several photos at once, then describe each one. Use the arrows to change the order. Photos already on the site for this project are in the Photos section. ${imageHint}` },
+    { name: 'photos', label: 'Photo library', widget: 'pgk-gallery', required: false, default: [], ...projectMedia, hint: `Choose several photos at once, then describe each one. Use the arrows to change the order. Photos already on the site for this project are in the Photos section. ${imageHint}` },
     { name: 'films', label: 'Films from the library', widget: 'relation', collection: 'films', search_fields: ['title', 'location'], value_field: '{{slug}}', display_fields: ['title', 'location'], multiple: true, required: false, hint: 'Choose films that are already on the site. New films need the video upload step (see the guide).' },
     // James, Oct 2 2026: media he adds himself is approved, so the rights question is not in the routine form. New
     // records are saved as approved; existing records keep whatever they already hold (a hidden field never rewrites
@@ -168,13 +168,6 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   const films = [...fileMedia.filter((m) => m.type === 'video'), ...(work.importing || [])];
   const catFilters = workCats.map((c) => ({ label: c.label, field: 'category', pattern: `^${c.value}$` }));
 
-  const pageFields = (route, label, extra = []) => ({ name: route, label, widget: 'object', collapsed: true, fields: [
-    { name: 'eyebrow', label: 'Small label above the heading', widget: 'string', pattern: max(60, 'label') },
-    { name: 'title', label: 'Heading', widget: 'string', pattern: max(70, 'heading'), hint: 'Plain text.' },
-    { name: 'titleEm', label: 'Highlighted ending of the heading (italic)', widget: 'string', required: false, pattern: max(50, 'highlighted ending'), hint: 'Shown in italics after the heading, e.g. “how you work.”' },
-    { name: 'lede', label: 'Intro paragraph', widget: 'text', pattern: max(360, 'intro') },
-    ...extra,
-  ] });
 
   const config = {
     load_config_file: false,
@@ -210,7 +203,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         ]), ...keep(work.projects, projectShown), MANAGE],
       },
       {
-        name: 'photos', label: 'Photos', label_singular: 'Photo',
+        name: 'photos', label: 'Photo library', label_singular: 'Photo',
         description: 'Organize photos with Library folder and Tags. Use Group by → Library folder or Filter → Tag to find them. Service page controls website placement; folders and tags only organize the library. For a batch, use Projects → Photos and set its folder and tags once. Photos uploaded inside a Project are edited there and are available in the library pickers.',
         folder: 'content/media', filter: { field: 'type', value: 'image' }, create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', media_folder: '/static/images/library', public_folder: '/images/library',
@@ -227,7 +220,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
         ]), ...keep(photos, photoShown), MANAGE],
       },
       {
-        name: 'films', label: 'Films', label_singular: 'Film',
+        name: 'films', label: 'Film library', label_singular: 'Film',
         description: 'Every film in the library. Add a film from Google Drive with “New Film” (the original stays in your Drive), change how a film is shown, hide it, or delete it for good.',
         folder: 'content/media', filter: { field: 'type', value: 'video' }, create: true, delete: false, extension: 'json', format: 'json',
         slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{published | ternary('Shown', 'Hidden')}}",
@@ -242,59 +235,6 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           ['placement', 'Gallery Placement', ['project', 'service', 'location', 'client', 'sortPriority', 'featured']],
           ['advanced', 'Advanced', [], 'Existing rights, source and file metadata are kept automatically. Replace or retry through Import status above.'],
         ]), ...keep(films, filmShown), MANAGE],
-      },
-      {
-        name: 'page-text', label: 'Page text', label_singular: 'Page text', delete: false,
-        description: 'The heading and intro at the top of each main page. Pictures and films are in Page Media. Layout, buttons, prices and booking links are not changed here.',
-        files: [{
-          name: 'pages', label: 'Page headings and intros', file: 'content/pages.json',
-          fields: [
-            { name: '_readme', label: '_readme', widget: 'hidden' },
-            { name: 'pages', label: 'Pages', widget: 'object', fields: [
-              pageFields('/', 'Home'), pageFields('/real-estate', 'Real Estate'), pageFields('/agent-content', 'Agent Content'),
-              pageFields('/architecture-design', 'Architecture & Design'), pageFields('/commercial', 'Commercial'),
-              pageFields('/agency-partnerships', 'Agency Partnerships'),
-              pageFields('/creator-studios', 'LI Creator Studios'), pageFields('/about', 'About'),
-            ] },
-          ],
-        }],
-      },
-      {
-        name: 'testimonials', label: 'Testimonials', delete: false,
-        description: 'Client reviews on the About page. Quotes must be word for word from the client (Google review or written approval).',
-        files: [{
-          name: 'testimonials', label: 'Client reviews', file: 'content/testimonials.json',
-          fields: [
-            { name: '_readme', label: '_readme', widget: 'hidden' }, { name: 'google', label: 'google', widget: 'hidden' }, { name: 'video', label: 'video', widget: 'hidden' },
-            { name: 'reviews', label: 'Reviews', label_singular: 'review', widget: 'list', summary: '{{fields.name}}', fields: [
-              { name: 'name', label: 'Name', widget: 'string' },
-              { name: 'org', label: 'Company / role', widget: 'string', required: false },
-              { name: 'source', label: 'Source', widget: 'select', options: [{ label: 'Google review', value: 'google' }, { label: 'Website testimonial / written approval', value: 'site' }] },
-              { name: 'quote', label: 'Quote (word for word)', widget: 'text', hint: 'Copy it exactly. Shorten only with “…”.' },
-              { name: 'excerpt', label: 'Short version for the Home page (optional)', widget: 'text', required: false, hint: 'Only words from the quote, in the same order, with “…” where words are left out. The full quote stays on About.' },
-              { name: 'featured', label: 'Display on About', widget: 'pgk-review-display', required: false, hint: 'Keep in reserve or show on About. Earlier/later changes the order among displayed reviews; quotes and approvals stay unchanged.' },
-              { name: 'approval', label: 'approval', widget: 'hidden', default: 'approved' },
-              { name: 'id', label: 'id', widget: 'hidden', required: false },
-              ...keep(testimonials.reviews || [], new Set(['name', 'org', 'source', 'quote', 'excerpt', 'featured', 'approval', 'id'])),
-            ] },
-          ],
-        }],
-      },
-      {
-        name: 'faqs', label: 'FAQs', delete: false,
-        description: 'General questions and answers. Answers about cancellations, rescheduling, refunds, sharing or licensing are kept with the policies and are not edited here.',
-        files: [{
-          name: 'faqs', label: 'Real Estate “Good to know”', file: 'content/faqs.json',
-          fields: [
-            { name: '_readme', label: '_readme', widget: 'hidden' },
-            { name: 'real-estate', label: 'Questions', label_singular: 'question', widget: 'list', summary: '{{fields.q}}', fields: [
-              { name: 'q', label: 'Question', widget: 'string' },
-              { name: 'a', label: 'Answer', widget: 'text', hint: 'Do not state cancellation, refund or licensing terms here; those come from the policies.' },
-              { name: 'approval', label: 'approval', widget: 'hidden', default: 'approved' },
-              { name: 'approvedBy', label: 'approvedBy', widget: 'hidden', required: false },
-            ] },
-          ],
-        }],
       },
       {
         name: 'field-notes', label: 'Field Notes', label_singular: 'Field Note',
@@ -344,23 +284,25 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   };
   // Page Media (James, Oct 13 2026): every named photo and video section of the site's own pages, one entry per page.
   // Each section is a pgk-slot widget (src/admin/cms.js) that knows what it accepts; the build checks the same rules.
-  config.collections.splice(3, 0, {
-    name: 'page-media', label: 'Page Media', label_singular: 'page', delete: false,
-    description: 'The photos and films in each section of the site’s pages. Choose from the library, upload a photo, change the order, or take an item off a page. Taking something off a page never deletes it from the library.',
-    files: PAGE_MEDIA.map((pg) => ({
-      name: pg.file, label: pg.label, file: `content/page-media/${pg.file}.json`,
-      fields: [
-        { name: '_about', label: 'About this page', widget: 'pgk-page-note', required: false, pageLabel: pg.label, route: pg.route, automatic: pg.automatic || [] },
-        ...pg.slots.map((sl) => ({
-          name: sl.key, label: sl.label, widget: isGallery(sl) ? 'pgk-gallery-slot' : 'pgk-slot', required: false, accepts: sl.accepts, kind: KINDS[sl.accepts],
-          pageLabel: pg.label, sectionLabel: sl.label, device: sl.accepts === 'heroLoop' ? 'Desktop: muted film; phone: still fallback (motion depends on device and reduced-motion settings).' : 'Desktop and mobile; layout and crop adapt to the screen.', galleryKey: `${pg.file}.${sl.key}`, auto: sl.auto || '',
-          multiple: !!sl.list, min: sl.list ? sl.list.min : sl.required ? 1 : 0, max: sl.list ? sl.list.max : 1, mustHave: !!sl.required,
-          labelled: !!sl.labelled, altMode: sl.alt || 'library', empty: sl.empty || '', route: pg.route,
-          media_folder: '/static/images/library', public_folder: '/images/library',
-          hint: sl.empty ? `Optional. When empty: ${sl.empty}` : undefined,
-        })),
-      ],
-    })),
+  config.collections.unshift({
+    name: 'pages', label: 'Pages', label_singular: 'page', delete: false,
+    description: 'Choose a page. Edit its words, photos, films, crop, galleries and search appearance together, section by section. Save once to update the preview.',
+    files: PAGE_MEDIA.map((pg) => {
+      const slots = pg.slots.map((sl) => ({
+        name: sl.key, label: sl.label, widget: isGallery(sl) ? 'pgk-gallery-slot' : 'pgk-slot', required: false, accepts: sl.accepts, kind: KINDS[sl.accepts],
+        pageLabel: pg.label, sectionLabel: sl.label, device: 'Desktop and phone; layout and crop adapt to the screen.', galleryKey: `${pg.file}.${sl.key}`, auto: sl.auto || '',
+        multiple: !!sl.list, min: sl.list ? sl.list.min : sl.required ? 1 : 0, max: sl.list ? sl.list.max : 1, mustHave: !!sl.required,
+        labelled: !!sl.labelled, altMode: sl.alt || 'library', empty: sl.empty || '', route: pg.route,
+        media_folder: '/static/images/library', public_folder: '/images/library',
+      }));
+      return {
+        name: pg.file, label: pg.label, file: `content/page-media/${pg.file}.json`, preview_path: pg.route,
+        fields: [
+          { name: '_page', label: 'Page editor', widget: 'pgk-page', required: false, pageFile: pg.file, pageLabel: pg.label, route: pg.route, slots, automatic: pg.automatic || [], media_folder: '/static/images/library', public_folder: '/images/library' },
+          ...['_about', '_copy', '_links', '_seo', '_reviews', '_faqs', ...slots.map(s => s.name)].map(name => ({ name, widget: 'hidden', required: false })),
+        ],
+      };
+    }),
   });
   return { config, library, categories: cats };
 }

@@ -1879,14 +1879,14 @@ await check('Dashboard content model: all 13 original project URLs load with the
   }
 });
 
-await check('Site dashboard: /admin is noindex, pinned and Git-backed; eight sections; drafts are off by default', async () => {
+await check('Site dashboard: /admin is noindex, pinned and Git-backed; page-first sections; drafts are off by default', async () => {
   const html = await (await fetch(base + '/admin')).text();
   assert(/noindex/.test(html) && /unpkg\.com\/decap-cms@\d+\.\d+\.\d+\/dist\/decap-cms\.js" integrity="sha384-[A-Za-z0-9+/=]+"/.test(html), 'pinned Decap with SRI');
   const cfg = await (await fetch(base + '/admin/config.js')).text();
   const conf = JSON.parse(cfg.match(/PHOTOGRAFIK_CMS_CONFIG = (\{.*\});/)[1]);
   const col = (n) => conf.collections.find((c) => c.name === n);
   assert(conf.backend.name === 'github' && conf.backend.auth_endpoint === 'api/cms-auth' && col('field-notes').folder === 'content/field-notes', 'git backend');
-  assert(conf.collections.map((c) => c.name).join() === 'projects,photos,films,page-media,page-text,testimonials,faqs,field-notes', 'sections');
+  assert(conf.collections.map((c) => c.name).join() === 'pages,projects,photos,films,field-notes', 'sections');
   for (const n of ['field-notes', 'projects', 'photos']) assert(col(n).fields.find((x) => x.name === 'published').default === false, `${n}: drafts by default`);
   const robots = await (await fetch(base + '/robots.txt')).text();
   assert(/Disallow: \//.test(robots), 'robots');

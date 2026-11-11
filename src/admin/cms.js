@@ -690,7 +690,7 @@
     var self = this; var article = this.props.collection && this.props.collection.get('name') === 'field-notes';
     return h('div', { className: 'pgk-note', id: this.props.forID },
       h('p', {}, article ? 'Field Notes is ordered by publish date. The retained designation below does not move an article.' : 'Choose and order homepage tiles in Home → Selected work. Automatic service galleries follow Gallery placement above.'),
-      !article ? h('a', { className: 'pgk-btn pgk-btn--quiet', href: '#/collections/page-media/entries/home' }, 'Manage Home → Selected work: thumbnails, selection and order') : null,
+      !article ? h('a', { className: 'pgk-btn pgk-btn--quiet', href: '#/collections/pages/entries/home' }, 'Manage Home → Selected work: thumbnails, selection and order') : null,
       h('details', {}, h('summary', {}, 'Advanced: retained featured designation'),
         h('p', {}, 'Kept for existing records. This flag does not select or reorder website tiles.'),
         h('label', { className: 'pgk-switch' }, h('input', { type: 'checkbox', role: 'switch', checked: this.props.value === true, onChange: function (e) { self.props.onChange(e.target.checked); } }), ' Keep featured designation')));
@@ -1065,6 +1065,108 @@
   });
   CMS.registerWidget('pgk-page-note', PageNote);
 
+  // ---------- Page-first workspace: one entry and one save for a page's text and media ----------
+  var PAGE_MODELS = window.PHOTOGRAFIK_PAGE_EDITORS || {};
+  var EDIT_CORE = window.PHOTOGRAFIK_EDITOR_CORE || {};
+  var jsonValue = function(v) { return v && v.toJS ? v.toJS() : v; };
+  var PageWorkspace = createClass({
+    getInitialState: function() { return { section: 'top', viewport: 'desktop', previewWidth: 600, previewOpen: true }; },
+    componentDidMount: function() {
+      document.body.classList.add('pgk-pages'); var self=this;
+      this.resize=function(){if(self.previewHost){var w=self.previewHost.clientWidth;if(w&&Math.abs(w-self.state.previewWidth)>2)self.setState({previewWidth:w});}};
+      window.addEventListener('resize',this.resize);this.resize();
+      if(window.ResizeObserver){this.observer=new ResizeObserver(this.resize);if(this.previewHost)this.observer.observe(this.previewHost);}
+    },
+    componentWillUnmount: function(){document.body.classList.remove('pgk-pages');window.removeEventListener('resize',this.resize);if(this.observer)this.observer.disconnect();},
+    componentDidUpdate: function(){this.paintPreview();},
+    model: function(){return PAGE_MODELS[this.props.field.get('pageFile')] || {sections:[],body:'',seo:{}};},
+    values: function(){var v=jsonValue(this.props.value);if(v)return v;var e=this.props.entry;var d=e&&e.get?jsonValue(e.get('data')):{};d=Object.assign({},d||{});delete d._page;return d;},
+    change: function(k,v){var next=Object.assign({},this.values());next[k]=v;this.props.onChange(next);},
+    formatCopy: function(field,mark){var el=this.copyInputs&&this.copyInputs[field.key];if(!el)return;var start=el.selectionStart||0,end=el.selectionEnd||0,body=el.value,selected=body.slice(start,end)||'your text';this.copy(field.key,body.slice(0,start)+mark+selected+mark+body.slice(end));},
+    copy: function(k,v){var next=Object.assign({},this.values()._copy||{});next[k]=v;this.change('_copy',next);},
+    link: function(k,v){var next=Object.assign({},this.values()._links||{});next[k]=v;this.change('_links',next);},
+    seo: function(k,v){var next=Object.assign({},this.values()._seo||{});if(v.trim())next[k]=v;else delete next[k];this.change('_seo',next);},
+    slots: function(){return jsonValue(this.props.field.get('slots')) || [];},
+    childField: function(slot){var f=this.props.field;Object.keys(slot).forEach(function(k){f=f.set(k,slot[k]);});return f;},
+    sections: function(){
+      var model=this.model(), groups=model.sections.map(function(s){return Object.assign({},s,{media:s.media.slice()});}), slots=this.slots(), used={};
+      groups.forEach(function(s){s.media.forEach(function(k){used[k]=true;});});
+      var fallback={teamMedia:'about-james',locationMedia:'about-purpose',studioMedia:'about-studio',clientVideo:'reviews',closing:'split-cta',selectedWork:'selected-work',portfolio:'portfolio',introMedia:'section-2',hero:'top',caseStudy:'case-study',clientWork:'portfolio',examples:'portfolio'};
+      slots.forEach(function(sl){if(used[sl.name])return;var key=fallback[sl.name];var group=key&&groups.find(function(s){return s.key===key;});if(!group&&sl.name==='selectedWork')group=groups.find(function(s){return s.key==='portfolio';});if(!group&&sl.name==='closing')group=groups[groups.length-1];if(group){group.media.push(sl.name);used[sl.name]=true;}});
+      var rest=slots.filter(function(sl){return !used[sl.name];});if(rest.length)groups.push({key:'other-media',label:'Other page media',fields:[],media:rest.map(function(s){return s.name;})});
+      if(model.reviews) {var reviews=groups.find(function(s){return s.key==='reviews';});if(reviews)reviews.reviews=true;else groups.push({key:'reviews',label:'Client reviews',fields:[],media:['clientVideo'],reviews:true});}
+      if(model.faqs)groups.push({key:'questions',label:'Questions and answers',fields:[],media:[],faqs:true});
+      groups.push({key:'search',label:'Search & social appearance',fields:[],media:[],seo:true});return groups;
+    },
+    isValid: function(){
+      var v=this.values(), errors=EDIT_CORE.pageEditProblems?EDIT_CORE.pageEditProblems(v,this.model()):[];
+      this.slots().forEach(function(sl){
+        var f={get:function(k){return sl[k];}}, checker={props:{value:v[sl.name],field:f},f:function(k){return sl[k];},items:function(){return asItems(v[sl.name]);},val:function(){return v[sl.name]||null;}};
+        var result=(sl.widget==='pgk-gallery-slot'?GallerySlot:SlotControl).prototype.isValid.call(checker);
+        if(result!==true)errors.push(sl.label+': '+result.error.message);
+      });
+      if(v._reviews) v._reviews.forEach(function(r){if(!r.name||!r.quote)errors.push('Every review needs its original name and quote.');});
+      if(v._faqs) v._faqs.forEach(function(f){if(!f.q||!f.a)errors.push('Every question needs an answer.');});
+      return errors.length?{error:{type:'custom',message:errors.join(' ')}}:true;
+    },
+    paintPreview: function(){
+      var doc=this.frame&&this.frame.contentDocument;if(!doc||!doc.body)return;
+      var self=this,v=this.values(),model=this.model();
+      doc.querySelectorAll('[data-page-section]').forEach(function(el){el.style.display=el.getAttribute('data-page-section')===self.state.section?'':'none';});
+      model.sections.forEach(function(s){s.fields.forEach(function(f){var el=doc.querySelector('[data-page-copy="'+f.key+'"]');if(!el)return;var value=Object.prototype.hasOwnProperty.call(v._copy||{},f.key)?v._copy[f.key]:f.value;
+        if(EDIT_CORE.renderInline){var original=el.getAttribute('data-original-copy');if(original===null){original=el.innerHTML;el.setAttribute('data-original-copy',original);}el.innerHTML=EDIT_CORE.renderInline(value,original)+(original.match(/<span\b[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/span>/g)||[]).join('');}else el.textContent=value;
+        if(f.href)el.setAttribute('href',(v._links||{})[f.key]||f.href);
+      });});
+      this.slots().forEach(function(sl){if(sl.widget==='pgk-gallery-slot')return;var items=asItems(v[sl.name]);var targets=doc.querySelectorAll('[data-page-media="'+self.props.field.get('pageFile')+'.'+sl.name+'"]');
+        targets.forEach(function(el,i){var item=items[Math.min(i,items.length-1)];if(!item)return;var m=item.media?mediaById[item.media]:null;var src=item.src?thumbFor(item.src,self.props.getAsset,self.props.field):m&&(m.src||m.thumb);if(!src)return;
+          el.style.setProperty('--pm-focus',(function(v){var p=focusCoordinates(v);return p.x+'% '+p.y+'%';})(item.focal||m&&m.focal)||'50% 50%');el.setAttribute('data-media-size',item.size||'default');el.setAttribute('data-media-fit',item.fit||'default');if(m){el.setAttribute('data-media-shape',m.orientation==='vertical'?'portrait':'landscape');if(m.width&&m.height)el.style.setProperty('--pm-ratio',m.width+'/'+m.height);}
+          el.querySelectorAll('source').forEach(function(s){s.removeAttribute('srcset');});
+          var imgs=el.querySelectorAll('img');imgs.forEach(function(img){img.removeAttribute('srcset');img.src=src;img.style.objectPosition=(function(v){var p=focusCoordinates(v);return p.x+'% '+p.y+'%';})(item.focal||m&&m.focal)||'50% 50%';if(item.fit)img.style.objectFit=item.fit==='original'?'contain':'cover';});
+          el.querySelectorAll('video').forEach(function(vid){var img=doc.createElement('img');img.src=src;img.className=vid.className;img.style.objectFit=item.fit==='original'?'contain':'cover';img.style.objectPosition=(function(v){var p=focusCoordinates(v);return p.x+'% '+p.y+'%';})(item.focal||m&&m.focal)||'50% 50%';vid.replaceWith(img);});
+        });
+      });
+      doc.querySelectorAll('a,button,form').forEach(function(el){el.onclick=function(e){e.preventDefault();};});
+      if(this.state.section==='top')doc.documentElement.scrollTop=0;
+    },
+    updateList: function(key,list,i,field,value){var arr=list.map(function(x){return Object.assign({},x);});arr[i][field]=value;this.change(key,arr);},
+    renderReviews: function(){var self=this,list=this.values()._reviews||this.model().reviews||[];
+      return h('div',{className:'pgk-page-reviews'},h('p',{},'These reviews are shared with Home. Keep client quotes word for word; use the optional excerpt for Home.'),list.map(function(r,i){return h('fieldset',{key:i},h('legend',{},r.name||'New review'),
+        ['name','org','quote','excerpt'].map(function(k){return h('label',{key:k},h('span',{},({name:'Client name',org:'Company / role',quote:'Original quote',excerpt:'Home excerpt (optional)'})[k]),h(k==='quote'||k==='excerpt'?'textarea':'input',{type:k==='quote'||k==='excerpt'?undefined:'text','aria-label':'Review '+(i+1)+' '+k,value:r[k]||'',rows:3,onChange:function(e){self.updateList('_reviews',list,i,k,e.target.value);}}));}),
+        h('label',{},h('input',{type:'checkbox',checked:Number.isInteger(r.featured),onChange:function(e){self.updateList('_reviews',list,i,'featured',e.target.checked?i*10:null);}}),' Show this review on About'),
+        Number.isInteger(r.featured)?h('label',{},'Display order',h('input',{type:'number',value:r.featured,'aria-label':'Review '+(i+1)+' display order',onChange:function(e){self.updateList('_reviews',list,i,'featured',Number(e.target.value));}})):null);
+      }));
+    },
+    renderFaqs: function(){var self=this,list=this.values()._faqs||this.model().faqs||[];return h('div',{},h('p',{},'These are this page’s general questions. Existing cancellation and licensing policy answers stay managed with the approved policies.'),list.map(function(f,i){return h('fieldset',{key:i},h('legend',{},'Question '+(i+1)),['q','a'].map(function(k){return h('label',{key:k},h('span',{},k==='q'?'Question':'Answer'),h(k==='q'?'input':'textarea',{type:k==='q'?'text':undefined,rows:4,'aria-label':'FAQ '+(i+1)+' '+k,value:f[k]||'',onChange:function(e){self.updateList('_faqs',list,i,k,e.target.value);}}));}));}),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet',onClick:function(){self.change('_faqs',list.concat([{q:'',a:'',approval:'approved'}]));}},'Add question'));},
+    render: function(){
+      var self=this, model=this.model(),v=this.values(),groups=this.sections(),active=groups.find(function(s){return s.key===self.state.section;})||groups[0],slots=this.slots();
+      var frameWidth=this.state.viewport==='phone'?390:1100,scale=Math.min(1,this.state.previewWidth/frameWidth);
+      var srcdoc='<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="'+window.location.origin+'/assets/styles.css?v='+encodeURIComponent(window.PHOTOGRAFIK_CMS_VERSION||'')+'"><style>body{margin:0} .reveal{opacity:1!important;transform:none!important} [data-page-section]{display:none} [data-page-section="'+active.key+'"]{display:block} .motion-toggle,dialog{display:none!important}</style></head><body>'+model.body+'</body></html>';
+      return h('div',{className:'pgk-page-workspace',id:this.props.forID},
+        h('header',{className:'pgk-page-header'},h('div',{},h('p',{className:'pgk-page-kicker'},'Pages / '+this.props.field.get('pageLabel')),h('h2',{},'Edit this page'),h('p',{},'Words, photos and video together. Your changes stay in this page until you Save.')),
+          h('a',{href:window.location.origin+this.props.field.get('route'),target:'_blank',rel:'noopener',className:'pgk-btn pgk-btn--quiet'},'Open saved page ↗')),
+        h('nav',{className:'pgk-page-switcher','aria-label':'Choose a page'},Object.keys(PAGE_MODELS).map(function(k){return h('a',{key:k,href:'#/collections/pages/entries/'+k,'aria-current':k===self.props.field.get('pageFile')?'page':undefined},PAGE_MODELS[k].label);})),
+        h('div',{className:'pgk-page-layout'},
+          h('nav',{className:'pgk-page-outline','aria-label':'Page sections'},h('h3',{},'On this page'),groups.map(function(s,i){return h('button',{key:s.key,type:'button','aria-pressed':active.key===s.key,onClick:function(){self.setState({section:s.key});}},h('span',{},String(i+1).padStart(2,'0')),s.label); })),
+          h('section',{className:'pgk-page-fields','aria-label':'Edit '+active.label},h('h3',{},active.label),
+            active.seo?h('div',{},h('p',{},'These fields control search results and link previews. They do not replace the visible heading.'),['title','description'].map(function(k){var current=(v._seo||{})[k]||model.seo[k]||'';return h('label',{key:k},h('span',{},k==='title'?'SEO title':'Search description'),h(k==='title'?'input':'textarea',{type:k==='title'?'text':undefined,rows:4,'aria-label':k==='title'?'SEO title':'Search description',maxLength:k==='title'?70:180,value:current,onChange:function(e){self.seo(k,e.target.value);}}),h('small',{},current.length+'/'+(k==='title'?70:180)));}),h('div',{className:'pgk-search-preview'},h('strong',{},(v._seo||{}).title||model.seo.title),h('p',{},(v._seo||{}).description||model.seo.description)),h('label',{},h('span',{},'Social sharing image'),h('input',{type:'text','aria-label':'Social sharing image',value:(v._seo||{}).image||model.seo.image||'',placeholder:'Optional image URL',onChange:function(e){self.seo('image',e.target.value);}}))):null,
+            (active.fields||[]).map(function(f,i){var value=Object.prototype.hasOwnProperty.call(v._copy||{},f.key)?v._copy[f.key]:f.value;return h('div',{key:f.key,className:'pgk-page-copy'},h('label',{},h('span',{},f.label+(active.fields.filter(function(x){return x.label===f.label;}).length>1?' '+(i+1):'')),h(f.type==='text'?'textarea':'input',{type:f.type==='text'?undefined:'text',rows:f.value.length>140?5:3,'aria-label':f.label+' '+f.key,value:value,maxLength:3000,ref:function(el){self.copyInputs=self.copyInputs||{};self.copyInputs[f.key]=el;},onChange:function(e){self.copy(f.key,e.target.value);}})),h('div',{className:'pgk-gallery__bar'},h('button',{type:'button',className:'pgk-btn pgk-btn--quiet pgk-btn--small','aria-label':'Bold '+f.key,onClick:function(){self.formatCopy(f,'**');}},'Bold'),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet pgk-btn--small','aria-label':'Italic '+f.key,onClick:function(){self.formatCopy(f,'*');}},'Italic')),f.type==='heading'||/\*/.test(f.value)?h('small',{},'Use *italics* or **bold** for emphasis.'):null,
+              f.href?h('label',{className:'pgk-page-link'},h('span',{},'Link destination'),h('input',{type:'text','aria-label':'Link destination '+f.key,value:(v._links||{})[f.key]||f.href,onChange:function(e){self.link(f.key,e.target.value);}})):null,
+              Object.prototype.hasOwnProperty.call(v._copy||{},f.key)?h('button',{type:'button',className:'pgk-linkbtn',onClick:function(){var next=Object.assign({},v._copy);delete next[f.key];self.change('_copy',next);}},'Reset this text'):null);}),
+            active.reviews?this.renderReviews():null,active.faqs?this.renderFaqs():null,
+            (active.media||[]).map(function(k){var sl=slots.find(function(s){return s.name===k;});if(!sl)return null;return h('fieldset',{key:k,className:'pgk-page-media'},h('legend',{},sl.label),h(sl.widget==='pgk-gallery-slot'?GallerySlot:SlotControl,Object.assign({},self.props,{key:k,field:self.childField(sl),value:v[k],forID:self.props.forID+'-'+k,onChange:function(value){self.change(k,value);}})));}),
+            !active.seo&&!active.faqs&&!active.reviews&&!active.fields.length&&!active.media.length?h('p',{},'This section uses shared portfolio or pricing content. Open its source below to update the records together.'):null,
+            h('div',{className:'pgk-page-related'},h('p',{},'Shared content used on this page'),h('a',{href:'#/collections/projects'},'Projects'), ' · ',h('a',{href:'#/collections/field-notes'},'Articles'),' · ',h('a',{href:'#/collections/photos'},'Photo library'),' · ',h('a',{href:'#/collections/films'},'Film library'))),
+          h('aside',{className:'pgk-page-preview'},h('div',{className:'pgk-gallery__bar'},h('h3',{},'Section preview'),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-pressed':this.state.viewport==='desktop',onClick:function(){self.setState({viewport:'desktop'});}},'Desktop'),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-pressed':this.state.viewport==='phone',onClick:function(){self.setState({viewport:'phone'});}},'Phone')),
+            h('p',{className:'pgk-page-preview-note'},'Unsaved text and media preview. Save, then open the saved page for the finished layout.'),
+            active.seo||active.faqs||active.reviews?h('p',{},active.seo?'Search preview appears beside the fields.':'Use the saved page to review this shared content.'):h('div',{className:'pgk-page-preview-host',style:{height:(850*scale)+'px'},ref:function(el){self.previewHost=el;}},h('iframe',{title:'Unsaved '+active.label+' preview',sandbox:'allow-same-origin',srcDoc:srcdoc,ref:function(el){self.frame=el;},onLoad:function(){self.paintPreview();self.resize&&self.resize();},style:{width:frameWidth+'px',height:'850px',transform:'scale('+scale+')',transformOrigin:'top left'}}))))
+      );
+    }
+  });
+  CMS.registerWidget('pgk-page',PageWorkspace);
+  // Old bookmarked links land in the page workspace instead of the removed split collections.
+  function unifiedPageRoute(){var hash=window.location.hash,next=hash.replace('#/collections/page-media','#/collections/pages');if(hash.indexOf('#/collections/page-text')===0)next='#/collections/pages/entries/home';if(hash.indexOf('#/collections/testimonials')===0)next='#/collections/pages/entries/about';if(hash.indexOf('#/collections/faqs')===0)next='#/collections/pages/entries/real-estate';if(hash===''||hash==='#/')next='#/collections/pages';if(next!==hash)window.location.replace(next);}
+  unifiedPageRoute();window.addEventListener('hashchange',unifiedPageRoute);
+
   // ---------- Talking to /api/cms-manage with the signed-in editor's GitHub session ----------
   function ghToken() {
     var keys = ['decap-cms-user', 'netlify-cms-user'];
@@ -1287,6 +1389,9 @@
   if (CMS.registerEventListener) CMS.registerEventListener({ name: 'preSave', handler: function (o) {
     pill.hidden = false; pill.className = 'pgk-sitepill pgk-sitepill--busy'; pill.textContent = 'Validating and saving…'; pill.title = 'Nothing is confirmed saved until the save finishes. Website delivery is checked separately.';
     var e = o && o.entry; var data = e && e.get('data'); if (!data || !data.set) return;
+    // The unified workspace owns one field while editing, then saves canonical page keys together in one commit.
+    var page = data.get('_page');
+    if (page && o.collection && o.collection.get('name') === 'pages') return data.merge(page).delete('_page');
     // Keep a published address protected even after Hide → Save → reopen. Only the mounted project editor can
     // add this hidden marker; every other data key is returned unchanged. New, never-shown drafts stay editable.
     var form = PROJECT_CATEGORY_FORMS.find(function (f) { var a = f.props.entry; return a && (a.get('slug') === e.get('slug') || (a.get('newRecord') && e.get('newRecord'))); });
@@ -1298,7 +1403,7 @@
   if (CMS.registerEventListener) CMS.registerEventListener({ name: 'postSave', handler: function (o) {
     var e = o && o.entry; var data = e && e.get && e.get('data');
     var imp = data && data.get && data.get('import'); imp = imp && imp.toJS ? imp.toJS() : imp;
-    siteState.savedMessage = data && data.get('published') === true ? 'Content saved in Git; awaiting validation and website update.' : 'Draft saved in Git; awaiting validation and website update.';
+    siteState.savedMessage = o.collection && o.collection.get('name') === 'pages' ? 'Page saved in Git; awaiting preview website update.' : data && data.get('published') === true ? 'Content saved in Git; awaiting validation and website update.' : 'Draft saved in Git; awaiting validation and website update.';
     siteState.head = null; siteState.build = null; drawPill(); checkHead();
     if (!pendingState(imp)) return;
     var drive = data.get('drive');
@@ -1577,6 +1682,10 @@
 
   // Phones: Decap's editor has an 800 px minimum width, so a phone zooms the whole page out. Below 800 px the
   // side-by-side preview is hidden (the Vercel preview link is the real check) and the form takes the full width.
+  var pageWorkspaceCss = document.createElement('style');
+  pageWorkspaceCss.textContent = '.pgk-pages .SplitPane > .Pane2,.pgk-pages .SplitPane > .Resizer{display:none!important}.pgk-pages .SplitPane>.Pane1{width:100%!important;flex:1 1 auto!important}.pgk-pages [class*=ControlPaneContainer]{max-width:none!important}.pgk-pages [class*=ControlContainer]{max-width:none}.pgk-page-workspace{color:#253532;font:14px/1.5 system-ui;min-width:0}.pgk-page-workspace *{box-sizing:border-box}.pgk-page-header{display:flex;gap:20px;justify-content:space-between;align-items:start}.pgk-page-header h2{font-size:27px;margin:3px 0}.pgk-page-kicker{font-size:12px;letter-spacing:.1em;text-transform:uppercase}.pgk-page-switcher{display:flex;flex-wrap:wrap;gap:6px;border-block:1px solid #d5dcd9;padding:12px 0;margin:18px 0}.pgk-page-switcher a{color:#315953;border-radius:4px;text-decoration:none;padding:5px 8px}.pgk-page-switcher a[aria-current=page]{background:#244e45;color:white}.pgk-page-layout{display:grid;grid-template-columns:170px minmax(280px,1fr) minmax(280px,1fr);gap:22px;align-items:start}.pgk-page-outline{position:sticky;top:70px;display:grid;gap:5px}.pgk-page-outline button{display:flex;align-items:baseline;gap:7px;border:0;border-radius:5px;background:#f0f4f2;color:#3f514a;text-align:left;padding:10px;font:inherit;cursor:pointer}.pgk-page-outline button[aria-pressed=true]{background:#244e45;color:white}.pgk-page-outline button span{font-size:11px;opacity:.7}.pgk-page-fields{min-width:0}.pgk-page-fields h3,.pgk-page-preview h3{margin:0;font-size:18px}.pgk-page-fields label{display:grid;gap:6px;margin:15px 0}.pgk-page-fields label>span{font-weight:600}.pgk-page-fields input:not([type=checkbox]):not([type=range]),.pgk-page-fields textarea{font:inherit;width:100%;max-width:100%;padding:10px;border:1px solid #bbc9c2;background:white;color:#23392e;border-radius:5px}.pgk-page-fields textarea{resize:vertical}.pgk-page-fields fieldset{min-width:0;padding:14px;border:1px solid #cfdad4;border-radius:6px;margin:18px 0}.pgk-page-fields legend{font-weight:650;max-width:100%}.pgk-page-fields small{font-size:12px;color:#576b60}.pgk-page-media .pgk-context,.pgk-page-media .pgk-slot__kind,.pgk-page-media .pgk-slot__note,.pgk-page-media .pgk-size-note{display:none}.pgk-page-media .pgk-row{display:flex;flex-wrap:wrap}.pgk-page-media .pgk-thumb{max-width:100%}.pgk-page-media .pgk-row__fields{flex:1 1 230px;min-width:0}.pgk-page-media .pgk-row__tools{display:flex;width:100%}.pgk-page-preview{position:sticky;top:70px;min-width:0}.pgk-page-preview-note{font-size:12px;color:#5e6c66}.pgk-page-preview-host{position:relative;overflow:hidden;width:100%;background:#e5e9e6;border:1px solid #c9d3cc;border-radius:6px}.pgk-page-preview iframe{display:block;border:0;max-width:none}.pgk-page-related{font-size:12px;border-top:1px solid #d9e0dc;margin-top:25px;padding-top:12px}.pgk-search-preview{background:#f4f7f5;padding:16px;border-radius:6px}.pgk-search-preview strong{color:#213c91;font-size:19px}.pgk-page-workspace button:focus-visible,.pgk-page-workspace a:focus-visible{outline:3px solid #b46142;outline-offset:2px}@media(max-width:1100px){.pgk-page-layout{grid-template-columns:150px minmax(230px,1fr)}.pgk-page-preview{grid-column:2;position:static}.pgk-page-outline{grid-row:1/3}.pgk-page-fields{grid-column:2}}@media(max-width:650px){.pgk-page-header{display:block}.pgk-page-layout{display:block}.pgk-page-outline{position:static;display:flex;overflow-x:auto;margin-bottom:18px;max-width:100%;padding-bottom:6px}.pgk-page-outline h3{display:none}.pgk-page-outline button{flex:0 0 145px}.pgk-page-switcher{max-height:120px;overflow:auto}.pgk-page-preview{position:static;margin-top:22px}}';
+  document.head.appendChild(pageWorkspaceCss);
+
   var phoneCss = document.createElement('style');
   phoneCss.textContent = '@media (max-width: 799px) {' +
     '[class*="-EditorContainer"], [class*="-ToolbarContainer"] { min-width: 0 !important; }' +
