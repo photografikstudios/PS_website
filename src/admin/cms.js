@@ -36,7 +36,7 @@
       var e = this.props.entry;
       var get = function (k) { return e.getIn(['data', k]); };
       var hero = get('hero');
-      var heroSrc = hero ? this.props.getAsset(hero) : null;
+      var heroSrc = hero ? thumbFor(hero, this.props.getAsset) : null;
       var cats = {};
       (window.PHOTOGRAFIK_CATEGORIES || []).forEach(function (c) { cats[c.value] = c.label; });
       return h('article', { className: 'fn-article' },
@@ -93,7 +93,7 @@
   var PhotoPreview = createClass({
     render: function () {
       var e = this.props.entry; var get = function (k) { return e.getIn(['data', k]); };
-      var a = get('src') ? this.props.getAsset(get('src')) : null;
+      var a = get('src') ? thumbFor(get('src'), this.props.getAsset) : null;
       return h('div', { className: 'wrap', style: { paddingTop: '32px' } },
         get('published') ? null : h('p', { className: 'fn-draft' }, h('strong', {}, 'Hidden. '), 'This photo is left out of the live galleries.'),
         a ? h('figure', { className:'dash-fig' },h('img',{src:a.toString(),alt:get('alt') || '',style:{height:'auto',objectFit:'contain',aspectRatio:'auto'}}),h('figcaption',{},'Full photo (uncropped)')) : null,

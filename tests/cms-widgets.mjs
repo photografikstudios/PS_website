@@ -195,6 +195,11 @@ await check('Auto resize: photo picker uploads an upright 2400px copy, blocks ea
   const result = await page.evaluate(async () => { const f = window.__uploadFiles[0]; const b = await createImageBitmap(f); const r = { width: b.width, height: b.height, bytes: f.size, name: f.name, value: window.__resizeCase.state.value }; b.close(); return r; });
   assert.deepEqual([result.width, result.height], [1600, 2400]); assert.ok(result.bytes < 5000000); assert.match(result.name, /^upload-qa-[a-z0-9]+\.jpg$/);
   assert.match(await host.innerText(), /1600 × 2400 px/);
+  await page.evaluate((src) => { window.__photoUploadPreview = window.mountWidget('preview-photos', { field: {}, entry: { data: { src, published: false } } }); }, result.value);
+  await page.waitForFunction(() => [...document.querySelectorAll('.host-preview-photos img')].every(img => img.complete && img.naturalWidth === 1600));
+  assert.equal(await page.locator('.host-preview-photos img').count(), 4, 'whole photo and all three card previews use the new upload');
+  assert.ok((await page.locator('.host-preview-photos img').evaluateAll(imgs => imgs.map(img => img.src))).every(src => src.startsWith('blob:')));
+  await page.evaluate(() => window.__photoUploadPreview.unmount());
   await host.locator('input[type=file]').setInputFiles({ name: 'bad.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('broken') });
   await page.waitForFunction(() => !window.__resizeCase.instance.state.busy);
   assert.equal(await page.evaluate(() => window.__resizeCase.state.value), result.value);
