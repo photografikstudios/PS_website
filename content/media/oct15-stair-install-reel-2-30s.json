@@ -17,9 +17,8 @@
   ],
   "location": null,
   "client": null,
-  "dialogue": true,
+  "dialogue": false,
   "captions": null,
-  "captionsStatus": "machine-draft",
   "featured": false,
   "rights": "approved",
   "source": "drive",
@@ -30,5 +29,6 @@
   "src": "/v/oct15-stair-install-reel-2-30s.mp4",
   "poster": "/v/oct15-stair-install-reel-2-30s.webp",
   "orientation": "vertical",
-  "duration": 35
+  "duration": 35,
+  "_note": "James, November 12, 2026: both EEStairs stair-install clips are music only, with no speech. No dialogue captions are needed."
 }
