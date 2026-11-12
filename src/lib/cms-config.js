@@ -73,7 +73,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
   // Our own upload widgets (src/admin/cms.js) save into the same folders as before; the paths are stated per field.
   const projectMedia = { media_folder: '/static/images/projects', public_folder: '/images/projects' };
   const notesMedia = { media_folder: '/static/images/field-notes', public_folder: '/images/field-notes' };
-  const imageHint = 'A web JPG or WebP, 2,000–2,400 px on the long side (5 MB limit). Name the file after the client or subject, never the street address. The site makes the smaller sizes automatically.';
+  const imageHint = 'Upload a JPG, PNG or WebP. Large photos automatically resize proportionally to at most 2,400 px on the long edge and below 5 MB; smaller photos stay unchanged. Your original file is preserved. The dashboard names the upload for you.';
 
   // ---------- Projects ----------
   const projectFields = [
@@ -251,7 +251,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
           { name: 'updated', label: 'Updated date', ...date, required: false, hint: 'Only if you revise a published article.' },
           { name: 'category', label: 'Category', widget: 'select', options: cats },
           { name: 'excerpt', label: 'Short excerpt', widget: 'text', hint: 'One or two sentences for the Field Notes list.', pattern: max(220, 'excerpt') },
-          { name: 'hero', label: 'Hero image', widget: 'pgk-photo', ...notesMedia, hint: 'A web JPG or WebP about 2,400 pixels wide is plenty (5 MB limit). The site makes smaller sizes automatically.' },
+          { name: 'hero', label: 'Hero image', widget: 'pgk-photo', ...notesMedia, hint: 'Upload a JPG, PNG or WebP. Large photos automatically resize proportionally to at most 2,400 px on the long edge and below 5 MB. Your original file is preserved.' },
           { name: 'heroAlt', label: 'Hero image description (alt text)', widget: 'string', hint: 'Describe the picture for people who cannot see it, e.g. “Kitchen with an island and pendant lights”.' },
           { name: 'answer', label: 'Short answer under the title', widget: 'text', required: false, hint: 'Optional. The direct answer in two or three sentences. If empty, the excerpt is shown.' },
           { name: 'editorialNotes', label: 'Editorial notes (editor only)', widget: 'text', required: false, hint: 'Photo suggestions, remaining shots and review notes. These notes never appear in the article on the website.' },

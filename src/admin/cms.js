@@ -138,14 +138,11 @@
     var name = String(repoPath).split('/').pop();
     return (pub ? pub.replace(/\/+$/, '') : '/' + media.replace(/^static\//, '')) + '/' + name;
   };
-  function addFiles(props, files, baseName) {
+  var photoUploadsPending = 0;
+  var PHOTO_HELP = 'Photos resize automatically to a maximum of 2,400 px on the long edge and below 5 MB. Proportions and your original file are preserved.';
+  async function addFiles(props, files, baseName) {
     var list = Array.prototype.slice.call(files || []);
-    var bad = list.filter(function (f) { return ACCEPT.split(',').indexOf(f.type) < 0; });
-    var ok = list.filter(function (f) { return ACCEPT.split(',').indexOf(f.type) >= 0 && f.size <= 5000000; });
-    var big = list.filter(function (f) { return ACCEPT.split(',').indexOf(f.type) >= 0 && f.size > 5000000; });
-    var msgs = [];
-    if (bad.length) msgs.push(bad.map(function (f) { return f.name; }).join(', ') + ': please export as JPG, PNG or WebP (iPhone HEIC photos do not display in browsers).');
-    if (big.length) msgs.push(big.map(function (f) { return f.name; }).join(', ') + ': larger than 5 MB. Export about 2,400 px on the long side.');
+    var msgs = [], notes = [], paths = [];
     // Every upload gets a clean, unique name from the entry title (camera names such as PS_00314 or DJI_0042 never reach
     // the public site, and a second "IMG_0001.jpg" can never replace an earlier photo with the same name).
     var data = props.entry && props.entry.get && props.entry.get('data');
@@ -158,20 +155,29 @@
       return f.arrayBuffer().then(function (buf) { return crypto.subtle.digest('SHA-256', buf); })
         .then(function (d) { return Array.prototype.map.call(new Uint8Array(d).slice(0, 5), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); });
     };
-    return Promise.all(ok.map(function (orig) {
-      var ext = orig.type === 'image/png' ? 'png' : orig.type === 'image/webp' ? 'webp' : 'jpg';
-      return fingerprint(orig).then(function (fp) {
-        var file = new File([orig], base + '-' + fp + '.' + ext, { type: orig.type, lastModified: orig.lastModified });
-        return Promise.resolve(props.onPersistMedia(file, { field: props.field })).then(function (action) { return { action: action, file: file }; });
-      }).then(function (res) {
-        var action = res.action; var file = res.file;
-        var mf = action && action.payload && (action.payload.mediaFile || action.payload);
-        var repoPath = (mf && mf.path) || file.name;
-        var path = publicPathFor(props.field, repoPath);
-        thumbs[path] = URL.createObjectURL(file);
-        return path;
-      });
-    })).then(function (paths) { return { paths: paths, msgs: msgs }; });
+    photoUploadsPending++;
+    try {
+      // Decode/resize one photo at a time so a batch does not allocate several full-resolution canvases together.
+      for (var orig of list) {
+        try {
+          var prepared = await window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare(orig);
+          var image = prepared.file;
+          var ext = image.type === 'image/png' ? 'png' : image.type === 'image/webp' ? 'webp' : 'jpg';
+          var fp = await fingerprint(image);
+          var file = new File([image], base + '-' + fp + '.' + ext, { type: image.type, lastModified: image.lastModified });
+          var action = await props.onPersistMedia(file, { field: props.field });
+          var mf = action && action.payload && (action.payload.mediaFile || action.payload);
+          var path = publicPathFor(props.field, (mf && mf.path) || file.name);
+          if (thumbs[path]) URL.revokeObjectURL(thumbs[path]);
+          thumbs[path] = URL.createObjectURL(file);
+          paths.push(path);
+          if (prepared.notice) notes.push(prepared.notice);
+        } catch (err) {
+          msgs.push(orig.name + ': ' + (err.message || err));
+        }
+      }
+      return { paths: paths, msgs: msgs, notes: notes };
+    } finally { photoUploadsPending--; }
   }
   var FOCAL_OPTIONS = [['center', 'Centre'], ['top', 'Top'], ['upper-third', 'Upper third'], ['bottom', 'Bottom'], ['left', 'Left'], ['right', 'Right']];
   // Always a fresh copy: handing Decap the same array it gave us (mutated in place) is not seen as a change.
@@ -190,10 +196,10 @@
     componentWillUnmount: function () { liveDrop(this.props.field); },
     pick: function () { this.input && this.input.click(); },
     onFiles: function (e) {
-      var self = this; var files = e.target.files; self.setState({ busy: true, msgs: [] });
+      var self = this; var files = e.target.files; self.setState({ busy: true, msgs: [], notes: [] });
       addFiles(this.props, files).then(function (r) {
         var arr = toArr(self.props.value).concat(r.paths.map(function (p) { return { image: p, alt: '', focal: 'center', orientation: 'auto', photoType: 'photography' }; }));
-        self.props.onChange(arr); self.setState({ busy: false, msgs: r.msgs });
+        self.props.onChange(arr); self.setState({ busy: false, msgs: r.msgs, notes: r.notes });
       }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
       e.target.value = '';
     },
@@ -210,8 +216,10 @@
           h('button', { type: 'button', className: 'pgk-btn', onClick: this.pick, disabled: this.state.busy }, this.state.busy ? 'Adding photos…' : arr.length ? 'Upload more photos' : 'Upload photos'),
           h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: true }); } }, 'Choose from site photos'),
           h('span', { className: 'pgk-gallery__count' }, arr.length ? arr.length + (arr.length === 1 ? ' photo' : ' photos') + '. The first one leads.' : 'Choose several at once: hold Shift or Command.'),
-          h('input', { type: 'file', multiple: true, accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose photos' })),
+          h('input', { type: 'file', multiple: true, 'data-pgk-photo-upload': true, accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose photos' })),
         this.state.picking ? h(Picker, { multiple: true, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { self.props.onChange(toArr(self.props.value).concat(list.map(function (x) { return Object.assign({ image: x.src, alt: x.alt || '', focal: 'center', orientation: 'auto', photoType: (x.service || []).includes('drone') ? 'drone' : 'photography' }, x.caption ? { caption: x.caption } : {}); }))); self.setState({ picking: false }); } }) : null,
+        h('p', { className: 'pgk-photo-help' }, PHOTO_HELP),
+        (this.state.notes || []).length ? h('p', { className: 'pgk-photo-help', role: 'status' }, this.state.notes.join(' ')) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
         h('ol', { className: 'pgk-gallery__list' }, arr.map(function (ph, i) {
           var sz = self.state.sizes[ph.image];
@@ -239,8 +247,8 @@
     getInitialState: function () { return { busy: false, msgs: [] }; },
     componentWillUnmount: function () { liveDrop(this.props.field); },
     onFiles: function (e) {
-      var self = this; self.setState({ busy: true, msgs: [] });
-      addFiles(this.props, [e.target.files[0]].filter(Boolean), this.props.uploadBase).then(function (r) { if (r.paths[0]) self.props.onChange(r.paths[0]); self.setState({ busy: false, msgs: r.msgs }); })
+      var self = this; self.setState({ busy: true, msgs: [], notes: [] });
+      addFiles(this.props, [e.target.files[0]].filter(Boolean), this.props.uploadBase).then(function (r) { if (r.paths[0]) self.props.onChange(r.paths[0]); self.setState({ busy: false, msgs: r.msgs, notes: r.notes }); })
         .catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
       e.target.value = '';
     },
@@ -252,8 +260,10 @@
           h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.input.click(); }, disabled: this.state.busy }, this.state.busy ? 'Adding…' : v ? 'Replace '+assetLabel : 'Choose '+assetLabel),
           h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: true }); } }, 'Choose from site photos'),
           v ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.props.onChange(''); } }, 'Remove') : null,
-          h('input', { type: 'file', accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose a photo' })),
+          h('input', { type: 'file', 'data-pgk-photo-upload': true, accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose a photo' })),
         this.state.picking ? h(Picker, { multiple: false, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { if (list[0]) self.props.onChange(list[0].src); self.setState({ picking: false }); } }) : null,
+        h('p', { className: 'pgk-photo-help' }, PHOTO_HELP),
+        (this.state.notes || []).length ? h('p', { className: 'pgk-photo-help', role: 'status' }, this.state.notes.join(' ')) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null);
     },
   });
@@ -366,6 +376,56 @@
     stopVideos(e, t.files, function () { try { t.value = ''; } catch (x) { /* some browsers refuse; the change never reached Decap */ } });
   }, true);
   window.addEventListener('drop', function (e) { stopVideos(e, e.dataTransfer && e.dataTransfer.files); }, true);
+  var preparedPhotoEvents = new WeakSet();
+  function stockPhotoStatus(text, failed) {
+    var dialog = mediaDialog();
+    if (!dialog) return;
+    var note = dialog.querySelector('#pgk-photo-upload-status');
+    if (!note) { note = document.createElement('p'); note.id = 'pgk-photo-upload-status'; dialog.appendChild(note); }
+    note.className = failed ? 'pgk-msg' : 'pgk-photo-help';
+    note.setAttribute('role', failed ? 'alert' : 'status'); note.textContent = text;
+  }
+  function prepareStockPhotos(e, input, files) {
+    var dialog = mediaDialog(), target = e.target;
+    if (preparedPhotoEvents.has(e) || !dialog || !dialog.contains(target) || (input && input.hasAttribute('data-pgk-photo-upload'))) return;
+    var list = Array.prototype.slice.call(files || []);
+    if (!list.some(function (f) { return /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name); })) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var eventType = e.type, x = e.clientX, y = e.clientY;
+    photoUploadsPending++;
+    stockPhotoStatus('Preparing photos… ' + PHOTO_HELP, false);
+    (async function () {
+      var transfer = new DataTransfer(), notes = [];
+      for (var file of list) {
+        if (window.PHOTOGRAFIK_PHOTO_UPLOAD.isPhoto(file)) {
+          var prepared = await window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare(file);
+          transfer.items.add(prepared.file);
+          if (prepared.notice) notes.push(prepared.notice);
+        } else {
+          if (/\.(heic|heif)$/i.test(file.name) || /^image\/(heic|heif)$/.test(file.type)) throw new Error('Export iPhone HEIC photos as JPG first.');
+          if (/^image\//.test(file.type) && file.size >= 5000000) throw new Error('Use JPG, PNG or WebP to resize images automatically.');
+          transfer.items.add(file); // Small GIF/SVG, captions and documents keep their existing behavior.
+        }
+      }
+      if (!target.isConnected) throw new Error('The upload window was closed. Reopen it and choose the photo again.');
+      var next;
+      if (eventType === 'change') {
+        input.value = ''; input.files = transfer.files;
+        next = new Event('change', { bubbles: true, cancelable: true });
+      } else next = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: transfer, clientX: x, clientY: y });
+      preparedPhotoEvents.add(next);
+      target.dispatchEvent(next);
+      stockPhotoStatus(notes.length ? notes.join(' ') : 'Photos are ready to upload. ' + PHOTO_HELP, false);
+    })().catch(function (err) {
+      if (input) input.value = '';
+      stockPhotoStatus('Photo not uploaded: ' + (err.message || err), true);
+    }).finally(function () { photoUploadsPending--; });
+  }
+  window.addEventListener('change', function (e) {
+    var input = e.target;
+    if (input && input.tagName === 'INPUT' && input.type === 'file') prepareStockPhotos(e, input, input.files);
+  }, true);
+  window.addEventListener('drop', function (e) { prepareStockPhotos(e, null, e.dataTransfer && e.dataTransfer.files); }, true);
   window.pgkVideoHelp = function (name, others) {
     var old = document.getElementById('pgk-video-help'); if (old) old.remove();
     var opener = document.activeElement;
@@ -906,11 +966,12 @@
       this.set(arr.slice(0, this.f('max'))); this.setState({ picking: null });
     },
     upload: function (e, index) {
-      var self = this; var files = e.target.files; this.setState({ busy: true, msgs: [] });
+      var self = this; var files = e.target.files; this.setState({ busy: true, msgs: [], notes: [] });
       addFiles(this.props, files, this.props.field.get('label').split(':')[0]).then(function (r) {
+        if (!r.paths.length) { self.setState({ busy: false, msgs: r.msgs, notes: r.notes }); return; }
         var arr = self.items(); var add = r.paths.map(function (p) { return { src: p, alt: '' }; });
         if (typeof index === 'number') arr[index] = Object.assign({}, { size: arr[index].size || 'default', fit: arr[index].fit || 'default' }, add[0]); else arr = self.f('multiple') ? arr.concat(add) : add.slice(0, 1);
-        self.set(arr.slice(0, self.f('max'))); self.setState({ busy: false, msgs: r.msgs });
+        self.set(arr.slice(0, self.f('max'))); self.setState({ busy: false, msgs: r.msgs, notes: r.notes });
       }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
       e.target.value = '';
     },
@@ -920,7 +981,7 @@
     render: function () {
       var self = this; var arr = this.items(); var multi = this.f('multiple'); var accepts = this.f('accepts');
       var full = arr.length >= this.f('max'); var locked = this.f('mustHave') && arr.length <= Math.max(1, this.f('min') || 1);
-      var fileInput = function (index) { return h('input', { type: 'file', accept: ACCEPT, multiple: multi && index == null, hidden: true, ref: function (el) { self['in' + (index == null ? 'Add' : index)] = el; }, onChange: function (e) { self.upload(e, index); }, 'aria-label': 'Upload a photo' }); };
+      var fileInput = function (index) { return h('input', { type: 'file', 'data-pgk-photo-upload': true, accept: ACCEPT, multiple: multi && index == null, hidden: true, ref: function (el) { self['in' + (index == null ? 'Add' : index)] = el; }, onChange: function (e) { self.upload(e, index); }, 'aria-label': 'Upload a photo' }); };
       return h('div', { className: 'pgk-slot', id: this.props.forID },
         h(SlotContext, { field: this.props.field }),
         h('p', { className: 'pgk-slot__kind' }, 'Takes: ' + (this.f('kind') || '') + (multi ? ' · up to ' + this.f('max') : '') + (this.f('empty') ? ' · ' + this.f('empty') : '')),
@@ -953,6 +1014,8 @@
           takesFiles(accepts) ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: this.state.busy, onClick: function () { self.inAdd.click(); } }, this.state.busy ? 'Uploading…' : 'Upload a photo') : null,
           takesFiles(accepts) ? fileInput(null) : null) : null,
         h('p', { className: 'pgk-slot__note' }, 'Taking something off this page never deletes it. Photos and films from the library stay in Photos and Films. A photo uploaded straight to this page is a file of its own: when it is off every page and saved, delete it under ', h('button', { type: 'button', className: 'pgk-linkbtn', onClick: function () { window.pgkOpenUploads(); } }, 'Uploaded files'), '.'),
+        h('p', { className: 'pgk-photo-help' }, PHOTO_HELP),
+        (this.state.notes || []).length ? h('p', { className: 'pgk-photo-help', role: 'status' }, this.state.notes.join(' ')) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
         this.state.picking !== null ? h(LibraryPicker, { accepts: accepts, multiple: multi && this.state.picking === 'add', onClose: function () { self.setState({ picking: null }); }, onPick: function (ids) { self.pickDone(ids); } }) : null);
     },
@@ -1119,7 +1182,7 @@
       list.map(function(c,i){return h('fieldset',{key:i},h('legend',{},c.name||'New brand'),
         h('label',{},h('span',{},'Brand name'),h('input',{type:'text','aria-label':'Brand '+(i+1)+' name',maxLength:120,value:c.name||'',onChange:function(e){self.updateClient(i,'name',e.target.value);}})),
         h('label',{},h('span',{},'Name displayed without a logo (optional)'),h('input',{type:'text','aria-label':'Brand '+(i+1)+' displayed name',maxLength:120,value:c.wordmark||'',placeholder:c.name||'Uses the brand name',onChange:function(e){self.updateClient(i,'wordmark',e.target.value);}})),
-        h('p',{},'Logo (optional): PNG, WebP or JPG, up to 5 MB. Transparent PNG works well.'),
+        h('p',{},'Logo (optional): PNG, WebP or JPG. Large files resize automatically; transparent backgrounds are preserved.'),
         h(PhotoControl,Object.assign({},self.props,{field:self.childField({name:'client-logo-'+i,widget:'pgk-photo',assetLabel:'logo',media_folder:'/static/images/library',public_folder:'/images/library'}),forID:self.props.forID+'-client-'+i,uploadBase:c.name||'client-logo',value:c.logo||'',onChange:function(src){self.updateClient(i,'logo',src);}})),
         h('label',{},'Logo size',h('select',{'aria-label':'Brand '+(i+1)+' logo size',value:c.size||'default',onChange:function(e){self.updateClient(i,'size',e.target.value);}},['default','small','medium','large'].map(function(size){return h('option',{key:size,value:size},size==='default'?'Default':size.charAt(0).toUpperCase()+size.slice(1));}))),
         h('label',{},'Logo appearance',h('select',{'aria-label':'Brand '+(i+1)+' logo appearance',value:c.tone||'default',onChange:function(e){self.updateClient(i,'tone',e.target.value);}},h('option',{value:'default'},'Current / default'),h('option',{value:'original'},'Original colours'),h('option',{value:'dark'},'Make a white logo dark'))),
@@ -1455,6 +1518,7 @@
   // bce18af: Ready → Replace → Save stayed on "Waiting" after the import had finished, until the page was reloaded).
   var FILM_FORMS = [];
   if (CMS.registerEventListener) CMS.registerEventListener({ name: 'preSave', handler: function (o) {
+    if (photoUploadsPending) throw new Error('Photos are still being prepared. Wait for the upload to finish, then Save again.');
     pill.hidden = false; pill.className = 'pgk-sitepill pgk-sitepill--busy'; pill.textContent = 'Validating and saving…'; pill.title = 'Nothing is confirmed saved until the save finishes. Website delivery is checked separately.';
     var e = o && o.entry; var data = e && e.get('data'); if (!data || !data.set) return;
     // The unified workspace owns one field while editing, then saves canonical page keys together in one commit.
@@ -1692,6 +1756,7 @@
     '.pgk-row__tools { display: flex; flex-direction: column; gap: 6px; }',
     '.pgk-icon { width: 40px; height: 40px; border-radius: 6px; border: 1px solid #c9ced6; background: #fff; font-size: 16px; cursor: pointer; }',
     '.pgk-icon[disabled] { opacity: .35; cursor: default; } .pgk-icon--danger { color: #b42318; }',
+    '.pgk-photo-help { margin: 8px 0; font-size: 13px; line-height: 1.5; color: #374151; }',
     '.pgk-msg { margin: 8px 0; padding: 8px 12px 8px 28px; border-radius: 6px; background: #fef3f2; color: #912018; font-size: 13px; }',
     '.pgk-pub { display: grid; gap: 8px; } .pgk-switch { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; cursor: pointer; }',
     '.pgk-switch input { width: 20px; height: 20px; accent-color: #1f2937; }',

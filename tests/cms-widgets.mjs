@@ -88,7 +88,7 @@ window.mountWidget = function (name, { field, value, entry, collection, decap })
     if (decap && m.instance && m.lastValue === state.value) entryProp = m.lastEntry;
     m.lastValue = state.value; m.lastEntry = entryProp;
     const props = { value: state.value, onChange: (v) => { state.value = v && v.toJS ? v.toJS() : v; schedule(); }, field: wrap(field), forID: m.id.replace('#', '-'),
-      entry: entryProp, collection: wrap({ name: collection }), getAsset: (p) => p, onPersistMedia: (file) => Promise.resolve({ payload: { path: 'static/images/library/' + file.name } }) };
+      entry: entryProp, collection: wrap({ name: collection }), getAsset: (p) => p, onPersistMedia: (file) => { (window.__uploadFiles = window.__uploadFiles || []).push(file); return Promise.resolve({ payload: { path: 'static/images/library/' + file.name } }); } };
     drawn = new Set();
     host.appendChild(renderNode(h(Ctrl, props), m.id));
     // Like React: components that were not drawn this time are unmounted.
@@ -162,6 +162,7 @@ await page.goto('http://pgk.test/admin/');
 await page.addScriptTag({ content: harness });
 await page.addScriptTag({ content: configJs });
 await page.addScriptTag({ content: editorCoreJs });
+await page.addScriptTag({ content: await readFile(join(root, 'src/admin/photo-upload.js'), 'utf8') });
 await page.addScriptTag({ content: cmsJs });
 const pm = (f) => readFile(join(root, 'content/page-media', f + '.json'), 'utf8').then(JSON.parse);
 const slotField = async (file, key) => {
@@ -175,6 +176,87 @@ const valid = (cls) => page.evaluate((c) => { const m = window.__mounts?.[c]; re
 await check('registered widgets', async () => {
   const names = await page.evaluate(() => Object.keys(window.__registered).sort());
   for (const n of ['pgk-slot', 'pgk-page-note', 'pgk-manage', 'pgk-film-status', 'pgk-drive', 'pgk-live', 'pgk-captions', 'pgk-gallery', 'pgk-photo', 'pgk-publish']) assert.ok(names.includes(n), n);
+});
+
+await check('Auto resize: photo picker uploads an upright 2400px copy, blocks early Save and preserves the old image on failure', async () => {
+  await page.evaluate(() => {
+    window.__uploadFiles = [];
+    window.__resizeCase = window.mountWidget('pgk-photo', { field: { name: 'hero', media_folder: '/static/images/field-notes', public_folder: '/images/field-notes' }, value: '/images/existing.jpg', entry: { data: { title: 'Upload QA' } }, collection: 'field-notes' });
+    window.__realPhotoPrepare = window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare;
+    window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare = async (file) => { await new Promise(resolve => { window.__releasePhoto = resolve; }); return window.__realPhotoPrepare(file); };
+  });
+  const host = page.locator('.host-pgk-photo').last();
+  const image = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 3000; c.height = 4500; c.getContext('2d').fillRect(0, 0, c.width, c.height); return c.toDataURL('image/jpeg').split(',')[1]; });
+  await host.locator('input[type=file]').setInputFiles({ name: 'IMG_1234.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(image, 'base64') });
+  await page.waitForFunction(() => !!window.__releasePhoto);
+  assert.match(await page.evaluate(() => { try { window.__events.preSave({ entry: window.__wrapForTest({ data: {} }) }); } catch (e) { return e.message; } }), /still being prepared/);
+  await page.evaluate(() => { window.__releasePhoto(); window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare = window.__realPhotoPrepare; });
+  await page.waitForFunction(() => !window.__resizeCase.instance.state.busy);
+  const result = await page.evaluate(async () => { const f = window.__uploadFiles[0]; const b = await createImageBitmap(f); const r = { width: b.width, height: b.height, bytes: f.size, name: f.name, value: window.__resizeCase.state.value }; b.close(); return r; });
+  assert.deepEqual([result.width, result.height], [1600, 2400]); assert.ok(result.bytes < 5000000); assert.match(result.name, /^upload-qa-[a-z0-9]+\.jpg$/);
+  assert.match(await host.innerText(), /1600 × 2400 px/);
+  await host.locator('input[type=file]').setInputFiles({ name: 'bad.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('broken') });
+  await page.waitForFunction(() => !window.__resizeCase.instance.state.busy);
+  assert.equal(await page.evaluate(() => window.__resizeCase.state.value), result.value);
+  assert.match(await host.getByRole('alert').innerText(), /could not be opened/);
+  assert.equal(await page.evaluate(() => window.__uploadFiles.length), 1);
+  await page.evaluate(() => window.__resizeCase.unmount());
+});
+
+await check('Auto resize: page replacement and gallery batch keep existing content, file order, proportions and partial-error feedback', async () => {
+  const field = await slotField('about', 'hero');
+  // A plain image-compatible placement with the same page-slot widget used throughout Pages.
+  await page.evaluate((base) => {
+    window.__uploadFiles = [];
+    const field = { ...base, name: 'qa-slot', label: 'About: QA photo', accepts: 'photo', max: 1, multiple: false };
+    window.__slotResize = window.mountWidget('pgk-slot', { field, value: { src: '/images/existing.jpg', alt: 'Keep me', size: 'medium', fit: 'original' }, entry: {}, collection: 'pages' });
+  }, field || {});
+  const slot = page.locator('.host-pgk-slot').last();
+  await slot.locator('input[type=file]').first().setInputFiles({ name: 'bad.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('broken') });
+  await page.waitForFunction(() => !window.__slotResize.instance.state.busy);
+  assert.equal(await page.evaluate(() => window.__slotResize.state.value.src), '/images/existing.jpg');
+  await page.evaluate(() => {
+    window.__slotResize.unmount();
+    window.__galleryResize = window.mountWidget('pgk-gallery', { field: { name: 'photos', media_folder: '/static/images/projects', public_folder: '/images/projects' }, value: [{ image: '/images/existing.jpg', alt: 'Existing', focal: 'top' }], entry: { data: { title: 'Batch QA' } }, collection: 'projects' });
+  });
+  await page.evaluate(async () => {
+    const dt = new DataTransfer();
+    for (const [name, w, h] of [['portrait.png', 3000, 4500], ['landscape.png', 4000, 2000]]) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').fillRect(0, 0, w, h);
+      const b = await new Promise(r => c.toBlob(r, 'image/png')); dt.items.add(new File([b], name, { type: 'image/png' })); c.width = c.height = 0;
+    }
+    dt.items.add(new File(['broken'], 'bad.jpg', { type: 'image/jpeg' }));
+    const input = document.querySelector('.host-pgk-gallery:last-child input[type=file]'); input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await page.waitForFunction(() => !window.__galleryResize.instance.state.busy);
+  const r = await page.evaluate(async () => ({ value: window.__galleryResize.state.value, sizes: await Promise.all(window.__uploadFiles.map(async f => { const b = await createImageBitmap(f); const v = [b.width, b.height, f.size]; b.close(); return v; })) }));
+  assert.equal(r.value.length, 3); assert.deepEqual(r.value[0], { image: '/images/existing.jpg', alt: 'Existing', focal: 'top' });
+  assert.deepEqual(r.sizes.map(s => s.slice(0, 2)), [[1600, 2400], [2400, 1200]]); assert.ok(r.sizes.every(s => s[2] < 5000000));
+  assert.match(await page.locator('.host-pgk-gallery').last().getByRole('alert').innerText(), /bad.jpg/);
+  await page.evaluate(() => window.__galleryResize.unmount());
+});
+
+await check('Auto resize: stock article-media file chooser and drop deliver only prepared files to Decap, with one event each', async () => {
+  await page.evaluate(() => {
+    const d = document.createElement('div'); d.id = 'qa-stock-resize'; d.setAttribute('role', 'dialog'); d.innerHTML = '<h1>Media assets</h1><input type="file" multiple>';
+    document.body.appendChild(d); window.__stockUploads = [];
+    d.addEventListener('change', e => { window.__stockUploads.push(...e.target.files); });
+    d.addEventListener('drop', e => { e.preventDefault(); window.__stockUploads.push(...e.dataTransfer.files); });
+  });
+  const image = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 3600; c.height = 2400; c.getContext('2d').fillRect(0, 0, 3600, 2400); return c.toDataURL('image/jpeg').split(',')[1]; });
+  const bytes = Buffer.from(image, 'base64');
+  await page.locator('#qa-stock-resize input').setInputFiles({ name: 'body-photo.jpg', mimeType: 'image/jpeg', buffer: Buffer.concat([bytes, Buffer.alloc(6000000)]) });
+  await page.waitForFunction(() => window.__stockUploads.length === 1);
+  await page.evaluate(async () => {
+    const c = document.createElement('canvas'); c.width = 3000; c.height = 4500; const blob = await new Promise(r => c.toBlob(r, 'image/png')); c.width = c.height = 0;
+    const dt = new DataTransfer(); dt.items.add(new File([blob], 'drop-portrait.png', { type: 'image/png' }));
+    document.querySelector('#qa-stock-resize h1').dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
+  });
+  await page.waitForFunction(() => window.__stockUploads.length === 2);
+  const sizes = await page.evaluate(async () => Promise.all(window.__stockUploads.map(async f => { const b = await createImageBitmap(f); const v = [b.width, b.height, f.size]; b.close(); return v; })));
+  assert.deepEqual(sizes.map(s => s.slice(0, 2)), [[2400, 1600], [1600, 2400]]); assert.ok(sizes.every(s => s[2] < 5000000));
+  assert.match(await page.locator('#qa-stock-resize').innerText(), /original file is unchanged/);
+  await page.evaluate(() => document.getElementById('qa-stock-resize').remove());
 });
 
 await check('project preview: descriptions stay in alt text; only explicit captions are visible', async () => {
@@ -585,7 +667,7 @@ await check('Videos from the computer never reach Decap’s upload: stopped befo
   assert.match(await help.innerText(), /choose the photos again without the video/);
   await help.getByRole('button', { name: 'Close' }).click();
   // Photos and captions files go through as before.
-  await input.setInputFiles({ name: 'kitchen.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(1024) }); await page.waitForTimeout(50);
+  await input.setInputFiles({ name: 'kitchen.jpg', mimeType: 'image/jpeg', buffer: await readFile(join(root, 'static/images/clients/bellard-brothers.png')) }); await page.waitForFunction(() => window.__persisted.includes('kitchen.jpg'));
   await input.setInputFiles({ name: 'agent-on-camera.vtt', mimeType: 'text/vtt', buffer: Buffer.from('WEBVTT\n') }); await page.waitForTimeout(50);
   assert.deepEqual(await page.evaluate(() => window.__persisted), ['kitchen.jpg', 'agent-on-camera.vtt']);
   // Dropped on the dialog: the same check.

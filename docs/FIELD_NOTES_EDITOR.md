@@ -7,7 +7,7 @@ Field Notes are written and published from **/admin** on the website. No code, n
 1. Go to `https://<the site>/admin` and choose **Login with GitHub**.
 2. Open **Field Notes**, then **New Field Note**.
 3. Fill in **Title**, **Category** and a **Short excerpt** (one or two sentences for the list page).
-4. **Hero image**: choose **Choose an image**, then upload a web JPG or WebP about 2,400 px wide (5 MB limit). Describe the picture in **Hero image description**.
+4. **Hero image**: choose **Choose an image**, then upload a JPG, PNG or WebP. Large photos automatically resize proportionally to a maximum of 2,400 px on the long edge and below 5 MB; your original stays unchanged. The same preparation works for images inserted in the article body. Describe the picture in **Hero image description**.
 5. Write or paste the article in **Article**. Use **Heading 2** for each section, the list buttons for checklists, **Quote** for a highlighted note, and the **+** button to add a photo or a Photografik library film.
 6. Optional: SEO title, meta description, social image, related service and the button at the end.
 7. Leave **Published** off while you are drafting. Choose **Publish → Publish now** to save. A draft is saved to the site files but never shown: it stays out of the Field Notes list, the sitemap and search engines, and its address returns "not found" on the live site.
