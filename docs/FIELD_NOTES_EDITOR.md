@@ -13,6 +13,8 @@ Field Notes are written and published from **/admin** on the website. No code, n
 7. Leave **Published** off while you are drafting. Choose **Publish → Publish now** to save. A draft is saved to the site files but never shown: it stays out of the Field Notes list, the sitemap and search engines, and its address returns "not found" on the live site.
 8. When it is ready, switch **Published** on and save again. The site rebuilds automatically in about a minute and the article appears first in the Field Notes list.
 
+**Move an image:** in Article, choose **Arrange images**, then drag the photo or its handle between paragraphs/headings. Captions travel with it. Click-to-place, Move up/down and Undo are available for keyboard and phone use. Choose Save → Save now to keep the new order. See `docs/field-notes-image-layout.md`.
+
 Tips: do not change an article's URL name after publishing. Avoid street addresses and client names in image file names.
 
 ## How it works (for Codex / developers)

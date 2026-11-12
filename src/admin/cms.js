@@ -269,6 +269,102 @@
   });
   CMS.registerWidget('pgk-photo', PhotoControl);
 
+  // Field Notes: keep the existing writing controls and stored Markdown, with a lossless visual image arranger.
+  var ARTICLE_LAYOUT = window.PHOTOGRAFIK_ARTICLE_LAYOUT;
+  var ArticleControl = createClass({
+    getInitialState: function () { return { view: 'write', moving: null, over: null, message: '', history: [] }; },
+    body: function () { return String(this.props.value || ''); },
+    stockField: function () { return this.props.field.set('widget', 'markdown'); },
+    isValid: function () { return this.props.field.get('required') !== false && !this.body().trim() ? { error: { type: 'custom', message: 'Add the article text.' } } : true; },
+    beginMove: function (index, drag) {
+      this.motion = { index: index, id: ARTICLE_LAYOUT.articleLayout(this.body()).blocks[index].id, value: this.body() };
+      this.setState({ moving: index, over: null, message: drag ? 'Drag the image to a highlighted position.' : 'Choose a Place image here button, or press Escape to cancel.' });
+    },
+    startDrag: function (index, e) { e.stopPropagation(); e.dataTransfer.clearData(); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('application/x-photografik-article-image', String(index)); this.beginMove(index, true); },
+    focusImage: function (id) { var self = this; setTimeout(function () { var button = self.handles && self.handles[id]; if (button && button.isConnected) button.focus(); }, 0); },
+    cancelMove: function () { var id = this.motion && this.motion.id; this.motion = null; this.setState({ moving: null, over: null, message: 'Image move canceled.' }); this.focusImage(id); },
+    apply: function (after, message) {
+      var before = this.body(); this.motion = null;
+      if (after === before) { this.setState({ moving: null, over: null, message: 'Image is already in that position.' }); return; }
+      this.props.onChange(after);
+      this.setState({ moving: null, over: null, message: message, history: this.state.history.concat([{ before: before, after: after }]).slice(-20) });
+    },
+    place: function (before) {
+      var move = this.motion;
+      if (!move) return;
+      if (move.value !== this.body()) { this.motion = null; this.setState({ moving: null, over: null, message: 'The article changed during the move. Choose the image again.' }); return; }
+      this.apply(ARTICLE_LAYOUT.moveArticleMedia(this.body(), move.index, before), 'Image moved. The preview is updated; Save the article to keep the new position.');
+      this.focusImage(move.id);
+    },
+    step: function (index, direction) { var id = ARTICLE_LAYOUT.articleLayout(this.body()).blocks[index].id; this.apply(ARTICLE_LAYOUT.moveArticleMedia(this.body(), index, direction < 0 ? index - 1 : index + 2), 'Image moved ' + (direction < 0 ? 'up' : 'down') + '. Save the article to keep the new position.'); this.focusImage(id); },
+    undo: function () {
+      var history = this.state.history, last = history[history.length - 1];
+      if (!last || last.after !== this.body()) return;
+      this.motion = null; this.props.onChange(last.before);
+      this.setState({ moving: null, over: null, message: 'Previous image change undone.', history: history.slice(0, -1) });
+    },
+    mediaInfo: function (block) {
+      if (block.kind === 'image') return { image: thumbFor(block.src, this.props.getAsset, this.props.field), path: block.src, label: block.alt || 'Photo without a description', caption: block.caption, kind: 'Photo' };
+      var media = byId[block.media] || (window.PHOTOGRAFIK_MEDIA || []).find(function (m) { return m.id === block.media; });
+      return { image: media && (media.image || media.thumb || media.src), path: media && media.src,
+        label: media && (media.alt || media.title || media.label) || block.media, caption: media && media.caption || '', kind: media && (media.type === 'video' || media.kind === 'film') ? 'Film' : 'Library photo' };
+    },
+    gap: function (index, label) {
+      var self = this, active = this.state.moving !== null;
+      return h('div', { key: 'gap-' + index, className: 'pgk-article-gap' + (active ? ' is-active' : '') + (this.state.over === index ? ' is-over' : ''), 'data-article-gap': index,
+        onDragOver: function (e) { if (self.motion) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (self.state.over !== index) self.setState({ over: index }); } },
+        onDrop: function (e) { if (self.motion) { e.preventDefault(); e.stopPropagation(); self.place(index); } } },
+        active ? h('button', { type: 'button', className: 'pgk-article-place', 'aria-label': 'Place image ' + label, onClick: function () { self.place(index); } }, 'Place image here') : h('span', { 'aria-hidden': true }, ''));
+    },
+    arrange: function () {
+      var self = this, parsed = ARTICLE_LAYOUT.articleLayout(this.body()), blocks = parsed.blocks;
+      var count = blocks.filter(ARTICLE_LAYOUT.isArticleMedia).length;
+      if (!count) return h('p', { className: 'pgk-article-help' }, 'No images inside the article yet. Add a picture in Write, then return here to arrange it. The hero image has its own field above.');
+      var items = [];
+      blocks.forEach(function (block, index) {
+        items.push(self.gap(index, 'before block ' + (index + 1) + ': ' + block.label.slice(0, 70)));
+        if (!ARTICLE_LAYOUT.isArticleMedia(block)) {
+          items.push(h('div', { key: block.id, className: 'pgk-article-text pgk-article-text--' + block.kind, 'data-article-block': index },
+            h('span', { className: 'pgk-article-kind' }, block.kind === 'heading' ? 'Heading' : block.kind === 'list' ? 'List' : block.kind === 'quote' ? 'Quote' : block.kind === 'code' ? 'Code' : 'Paragraph'),
+            h('p', {}, block.label.length > 260 ? block.label.slice(0, 257) + '…' : block.label)));
+          return;
+        }
+        var media = self.mediaInfo(block);
+        var safeImage = media.image && /^(https?:\/\/|\/(?!\/)|blob:)/i.test(media.image) ? media.image : '';
+        items.push(h('section', { key: block.id, className: 'pgk-article-image' + (self.state.moving === index ? ' is-moving' : ''), 'aria-label': media.kind + ': ' + media.label, 'data-article-block': index },
+          h('div', { className: 'pgk-article-image__top' },
+            h('button', { type: 'button', className: 'pgk-btn pgk-article-drag', draggable: true, 'aria-label': 'Move image: ' + media.label, 'aria-pressed': self.state.moving === index, ref: function (el) { self.handles = self.handles || {}; self.handles[block.id] = el; },
+              onClick: function () { self.state.moving === index ? self.cancelMove() : self.beginMove(index, false); },
+              onDragStart: function (e) { self.startDrag(index, e); },
+              onDragEnd: function () { if (self.motion) self.cancelMove(); } }, '↕ Drag image'),
+            h('span', { className: 'pgk-article-kind' }, media.kind)),
+          safeImage ? h('img', { src: safeImage, alt: media.label, draggable: true, className: 'pgk-article-thumbnail', onDragStart: function (e) { self.startDrag(index, e); }, onDragEnd: function () { if (self.motion) self.cancelMove(); } }) : h('p', {}, 'Library media: ' + media.label),
+          h('p', { className: 'pgk-article-image__label' }, media.label),
+          media.caption ? h('p', { className: 'pgk-article-image__caption' }, media.caption) : null,
+          h('div', { className: 'pgk-gallery__bar' },
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: index === 0, 'aria-label': 'Move image up: ' + media.label, onClick: function () { self.step(index, -1); } }, '↑ Move up'),
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: index === blocks.length - 1, 'aria-label': 'Move image down: ' + media.label, onClick: function () { self.step(index, 1); } }, '↓ Move down'),
+            h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', 'aria-label': 'Remove image from article: ' + media.label, onClick: function () { self.apply(ARTICLE_LAYOUT.removeArticleMedia(self.body(), index), 'Image removed from the article. Undo restores it; its library file is kept.'); } }, 'Remove image'))));
+      });
+      items.push(this.gap(blocks.length, 'at the end of the article'));
+      return h('div', { className: 'pgk-article-board', 'aria-label': 'Article image order' }, items);
+    },
+    render: function () {
+      var self = this, stock = CMS.getWidget && CMS.getWidget('markdown');
+      var history = this.state.history, last = history[history.length - 1];
+      return h('div', { id: this.props.forID, className: 'pgk-article-editor', onKeyDown: function (e) { if (e.key === 'Escape' && self.motion) { e.preventDefault(); e.stopPropagation(); self.cancelMove(); } } },
+        h('div', { className: 'pgk-article-toolbar', role: 'group', 'aria-label': 'Article editing view' },
+          ['write', 'arrange'].map(function (view) { return h('button', { key: view, type: 'button', className: 'pgk-btn' + (self.state.view === view ? ' is-selected' : ' pgk-btn--quiet'), 'aria-pressed': self.state.view === view,
+            onClick: function () { self.motion = null; self.setState({ view: view, moving: null, over: null }); } }, view === 'write' ? 'Write' : 'Arrange images'); }),
+          h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: !last || last.after !== this.body(), onClick: this.undo }, 'Undo image change')),
+        h('p', { className: 'pgk-article-help' }, this.state.view === 'arrange' ? 'Drag an image by its handle to a position between paragraphs or headings. You can also click the handle and choose a position, or use Move up/down. Captions move with the image.' : 'Write and add images as usual. Open Arrange images to move them to another part of the article.'),
+        h('p', { className: 'pgk-article-status', role: 'status', 'aria-live': 'polite' }, this.state.message),
+        this.state.view === 'arrange' ? this.arrange() : stock && stock.control ? h(stock.control, Object.assign({}, this.props, { field: this.stockField() })) : h('textarea', { 'aria-label': 'Article text', value: this.body(), onChange: function (e) { self.props.onChange(e.target.value); } }));
+    },
+  });
+  var ArticlePreview = function (props) { var stock = CMS.getWidget && CMS.getWidget('markdown'); return stock && stock.preview ? h(stock.preview, Object.assign({}, props, { field: props.field.set('widget', 'markdown') })) : h('div', {}, props.value || ''); };
+  CMS.registerWidget('pgk-article', ArticleControl, ArticlePreview);
+
   // ---------- Never save one entry into another's file (found in the Oct 3 2026 walk) ----------
   // Going straight from one open entry to another (browser back/forward, a typed or bookmarked address) without
   // passing through a list left Decap 3.16 holding the first entry: Save then wrote the second form into the first
@@ -1756,6 +1852,13 @@
     '.pgk-row__tools { display: flex; flex-direction: column; gap: 6px; }',
     '.pgk-icon { width: 40px; height: 40px; border-radius: 6px; border: 1px solid #c9ced6; background: #fff; font-size: 16px; cursor: pointer; }',
     '.pgk-icon[disabled] { opacity: .35; cursor: default; } .pgk-icon--danger { color: #b42318; }',
+    '.pgk-article-editor { min-width:0; } .pgk-article-toolbar { display:flex; flex-wrap:wrap; gap:6px; position:sticky; top:0; z-index:2; padding:8px 0; background:#fff; border-bottom:1px solid #d5dfdc; }',
+    '.pgk-article-toolbar .is-selected { background:#244f46; color:#fff; border-color:#244f46; } .pgk-article-help,.pgk-article-status { font-size:13px; line-height:1.5; margin:8px 0; } .pgk-article-status { color:#244f46; min-height:20px; } .pgk-article-status:empty { visibility:hidden; }',
+    '.pgk-article-board { min-width:0; } .pgk-article-text { padding:10px 12px; border-left:3px solid #d7dfdc; background:#f4f6f5; overflow-wrap:anywhere; } .pgk-article-text p { margin:3px 0 0; font-size:14px; line-height:1.5; } .pgk-article-text--heading p { font-weight:700; font-size:17px; }',
+    '.pgk-article-kind { color:#52645e; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; } .pgk-article-image { border:1px solid #b8cbc4; border-radius:8px; padding:12px; background:#fff; min-width:0; overflow-wrap:anywhere; } .pgk-article-image.is-moving { outline:2px solid #397e68; }',
+    '.pgk-article-image__top { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px; } .pgk-article-drag { cursor:grab; min-height:44px; } .pgk-article-drag:active { cursor:grabbing; } .pgk-article-thumbnail { display:block; width:100%; max-height:200px; height:auto; object-fit:contain; background:#f4f6f5; }',
+    '.pgk-article-image__label { margin:8px 0 4px; font-size:14px; font-weight:600; } .pgk-article-image__caption { margin:4px 0 8px; font-size:13px; color:#52645e; } .pgk-article-gap { height:36px; box-sizing:border-box; padding:2px 0; } .pgk-article-gap.is-active { height:36px; } .pgk-article-place { width:100%; height:32px; min-height:32px; border:1px dashed #86a89a; color:#244f46; background:#eef6f2; border-radius:4px; font:inherit; font-size:12px; cursor:pointer; } .pgk-article-gap.is-over .pgk-article-place { background:#d4e9df; border:2px solid #244f46; }',
+    '.pgk-article-editor button:focus-visible { outline:3px solid #244f46; outline-offset:2px; } .pgk-article-editor textarea { width:100%; min-height:300px; box-sizing:border-box; }',
     '.pgk-photo-help { margin: 8px 0; font-size: 13px; line-height: 1.5; color: #374151; }',
     '.pgk-msg { margin: 8px 0; padding: 8px 12px 8px 28px; border-radius: 6px; background: #fef3f2; color: #912018; font-size: 13px; }',
     '.pgk-pub { display: grid; gap: 8px; } .pgk-switch { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; cursor: pointer; }',

@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const configJs = await readFile(join(root, 'dist/admin/config.js'), 'utf8');
+const articleLayoutJs = await readFile(join(root, 'dist/admin/article-layout.js'), 'utf8');
 const editorCoreJs = await readFile(join(root, 'dist/admin/page-editing.js'), 'utf8');
 const cmsJs = await readFile(join(root, 'src/admin/cms.js'), 'utf8');
 
@@ -163,6 +164,7 @@ await page.addScriptTag({ content: harness });
 await page.addScriptTag({ content: configJs });
 await page.addScriptTag({ content: editorCoreJs });
 await page.addScriptTag({ content: await readFile(join(root, 'src/admin/photo-upload.js'), 'utf8') });
+await page.addScriptTag({ content: articleLayoutJs });
 await page.addScriptTag({ content: cmsJs });
 const pm = (f) => readFile(join(root, 'content/page-media', f + '.json'), 'utf8').then(JSON.parse);
 const slotField = async (file, key) => {
@@ -262,6 +264,88 @@ await check('Auto resize: stock article-media file chooser and drop deliver only
   assert.deepEqual(sizes.map(s => s.slice(0, 2)), [[2400, 1600], [1600, 2400]]); assert.ok(sizes.every(s => s[2] < 5000000));
   assert.match(await page.locator('#qa-stock-resize').innerText(), /original file is unchanged/);
   await page.evaluate(() => document.getElementById('qa-stock-resize').remove());
+});
+
+await check('Article images: drag between paragraphs, preserve caption/prose/metadata, undo exact bytes and serialize/reopen', async () => {
+  const body = '## Start\n\nOpening **bold** words and [a link](/contact).\n\n![Portrait](/v/ph-revivaluxe-portrait.webp "Caption travels with photo")\n\n## Details\n\nA later paragraph.\n\n::media[cs-podcast-ep23-short]';
+  await page.evaluate(body => { window.__articleOriginal = body; window.__articleCase = window.mountWidget('pgk-article', { field: { name: 'body', widget: 'pgk-article', required: true }, value: body, entry: { data: { title: 'Existing draft', published: false, hero: '/images/hero.webp', editorialNotes: 'Keep editor notes', unrelated: { keep: true } } }, collection: 'field-notes' }); }, body);
+  const host = page.locator('.host-pgk-article').last();
+  await host.getByRole('button', { name: 'Arrange images', exact: true }).click();
+  await host.getByRole('img', { name: 'Portrait', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.__articleTransfer = new DataTransfer();
+    document.querySelector('.host-pgk-article .pgk-article-thumbnail').dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer: window.__articleTransfer }));
+  });
+  await host.getByRole('button', { name: 'Place image at the end of the article', exact: true }).waitFor();
+  await page.evaluate(() => {
+    const gaps = document.querySelectorAll('.host-pgk-article [data-article-gap]');
+    gaps[gaps.length - 1].dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: window.__articleTransfer }));
+    gaps[gaps.length - 1].dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: window.__articleTransfer }));
+  });
+  await page.waitForFunction(() => window.__articleCase.state.value.indexOf('![Portrait]') > window.__articleCase.state.value.indexOf('::media['));
+  const saved = await page.evaluate(() => window.__articleCase.savedJson());
+  assert.ok(saved.body.includes('"Caption travels with photo"')); assert.equal(saved.published, false); assert.equal(saved.editorialNotes, 'Keep editor notes'); assert.deepEqual(saved.unrelated, { keep: true });
+  assert.match(await host.getByRole('status').innerText(), /Image moved/);
+  await host.getByRole('button', { name: 'Undo image change', exact: true }).click();
+  assert.equal(await page.evaluate(() => window.__articleCase.state.value), body);
+  await host.getByRole('button', { name: 'Move image down: Portrait', exact: true }).click();
+  await page.waitForFunction(() => window.__articleCase.state.value.indexOf('![Portrait]') > window.__articleCase.state.value.indexOf('## Details'));
+  const reordered = await page.evaluate(() => window.__articleCase.savedJson());
+  await page.evaluate(saved => { window.__articleCase.unmount(); window.__articleCase = window.mountWidget('pgk-article', { field: { name: 'body', widget: 'pgk-article' }, value: saved.body, entry: { data: saved }, collection: 'field-notes' }); }, reordered);
+  await page.locator('.host-pgk-article').last().getByRole('button', { name: 'Arrange images', exact: true }).click();
+  assert.equal(await page.evaluate(() => window.__articleCase.state.value), reordered.body);
+  assert.equal(await page.evaluate(() => window.__articleCase.savedJson().published), false);
+  await page.evaluate(() => window.__articleCase.unmount());
+});
+
+await check('Article images: keyboard/touch placement, cancel, remove/undo, safe stale drag and raw editing', async () => {
+  const body = 'Opening.\n\n![Portrait](/v/ph-revivaluxe-portrait.webp "Caption")\n\n## Next\n\nLast paragraph.';
+  await page.evaluate(body => { window.__articleCase = window.mountWidget('pgk-article', { field: { name: 'body', widget: 'pgk-article' }, value: body, entry: { data: { published: false } }, collection: 'field-notes' }); }, body);
+  const host = page.locator('.host-pgk-article').last();
+  await host.getByRole('button', { name: 'Arrange images', exact: true }).click();
+  await host.getByRole('button', { name: 'Move image: Portrait', exact: true }).press('Enter');
+  await host.getByRole('button', { name: /^Place image before block 1:/ }).press('Enter');
+  await page.waitForFunction(() => window.__articleCase.state.value.startsWith('![Portrait]'));
+  await host.getByRole('button', { name: 'Undo image change', exact: true }).click();
+  await host.getByRole('button', { name: 'Move image: Portrait', exact: true }).click();
+  await host.getByRole('button', { name: /^Place image before block 1:/ }).press('Escape');
+  await page.waitForFunction(() => !document.querySelector('.host-pgk-article .pgk-article-place'));
+  assert.equal(await host.getByRole('button', { name: /Place image/ }).count(), 0);
+  assert.equal(await page.evaluate(() => window.__articleCase.state.value), body);
+  await host.getByRole('button', { name: 'Remove image from article: Portrait', exact: true }).click();
+  await page.waitForFunction(() => !window.__articleCase.state.value.includes('![Portrait]'));
+  await host.getByRole('button', { name: 'Undo image change', exact: true }).click();
+  assert.equal(await page.evaluate(() => window.__articleCase.state.value), body);
+  await host.getByRole('button', { name: 'Move image: Portrait', exact: true }).click();
+  await page.evaluate(() => window.__articleCase.instance.props.onChange(window.__articleCase.state.value + '\n\nNew owner words.'));
+  await page.waitForFunction(() => window.__articleCase.instance.props.value.endsWith('New owner words.'));
+  await host.getByRole('button', { name: 'Place image at the end of the article', exact: true }).click();
+  await host.getByRole('status').filter({ hasText: 'article changed' }).waitFor();
+  assert.match(await host.getByRole('status').innerText(), /article changed/);
+  assert.ok((await page.evaluate(() => window.__articleCase.state.value)).endsWith('New owner words.'));
+  await host.getByRole('button', { name: 'Write', exact: true }).click();
+  await host.getByRole('textbox', { name: 'Article text' }).fill('New writing remains editable.');
+  assert.equal(await page.evaluate(() => window.__articleCase.state.value), 'New writing remains editable.');
+  await host.getByRole('button', { name: 'Arrange images', exact: true }).click();
+  await host.getByText(/No images inside the article/).waitFor();
+  assert.match(await host.innerText(), /No images inside the article/);
+  await page.evaluate(() => window.__articleCase.unmount());
+});
+
+await check('Article images: phone layout preserves portrait thumbnails and click-to-place controls fit', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => { window.__articleCase = window.mountWidget('pgk-article', { field: { name: 'body', widget: 'pgk-article' }, value: 'Opening.\n\n![Portrait](/v/ph-revivaluxe-portrait.webp)\n\n## Next\n\nLast paragraph.', entry: {}, collection: 'field-notes' }); });
+  const host = page.locator('.host-pgk-article').last();
+  await host.getByRole('button', { name: 'Arrange images', exact: true }).click();
+  await host.getByRole('button', { name: 'Move image: Portrait', exact: true }).click();
+  await host.getByRole('button', { name: 'Place image at the end of the article', exact: true }).waitFor({ state: 'visible' });
+  const overflow = await host.evaluate(el => el.scrollWidth > el.clientWidth + 1);
+  assert.equal(overflow, false);
+  const style = await host.getByRole('img', { name: 'Portrait', exact: true }).evaluate(el => getComputedStyle(el).objectFit);
+  assert.equal(style, 'contain');
+  await host.getByRole('button', { name: 'Place image at the end of the article', exact: true }).click();
+  await page.waitForFunction(() => window.__articleCase.state.value.indexOf('![Portrait]') > window.__articleCase.state.value.indexOf('Last paragraph.'));
+  await page.evaluate(() => window.__articleCase.unmount()); await page.setViewportSize({ width: 1280, height: 900 });
 });
 
 await check('project preview: descriptions stay in alt text; only explicit captions are visible', async () => {
