@@ -24,6 +24,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
   // Phones get a shorter first batch so the page stays scannable.
   const fixedLimit = Number(root.dataset.fixedLimit) || 0;
   const compactColumns = matchMedia('(max-width: 1000px)');
+  const phoneColumns = matchMedia('(max-width: 620px)');
   const BATCH = fixedLimit || (matchMedia('(max-width: 620px)').matches ? Number(root.dataset.batchPhone) || 6 : Number(root.dataset.batch) || 9);
 
   const params = new URLSearchParams(location.search);
@@ -35,6 +36,28 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
 
   let shown = BATCH;
   let current = [];
+
+  // Fit preview tiles into complete rows, but give an opened phone player usable controls.
+  // Keep it expanded while paused; shrinking on Pause would move the control the visitor just used.
+  function layoutCompactCards() {
+    if (!fixedLimit) return;
+    const cols = compactColumns.matches ? 2 : 3;
+    let row = [];
+    const finishRow = () => {
+      row.forEach((card) => { card.style.gridColumn = `span ${6 / row.length}`; });
+      row = [];
+    };
+    for (const card of cards.filter((c) => !c.hidden)) {
+      if (phoneColumns.matches && card.querySelector('.gcard__video')) {
+        finishRow();
+        card.style.gridColumn = 'span 6';
+      } else {
+        row.push(card);
+        if (row.length === cols) finishRow();
+      }
+    }
+    finishRow();
+  }
 
   // ---------- inline playback ----------
   const inlineVideos = new Set();
@@ -55,6 +78,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     window.pgkVideoRecovery?.(v);
     v.addEventListener('play', () => pauseAll(v));
     btn.replaceWith(v);
+    layoutCompactCards();
     inlineVideos.add(v);
     vis?.observe(v);
     pauseAll(v);
@@ -110,14 +134,7 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     const n = current.length;
     grid.dataset.shown = String(on.size);
     // A short final row fills the available width, without placeholder tiles or unrelated media.
-    if (fixedLimit) {
-      const cols = compactColumns.matches ? 2 : 3;
-      const visible = cards.filter((card) => !card.hidden);
-      visible.forEach((card, i) => {
-        const rowSize = Math.min(cols, visible.length - Math.floor(i / cols) * cols);
-        card.style.gridColumn = `span ${6 / rowSize}`;
-      });
-    }
+    layoutCompactCards();
     count.textContent = n === 1 ? '1 result' : `${n} results`; // screen-reader only (visually hidden)
     empty.hidden = n > 0;
     if (!n) {
@@ -162,7 +179,10 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     root.querySelector(`.gcard[data-i="${firstNew}"] .gcard__open, .gcard[data-i="${firstNew}"] video`)?.focus?.();
     track('gallery_load_more', { where, shown: Math.min(shown, current.length) });
   });
-  if (fixedLimit) compactColumns.addEventListener('change', () => render({ push: false }));
+  if (fixedLimit) {
+    compactColumns.addEventListener('change', () => render({ push: false }));
+    phoneColumns.addEventListener('change', () => render({ push: false }));
+  }
 
   render({ push: false });
 }

@@ -1582,6 +1582,57 @@ await check('Architecture & design gallery: full collection filtered before top 
   await ph.context().close();
 });
 
+await check('Architecture phone inline playback: usable full-width players, compact previews and retained filters', async () => {
+  for (const width of [390, 320]) {
+    const p = await newPage({ width, height: 844 });
+    await p.goto(base + '/architecture-design?type=video');
+    const shown = () => p.locator('#ag-grid .gcard:not([hidden])');
+    const visibleIds = await shown().evaluateAll(es => es.map(e => e.dataset.media));
+    assert(visibleIds.length === 6, 'top six matching films before playback');
+    const grid = await p.locator('#ag-grid').boundingBox();
+    const previews = await shown().evaluateAll(es => es.map(e => e.getBoundingClientRect().width));
+    assert(previews.every(w => w < grid.width * .6), 'unopened previews stay compact');
+    const fullRows = async () => {
+      const boxes = await shown().evaluateAll(es => es.map(e => { const b=e.getBoundingClientRect(); return {x:b.x,y:b.y,w:b.width}; }));
+      for (const y of new Set(boxes.map(b => Math.round(b.y)))) {
+        const row = boxes.filter(b => Math.abs(b.y-y)<1);
+        assert(Math.abs(row[0].x-grid.x)<2 && Math.abs(row.at(-1).x+row.at(-1).w-grid.x-grid.width)<2, 'remaining previews fill their rows');
+      }
+    };
+    for (const orientation of ['horizontal', 'vertical']) {
+      const card=p.locator(`#ag-grid .gcard--${orientation}:not([hidden])`).first();
+      await card.locator('button.gcard__open').click();
+      const v=card.locator('video');
+      await v.evaluate(async e => { e.muted=true; await e.play(); });
+      await p.waitForFunction(e => !e.paused && e.currentTime>.2, await v.elementHandle());
+      const d=await v.evaluate(v => { const r=v.getBoundingClientRect(); return {w:r.width,h:r.height,controls:v.controls,inline:v.playsInline,others:[...document.querySelectorAll('#ag-grid video')].filter(e=>e!==v&&!e.paused).length}; });
+      assert(Math.abs(d.w-grid.width)<2 && d.controls && d.inline, `${width}: opened ${orientation} player spans phone row with controls`);
+      assert(orientation==='vertical' ? Math.abs(d.w/d.h-9/16)<.015 : d.w/d.h>1.4, 'portrait/landscape proportions retained');
+      assert(d.others===0, 'only selected film plays');
+      assert(await p.locator('dialog[open]').count()===0, 'playback remains inline');
+      await v.evaluate(e => e.pause());
+      assert(Math.abs((await v.boundingBox()).width-grid.width)<2, 'Pause keeps controls in their usable full-width frame');
+      await fullRows();
+      assert(JSON.stringify(await shown().evaluateAll(es=>es.map(e=>e.dataset.media)))===JSON.stringify(visibleIds), 'opening a player does not change matching order or six-card limit');
+      assert(await p.inputValue('#ag-type')==='video', 'media filter retained');
+      assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth), 'no phone overflow');
+      await v.screenshot({path:shots+`arch-player-${orientation}-${width}.png`});
+    }
+    await p.selectOption('#ag-type','photo');
+    assert(await shown().count()===6 && await p.locator('#ag-grid video').evaluateAll(vs=>vs.every(v=>v.paused)), 'photo filter refills six stills and pauses hidden films');
+    await p.click('#portfolio .filters__clear');
+    assert(await p.inputValue('#ag-type')==='' && await p.inputValue('#ag-segment')==='' && await shown().count()===6, 'reset clears filters and retains six matches');
+    await p.setViewportSize({width:800,height:900});
+    await p.selectOption('#ag-type','video');
+    await p.waitForTimeout(100);
+    const tablet=await p.locator('#ag-grid .gcard:has(video):not([hidden])').first().boundingBox();
+    const tabletGrid=await p.locator('#ag-grid').boundingBox();
+    assert(tablet.width<tabletGrid.width*.6, 'tablet retains compact two-column layout');
+    assert(p.errors.length===0,p.errors.join(','));
+    await p.context().close();
+  }
+});
+
 // James, Sep 28 2026 page review.
 await check('James Sep 28: pricing four across, Most Popular, package loops; RE image-led, no tile captions; no counts; Agent split; phone hero waits for load', async () => {
   const p = await newPage({ width: 1280, height: 900 });
