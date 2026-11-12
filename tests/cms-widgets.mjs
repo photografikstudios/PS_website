@@ -2,7 +2,7 @@
 // test environment cannot reach, so a ~60-line stand-in provides the few things the widgets use (createClass, h,
 // CMS.registerWidget, Immutable-style get/getIn/toJS). It catches runtime errors and checks behaviour; the real Decap
 // walk on the deployed preview is still needed (Codex). Usage: node src/build.mjs && node tests/cms-widgets.mjs
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -89,7 +89,7 @@ window.mountWidget = function (name, { field, value, entry, collection, decap })
     if (decap && m.instance && m.lastValue === state.value) entryProp = m.lastEntry;
     m.lastValue = state.value; m.lastEntry = entryProp;
     const props = { value: state.value, onChange: (v) => { state.value = v && v.toJS ? v.toJS() : v; schedule(); }, field: wrap(field), forID: m.id.replace('#', '-'),
-      entry: entryProp, collection: wrap({ name: collection }), getAsset: (p) => p, onPersistMedia: (file) => { (window.__uploadFiles = window.__uploadFiles || []).push(file); return Promise.resolve({ payload: { path: 'static/images/library/' + file.name } }); } };
+      entry: entryProp, collection: wrap({ name: collection }), getAsset: (p) => p, onPersistMedia: (file) => { (window.__uploadFiles = window.__uploadFiles || []).push(file); return window.__persistTest ? window.__persistTest(file) : Promise.resolve({ payload: { path: 'static/images/library/' + file.name } }); } };
     drawn = new Set();
     host.appendChild(renderNode(h(Ctrl, props), m.id));
     // Like React: components that were not drawn this time are unmounted.
@@ -114,7 +114,7 @@ window.h = h; window.createClass = createClass; window.__unmountNamed = (name) =
 localStorage.setItem('decap-cms-user', JSON.stringify({ token: 'gho_${'x'.repeat(36)}', backendName: 'github' }));
 `;
 
-const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
+const browser = await (process.env.PLAYWRIGHT_BROWSER === 'webkit' ? webkit.launch({ executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH || undefined }) : chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined }));
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } }); page.setDefaultTimeout(8000);
 const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
 // Routes added later win in Playwright, so the catch-all page goes first.
@@ -264,6 +264,86 @@ await check('Auto resize: stock article-media file chooser and drop deliver only
   assert.deepEqual(sizes.map(s => s.slice(0, 2)), [[2400, 1600], [1600, 2400]]); assert.ok(sizes.every(s => s[2] < 5000000));
   assert.match(await page.locator('#qa-stock-resize').innerText(), /original file is unchanged/);
   await page.evaluate(() => document.getElementById('qa-stock-resize').remove());
+});
+
+await check('Upload lifecycle: abandoned photo, gallery, page placement and captions never persist or change another entry; Save is released', async () => {
+  for (const widget of ['pgk-photo', 'pgk-gallery', 'pgk-slot', 'pgk-captions']) {
+    await page.evaluate(widget => {
+      window.__uploadFiles = []; window.__releaseAbandoned = null;
+      window.__beforeUpload = widget === 'pgk-gallery' ? [{image:'/images/keep.jpg',alt:'Keep'}] : widget === 'pgk-slot' ? {src:'/images/keep.jpg',alt:'Keep'} : widget === 'pgk-captions' ? 'burned-in' : '/images/keep.jpg';
+      window.__abandoned = window.mountWidget(widget, {field:{name:'qa',label:'QA photo',accepts:'photo',max:4,multiple:widget==='pgk-gallery',media_folder:'/static/images/library',public_folder:'/images/library'},value:window.__beforeUpload,entry:{slug:'old-entry',data:{title:'Old entry'}},collection:'photos'});
+      window.__realPrepare = window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare;
+      window.__realText = File.prototype.text;
+      if (widget === 'pgk-captions') File.prototype.text = function () { const f=this; return new Promise(resolve => { window.__releaseAbandoned = () => window.__realText.call(f).then(resolve); }); };
+      else window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare = f => new Promise(resolve => { window.__releaseAbandoned = () => window.__realPrepare(f).then(resolve); });
+    }, widget);
+    const host = page.locator('.host-'+widget).last();
+    const file = widget === 'pgk-captions' ? {name:'qa.vtt',mimeType:'text/vtt',buffer:Buffer.from('WEBVTT\n\n00:00.000 --> 00:01.000\nHi\n')} : {name:'qa.png',mimeType:'image/png',buffer:await readFile(join(root,'static/images/clients/bellard-brothers.png'))};
+    await host.locator('input[type=file]').first().setInputFiles(file);
+    await page.waitForFunction(() => !!window.__releaseAbandoned);
+    assert.match(await page.evaluate(() => {try {window.__events.preSave({entry:window.__wrapForTest({data:{}})});}catch(e){return e.message;}}), /still being prepared/);
+    await page.evaluate(() => window.__abandoned.unmount());
+    assert.equal(await page.evaluate(() => {try {window.__events.preSave({entry:window.__wrapForTest({data:{}})});return true;}catch(e){return e.message;}}), true);
+    await page.evaluate(() => { window.__releaseAbandoned(); window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare=window.__realPrepare; File.prototype.text=window.__realText; });
+    await page.waitForTimeout(80);
+    assert.deepEqual(await page.evaluate(() => window.__abandoned.state.value), await page.evaluate(() => window.__beforeUpload), widget);
+    assert.equal(await page.evaluate(() => window.__uploadFiles.length), 0, widget+' must not call Decap after unmount');
+  }
+});
+
+await check('Upload lifecycle: failed or declined Decap persistence preserves existing photo, gallery, placement and captions', async () => {
+  for (const widget of ['pgk-photo', 'pgk-gallery', 'pgk-slot', 'pgk-captions']) {
+    for (const failure of ['failure','declined']) {
+      await page.evaluate(({widget,failure}) => {
+        window.__beforeUpload = widget === 'pgk-gallery' ? [{image:'/images/keep.jpg',alt:'Keep'}] : widget === 'pgk-slot' ? {src:'/images/keep.jpg',alt:'Keep'} : widget === 'pgk-captions' ? 'burned-in' : '/images/keep.jpg';
+        window.__persistTest = () => Promise.resolve(failure === 'failure' ? {type:'MEDIA_PERSIST_FAILURE',payload:{privateUpload:false}} : undefined);
+        window.__failedUpload=window.mountWidget(widget,{field:{name:'qa',label:'QA photo',accepts:'photo',max:4,media_folder:'/static/images/library',public_folder:'/images/library'},value:window.__beforeUpload,entry:{slug:'old-entry',data:{title:'Old entry'}},collection:'photos'});
+      },{widget,failure});
+      const host=page.locator('.host-'+widget).last();
+      const file=widget==='pgk-captions'?{name:'qa.vtt',mimeType:'text/vtt',buffer:Buffer.from('WEBVTT\n\n00:00.000 --> 00:01.000\nHi\n')}:{name:'qa.png',mimeType:'image/png',buffer:await readFile(join(root,'static/images/clients/bellard-brothers.png'))};
+      await host.locator('input[type=file]').first().setInputFiles(file);
+      await host.getByRole('alert').waitFor();
+      assert.match(await host.getByRole('alert').innerText(),failure==='failure'?/could not be uploaded/:/upload was cancelled/);
+      assert.deepEqual(await page.evaluate(() => window.__failedUpload.state.value),await page.evaluate(() => window.__beforeUpload));
+      assert.equal(await page.evaluate(() => window.__failedUpload.instance.state.busy),false);
+      await page.evaluate(() => {window.__failedUpload.unmount();delete window.__persistTest;});
+    }
+  }
+});
+
+await check('Upload lifecycle: a newer placement, photo or captions choice wins over a delayed upload', async () => {
+  for (const widget of ['pgk-photo','pgk-slot','pgk-captions']) {
+    await page.evaluate(widget => {
+      window.__releaseReplacement=null;
+      window.__replacement=window.mountWidget(widget,{field:{name:'qa',label:'QA photo',accepts:'photo',max:1},value:widget==='pgk-slot'?{src:'/images/old.jpg',alt:'Old'}:null,entry:{slug:'same-entry',data:{}},collection:'photos'});
+      window.__realPrepare=window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare;window.__realText=File.prototype.text;
+      if(widget==='pgk-captions')File.prototype.text=function(){const f=this;return new Promise(resolve=>{window.__releaseReplacement=()=>window.__realText.call(f).then(resolve);});};
+      else window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare=f=>new Promise(resolve=>{window.__releaseReplacement=()=>window.__realPrepare(f).then(resolve);});
+    },widget);
+    const host=page.locator('.host-'+widget).last();
+    await host.locator('input[type=file]').first().setInputFiles(widget==='pgk-captions'?{name:'qa.vtt',mimeType:'text/vtt',buffer:Buffer.from('WEBVTT\n')}:{name:'qa.png',mimeType:'image/png',buffer:await readFile(join(root,'static/images/clients/bellard-brothers.png'))});
+    await page.waitForFunction(()=>!!window.__releaseReplacement);
+    const expected=widget==='pgk-slot'?{src:'/images/newer.jpg',alt:'Newer'}:widget==='pgk-captions'?'burned-in':'/images/newer.jpg';
+    await page.evaluate(({widget,expected})=>{const m=window.__replacement;if(widget==='pgk-slot')m.instance.set([expected]);else m.instance.change(expected);window.__releaseReplacement();window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare=window.__realPrepare;File.prototype.text=window.__realText;},{widget,expected});
+    await page.waitForTimeout(80);
+    assert.deepEqual(await page.evaluate(()=>window.__replacement.state.value),expected);
+    await page.evaluate(()=>window.__replacement.unmount());
+  }
+});
+
+await check('Upload lifecycle: closing stock media during preparation releases Save and never dispatches into a reopened dialog', async () => {
+  await page.evaluate(()=>{
+    const d=document.createElement('div');d.id='qa-stock-abandoned';d.setAttribute('role','dialog');d.innerHTML='<h1>Media assets</h1><input type="file">';document.body.appendChild(d);
+    window.__stockLate=0;d.addEventListener('change',()=>window.__stockLate++);window.__realPrepare=window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare;window.__releaseStock=null;
+    window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare=f=>new Promise(resolve=>{window.__releaseStock=()=>window.__realPrepare(f).then(resolve);});
+  });
+  await page.locator('#qa-stock-abandoned input').setInputFiles({name:'qa.png',mimeType:'image/png',buffer:await readFile(join(root,'static/images/clients/bellard-brothers.png'))});
+  await page.waitForFunction(()=>!!window.__releaseStock);
+  await page.evaluate(()=>document.getElementById('qa-stock-abandoned').remove());
+  assert.equal(await page.evaluate(()=>{try{window.__events.preSave({entry:window.__wrapForTest({data:{}})});return true;}catch(e){return e.message;}}),true);
+  await page.evaluate(()=>{window.__releaseStock();window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare=window.__realPrepare;});
+  await page.waitForTimeout(80);
+  assert.equal(await page.evaluate(()=>window.__stockLate),0);
 });
 
 await check('Article images: drag between paragraphs, preserve caption/prose/metadata, undo exact bytes and serialize/reopen', async () => {
@@ -889,6 +969,8 @@ await check('Gallery library settings: hidden films have a direct activation pat
  const value={mode:'custom',items:[{media:id},{media:'oct15-stair-install-reel-2-30s'},{media:'oct15-stair-install-horizontal-60s'}]};
  await page.evaluate(({field,value})=>{window.__activation=window.mountWidget('pgk-gallery-slot',{field,value,entry:{slug:'architecture-design',data:{selectedWork:value}},collection:'pages'});},{field,value});
  const host=page.locator('.host-pgk-gallery-slot').last(),row=host.locator('.pgk-row').first(),link=row.getByRole('link',{name:/^Open film settings/});
+ await page.evaluate(()=>window.__pgkDecorate());
+ assert.equal(await link.locator('.pgk-card-thumb,.pgk-card-meta').count(),0,'inline settings links never become collection cards');
  assert.equal(await link.getAttribute('href'),'#/collections/films/entries/'+encodeURIComponent(id));
  assert.equal(await link.getAttribute('target'),'_blank','page edits remain open');
  assert.match(await row.innerText(),/Hidden in library/);assert.match(await row.innerText(),/Turn on Show on site, then Save/);
@@ -910,7 +992,8 @@ await check('Uploaded files: an upload taken off every page is found, deleted on
   const link = page.locator('.pgk-slot__note .pgk-linkbtn').first();
   assert.match(await page.locator('.pgk-slot__note').first().innerText(), /A photo uploaded straight to this page is a file of its own/);
   assert.ok(!/open it in Photos/i.test(await page.locator('body').innerText()), 'no misleading Photos wording');
-  await link.focus(); await link.click();
+  // Safari leaves a clicked button unfocused; the dialog must remember the trigger rather than activeElement.
+  if(process.env.PLAYWRIGHT_BROWSER!=='webkit')await link.focus(); await link.click();
   const dlg = page.getByRole('dialog', { name: 'Uploaded files' });
   await dlg.getByText('1 not used · 1 in use or protected').waitFor();
   assert.match(await dlg.innerText(), /qa-on-a-page\.jpg Used in: Page Media › Send a Project Brief/);
@@ -1015,10 +1098,12 @@ await check('Bottom note: the review-only test note is one line, opens for detai
 });
 
 await check('Phone width: Page Media rows fit without sideways scrolling', async () => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(100);
-  const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  assert.ok(over <= 0, 'overflow ' + over);
+  for (const width of [390,320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.waitForTimeout(100);
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    assert.ok(over <= 0, width+'px overflow ' + over);
+  }
 });
 
 
@@ -1093,7 +1178,7 @@ await check('Pages workspace: search controls, client reviews and FAQs are avail
   await host.getByRole('button',{name:/Search & social appearance/}).click();
   await host.getByLabel('SEO title',{exact:true}).fill('People and Purpose | Photografik Studios');
   assert.equal(await page.evaluate(()=>window.__workspace.state.value._seo.title),'People and Purpose | Photografik Studios');
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no phone overflow');
+  for (const width of [390,320]) {await page.setViewportSize({width,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),width+'px phone editor overflow');}
   await page.evaluate(()=>window.__workspace.unmount());
   const reData=await pm('real-estate');
   const reField=await page.evaluate(()=>window.PHOTOGRAFIK_CMS_CONFIG.collections.find(c=>c.name==='pages').files.find(p=>p.name==='real-estate').fields.find(f=>f.name==='_page'));

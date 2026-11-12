@@ -139,8 +139,41 @@
     return (pub ? pub.replace(/\/+$/, '') : '/' + media.replace(/^static\//, '')) + '/' + name;
   };
   var photoUploadsPending = 0;
+  // Decap's onChange writes to the currently open entry, even when an old control has gone away. A slow resize must
+  // never finish in another entry (including /new -> collection list -> /new), or replace a newer media choice.
+  var uploads = [];
+  function cancelUpload(owner) { if (owner._pgkUpload) owner._pgkUpload.finish(); }
+  function checkUploadOwner(owner) { if (owner._pgkUpload && !owner._pgkUpload.current()) { cancelUpload(owner); owner.setState({ busy: false }); } }
+  function uploadJob(isCurrent) {
+    var active = true;
+    var job = {
+      current: function () { return active && isCurrent(); },
+      finish: function () {
+        if (!active) return;
+        active = false; photoUploadsPending--;
+        uploads = uploads.filter(function (x) { return x !== job; });
+        if (job.onFinish) job.onFinish();
+      },
+    };
+    uploads.push(job); photoUploadsPending++;
+    return job;
+  }
+  function beginUpload(owner) {
+    cancelUpload(owner);
+    var route = location.hash, id = owner.props.forID, name = owner.props.field.get('name');
+    var job = uploadJob(function () { return owner._pgkUpload === job && location.hash === route && owner.props.forID === id && owner.props.field.get('name') === name; });
+    job.onFinish = function () { if (owner._pgkUpload === job) owner._pgkUpload = null; };
+    owner._pgkUpload = job;
+    return job;
+  }
+  window.addEventListener('hashchange', function () { uploads.slice().forEach(function (job) { if (!job.current()) job.finish(); }); });
+  function persistedMedia(action) {
+    if (!action) throw new Error('The upload was cancelled. Choose the file again if you still want to use it.');
+    if (action.type === 'MEDIA_PERSIST_FAILURE') throw new Error('The file could not be uploaded. Please try again before saving.');
+    return action.payload && (action.payload.mediaFile || action.payload.file || action.payload);
+  }
   var PHOTO_HELP = 'Photos resize automatically to a maximum of 2,400 px on the long edge and below 5 MB. Proportions and your original file are preserved.';
-  async function addFiles(props, files, baseName) {
+  async function addFiles(props, files, baseName, job) {
     var list = Array.prototype.slice.call(files || []);
     var msgs = [], notes = [], paths = [];
     // Every upload gets a clean, unique name from the entry title (camera names such as PS_00314 or DJI_0042 never reach
@@ -155,29 +188,29 @@
       return f.arrayBuffer().then(function (buf) { return crypto.subtle.digest('SHA-256', buf); })
         .then(function (d) { return Array.prototype.map.call(new Uint8Array(d).slice(0, 5), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); });
     };
-    photoUploadsPending++;
-    try {
-      // Decode/resize one photo at a time so a batch does not allocate several full-resolution canvases together.
-      for (var orig of list) {
-        try {
-          var prepared = await window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare(orig);
-          var image = prepared.file;
-          var ext = image.type === 'image/png' ? 'png' : image.type === 'image/webp' ? 'webp' : 'jpg';
-          var fp = await fingerprint(image);
-          var file = new File([image], base + '-' + fp + '.' + ext, { type: image.type, lastModified: image.lastModified });
-          var action = await props.onPersistMedia(file, { field: props.field });
-          var mf = action && action.payload && (action.payload.mediaFile || action.payload);
-          var path = publicPathFor(props.field, (mf && mf.path) || file.name);
-          if (thumbs[path]) URL.revokeObjectURL(thumbs[path]);
-          thumbs[path] = URL.createObjectURL(file);
-          paths.push(path);
-          if (prepared.notice) notes.push(prepared.notice);
-        } catch (err) {
-          msgs.push(orig.name + ': ' + (err.message || err));
-        }
+    // Decode/resize one photo at a time so a batch does not allocate several full-resolution canvases together.
+    for (var orig of list) {
+      try {
+        var prepared = await window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare(orig);
+        if (!job.current()) break;
+        var image = prepared.file;
+        var ext = image.type === 'image/png' ? 'png' : image.type === 'image/webp' ? 'webp' : 'jpg';
+        var fp = await fingerprint(image);
+        if (!job.current()) break;
+        var file = new File([image], base + '-' + fp + '.' + ext, { type: image.type, lastModified: image.lastModified });
+        var action = await props.onPersistMedia(file, { field: props.field });
+        if (!job.current()) break;
+        var mf = persistedMedia(action);
+        var path = publicPathFor(props.field, (mf && mf.path) || file.name);
+        if (thumbs[path]) URL.revokeObjectURL(thumbs[path]);
+        thumbs[path] = URL.createObjectURL(file);
+        paths.push(path);
+        if (prepared.notice) notes.push(prepared.notice);
+      } catch (err) {
+        msgs.push(orig.name + ': ' + (err.message || err));
       }
-      return { paths: paths, msgs: msgs, notes: notes };
-    } finally { photoUploadsPending--; }
+    }
+    return { paths: paths, msgs: msgs, notes: notes };
   }
   var FOCAL_OPTIONS = [['center', 'Centre'], ['top', 'Top'], ['upper-third', 'Upper third'], ['bottom', 'Bottom'], ['left', 'Left'], ['right', 'Right']];
   // Always a fresh copy: handing Decap the same array it gave us (mutated in place) is not seen as a change.
@@ -193,14 +226,16 @@
   var liveDrop = function (field) { var k = field && field.get && field.get('name'); if (k) delete LIVE[k]; };
   var GalleryControl = createClass({
     getInitialState: function () { return { busy: false, msgs: [], sizes: {} }; },
-    componentWillUnmount: function () { liveDrop(this.props.field); },
+    componentDidUpdate: function () { checkUploadOwner(this); },
+    componentWillUnmount: function () { cancelUpload(this); liveDrop(this.props.field); },
     pick: function () { this.input && this.input.click(); },
     onFiles: function (e) {
-      var self = this; var files = e.target.files; self.setState({ busy: true, msgs: [], notes: [] });
-      addFiles(this.props, files).then(function (r) {
+      var self = this; var files = e.target.files; var job = beginUpload(this); self.setState({ busy: true, msgs: [], notes: [] });
+      addFiles(this.props, files, null, job).then(function (r) {
+        if (!job.current()) return;
         var arr = toArr(self.props.value).concat(r.paths.map(function (p) { return { image: p, alt: '', focal: 'center', orientation: 'auto', photoType: 'photography' }; }));
         self.props.onChange(arr); self.setState({ busy: false, msgs: r.msgs, notes: r.notes });
-      }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
+      }).catch(function (err) { if (job.current()) self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); }).finally(job.finish);
       e.target.value = '';
     },
     update: function (i, key, val) { var arr = toArr(this.props.value); arr[i] = Object.assign({}, arr[i], (function () { var o = {}; o[key] = val; return o; })()); this.props.onChange(arr); },
@@ -245,11 +280,13 @@
   // One photo (main image, hero, Field Notes hero): same upload path and thumbnails as the gallery.
   var PhotoControl = createClass({
     getInitialState: function () { return { busy: false, msgs: [] }; },
-    componentWillUnmount: function () { liveDrop(this.props.field); },
+    componentDidUpdate: function () { checkUploadOwner(this); },
+    componentWillUnmount: function () { cancelUpload(this); liveDrop(this.props.field); },
+    change: function (value) { cancelUpload(this); this.props.onChange(value); this.setState({ busy: false }); },
     onFiles: function (e) {
-      var self = this; self.setState({ busy: true, msgs: [], notes: [] });
-      addFiles(this.props, [e.target.files[0]].filter(Boolean), this.props.uploadBase).then(function (r) { if (r.paths[0]) self.props.onChange(r.paths[0]); self.setState({ busy: false, msgs: r.msgs, notes: r.notes }); })
-        .catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
+      var self = this; var job = beginUpload(this); self.setState({ busy: true, msgs: [], notes: [] });
+      addFiles(this.props, [e.target.files[0]].filter(Boolean), this.props.uploadBase, job).then(function (r) { if (!job.current()) return; if (r.paths[0]) self.props.onChange(r.paths[0]); self.setState({ busy: false, msgs: r.msgs, notes: r.notes }); })
+        .catch(function (err) { if (job.current()) self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); }).finally(job.finish);
       e.target.value = '';
     },
     render: function () {
@@ -259,9 +296,9 @@
         h('div', { className: 'pgk-gallery__bar' },
           h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.input.click(); }, disabled: this.state.busy }, this.state.busy ? 'Adding…' : v ? 'Replace '+assetLabel : 'Choose '+assetLabel),
           h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.setState({ picking: true }); } }, 'Choose from site photos'),
-          v ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.props.onChange(''); } }, 'Remove') : null,
+          v ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', onClick: function () { self.change(''); } }, 'Remove') : null,
           h('input', { type: 'file', 'data-pgk-photo-upload': true, accept: ACCEPT, hidden: true, ref: function (el) { self.input = el; }, onChange: this.onFiles, 'aria-label': 'Choose a photo' })),
-        this.state.picking ? h(Picker, { multiple: false, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { if (list[0]) self.props.onChange(list[0].src); self.setState({ picking: false }); } }) : null,
+        this.state.picking ? h(Picker, { multiple: false, onClose: function () { self.setState({ picking: false }); }, onPick: function (list) { if (list[0]) self.change(list[0].src); self.setState({ picking: false }); } }) : null,
         h('p', { className: 'pgk-photo-help' }, PHOTO_HELP),
         (this.state.notes || []).length ? h('p', { className: 'pgk-photo-help', role: 'status' }, this.state.notes.join(' ')) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null);
@@ -398,6 +435,9 @@
     var links = document.querySelectorAll('a[href*="/collections/"][href*="/entries/"]');
     for (var i = 0; i < links.length; i++) {
       var a = links[i];
+      // These are compact settings links within a page, not Decap collection cards. Adding a second thumbnail and
+      // category to them stretches the narrow media rows on small phones.
+      if (a.closest('.pgk-library-settings, .pgk-page-related, .pgk-page-switcher, .pgk-modal')) continue;
       var mm = a.getAttribute('href').match(/collections\/([^/]+)\/entries\/([^/?#]+)/);
       if (!mm || !siteThumbs[mm[1]]) continue;
       var slug = decodeURIComponent(mm[2]);
@@ -445,7 +485,7 @@
       link.onclick = function () { var close = dialog.querySelector('button[aria-label="Close"]'); if (close) close.click(); };
       note.appendChild(link);
       note.appendChild(document.createTextNode(' Deleting is not done in this window, so nothing still on the site can lose its picture. To delete a file nothing uses any more: '));
-      var up = document.createElement('button'); up.type = 'button'; up.className = 'pgk-linkbtn'; up.textContent = 'Uploaded files'; up.onclick = function () { window.pgkOpenUploads(); };
+      var up = document.createElement('button'); up.type = 'button'; up.className = 'pgk-linkbtn'; up.textContent = 'Uploaded files'; up.onclick = function (e) { window.pgkOpenUploads(e.currentTarget); };
       note.appendChild(up); note.appendChild(document.createTextNode('. Photos, films, projects and articles are deleted from their own page (“Where it is used, and delete”).'));
       dialog.insertBefore(note, dialog.children[1] || null);
     }
@@ -487,14 +527,18 @@
     var list = Array.prototype.slice.call(files || []);
     if (!list.some(function (f) { return /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name); })) return;
     e.preventDefault(); e.stopImmediatePropagation();
-    var eventType = e.type, x = e.clientX, y = e.clientY;
-    photoUploadsPending++;
+    var eventType = e.type, x = e.clientX, y = e.clientY, route = location.hash;
+    var job = uploadJob(function () { return target.isConnected && mediaDialog() === dialog && location.hash === route; });
+    var observer = new MutationObserver(function () { if (!job.current()) job.finish(); });
+    job.onFinish = function () { observer.disconnect(); };
+    observer.observe(document.body, { childList: true, subtree: true });
     stockPhotoStatus('Preparing photos… ' + PHOTO_HELP, false);
     (async function () {
       var transfer = new DataTransfer(), notes = [];
       for (var file of list) {
         if (window.PHOTOGRAFIK_PHOTO_UPLOAD.isPhoto(file)) {
           var prepared = await window.PHOTOGRAFIK_PHOTO_UPLOAD.prepare(file);
+          if (!job.current()) return;
           transfer.items.add(prepared.file);
           if (prepared.notice) notes.push(prepared.notice);
         } else {
@@ -503,7 +547,7 @@
           transfer.items.add(file); // Small GIF/SVG, captions and documents keep their existing behavior.
         }
       }
-      if (!target.isConnected) throw new Error('The upload window was closed. Reopen it and choose the photo again.');
+      if (!job.current()) return;
       var next;
       if (eventType === 'change') {
         input.value = ''; input.files = transfer.files;
@@ -513,9 +557,10 @@
       target.dispatchEvent(next);
       stockPhotoStatus(notes.length ? notes.join(' ') : 'Photos are ready to upload. ' + PHOTO_HELP, false);
     })().catch(function (err) {
+      if (!job.current()) return;
       if (input) input.value = '';
       stockPhotoStatus('Photo not uploaded: ' + (err.message || err), true);
-    }).finally(function () { photoUploadsPending--; });
+    }).finally(job.finish);
   }
   window.addEventListener('change', function (e) {
     var input = e.target;
@@ -1034,9 +1079,11 @@
   // One section of a page (a single item or a list): replace, add, reorder, take off the page. Never deletes anything.
   var SlotControl = createClass({
     getInitialState: function () { return { picking: null, busy: false, msgs: [] }; },
+    componentDidUpdate: function () { checkUploadOwner(this); },
+    componentWillUnmount: function () { cancelUpload(this); },
     f: function (k) { return this.props.field.get(k); },
     items: function () { return asItems(this.props.value).map(function (x) { return Object.assign({}, x); }); },
-    set: function (arr) { this.props.onChange(arr.length ? (this.f('multiple') ? arr : arr[0]) : CLEARED); },
+    set: function (arr) { cancelUpload(this); this.props.onChange(arr.length ? (this.f('multiple') ? arr : arr[0]) : CLEARED); if (this.state.busy) this.setState({ busy: false }); },
     isValid: function () {
       var self = this; var arr = this.items(); var errs = [];
       if (this.f('mustHave') && !arr.length) errs.push('This section cannot be empty: choose a replacement instead of taking it off.');
@@ -1062,13 +1109,14 @@
       this.set(arr.slice(0, this.f('max'))); this.setState({ picking: null });
     },
     upload: function (e, index) {
-      var self = this; var files = e.target.files; this.setState({ busy: true, msgs: [], notes: [] });
-      addFiles(this.props, files, this.props.field.get('label').split(':')[0]).then(function (r) {
+      var self = this; var files = e.target.files; var job = beginUpload(this); this.setState({ busy: true, msgs: [], notes: [] });
+      addFiles(this.props, files, this.props.field.get('label').split(':')[0], job).then(function (r) {
+        if (!job.current()) return;
         if (!r.paths.length) { self.setState({ busy: false, msgs: r.msgs, notes: r.notes }); return; }
         var arr = self.items(); var add = r.paths.map(function (p) { return { src: p, alt: '' }; });
         if (typeof index === 'number') arr[index] = Object.assign({}, { size: arr[index].size || 'default', fit: arr[index].fit || 'default' }, add[0]); else arr = self.f('multiple') ? arr.concat(add) : add.slice(0, 1);
         self.set(arr.slice(0, self.f('max'))); self.setState({ busy: false, msgs: r.msgs, notes: r.notes });
-      }).catch(function (err) { self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); });
+      }).catch(function (err) { if (job.current()) self.setState({ busy: false, msgs: ['Upload failed: ' + err] }); }).finally(job.finish);
       e.target.value = '';
     },
     update: function (i, k, v) { var arr = this.items(); arr[i][k] = v; this.set(arr); },
@@ -1109,7 +1157,7 @@
           h('button', { type: 'button', className: 'pgk-btn', onClick: function () { self.setState({ picking: 'add' }); } }, arr.length ? 'Add from library' : 'Choose from library'),
           takesFiles(accepts) ? h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet', disabled: this.state.busy, onClick: function () { self.inAdd.click(); } }, this.state.busy ? 'Uploading…' : 'Upload a photo') : null,
           takesFiles(accepts) ? fileInput(null) : null) : null,
-        h('p', { className: 'pgk-slot__note' }, 'Taking something off this page never deletes it. Photos and films from the library stay in Photos and Films. A photo uploaded straight to this page is a file of its own: when it is off every page and saved, delete it under ', h('button', { type: 'button', className: 'pgk-linkbtn', onClick: function () { window.pgkOpenUploads(); } }, 'Uploaded files'), '.'),
+        h('p', { className: 'pgk-slot__note' }, 'Taking something off this page never deletes it. Photos and films from the library stay in Photos and Films. A photo uploaded straight to this page is a file of its own: when it is off every page and saved, delete it under ', h('button', { type: 'button', className: 'pgk-linkbtn', onClick: function (e) { window.pgkOpenUploads(e.currentTarget); } }, 'Uploaded files'), '.'),
         h('p', { className: 'pgk-photo-help' }, PHOTO_HELP),
         (this.state.notes || []).length ? h('p', { className: 'pgk-photo-help', role: 'status' }, this.state.notes.join(' ')) : null,
         this.state.msgs.length ? h('ul', { className: 'pgk-msg', role: 'alert' }, this.state.msgs.map(function (m, i) { return h('li', { key: i }, m); })) : null,
@@ -1222,7 +1270,7 @@
       return h('div', { className: 'pgk-note', id: this.props.forID },
         h('h2', {}, this.props.field.get('pageLabel') || 'Page Media'),
         h('p', {}, h('a', { href: window.location.origin + route, target: '_blank', rel: 'noopener' }, 'Open this page on the review site ↗'), ' ', h('span', { className: 'pgk-note__state' }, siteState.text())),
-        h('p', {}, 'Photos uploaded to this page that nothing uses any more can be deleted under ', h('button', { type: 'button', className: 'pgk-linkbtn', onClick: function () { window.pgkOpenUploads(); } }, 'Uploaded files'), '.'),
+        h('p', {}, 'Photos uploaded to this page that nothing uses any more can be deleted under ', h('button', { type: 'button', className: 'pgk-linkbtn', onClick: function (e) { window.pgkOpenUploads(e.currentTarget); } }, 'Uploaded files'), '.'),
         auto.length ? h('div', {}, h('p', { className: 'pgk-note__h' }, 'Fills itself (changed elsewhere):'), h('ul', {}, auto.map(function (a, i) { return h('li', { key: i }, h('strong', {}, a[0] + ': '), a[1] + ' ', h('a', { href: a[2] }, 'Open')); }))) : null);
     },
   });
@@ -1411,8 +1459,9 @@
   // ---------- Uploaded files: find one nothing uses any more, delete it after checking, Undo (Codex review of 9e06705) ----------
   // A photo uploaded straight to a page section is a file of its own (no Photos record). Once it is off every page and
   // saved, it is listed here as not used; deleting it checks the branch's latest files again and can be undone.
-  window.pgkOpenUploads = function () {
-    var o = document.activeElement; var opener = o && o !== document.body ? { el: o, text: (o.textContent || '').trim(), scope: o.closest && o.closest('[id]') ? o.closest('[id]').id : null } : null;
+  window.pgkOpenUploads = function (trigger) {
+    // Safari does not focus a clicked button. Keep the actual trigger so Escape can always return keyboard focus.
+    var o = trigger || document.activeElement; var opener = o && o !== document.body ? { el: o, text: (o.textContent || '').trim(), scope: o.closest && o.closest('[id]') ? o.closest('[id]').id : null } : null;
     var wrap = document.createElement('div'); wrap.className = 'pgk-modal'; wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true'); wrap.setAttribute('aria-labelledby', 'pgk-up-h');
     var box = document.createElement('div'); box.className = 'pgk-modal__box'; wrap.appendChild(box);
     var state = { files: null, head: null, open: null, typed: '', busy: false, msg: '', done: {} };
@@ -1614,7 +1663,7 @@
   // bce18af: Ready → Replace → Save stayed on "Waiting" after the import had finished, until the page was reloaded).
   var FILM_FORMS = [];
   if (CMS.registerEventListener) CMS.registerEventListener({ name: 'preSave', handler: function (o) {
-    if (photoUploadsPending) throw new Error('Photos are still being prepared. Wait for the upload to finish, then Save again.');
+    if (photoUploadsPending) throw new Error('Media are still being prepared or uploaded. Wait for the upload to finish, then Save again.');
     pill.hidden = false; pill.className = 'pgk-sitepill pgk-sitepill--busy'; pill.textContent = 'Validating and saving…'; pill.title = 'Nothing is confirmed saved until the save finishes. Website delivery is checked separately.';
     var e = o && o.entry; var data = e && e.get('data'); if (!data || !data.set) return;
     // The unified workspace owns one field while editing, then saves canonical page keys together in one commit.
@@ -1807,19 +1856,24 @@
   // Captions: none yet, burned into the video, or a .vtt file uploaded here.
   var CaptionsControl = createClass({
     getInitialState: function () { return { msg: '', busy: false }; },
+    componentDidUpdate: function () { checkUploadOwner(this); },
+    componentWillUnmount: function () { cancelUpload(this); },
+    change: function (value) { cancelUpload(this); this.props.onChange(value); this.setState({ busy: false }); },
     upload: function (e) {
       var self = this; var f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      var job = beginUpload(this);
       this.setState({ busy: true, msg: '' });
       f.text().then(function (txt) {
+        if (!job.current()) return;
         if (!/^﻿?WEBVTT/.test(txt)) throw new Error('This is not a WebVTT captions file (.vtt). Export captions as WebVTT and try again.');
         var slug = (self.props.entry && self.props.entry.get('slug')) || String(self.props.entry.getIn(['data', 'title']) || 'film').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         var file = new File([f], slug + '.vtt', { type: 'text/vtt' });
-        return Promise.resolve(self.props.onPersistMedia(file, { field: self.props.field })).then(function () { self.props.onChange('/captions/' + slug + '.vtt'); self.setState({ busy: false }); });
-      }).catch(function (err) { self.setState({ busy: false, msg: String(err.message || err) }); });
+        return Promise.resolve(self.props.onPersistMedia(file, { field: self.props.field })).then(function (action) { if (!job.current()) return; persistedMedia(action); self.props.onChange('/captions/' + slug + '.vtt'); self.setState({ busy: false }); });
+      }).catch(function (err) { if (job.current()) self.setState({ busy: false, msg: String(err.message || err) }); }).finally(job.finish);
     },
     render: function () {
       var self = this; var v = this.props.value || null; var mode = !v ? 'none' : v === 'burned-in' ? 'burned' : 'file';
-      var radio = function (val, label) { return h('label', { className: 'pgk-radio' }, h('input', { type: 'radio', name: self.props.forID, checked: mode === val, onChange: function () { if (val === 'none') self.props.onChange(CLEARED); else if (val === 'burned') self.props.onChange('burned-in'); else self.input.click(); } }), ' ' + label); };
+      var radio = function (val, label) { return h('label', { className: 'pgk-radio' }, h('input', { type: 'radio', name: self.props.forID, checked: mode === val, onChange: function () { if (val === 'none') self.change(CLEARED); else if (val === 'burned') self.change('burned-in'); else self.input.click(); } }), ' ' + label); };
       return h('div', { id: this.props.forID, className: 'pgk-captions' },
         radio('none', 'No captions yet'), radio('burned', 'Captions are burned into the video'), radio('file', 'Caption file (.vtt)'),
         mode === 'file' ? h('p', { className: 'pgk-gallery__count' }, String(v).split('/').pop(), ' ', h('button', { type: 'button', className: 'pgk-btn pgk-btn--quiet pgk-btn--small', onClick: function () { self.input.click(); } }, 'Replace file')) : null,
