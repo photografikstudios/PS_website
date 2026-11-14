@@ -88,6 +88,7 @@ export function buildPages(ctx) {
     const st = pmStill(it);
     return st ? `<figure class="pm-extra"${pmAttrs(it, 'natural')}>${img(st.src, { alt: it.alt || st.alt, thumb: st.thumb, focal: m?.focal, sizes })}</figure>` : '';
   };
+  const pmEmpty = (placement) => `<figure class="pm-extra" data-page-media="${esc(placement)}" data-page-media-empty data-media-layout="natural" data-media-fit="default" data-media-size="default" hidden></figure>`;
   const pmStill = (it) => {
     if (!it) return null;
     if (it.src) return { src: it.src, alt: it.alt || '', thumb: undefined, m: null };
@@ -1578,7 +1579,7 @@ ${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('ab
   </div>
 </section>
 <section class="section" id="project-inquiry">
-  <div class="wrap narrow">${pmExtra(pmv('contact', 'introMedia'))}
+  <div class="wrap narrow">${pmExtra(pmv('contact', 'introMedia')) || pmEmpty('contact.introMedia')}
     <form class="form" id="inquiry" novalidate action="/api/inquiry" method="post">
       <p class="form__req"><span aria-hidden="true">*</span> Required</p>
       <div class="form__grid">
