@@ -900,6 +900,11 @@ await check('Saved vs on the site: building, then a failed build is said plainly
   await page.waitForFunction(() => /Site update failed/.test(document.querySelector('.pgk-sitepill').textContent));
   assert.equal(await page.locator('.pgk-sitepill a').getAttribute('href'), 'https://vercel.com/report');
   assert.match(await page.locator('.pgk-sitepill').getAttribute('title'), /could not be updated with your latest save/);
+  buildReply = { state: 'success', url: 'https://vercel.com/report' };
+  await page.evaluate(() => window.__pgkCheckSite());
+  await page.waitForFunction(() => /New build ready; review link pending/.test(document.querySelector('.pgk-sitepill').textContent));
+  assert.equal(await page.locator('.pgk-sitepill a').getAttribute('href'), 'https://vercel.com/report');
+  assert.match(await page.locator('.pgk-sitepill').getAttribute('title'), /still shows an earlier version/);
   buildReply = { state: 'unknown' };
   await page.evaluate(() => window.__pgkCheckSite());
   await page.waitForFunction(() => /Saved, waiting for the site/.test(document.querySelector('.pgk-sitepill').textContent));

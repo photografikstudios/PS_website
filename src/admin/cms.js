@@ -1570,18 +1570,18 @@
       case 'live': return 'The review site shows your latest save (built ' + since + ').';
       case 'failed': return 'The review site could not be updated with your latest save, so it still shows the version from ' + since + '. Your save is kept. Open the build report to see why, then fix or undo the last change and save again.';
       case 'building': return 'Your latest save is being built. The review site still shows the version from ' + since + '.';
-      case 'built': return 'A deployment completed, but this dashboard’s website has not confirmed that version yet. Waiting for its status file.';
+      case 'built': return 'Your save has built, but this review link still shows an earlier version. Open the build report to view the new preview, or ask the website team to refresh this review link.';
       case 'saved': return 'Saved. No build has been reported for it yet; the review site still shows the version from ' + since + '.';
       default: return siteState.savedMessage || 'Checking whether the site has your latest save…';
     }
   } };
-  var PILL = { checking: ['Checking website update…', ' pgk-sitepill--busy'], live: ['Website updated', ''], building: ['Site updating…', ' pgk-sitepill--busy'], built: ['Site updating…', ' pgk-sitepill--busy'], saved: ['Saved, waiting for the site', ' pgk-sitepill--busy'], failed: ['Site update failed', ' pgk-sitepill--failed'] };
+  var PILL = { checking: ['Checking website update…', ' pgk-sitepill--busy'], live: ['Website updated', ''], building: ['Site updating…', ' pgk-sitepill--busy'], built: ['New build ready; review link pending', ' pgk-sitepill--busy'], saved: ['Saved, waiting for the site', ' pgk-sitepill--busy'], failed: ['Site update failed', ' pgk-sitepill--failed'] };
   var pill = document.createElement('p'); pill.className = 'pgk-sitepill'; pill.setAttribute('role', 'status'); pill.hidden = true;
   document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(pill); }); if (document.body) document.body.appendChild(pill);
   function drawPill() {
     var k = siteState.kind(); var p = PILL[k]; if (!p) return;
     pill.hidden = false; pill.className = 'pgk-sitepill' + p[1]; pill.textContent = p[0]; pill.title = siteState.text();
-    if (k === 'failed' && siteState.build && siteState.build.url) { var a = document.createElement('a'); a.href = siteState.build.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ' Build report'; pill.appendChild(a); }
+    if ((k === 'failed' || k === 'built') && siteState.build && siteState.build.url) { var a = document.createElement('a'); a.href = siteState.build.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ' Build report'; pill.appendChild(a); }
   }
   function checkHead() {
     if (!ghToken()) return;
