@@ -531,6 +531,11 @@ await check('home: background video respects reduced motion and has a pause cont
   const playing = await p.locator('video[data-ambient]').evaluateAll((vs) => vs.filter((v) => !v.paused).length);
   assert(playing === 0, `playing under reduced motion: ${playing}`);
   assert((await p.getAttribute('[data-motion-toggle]', 'aria-pressed')) === 'true', 'toggle reflects paused');
+  for (const width of [1280,390,320]) {
+    await p.setViewportSize({width,height:900});
+    const targets=await p.locator('[data-motion-toggle], header .btn--small').evaluateAll(es=>es.filter(e=>e.getClientRects().length).map(e=>({name:e.getAttribute('aria-label')||e.textContent.trim(),w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height})));
+    assert(targets.every(t=>t.w>=44&&t.h>=44),`comfortable controls at ${width}: ${JSON.stringify(targets)}`);
+  }
   await p.context().close();
 });
 
@@ -546,7 +551,7 @@ await check('home showcase: Videos/Photos × category, lightbox, View more', asy
   await p.selectOption('#sw-cat', 'architecture-design');
   v = await shown();
   assert(v.length > 0 && v.every(([k, c]) => k === 'image' && c === 'architecture-design'), JSON.stringify(v));
-  assert((await p.getAttribute('#sw-more', 'href')) === '/architecture-design#portfolio', 'photo view more');
+  assert((await p.getAttribute('#sw-more', 'href')) === '/architecture-design?type=photo#portfolio', 'photo view more preserves the selected media type');
   await p.locator('#sw-grid .sw-card:not([hidden])').first().click();
   await p.locator('#lightbox[open] img').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
   assert(await p.locator('#lightbox[open] img').isVisible(), 'photo lightbox');

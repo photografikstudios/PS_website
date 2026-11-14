@@ -81,7 +81,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; padding: 14px 26px; border-radius: 0; font: 400 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: background-color .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease); }
 .btn::after { content: "→"; font-family: var(--sans); letter-spacing: 0; transition: transform .35s var(--ease); }
 .btn:hover::after { transform: translateX(4px); }
-.btn--small { min-height: 42px; padding: 10px 18px; }
+.btn--small { min-height: 44px; padding: 10px 18px; }
 .btn--small::after { display: none; }
 .btn--solid, .btn--rust { background: var(--rust); color: #fff; }
 .btn--solid:hover, .btn--rust:hover { background: var(--rust-deep); }
@@ -529,7 +529,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .hero-still, .hero-still img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .hero__media .ambient.hero__video, .page-hero__media .ambient.hero__video { background: transparent; }
 .js .hero__media .ambient { animation: settle 2.8s var(--ease) both; }
-.motion-toggle { position: absolute; right: clamp(16px, 3vw, 40px); bottom: clamp(16px, 3vw, 36px); z-index: 3; display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 8px 14px; border: 1px solid rgba(244,242,235,.4); background: rgba(21,24,22,.35); color: var(--ivory); font: 400 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(6px); }
+.motion-toggle { position: absolute; right: clamp(16px, 3vw, 40px); bottom: clamp(16px, 3vw, 36px); z-index: 3; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; min-width: 44px; justify-content: center; padding: 8px 14px; border: 1px solid rgba(244,242,235,.4); background: rgba(21,24,22,.35); color: var(--ivory); font: 400 10.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(6px); }
 .motion-toggle:hover { background: rgba(21,24,22,.6); }
 .motion-toggle__icon { width: 10px; height: 12px; border-left: 3px solid currentColor; border-right: 3px solid currentColor; }
 .motion-toggle[aria-pressed="true"] .motion-toggle__icon { border: 0; width: 0; height: 0; border-left: 10px solid currentColor; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
