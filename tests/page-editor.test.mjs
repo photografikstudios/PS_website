@@ -68,6 +68,13 @@ test('sections: a native duplicate has independent copy and media; IDs and local
  copy.copy[key]='Independent story';const scoped=sectionInstanceValues(copy,root);assert.equal(scoped._copy[key],'Independent story');assert.equal(root._copy[key],'Changed original');
  const out=composePageSections(m.body,m,{...root,_sections:layout});assert.match(out,/id="story-h--section-copy"/);assert.match(out,/aria-labelledby="story-h--section-copy"/);assert.match(out,/href="#story-h--section-copy"/);
 });
+
+test('service shortcuts follow removed sections without erasing legacy bookmark anchors',()=>{
+ const source='<section><h1>Page</h1><nav class="page-jumps" data-page-copy-locked><a href="#story">Story</a><a href="#next">Next</a></nav></section><section id="story"><h2>Story</h2></section><section id="next"><h2>Next</h2></section>';
+ const m=pageEditingModel(source,{file:'about'}),layout=sectionLayout(m);layout.find(s=>s.id==='story').hidden=true;
+ let out=composePageSections(m.body,m,{_sections:layout});assert.ok(!out.includes('href="#story"'));assert.ok(out.includes('href="#next"'));assert.match(out,/<span id="story"[^>]*aria-hidden="true"/);
+ layout.find(s=>s.id==='next').hidden=true;out=composePageSections(m.body,m,{_sections:layout});assert.ok(!out.includes('class="page-jumps"'),'no empty shortcut strip');
+});
 test('sections: required openings/forms and interactive duplicates cannot be bypassed through saved data',()=>{
  const m=pageEditingModel('<section><h1>Title</h1></section><section id="form"><form id="brief"><input name="name"></form></section><section id="portfolio" data-showcase><h2>Gallery</h2></section>',{file:'contact'}),layout=sectionLayout(m);
  assert.equal(sectionCapabilities(m.sections[1]).remove,false);assert.equal(sectionCapabilities(m.sections[2]).duplicate,false);

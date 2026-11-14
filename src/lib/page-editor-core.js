@@ -278,5 +278,11 @@ export function composePageSections(body,model,values={},renderCopy=(instance,so
   });
   // Non-section content is kept once; native template sections are replaced only when a layout was saved.
   const gaps=parts.slice(0,-1).map((p,i)=>body.slice(p.end,parts[i+1].start)).filter(s=>s.trim()).join('');
-  return body.slice(0,parts[0].start)+chunks.join('\n')+gaps+body.slice(parts[parts.length-1].end);
+  const result=body.slice(0,parts[0].start)+chunks.join('\n')+gaps+body.slice(parts[parts.length-1].end);
+  // Old bookmarks retain their hidden anchors; the visible service shortcuts only offer sections still shown.
+  const visibleIds=new Set(all(pageTree(result)).filter(n=>n.attrs.id&&n.attrs['aria-hidden']!=='true').map(n=>n.attrs.id));
+  return result.replace(/<nav\b[^>]*class="page-jumps"[^>]*>([\s\S]*?)<\/nav>/g,(nav,links)=>{
+    const kept=links.replace(/<a href="#([^"]+)">[\s\S]*?<\/a>/g,(link,id)=>visibleIds.has(id)?link:'');
+    return kept.trim()?nav.replace(links,kept):'';
+  });
 }
