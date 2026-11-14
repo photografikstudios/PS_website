@@ -99,14 +99,15 @@ export function pageEditingModel(html, page, values={}) {
 }
 export function pageEditProblems(values, model) {
   const errors=[];
-  for(const k of ['_copy','_links','_seo'])if(values[k]!=null&&(typeof values[k]!=='object'||Array.isArray(values[k])))errors.push('Invalid '+k+' settings.');
-  const fields=new Map(model.sections.flatMap(s=>s.fields.map(f=>[f.key,f])));
+  for(const [k,label] of [['_copy','page text'],['_links','page link'],['_seo','search appearance']])if(values[k]!=null&&(typeof values[k]!=='object'||Array.isArray(values[k])))errors.push('Invalid '+label+' settings. Reload this page before editing.');
+  const fields=new Map(model.sections.flatMap(s=>s.fields.map(f=>[f.key,{...f,sectionLabel:s.label}])));
+  const fieldLabel=k=>fields.has(k)?`${fields.get(k).sectionLabel} → ${fields.get(k).label}`:'this text field';
   for(const [k,v] of Object.entries(values._copy||{})) {
-    if(!fields.has(k)) errors.push(`A text field has moved (${k}). Reload this page before editing it.`);
-    if(typeof v!=='string'||v.length>3000||!v.trim())errors.push(`Keep ${k} to 1–3,000 characters.`);
+    if(!fields.has(k)) errors.push('A text field has moved. Reload this page before editing it.');
+    if(typeof v!=='string'||v.length>3000||!v.trim())errors.push(`Keep ${fieldLabel(k)} to 1–3,000 characters.`);
     if(typeof v==='string'&&/\]\(\s*(?:javascript|data|vbscript):/i.test(v))errors.push('Choose a website, email, phone or page link.');
   }
-  for(const [k,v] of Object.entries(values._links||{}))if(!fields.get(k)?.href||!safePageUrl(v))errors.push(`Choose a valid destination for ${k}.`);
+  for(const [k,v] of Object.entries(values._links||{}))if(!fields.get(k)?.href||!safePageUrl(v))errors.push(`Choose a valid destination for ${fieldLabel(k)}.`);
   const seo=values._seo||{};
   for(const k of Object.keys(seo))if(!['title','description','image'].includes(k))errors.push('Unknown SEO setting.');
   if(seo.title!=null&&(typeof seo.title!=='string'||!seo.title.trim()||seo.title.length>70))errors.push('SEO title must be 1–70 characters.');

@@ -30,6 +30,7 @@ test('rich text cannot inject HTML or unsafe link destinations; stale keys fail 
  for(const url of ['javascript:alert(1)','//host.test','/path\\bad','https://host.test/\nfoo','data:text/html,x'])assert.equal(safePageUrl(url),false,url);
  for(const url of ['/contact?type=architecture','#portfolio','https://licreatorstudios.com/','mailto:info@photografikstudios.com'])assert.equal(safePageUrl(url),true,url);
  assert.ok(pageEditProblems({_copy:{[key]:'',removed:'old'}},m).length===2);
+ const message=pageEditProblems({_copy:{[key]:''}},m)[0];assert.match(message,/Top of page → Heading/);assert.ok(!message.includes(key),'owner guidance names the visible section and control');
  assert.ok(pageEditProblems({_seo:{title:'x'.repeat(71)}},m).length===1);
 });
 test('copy identifiers survive unrelated media changes and empty optional media',()=>{
