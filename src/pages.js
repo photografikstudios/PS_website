@@ -1121,7 +1121,7 @@ ${cp.length || b2b.length ? `<section class="section">
       </li>`)}</ul>
       <p class="small muted cpm__how">The level is set by the overall production scope: the number of buildings and spaces, interior and exterior coverage, complexity and time on site, not square footage alone. The square footage ranges above are general guidelines.</p>
       ${cpAdd.length ? `<h4 class="cpm__sub">Popular add-ons</h4><ul class="cpm__addons" role="list">${join(cpAdd, (a) => `<li><p class="cpm__name">${esc(a.name)} ${needsApproval(a)}</p><p class="cpm__addprice">${approvedPrice(a, esc(a.price))}</p><p class="small muted">${esc(a.detail)}</p></li>`)}</ul>` : ''}
-      ${cpPort ? `<div class="cpm__multi"><h4 class="cpm__sub" id="cpm-multi-h">${esc(cpPort.heading)}</h4><p>${esc(cpPort.text)}</p><p><a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_multi_property">${esc(cpPort.ctaLabel)}</a></p></div><p class="small muted">${esc(cpPort.fine)}</p>${cpPort.custom ? `<p class="cpm__custom"><strong>Need a custom scope?</strong> ${esc(cpPort.custom)}</p>` : ''}` : ''}
+      ${cpPort ? `<div class="cpm__multi"><h4 class="cpm__sub" id="cpm-multi-h">${esc(cpPort.heading)}</h4><p>${esc(cpPort.text)}</p><p><a class="btn btn--solid" href="/contact?type=commercial" data-track="project_click" data-track-location="com_multi_property">${esc(cpPort.ctaLabel)}</a></p></div><p class="small muted" data-page-copy-locked>${esc(cpPort.fine)}</p>${cpPort.custom ? `<p class="cpm__custom"><strong>Need a custom scope?</strong> ${esc(cpPort.custom)}</p>` : ''}` : ''}
     </div>` : ''}
     ${b2b.length ? `<div class="cpm__monthly">
       <h3 class="h3">Ongoing business content</h3>
@@ -1506,7 +1506,7 @@ ${aboutReviews}
 <section class="section about-details" aria-label="Service area and usage">
   <div class="wrap two-col two-col--top">
     <div><h2 class="eyebrow">Where we work</h2><p>${esc(site.serviceArea)}</p></div>
-    <div><h2 class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</h2><p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p></div>
+    <div data-page-copy-locked><h2 class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</h2><p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p></div>
   </div>
 </section>
 ${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('about', 'closing'))?.src, undefined, false, pmv('about', 'closing')?.alt, pmv('about', 'closing'))}`,

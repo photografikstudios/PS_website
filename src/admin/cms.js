@@ -112,6 +112,7 @@
   // entry as draft media through Decap (so they are committed together with the entry on Save, exactly as before) and,
   // for photos already saved, fall back to the copy in the public GitHub repository until the next deployment has it.
   var thumbs = window.__pgkThumbs = window.__pgkThumbs || {};
+  var photoDimensions = {};
   var repoRaw = 'https://raw.githubusercontent.com/' + config.backend.repo + '/' + encodeURIComponent(config.backend.branch || 'main').replace(/%2F/g, '/') + '/static';
   var ACCEPT = 'image/jpeg,image/png,image/webp';
   var thumbFor = function (path, getAsset, field) {
@@ -143,7 +144,7 @@
   // never finish in another entry (including /new -> collection list -> /new), or replace a newer media choice.
   var uploads = [];
   function cancelUpload(owner) { if (owner._pgkUpload) owner._pgkUpload.finish(); }
-  function checkUploadOwner(owner) { if (owner._pgkUpload && !owner._pgkUpload.current()) { cancelUpload(owner); owner.setState({ busy: false }); } }
+  function checkUploadOwner(owner) { if (owner._pgkUpload && !owner._pgkUpload.current()) { cancelUpload(owner); owner.setState({ busy: false, msgs: ['The upload was cancelled because this item changed. Choose the file again.'] }); } }
   function uploadJob(isCurrent) {
     var active = true;
     var job = {
@@ -160,8 +161,8 @@
   }
   function beginUpload(owner) {
     cancelUpload(owner);
-    var route = location.hash, id = owner.props.forID, name = owner.props.field.get('name');
-    var job = uploadJob(function () { return owner._pgkUpload === job && location.hash === route && owner.props.forID === id && owner.props.field.get('name') === name; });
+    var route = location.hash, id = owner.props.forID, name = owner.props.field.get('name'), identity = owner.props.uploadIdentity;
+    var job = uploadJob(function () { return owner._pgkUpload === job && location.hash === route && owner.props.forID === id && owner.props.field.get('name') === name && owner.props.uploadIdentity === identity; });
     job.onFinish = function () { if (owner._pgkUpload === job) owner._pgkUpload = null; };
     owner._pgkUpload = job;
     return job;
@@ -204,6 +205,7 @@
         var path = publicPathFor(props.field, (mf && mf.path) || file.name);
         if (thumbs[path]) URL.revokeObjectURL(thumbs[path]);
         thumbs[path] = URL.createObjectURL(file);
+        photoDimensions[path] = { width: prepared.width, height: prepared.height };
         paths.push(path);
         if (prepared.notice) notes.push(prepared.notice);
       } catch (err) {
@@ -635,10 +637,17 @@
   // copy; on Save the key is simply left out of the file, which the site and its checks read as empty.
   var CLEARED = void 0;
   var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  var modalPointerTrigger = null;
+  document.addEventListener('pointerdown', function(e){
+    var o=e.target&&e.target.closest&&e.target.closest('button,a[href]');
+    if(o&&o.closest('.pgk-page-workspace,.pgk-slot,.pgk-photo,.pgk-gallery,.pgk-modal'))modalPointerTrigger={el:o,text:(o.textContent||'').trim(),scope:o.closest('[id]')&&o.closest('[id]').id,at:Date.now()};
+  },true);
+  document.addEventListener('keydown',function(){modalPointerTrigger=null;},true);
   var Modal = createClass({
     componentDidMount: function () {
       var self = this; var o = document.activeElement;
-      this.opener = o && o !== document.body ? { el: o, text: (o.textContent || '').trim(), scope: o.closest && o.closest('[id]') ? o.closest('[id]').id : null } : null;
+      this.opener = modalPointerTrigger&&Date.now()-modalPointerTrigger.at<1000?modalPointerTrigger:o && o !== document.body ? { el: o, text: (o.textContent || '').trim(), scope: o.closest && o.closest('[id]') ? o.closest('[id]').id : null } : null;
+      modalPointerTrigger=null;
       this.onKey = function (e) {
         if (!self.el) return;
         if (e.key === 'Escape' && self.props.onClose) { e.preventDefault(); e.stopPropagation(); self.props.onClose(); return; }
@@ -1320,18 +1329,19 @@
     clientValues: function(){return this.values()._clients||this.model().clients||[];},
     setClients: function(list){var next=Object.assign({},this.values(),{_clients:list});if(list.some(function(c){return !c.hidden;})&&Array.isArray(next._sections)&&!next._sections.some(function(s){return s.source==='arch-clients';})){next._sections=next._sections.slice();next._sections.splice(1,0,{id:'arch-clients',source:'arch-clients'});}this.props.onChange(next);},
     updateClient: function(i,k,value){var list=this.clientValues().map(function(c){return Object.assign({},c);});list[i][k]=value;if(k==='logo'){delete list[i].width;delete list[i].height;}this.setClients(list);},
-    moveClient: function(i,d){var list=this.clientValues().slice(),j=i+d;if(j<0||j>=list.length)return;var old=list[i];list[i]=list[j];list[j]=old;this.setClients(list);},
+    moveClient: function(i,d){var list=this.clientValues().slice(),j=i+d;if(j<0||j>=list.length)return;this.clientUploadEpoch=(this.clientUploadEpoch||0)+1;var old=list[i];list[i]=list[j];list[j]=old;this.setClients(list);},
+    removeClient: function(i){this.clientUploadEpoch=(this.clientUploadEpoch||0)+1;this.setClients(this.clientValues().filter(function(_,n){return n!==i;}));},
     renderClients: function(){var self=this,list=this.clientValues();return h('div',{className:'pgk-client-editor'},
       h('p',{},'Add a client brand, upload its logo, or show its name as text. Move brands into the order you want, then Save this page.'),
       list.map(function(c,i){return h('fieldset',{key:i},h('legend',{},c.name||'New brand'),
         h('label',{},h('span',{},'Brand name'),h('input',{type:'text','aria-label':'Brand '+(i+1)+' name',maxLength:120,value:c.name||'',onChange:function(e){self.updateClient(i,'name',e.target.value);}})),
         h('label',{},h('span',{},'Name displayed without a logo (optional)'),h('input',{type:'text','aria-label':'Brand '+(i+1)+' displayed name',maxLength:120,value:c.wordmark||'',placeholder:c.name||'Uses the brand name',onChange:function(e){self.updateClient(i,'wordmark',e.target.value);}})),
         h('p',{},'Logo (optional): PNG, WebP or JPG. Large files resize automatically; transparent backgrounds are preserved.'),
-        h(PhotoControl,Object.assign({},self.props,{field:self.childField({name:'client-logo-'+i,widget:'pgk-photo',assetLabel:'logo',media_folder:'/static/images/library',public_folder:'/images/library'}),forID:self.props.forID+'-client-'+i,uploadBase:c.name||'client-logo',value:c.logo||'',onChange:function(src){self.updateClient(i,'logo',src);}})),
+        h(PhotoControl,Object.assign({},self.props,{field:self.childField({name:'client-logo-'+i,widget:'pgk-photo',assetLabel:'logo',media_folder:'/static/images/library',public_folder:'/images/library'}),forID:self.props.forID+'-client-'+i,uploadIdentity:(self.clientUploadEpoch||0)+':'+i,uploadBase:c.name||'client-logo',value:c.logo||'',onChange:function(src){self.updateClient(i,'logo',src);}})),
         h('label',{},'Logo size',h('select',{'aria-label':'Brand '+(i+1)+' logo size',value:c.size||'default',onChange:function(e){self.updateClient(i,'size',e.target.value);}},['default','small','medium','large'].map(function(size){return h('option',{key:size,value:size},size==='default'?'Default':size.charAt(0).toUpperCase()+size.slice(1));}))),
         h('label',{},'Logo appearance',h('select',{'aria-label':'Brand '+(i+1)+' logo appearance',value:c.tone||'default',onChange:function(e){self.updateClient(i,'tone',e.target.value);}},h('option',{value:'default'},'Current / default'),h('option',{value:'original'},'Original colours'),h('option',{value:'dark'},'Make a white logo dark'))),
         h('label',{},h('input',{type:'checkbox','aria-label':'Show brand '+(i+1),checked:!c.hidden,onChange:function(e){self.updateClient(i,'hidden',!e.target.checked);}}),' Show this brand'),
-        h('div',{className:'pgk-gallery__bar'},h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-label':'Move brand '+(i+1)+' up',disabled:i===0,onClick:function(){self.moveClient(i,-1);}},'↑ Move up'),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-label':'Move brand '+(i+1)+' down',disabled:i===list.length-1,onClick:function(){self.moveClient(i,1);}},'↓ Move down'),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-label':'Remove brand '+(i+1),onClick:function(){self.setClients(list.filter(function(_,n){return n!==i;}));}},'Remove brand')));
+        h('div',{className:'pgk-gallery__bar'},h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-label':'Move brand '+(i+1)+' up',disabled:i===0,onClick:function(){self.moveClient(i,-1);}},'↑ Move up'),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-label':'Move brand '+(i+1)+' down',disabled:i===list.length-1,onClick:function(){self.moveClient(i,1);}},'↓ Move down'),h('button',{type:'button',className:'pgk-btn pgk-btn--quiet','aria-label':'Remove brand '+(i+1),onClick:function(){self.removeClient(i);}},'Remove brand')));
       }),h('button',{type:'button',className:'pgk-btn',disabled:list.length>=100,onClick:function(){self.setClients(list.concat([{name:'',size:'default',tone:'default'}]));}},'Add brand'));
     },
     sectionEdit: function(list,selected){var before={layout:this.values()._sections==null?null:JSON.parse(JSON.stringify(this.values()._sections))};this.setState({section:selected||this.state.section,history:(this.state.history||[]).concat([before]).slice(-10)});this.change('_sections',list);},
@@ -1362,7 +1372,7 @@
         h('label',{},h('input',{type:'checkbox',checked:!!block.button,disabled:block.type==='cta',onChange:function(e){self.updateBlock('button',e.target.checked?{label:'Learn more',href:'/contact'}:null);}}),' Add a button'),
         block.button?h('div',{},h('label',{},'Button text',h('input',{type:'text','aria-label':'Section button text',value:block.button.label||'',onChange:function(e){self.updateBlock('button',Object.assign({},block.button,{label:e.target.value}));}})),h('label',{},'Button destination',h('input',{type:'text','aria-label':'Section button destination',value:block.button.href||'',onChange:function(e){self.updateBlock('button',Object.assign({},block.button,{href:e.target.value}));}}))):null);
     },
-    previewMedia: function(item,i){if(!item)return '';var m=item.media?mediaById[item.media]:null,src=item.src?thumbFor(item.src,this.props.getAsset,this.props.field):m&&(m.type==='video'?(m.poster||m.thumb):(m.src||m.thumb)),pt=focusCoordinates(item.focal||m&&m.focal);return src?'<div class="page-section__asset" data-media-size="'+escapePreview(item.size||'default')+'" data-media-fit="'+escapePreview(item.fit||'default')+'" data-media-layout="natural" data-media-shape="'+(m&&m.orientation==='vertical'?'vertical':'horizontal')+'" style="--pm-focus:'+pt.x+'% '+pt.y+'%;"><img src="'+escapePreview(src)+'" alt="'+escapePreview(item.alt||m&&m.alt||'')+'"></div>':'';},
+    previewMedia: function(item,i){if(!item)return '';var m=item.media?mediaById[item.media]:null,dimensions=item.src?photoDimensions[item.src]:m,src=item.src?thumbFor(item.src,this.props.getAsset,this.props.field):m&&(m.type==='video'?(m.poster||m.thumb):(m.src||m.thumb)),pt=focusCoordinates(item.focal||m&&m.focal),vertical=dimensions&&dimensions.width&&dimensions.height?dimensions.height>dimensions.width:m&&m.orientation==='vertical';return src?'<div class="page-section__asset" data-media-size="'+escapePreview(item.size||'default')+'" data-media-fit="'+escapePreview(item.fit||'default')+'" data-media-layout="natural" data-media-shape="'+(vertical?'vertical':'horizontal')+'" style="--pm-focus:'+pt.x+'% '+pt.y+'%;'+(dimensions&&dimensions.width&&dimensions.height?'--pm-ratio:'+dimensions.width+'/'+dimensions.height+';':'')+'"><img src="'+escapePreview(src)+'" alt="'+escapePreview(item.alt||m&&m.alt||'')+'"></div>':'';},
     previewBody: function(){var model=this.model(),instance=this.instance();if(this.state.section==='client-settings'){return EDIT_CORE.renderClientBoard(this.clientValues()).replace('<section ','<section data-page-section="client-settings" ');}if(!this.state.wholePage&&instance){if(instance.type)return EDIT_CORE.renderNewSection(instance,this.previewMedia);var source=model.sections.find(function(s){return s.key===instance.source;});return source?(instance.id===instance.source?source.html:EDIT_CORE.isolateSectionHtml(source.html,instance.id)):'';}return EDIT_CORE.composePageSections(model.body,model,this.values(),function(instance,source){return source.html;},this.previewMedia,{draft:true});},
     isValid: function(){
       var v=this.values(), errors=EDIT_CORE.pageEditProblems?EDIT_CORE.pageEditProblems(v,this.model()):[];
@@ -1391,11 +1401,13 @@
         });
         self.slots().filter(function(sl){return (source.media||[]).includes(sl.name)&&sl.widget!=='pgk-gallery-slot';}).forEach(function(sl){
           var items=asItems(v[sl.name]),selector='[data-page-media="'+self.props.field.get('pageFile')+'.'+sl.name+'"]',targets=Array.from(root.querySelectorAll(selector));if(root.matches(selector))targets.unshift(root);
-          targets.forEach(function(el,i){var item=items[Math.min(i,items.length-1)];if(!item)return;var m=item.media?mediaById[item.media]:null,src=item.src?thumbFor(item.src,self.props.getAsset,self.props.field):m&&(m.type==='video'?(m.poster||m.thumb):(m.src||m.thumb));if(!src)return;
+          targets.forEach(function(el,i){var item=items[Math.min(i,items.length-1)],placement=el.closest('.about-bts')||el;if(!item){if(!sl.mustHave||Object.prototype.hasOwnProperty.call(v,sl.name)){placement.setAttribute('data-pgk-cleared','');placement.style.display='none';}return;}if(placement.hasAttribute('data-pgk-cleared')){placement.removeAttribute('data-pgk-cleared');placement.style.removeProperty('display');}var m=item.media?mediaById[item.media]:null,src=item.src?thumbFor(item.src,self.props.getAsset,self.props.field):m&&(m.type==='video'?(m.poster||m.thumb):(m.src||m.thumb));if(!src)return;
             var pt=focusCoordinates(item.focal||m&&m.focal),position=pt.x+'% '+pt.y+'%';el.style.setProperty('--pm-focus',position);el.setAttribute('data-media-size',item.size||'default');el.setAttribute('data-media-fit',item.fit||'default');
-            if(m){el.setAttribute('data-media-shape',m.orientation==='vertical'?'vertical':'horizontal');if(m.width&&m.height)el.style.setProperty('--pm-ratio',m.width+'/'+m.height);}
-            el.querySelectorAll('source').forEach(function(s){s.removeAttribute('srcset');});el.querySelectorAll('img').forEach(function(img){img.removeAttribute('srcset');img.src=src;img.style.objectPosition=position;img.style.objectFit=item.fit==='original'?'contain':item.fit==='fill'?'cover':'';});
-            el.querySelectorAll('video').forEach(function(vid){var img=doc.createElement('img');img.src=src;img.className=vid.className;img.style.objectFit=item.fit==='original'?'contain':'cover';img.style.objectPosition=position;vid.replaceWith(img);});
+            var dimensions=item.src?photoDimensions[item.src]:m;
+            var shape=function(w,h){if(w&&h){el.setAttribute('data-media-shape',h>w?'vertical':'horizontal');el.style.setProperty('--pm-ratio',w+'/'+h);}};
+            if(dimensions&&dimensions.width&&dimensions.height)shape(dimensions.width,dimensions.height);else if(m)el.setAttribute('data-media-shape',m.orientation==='vertical'?'vertical':'horizontal');
+            el.querySelectorAll('source').forEach(function(s){s.removeAttribute('srcset');});el.querySelectorAll('img').forEach(function(img){img.removeAttribute('srcset');img.onload=function(){shape(img.naturalWidth,img.naturalHeight);};img.src=src;img.style.objectPosition=position;img.style.objectFit=item.fit==='original'?'contain':item.fit==='fill'?'cover':'';if(img.complete)shape(img.naturalWidth,img.naturalHeight);});
+            el.querySelectorAll('video').forEach(function(vid){var img=doc.createElement('img');img.onload=function(){shape(img.naturalWidth,img.naturalHeight);};img.src=src;img.className=vid.className;img.style.objectFit=item.fit==='original'?'contain':'cover';img.style.objectPosition=position;vid.replaceWith(img);});
           });
         });
       });

@@ -39,6 +39,15 @@ test('copy identifiers survive unrelated media changes and empty optional media'
  const m=pageEditingModel(card,page);assert.equal(m.sections[0].fields.length,2);assert.ok(m.sections[0].fields.every(f=>!f.value.includes('<span')));
 });
 
+test('marketing copy mentioning licensing stays editable while explicit policies and financial terms remain locked',()=>{
+ const source='<section><h1>Architecture and design</h1><p class="lede">We define deliverables and licensing before the shoot.</p><h2>How cancellation affects the production plan</h2><ul><li>Usage and licensing</li></ul><div data-page-copy-locked><h2>Usage policy</h2><p>Copyright and cancellation policy wording stays approved.</p></div><div class="faq"><p>Cancel within 24 hours for a refund.</p></div><article class="plan"><p>Annual contract</p><p>$1,399/month</p></article><div class="pricing-notes"><p>Non-standard licensing is quoted separately.</p></div><p data-page-copy-locked>Pricing effective 2026; third-party licensing may be additional.</p></section>';
+ const m=pageEditingModel(source,{file:'architecture-design'}),fields=m.sections[0].fields;
+ assert.deepEqual(fields.map(f=>f.value),['Architecture and design','We define deliverables and licensing before the shoot.','How cancellation affects the production plan','Usage and licensing']);
+ const lede=fields.find(f=>f.tag==='p');const edited=pageEditingModel(source,{file:'architecture-design'},{_copy:{[lede.key]:'Coverage planned around your next client.'}});
+ assert.match(edited.body,/Coverage planned around your next client/);assert.match(edited.body,/Copyright and cancellation policy wording stays approved/);assert.match(edited.body,/\$1,399\/month/);
+ assert.equal(m.body.replace(/ data-page-(?:copy|section)="[^"]*"/g,''),source,'editor markers alone never change source copy');
+});
+
 const sectionsCore=await import('../src/lib/page-editor-core.js');
 const {sectionLayout,sectionLayoutProblems,sectionCapabilities,newPageSection,duplicatePageSection,composePageSections,sectionInstanceValues}=sectionsCore;
 const sectionPage='<section><h1>Page heading</h1></section><section id="story" aria-labelledby="story-h"><h2 id="story-h">Our story</h2><p>Original words.</p><a href="#story-h">Read this story</a></section><section id="next"><h2>Next step</h2></section>';

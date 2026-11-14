@@ -238,7 +238,7 @@ export function cmsConfig({ site, fieldNotes, work, branch, repo, testimonials =
       },
       {
         name: 'field-notes', label: 'Field Notes', label_singular: 'Field Note',
-        description: 'Articles for photografikstudios.com/field-notes. Choose “Show on site” only when the article is ready: drafts stay off the site, the Field Notes list and the sitemap.',
+        description: 'Articles for photografikstudios.com/field-notes. Choose “Show on site” only when ready. Drafts stay off the published site, Field Notes list and sitemap. Direct review-site links are available for review and are not private.',
         folder: 'content/field-notes', create: true, delete: false, extension: 'md', format: 'json-frontmatter',
         media_folder: '/static/images/field-notes', public_folder: '/images/field-notes',
         slug: '{{slug}}', identifier_field: 'title', summary: "{{title}} · {{date}} · {{published | ternary('Show requested', 'Hidden draft')}}",

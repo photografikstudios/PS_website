@@ -17,6 +17,7 @@
     "test:article-editor": "node tests/article-editor.mjs",
     "test:cms-upload-lifecycle": "node tests/cms-upload-lifecycle.mjs",
     "test:inquiry-experience": "node tests/inquiry-experience.mjs",
+    "test:cms-experience": "node tests/cms-experience.mjs",
     "test:photo-upload": "node tests/photo-upload.mjs",
     "check:legacy": "node scripts/legacy-check.mjs",
     "fetch:legacy": "node scripts/fetch-legacy.mjs",
