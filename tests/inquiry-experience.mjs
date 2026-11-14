@@ -1,12 +1,12 @@
 // First-time visitor recovery, isolated mocked delivery: no real email is sent.
-import {chromium} from 'playwright';
+import {chromium,webkit} from 'playwright';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {start} from './serve.mjs';
 const out=process.env.INQUIRY_RESULTS||join(tmpdir(),'photografik-inquiry-experience');await mkdir(out,{recursive:true});
-const server=await start(0),base=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL||'chrome'}),results=[];
+const server=await start(0),base=`http://127.0.0.1:${server.address().port}`,browser=await (process.env.PLAYWRIGHT_BROWSER==='webkit'?webkit.launch({executablePath:process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined}):chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL||'chrome'})),results=[];
 try{for(const width of [1440,390,320]){
  const p=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});let calls=0,success=false,payload;
  await p.route('**/api/inquiry',r=>{calls++;payload=r.request().postDataJSON();return r.fulfill({status:success?200:502,contentType:'application/json',body:JSON.stringify({ok:success})});});
