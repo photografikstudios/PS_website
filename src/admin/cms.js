@@ -1447,7 +1447,7 @@
         });
       });
       doc.querySelectorAll('[data-page-copy],[data-page-media]').forEach(function(el){
-        var active=el===self.previewChoiceElement||el.getAttribute('data-page-copy')===(self.focusedCopy||self.state.selectedCopy)||el.getAttribute('data-page-media')===self.props.field.get('pageFile')+'.'+(self.focusedMedia||self.state.selectedMedia);
+        var active=el===self.previewChoiceElement||el.getAttribute('data-page-copy')===(self.focusedCopy===undefined?self.state.selectedCopy:self.focusedCopy)||el.getAttribute('data-page-media')===self.props.field.get('pageFile')+'.'+(self.focusedMedia===undefined?self.state.selectedMedia:self.focusedMedia);
         el.style.outline=active?'3px solid #b46142':'';el.style.outlineOffset=active?'4px':'';el.style.cursor='pointer';el.setAttribute('tabindex','-1');el.setAttribute('aria-label','Edit '+(el.getAttribute('data-page-copy')?(el.textContent||'text').trim().slice(0,90):'this image'));
       });
       doc.querySelectorAll('a,button,input,select,textarea').forEach(function(el){el.setAttribute('tabindex','-1');});
