@@ -74,6 +74,9 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .statement { font: 400 clamp(30px, 3.6vw, 52px)/1.14 var(--serif); letter-spacing: -0.015em; margin: 0; text-wrap: pretty; }
 .statement em { color: var(--rust); }
 .aside-line { margin-top: 40px; color: var(--muted); }
+.page-jumps { display:flex; flex-wrap:wrap; gap:6px 24px; grid-column:1/-1; margin-bottom:28px; padding-bottom:14px; border-bottom:1px solid var(--line); }
+.page-jumps a { display:inline-flex; align-items:center; min-height:44px; font:400 13px/1.4 var(--sans); text-underline-offset:5px; }
+#portfolio, #compare, #faq, #which-story, #how-it-works { scroll-margin-top:120px; }
 .on-dark .aside-line { color: var(--on-dark-muted); }
 .on-dark { color: var(--on-dark); }
 
@@ -1332,3 +1335,6 @@ video[data-media-layout="natural"] { height: auto; }
 .client-logos__item[data-brand-size=large] .client-logos__wordmark{font-size:27px}
 .client-logos__item[data-logo-tone=original] img{filter:none;mix-blend-mode:normal}
 .client-logos__item[data-logo-tone=dark] img{filter:brightness(0);mix-blend-mode:normal}
+
+.arch-intro .pair { row-gap:24px; }
+.arch-intro .page-jumps { margin-bottom:0; }

@@ -480,7 +480,7 @@ test('Oct 19 client media: 180 source photos, canonical reuse, usable thumbnails
   for (const v of pack.videos.filter(v => v.action === 'imported')) {
     const m = work.media.find(m => m.id === v.record);
     assert.equal(m.import.state, 'ready'); assert.ok(fileExists(m.src) && fileExists(m.poster));
-    if (v.speech) { assert.equal(m.captionsStatus, 'machine-draft'); assert.ok(fileExists(m.captions)); }
+    if (v.speech) { assert.equal(m.captionsStatus, 'approved'); assert.ok(fileExists(m.captions)); assert.equal(m.captionReview.approvalConfirmedBy, 'James Calandrino'); }
   }
 });
 

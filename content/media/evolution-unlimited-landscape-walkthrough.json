@@ -15,7 +15,7 @@
   "featured": false,
   "dialogue": true,
   "captions": "/captions/evolution-unlimited-landscape-walkthrough.vtt",
-  "captionsStatus": "machine-draft",
+  "captionsStatus": "approved",
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
@@ -31,7 +31,7 @@
   "import": {
     "state": "ready",
     "at": "2026-10-19T13:33:31.224Z",
-    "message": "Imported from Google Drive (1080\u00d71920, 42 s). The original stays in Drive."
+    "message": "Imported from Google Drive (1080×1920, 42 s). The original stays in Drive."
   },
   "_rights": "Owner supplied and approved for site use. Original stays in the client folder in Google Drive. Caption review evidence is recorded separately in captionReview.",
   "src": "/v/evolution-unlimited-landscape-walkthrough.mp4",
@@ -48,6 +48,8 @@
       "https://plants.ces.ncsu.edu/plants/cornus-kousa/",
       "https://sampson.ces.ncsu.edu/news/crape-myrtles/"
     ],
-    "pending": "Text corrections and timing review completed. Final listening acceptance remains open; automatic transcriptions are not represented as a human-reviewed transcript."
+    "approvalConfirmedBy": "James Calandrino",
+    "approvalConfirmedAt": "2026-11-14",
+    "approvalBasis": "James confirmed these video captions were previously viewed and approved by QC. This records that approval; no new caption wording or independent listening is claimed."
   }
 }

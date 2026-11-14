@@ -15,7 +15,7 @@
   "featured": false,
   "dialogue": true,
   "captions": "/captions/nitelite-landscapes-lighting-reel.vtt",
-  "captionsStatus": "machine-draft",
+  "captionsStatus": "approved",
   "packageIds": [],
   "capturedYear": null,
   "sortPriority": 0,
@@ -32,7 +32,7 @@
   "import": {
     "state": "ready",
     "at": "2026-10-19T13:33:31.224Z",
-    "message": "Imported from Google Drive (1080\u00d71920, 60 s). The original stays in Drive."
+    "message": "Imported from Google Drive (1080×1920, 60 s). The original stays in Drive."
   },
   "_rights": "Owner supplied and approved for site use. Original stays in the client folder in Google Drive. Caption review evidence is recorded separately in captionReview.",
   "src": "/v/nitelite-landscapes-lighting-reel.mp4",
@@ -48,6 +48,8 @@
     "sources": [
       "https://nitelitelandscapelighting.com/new-york/why-nite-lite/"
     ],
-    "pending": "James to confirm the last phrase at 3\u20136 seconds; corrected draft is not yet approved."
+    "approvalConfirmedBy": "James Calandrino",
+    "approvalConfirmedAt": "2026-11-14",
+    "approvalBasis": "James confirmed these video captions were previously viewed and approved by QC. This records that approval; no new caption wording or independent listening is claimed."
   }
 }

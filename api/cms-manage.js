@@ -13,6 +13,7 @@
 //    The token is never logged or stored.
 import { branchHead, readRepo, pathsExist, gh, listUploads } from '../src/lib/github-repo.js';
 import { whereUsed, planDeletion, displayName, COLLECTIONS, KEY, uploadUsage, planFileDeletion, UPLOAD_PATH } from '../src/lib/usage-core.js';
+import { PAGES } from '../src/lib/page-media-core.js';
 
 const send = (res, status, body) => { res.statusCode = status; res.setHeader('Content-Type', 'application/json; charset=utf-8'); res.setHeader('Cache-Control', 'no-store'); res.end(JSON.stringify(body)); };
 const ALLOWED_DELETE = /^(content\/(media|projects)\/[a-z0-9][a-z0-9-]*\.json|content\/field-notes\/[a-z0-9][a-z0-9-]*\.md|static\/images\/(library|projects|field-notes)\/[^/]+)$/;
@@ -28,6 +29,7 @@ export default async function handler(req, res) {
   const { action, collection, key } = body;
 
   try {
+    if (action === 'pageHistory') return await pageHistory(res, token, owner, name, branch, String(body.page || ''));
     if (action === 'restore') return await restore(res, token, owner, name, branch, String(body.commit || ''));
     // Saved vs on the site: the dashboard compares this with the commit the review site was built from (/admin/status.json).
     // A save alone does not mean a build started or worked: the build state is what Vercel reported on that commit.
@@ -65,6 +67,24 @@ export default async function handler(req, res) {
   } catch (e) {
     return send(res, e.status === 401 ? 401 : 502, { ok: false, message: e.status === 401 ? e.message : 'GitHub could not be reached. Nothing was changed; try again in a minute.' });
   }
+}
+
+// Read-only, page-scoped history. Loading a revision never commits it: the editor must review and Save normally.
+async function pageHistory(res, token, owner, name, branch, page) {
+  if (!PAGES.some(p => p.file === page)) return send(res, 400, { ok: false, message: 'Choose a page from Pages.' });
+  const head = await branchHead(token, owner, name, branch);
+  const path = `content/page-media/${page}.json`;
+  const commits = await gh(token, `/repos/${owner}/${name}/commits?sha=${head}&path=${encodeURIComponent(path)}&per_page=8`);
+  if (!commits.ok || !Array.isArray(commits.json)) return send(res, commits.status === 401 ? 401 : 502, { ok: false, message: 'Saved versions could not be loaded. Your current edits are kept.' });
+  const versions = await Promise.all(commits.json.slice(0, 8).filter(c => /^[a-f0-9]{40}$/.test(c.sha)).map(async c => {
+    const file = await gh(token, `/repos/${owner}/${name}/contents/${path}?ref=${c.sha}`);
+    if (!file.ok || file.json?.encoding !== 'base64' || file.json.size > 400000) throw new Error('Saved version could not be read.');
+    const value = JSON.parse(Buffer.from(file.json.content, 'base64').toString('utf8'));
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Saved version is invalid.');
+    delete value._page;
+    return { commit: c.sha, at: c.commit?.committer?.date || c.commit?.author?.date, label: String(c.commit?.message || 'Page saved').split('\n')[0].slice(0, 180), value };
+  }));
+  return send(res, 200, { ok: true, head, page, versions });
 }
 
 async function uploads(res, token, owner, name, branch, body) {

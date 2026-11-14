@@ -2116,6 +2116,10 @@ await check('polish: Architecture thumbnails reserve dimensions and fall back wi
   await p.context().close();
 });
 
+await check('service shortcuts: quiet accessible links reach work, comparison and process without overflow', async()=>{
+ for(const width of [1440,390,320])for(const route of ['/real-estate','/architecture-design']){const p=await newPage({width,height:900},{reducedMotion:'reduce'});await p.goto(base+route);const links=p.locator('.page-jumps a');assert(await links.count()===3,'three useful shortcuts');for(let i=0;i<3;i++){const a=links.nth(i),href=await a.getAttribute('href'),b=await a.boundingBox();assert(b.height>=44,'comfortable touch target');await a.click();assert(new URL(p.url()).hash===href,'correct section');const top=await p.locator(href).evaluate(e=>e.getBoundingClientRect().top);assert(top>=60&&top<320,'section clear of navigation: '+top);}assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no overflow');await p.context().close();}
+});
+
 // Screenshots for the handoff
 for (const [name, path, vp] of [['desktop-pricing', '/real-estate/pricing?sqft=3200', { width: 1440, height: 1100 }], ['mobile-pricing', '/real-estate/pricing?sqft=5501', { width: 390, height: 1400 }], ['desktop-work', '/real-estate#portfolio', { width: 1440, height: 1100 }], ['mobile-work', '/commercial#portfolio', { width: 390, height: 1400 }]]) {
   const p = await newPage(vp);

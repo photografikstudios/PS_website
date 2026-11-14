@@ -133,6 +133,7 @@ export function buildPages(ctx) {
   };
 
   // James, Sep 28 2026: galleries show the media only, with no captions beneath (names stay in alt text and labels).
+  const pageJumps = (links) => `<nav class="page-jumps" aria-label="On this page" data-page-copy-locked>${join(links, ([label, target]) => `<a href="#${target}">${label}</a>`)}</nav>`;
   const mediaCard = (m, { showMeta = false, sizes, photoLightboxIndex } = {}) => {
     const project = m.project ? projectBySlug[m.project] : null;
     const href = project && visible(project) ? projectPath(project) : null;
@@ -607,6 +608,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
     })}
 <section class="section re-coverage">
   <div class="wrap">
+    ${pageJumps([['See the work', 'portfolio'], ['Compare packages', 'compare'], ['Good to know', 'faq']])}
     <div class="re-coverage__head">
       <div>
         <p class="eyebrow">What goes into a listing campaign</p>
@@ -941,6 +943,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
 ${renderClientBoard(ctx.architectureClients)}
 <section class="section arch-intro" id="approach" aria-labelledby="arch-intro-h">
   <div class="wrap pair">
+    ${pageJumps([['View projects', 'portfolio'], ['Choose a story', 'which-story'], ['How it works', 'how-it-works']])}
     <div class="pair__text">
       <p class="eyebrow">Who this is for</p>
       <h2 class="h2 reveal" id="arch-intro-h">Your next client is judging more than <em>the finished room.</em></h2>
