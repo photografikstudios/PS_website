@@ -967,7 +967,7 @@ ${renderClientBoard(ctx.architectureClients)}
       <div class="story-guide__item reveal">${(() => { const it = pmv('architecture-design', 'storyBrand'); const st = pmStill(omitIds.has(it?.media) ? { media: 'cs-ph-dan-dan-conversation' } : it); return st ? `<figure class="story-guide__fig story-guide__fig--person"${pmAttrs(it)}><span class="still still--horizontal">${img(st.src, { alt: (!omitIds.has(it?.media) && it.alt) || st.alt, thumb: st.m?.type === 'video' ? undefined : st.thumb, sizes: '(min-width: 1000px) 30vw, 100vw' })}</span></figure>` : ''; })()}<p class="story-guide__n">Brand story and interviews</p><h3 class="h4">When clients hire you as much as the work.</h3><p>Your philosophy, how you work with clients and why you do it, told by you on camera. Worth it when the relationship is what wins the job. It is not automatic for every project.</p></div>
     </div>
     <p class="story-guide__note">Not sure? Start with project proof. If a brand story makes sense later, we can build on the same coverage. When they are part of the agreed scope, one planned shoot can serve your website, proposals, social channels and submissions.</p>
-    <div class="actions story-guide__actions"><a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_discovery">Book a discovery call</a></div>
+    <div class="actions story-guide__actions"><a class="btn btn--solid" href="/contact?type=architecture-design" data-track="project_click" data-track-location="arch_discovery">Plan the Next Project</a></div>
   </div>
 </section>
 
