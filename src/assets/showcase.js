@@ -34,7 +34,8 @@ if (root) {
     cards.forEach((c) => { c.hidden = !visible.includes(+c.dataset.i); });
     empty.hidden = matches.length > 0;
     const route = routes[cat] || '/real-estate';
-    more.href = `${route}${route === '/real-estate' ? `?type=${kind === 'video' ? 'video' : 'photo'}` : ''}#portfolio`;
+    const supportsMediaFilter = ['/real-estate', '/architecture-design'].includes(route);
+    more.href = `${route}${supportsMediaFilter ? `?type=${kind === 'video' ? 'video' : 'photo'}` : ''}#portfolio`;
     more.textContent = cat ? 'View more' : 'View more Real Estate'; // Name the destination of the mixed-service view.
   }
 

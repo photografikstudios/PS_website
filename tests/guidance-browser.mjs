@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import { start } from './serve.mjs';
 const server = await start(0);
 const base = `http://localhost:${server.address().port}`;
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.PLAYWRIGHT_CHANNEL ? {channel:process.env.PLAYWRIGHT_CHANNEL} : {});
 const results = [];
 const fixture = await fs.readFile(new URL('./fixtures/vertical.webm', import.meta.url));
 async function page(mobile = false, storageBlocked = false) {
@@ -19,6 +19,17 @@ async function page(mobile = false, storageBlocked = false) {
   return p;
 }
 const visible = (p, selector) => p.locator(selector).isVisible();
+// The helper yields when a first-screen CTA occupies its corner. Scroll to clear that action, as a visitor would.
+async function openChooser(p) {
+  let button=p.locator('[data-service-chooser]:visible').first();
+  if(!await button.count()) {
+    await p.evaluate(()=>{document.activeElement?.blur();const hero=document.querySelector('.hero,.page-hero,.fn-article__head');scrollTo(0,scrollY+hero.getBoundingClientRect().bottom+32);});
+    await p.waitForTimeout(100);
+    button=p.locator('[data-service-chooser]:visible').first();
+  }
+  await button.click();
+}
+
 async function pastHero(p) {
   await p.evaluate(() => { const h = document.querySelector('.hero,.page-hero,.fn-article__head'); scrollTo(0, scrollY + h.getBoundingClientRect().bottom + 50); });
   await p.clock.fastForward(13000);
@@ -51,7 +62,7 @@ try {
     await p.goto(base + '/contact');
     assert.equal(await p.locator('[name="visitIntent"]').inputValue(), 'listing');
     assert.equal(await p.locator('[name="visitContext"]').inputValue(), route);
-    await p.goto(base + route); await p.locator('.guidance-launch').click();
+    await p.goto(base + route); await openChooser(p);
     await p.locator('[data-intent="architecture"]').click(); await p.keyboard.press('Escape');
     await p.goto(base + '/contact');
     assert.equal(await p.locator('#i-type').inputValue(), 'architecture-design');
@@ -61,7 +72,7 @@ try {
   });
   await check('listing follow-up validates size, carries it to pricing and preserves custom size in the brief', async () => {
     const p = await page(true); await p.goto(base + '/?intent=listing&utm_source=instagram&utm_campaign=listing-media');
-    await p.locator('.guidance-launch').click(); await p.locator('[data-intent="listing"]').click();
+    await openChooser(p); await p.locator('[data-intent="listing"]').click();
     assert.equal(await p.locator('#guidance-sqft').evaluate(e => e === document.activeElement), true);
     for (const input of ['-1', 'abc', '2.5']) {
       await p.locator('#guidance-sqft').fill(input);
@@ -80,7 +91,7 @@ try {
     await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
     assert.equal(await p.locator('#sqft').inputValue(), '2800');
     assert.match(await p.locator('[data-price-for="luxury-media"]').innerText(), /2,140/);
-    await p.goto(base + '/'); await p.locator('.guidance-launch').click(); await p.locator('[data-intent="listing"]').click();
+    await p.goto(base + '/'); await openChooser(p); await p.locator('[data-intent="listing"]').click();
     await p.locator('#guidance-sqft').fill('31000');
     await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
     assert.equal(await p.locator('#i-type').inputValue(), 'real-estate-large');
@@ -102,7 +113,7 @@ try {
     assert.equal(await p.locator('.guidance-primary').getAttribute('href'), '#pk-luxury-media');
     await p.locator('#sqft').fill('12501'); assert.equal(await visible(p, '.guidance-math'), false);
     await p.locator('#sqft').fill('30001'); assert.match(await p.locator('.guidance-primary').getAttribute('href'), /real-estate-large/);
-    await p.locator('#sqft').fill(''); await pastHero(p);
+    await p.locator('#sqft').fill(''); await p.locator('#sqft').blur(); await pastHero(p);
     await p.locator('.guidance-card .guidance-close').click();
     await p.goto(base + '/commercial'); await pastHero(p);
     assert.equal(await visible(p, '.guidance-card'), false);
@@ -110,7 +121,7 @@ try {
   });
   await check('chooser: explicit choice, keyboard focus and inquiry source survive navigation', async () => {
     const p = await page(); await p.goto(base + '/?intent=listing&utm_source=ig&utm_campaign=fall-media');
-    await p.locator('.guidance-launch').click();
+    await openChooser(p);
     assert.equal(await p.locator('dialog.service-dialog').getAttribute('open'), '');
     await p.locator('[data-intent="architecture"]').click();
     assert.equal(await p.locator('[data-choice-action]').evaluate(e => e === document.activeElement), true);
@@ -118,7 +129,7 @@ try {
     assert.equal(await p.evaluate(() => !!document.activeElement.closest('.service-dialog')), true);
     await p.keyboard.press('Escape'); assert.equal(await visible(p, '.service-dialog'), false);
     await p.waitForFunction(() => document.activeElement?.classList.contains('guidance-launch')); assert.equal(await p.locator('.guidance-launch').evaluate(e => e === document.activeElement), true);
-    await p.locator('.guidance-launch').click(); await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
+    await openChooser(p); await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
     assert.match(p.url(), /\/contact\?type=architecture-design&intent=architecture/);
     assert.equal(await p.locator('#i-type').inputValue(), 'architecture-design');
     assert.equal(await p.locator('[name="visitIntent"]').inputValue(), 'architecture');
@@ -209,7 +220,7 @@ try {
   });
   await check('storage blocked: chooser and inquiry still work; excluded pages have no marketing overlay', async () => {
     const p = await page(false, true); await p.goto(base + '/?intent=architecture');
-    await p.locator('.guidance-launch').click(); await p.locator('[data-intent="commercial"]').click(); await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
+    await openChooser(p); await p.locator('[data-intent="commercial"]').click(); await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
     assert.equal(await p.locator('#i-type').inputValue(), 'commercial');
     for (const route of ['/terms', '/licensing', '/404']) { await p.goto(base + route); assert.equal(await p.locator('#service-guidance').count(), 0); }
     assert.deepEqual(p.errors, []); await p.close();

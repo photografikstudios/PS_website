@@ -22,12 +22,14 @@ export function guidanceView(ctx, route) {
     </aside>
     <dialog class="service-dialog" aria-labelledby="service-dialog-title">
       <button class="guidance-close" type="button" aria-label="Close service chooser">×</button>
+      <div class="service-dialog__body">
       <p class="eyebrow">Start with what you need</p><h2 class="h2" id="service-dialog-title">What are you creating?</h2>
       <p>Choose a direction. You can explore the work or take the next step.</p>
       <div class="service-choices">${Object.entries(INTENTS).map(([id, v]) => `<button type="button" data-intent="${id}" aria-pressed="false">${esc(v.label)}<span aria-hidden="true">→</span></button>`).join('')}</div>
       <section class="service-result" aria-live="polite" hidden><h3 class="h3"></h3><p></p>
         <div class="service-size" hidden><label for="guidance-sqft">Property size <span>(square feet, optional)</span></label><input id="guidance-sqft" type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="e.g. 2,800" aria-describedby="guidance-size-help guidance-size-error"><p id="guidance-size-help">Compare packages for this home size, or leave blank to see starting prices.</p><p id="guidance-size-error" hidden></p></div>
         <div class="guidance-actions"><a class="btn btn--solid btn--small" data-choice-action href="/contact">Continue</a><a class="link-arrow" data-choice-examples href="/">See examples →</a></div></section>
+      </div>
     </dialog>
     <script id="guidance-config" type="application/json">${safe({ route, pricing, article })}</script>
   </div>`;

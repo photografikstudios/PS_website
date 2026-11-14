@@ -82,7 +82,16 @@ for (const root of document.querySelectorAll('[data-regallery]')) {
     inlineVideos.add(v);
     vis?.observe(v);
     pauseAll(v);
-    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+    v.play().catch((error) => {
+      // A cancelled load means the visitor scrolled away or chose another film. Never restart it.
+      // Only retry an audio-policy refusal, while this player is still on screen.
+      if (error?.name !== 'NotAllowedError' || document.hidden) return;
+      const r = v.getBoundingClientRect();
+      const shown = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+      if (!r.height || shown / r.height < 0.25 || card.hidden) return;
+      v.muted = true;
+      v.play().catch(() => {});
+    });
     v.focus({ preventScroll: true });
     // Phones: the portrait frame is taller than the tile it replaces; bring all of it on screen.
     if (card.classList.contains('gcard--vertical') && matchMedia('(max-width: 620px)').matches) requestAnimationFrame(() => v.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));

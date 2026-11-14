@@ -61,7 +61,7 @@ function init() {
   let started = Date.now();
   const desktop = () => matchMedia('(min-width: 900px) and (hover: hover) and (pointer: fine)').matches;
   const busy = () => document.hidden || state.handoff || document.body.classList.contains('menu-open') ||
-    !!document.querySelector('dialog[open]') || !!document.activeElement?.closest('form') ||
+    !!document.querySelector('dialog[open]') || !!document.activeElement?.closest('form, input, select, textarea, [contenteditable]:not([contenteditable="false"])') ||
     [...document.querySelectorAll('video')].some(v => !v.paused && !v.ended && (!v.hasAttribute('data-ambient') || !v.muted)) ||
     (footer && footer.getBoundingClientRect().top < innerHeight);
   const size = () => {
@@ -110,6 +110,15 @@ function init() {
     if (auto && canSuggest({ used: state.autoUsed, dismissed: state.dismissed, busy: blocked, elapsed: Date.now() - started, passedHero, trigger: 'scroll' })) reveal('scroll');
     card.hidden = !displayed || blocked;
     launch.hidden = !marketingPage || displayed || blocked;
+    // The optional helper must never intercept a booking or project CTA beneath it.
+    if (!launch.hidden) {
+      const r = launch.getBoundingClientRect();
+      launch.hidden = [...document.querySelectorAll('main a.btn, main a.link-arrow, main button.btn')].some(action => {
+        const a = action.getBoundingClientRect();
+        return a.width && a.height && a.bottom > 0 && a.top < innerHeight &&
+          a.left < r.right && a.right > r.left && a.top < r.bottom && a.bottom > r.top;
+      });
+    }
   }
   const schedule = () => { if (!raf) raf = requestAnimationFrame(refresh); };
   function reveal(trigger) {

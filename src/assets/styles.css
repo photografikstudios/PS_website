@@ -600,6 +600,8 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .lightbox { width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(8,10,9,.94); color: #fff; overflow: hidden; }
 .lightbox::backdrop { background: rgba(8,10,9,.94); }
 .lightbox[open] { display: grid; grid-template-rows: auto 1fr auto; }
+/* Keep the visitor at the same gallery position while viewing its media. */
+body:has(.lightbox[open], .page-section-viewer[open]) { overflow: hidden; }
 .lightbox__bar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 16px clamp(16px, 3vw, 32px); }
 .lightbox__title { margin: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .lightbox__title strong { background: rgba(0,0,0,.72); padding: 6px 10px; font: 600 clamp(16px, 1.6vw, 22px)/1.2 var(--sans); }
@@ -1219,11 +1221,13 @@ video[controls]:focus { outline: 2px solid var(--rust); outline-offset: 3px; }
 .guidance-math { margin: 0 0 10px; font: 400 12px/1.55 var(--sans); }
 .guidance-math summary { cursor: pointer; min-height: 28px; }
 .guidance-math p { margin: 0 0 12px; }
-.service-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100svh - 48px); padding: clamp(24px, 4vw, 40px); color: var(--charcoal); background: var(--ivory); border: 1px solid var(--line); }
+.service-dialog { --chooser-pad: clamp(24px, 4vw, 40px); --chooser-inset: 48px; width: min(640px, calc(100vw - 32px)); max-height: calc(100svh - var(--chooser-inset)); padding: var(--chooser-pad); overflow: hidden; color: var(--charcoal); background: var(--ivory); border: 1px solid var(--line); }
+.service-dialog__body { max-height: calc(100svh - var(--chooser-inset) - var(--chooser-pad) - var(--chooser-pad) - 2px); overflow-y: auto; overscroll-behavior: contain; }
+.service-dialog > .guidance-close { z-index: 2; background: var(--ivory); }
 .service-dialog::backdrop { background: #151816b8; }
 .service-dialog .eyebrow { padding-right: 20px; }
 .service-dialog .h2 { font-size: clamp(32px, 5vw, 46px); margin-bottom: 10px; }
-.service-dialog > p:not(.eyebrow) { font-size: 15px; margin: 0 0 20px; }
+.service-dialog__body > p:not(.eyebrow) { font-size: 15px; margin: 0 0 20px; }
 .service-choices { display: grid; gap: 6px; }
 .service-choices button { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 12px 16px; background: transparent; color: inherit; border: 1px solid var(--line); font: 400 15px/1.4 var(--sans); text-align: left; min-height: 48px; cursor: pointer; }
 .service-choices button:hover, .service-choices button[aria-pressed="true"] { background: var(--ivory-3); border-color: var(--muted); }
@@ -1250,7 +1254,7 @@ body:has(.service-dialog[open]) { overflow: hidden; }
   .guidance-actions .btn { padding: 12px 14px; font-size: 10px; }
   .guidance-change { font-size: 12px; }
   .guidance-math { margin-bottom: 5px; font-size: 11px; }
-  .service-dialog { max-height: calc(100svh - 24px); }
+  .service-dialog { --chooser-inset: 24px; }
 }
 @media print { #service-guidance { display: none; } }
 

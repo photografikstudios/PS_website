@@ -1633,6 +1633,146 @@ await check('Architecture phone inline playback: usable full-width players, comp
   }
 });
 
+// First-visit editing and slow-media cancellation are distinct from happy-path playback.
+await check('Visitor guidance defers while calculator or gallery inputs are being edited', async () => {
+  const p = await newPage({width:390,height:844});
+  await p.clock.install();
+  await p.goto(base+'/real-estate');
+  await p.locator('#cmp-sqft').fill('2800');
+  await p.locator('#cmp-sqft').scrollIntoViewIfNeeded();
+  await p.clock.fastForward(13000);
+  await p.waitForTimeout(100);
+  assert(await p.locator('.guidance-card').isVisible()===false, 'no automatic sales card over an active calculator input');
+  await p.screenshot({path:shots+'guidance-editing-390.png'});
+  assert(await p.locator('#cmp-sqft').inputValue()==='2800', 'calculation retained');
+  await p.locator('#cmp-sqft').blur();
+  await p.clock.fastForward(200);
+  await p.waitForTimeout(100);
+  assert(await p.locator('.guidance-card').isVisible(), 'eligible suggestion can appear after editing finishes');
+  await p.locator('.guidance-card .guidance-close').click();
+  await p.goto(base+'/architecture-design');
+  await p.locator('#ag-type').selectOption('video');
+  await p.locator('#ag-type').focus();
+  await p.locator('#ag-type').scrollIntoViewIfNeeded();
+  await p.clock.fastForward(13000);
+  await p.waitForTimeout(100);
+  assert(await p.locator('.guidance-card').isVisible()===false, 'dismissal and active filter remain respected');
+  assert(await p.inputValue('#ag-type')==='video', 'filter retained');
+  assert(p.errors.length===0,p.errors.join(','));
+  await p.context().close();
+});
+
+await check('Gallery slow loads: cancelled film stays paused and the newest selection keeps its audio', async () => {
+  for (const scenario of ['scroll', 'switch', 'filter']) {
+    const p = await newPage({width:1440,height:1000});
+    await p.route(/\/v\/[^/]+\.mp4/, async route => {
+      await new Promise(resolve=>setTimeout(resolve,900));
+      await route.fulfill({status:200,contentType:'video/webm',body:fixture});
+    });
+    await p.goto(base+'/real-estate?type=video#portfolio');
+    const cards=p.locator('#rg-grid .gcard:not([hidden])');
+    await cards.nth(0).locator('button.gcard__open').click();
+    if(scenario==='switch')await cards.nth(1).locator('button.gcard__open').click();
+    else if(scenario==='scroll')await p.evaluate(()=>scrollTo(0,0));
+    else await p.selectOption('#rg-type','photo');
+    await p.waitForTimeout(1500);
+    const players=await p.locator('#rg-grid video').evaluateAll(vs=>vs.map(v=>({paused:v.paused,muted:v.muted,time:v.currentTime})));
+    assert(players[0].paused && players[0].time===0, scenario+': cancelled first film never restarted');
+    if(scenario==='switch')assert(players.length===2&&!players[1].paused&&!players[1].muted&&players[1].time>0, 'newest clicked film plays without an unwanted mute');
+    assert(p.errors.length===0,p.errors.join(','));
+    await p.context().close();
+  }
+  const p=await newPage({width:1440,height:1000});
+  await p.addInitScript(()=>{
+    const nativePlay=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(...args){
+      if(this.matches('#rg-grid video')&&!this.dataset.policyTried){this.dataset.policyTried='1';return Promise.reject(new DOMException('Test policy refusal','NotAllowedError'));}
+      return nativePlay.apply(this,args);
+    };
+  });
+  await p.goto(base+'/real-estate?type=video#portfolio');
+  await p.locator('#rg-grid .gcard:not([hidden]) button.gcard__open').first().click();
+  await p.waitForFunction(()=>{const v=document.querySelector('#rg-grid video');return v&&!v.paused&&v.muted&&v.currentTime>.1;});
+  assert(p.errors.length===0,p.errors.join(','));
+  await p.context().close();
+});
+
+await check('Home gallery continuation keeps Architecture media choice and the lightbox keeps page position', async () => {
+  for(const width of [390,1440]) {
+    const p=await newPage({width,height:900});
+    for(const kind of ['image','video']) {
+      await p.goto(base+'/');
+      await p.selectOption('#sw-kind',kind);
+      await p.selectOption('#sw-cat','architecture-design');
+      const type=kind==='video'?'video':'photo';
+      assert(await p.locator('#sw-more').getAttribute('href')===`/architecture-design?type=${type}#portfolio`, 'View more preserves the selected media type');
+      await p.locator('#sw-more').click();
+      await p.waitForLoadState('load');
+      assert(await p.inputValue('#ag-type')===type, 'destination filter is selected');
+      assert(await p.locator('#ag-grid .gcard:not([hidden])').evaluateAll((es,expected)=>es.every(e=>e.dataset.kind===expected),kind), 'destination shows the chosen kind');
+    }
+    await p.goto(base+'/');
+    const opener=p.locator('.sw-card:not([hidden])').first();
+    await opener.click();
+    const before=await p.evaluate(()=>scrollY);
+    await p.mouse.move(12,450);
+    await p.mouse.wheel(0,750);
+    await p.waitForTimeout(150);
+    assert(await p.evaluate(()=>scrollY)===before, 'wheel cannot scroll the page behind the viewer');
+    await p.keyboard.press('ArrowRight');
+    assert(await p.locator('dialog[open]').count()===1, 'gallery navigation still works');
+    await p.keyboard.press('Escape');
+    assert(await p.evaluate(()=>scrollY)===before, 'closing the viewer preserves gallery position');
+    assert(await opener.evaluate(e=>e===document.activeElement), 'focus returns to opener');
+    await p.mouse.wheel(0,200);
+    await p.waitForTimeout(150);
+    assert(await p.evaluate(()=>scrollY)>before, 'page scrolling is restored after closing');
+    assert(p.errors.length===0,p.errors.join(','));
+    await p.context().close();
+  }
+});
+
+await check('First-visit service helper never covers the phone booking action', async () => {
+  for (const [width,height] of [[390,844],[375,812],[320,700]]) {
+    const p=await newPage({width,height});
+    await p.goto(base+'/');
+    const book=p.locator('.hero a.btn').first();
+    await book.scrollIntoViewIfNeeded();
+    await p.waitForTimeout(100);
+    const hit=await book.evaluate(e=>{const r=e.getBoundingClientRect();const h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return h===e||e.contains(h);});
+    assert(hit, width+': booking CTA is the actual hit target');
+    await p.screenshot({path:shots+`booking-unobstructed-${width}.png`});
+    await p.evaluate(()=>{const hero=document.querySelector('.hero');scrollTo(0,scrollY+hero.getBoundingClientRect().bottom+40);});
+    await p.waitForTimeout(100);
+    assert(await p.locator('.guidance-launch').isVisible(), 'manual helper returns after the CTA collision clears');
+    await p.locator('.guidance-launch').click();
+    assert(await p.locator('.service-dialog[open]').count()===1,'service chooser remains available');
+    await p.keyboard.press('Escape');
+    assert(p.errors.length===0,p.errors.join(','));
+    await p.context().close();
+  }
+});
+
+await check('Service chooser keeps a reachable close control after scrolling to phone and zoomed results', async () => {
+  for(const [width,height]of[[320,700],[390,844],[720,450]]) {
+    const p=await newPage({width,height});
+    await p.goto(base+'/architecture-design');
+    await p.evaluate(()=>{const hero=document.querySelector('.page-hero');scrollTo(0,scrollY+hero.getBoundingClientRect().bottom+32);});
+    await p.waitForTimeout(100);
+    await p.locator('.guidance-launch').click();
+    await p.locator('[data-intent="commercial"]').click();
+    const close=p.locator('.service-dialog > .guidance-close');
+    const data=await close.evaluate(e=>{const r=e.getBoundingClientRect(),d=e.closest('dialog').getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return{inside:r.top>=d.top&&r.bottom<=d.bottom,hit:hit===e||e.contains(hit),w:r.width,h:r.height,scrolled:e.parentElement.querySelector('.service-dialog__body').scrollTop>0};});
+    assert(data.inside&&data.hit&&data.w>=44&&data.h>=44,'close remains a visible44px hit target');
+    assert(data.scrolled,'choice result is reached inside the scrollable dialog');
+    await p.screenshot({path:shots+`chooser-close-${width}.png`});
+    await close.click();
+    assert(await p.locator('.service-dialog[open]').count()===0,'touch/click closes without scrolling back to the top');
+    assert(p.errors.length===0,p.errors.join(','));
+    await p.context().close();
+  }
+});
+
 // James, Sep 28 2026 page review.
 await check('James Sep 28: pricing four across, Most Popular, package loops; RE image-led, no tile captions; no counts; Agent split; phone hero waits for load', async () => {
   const p = await newPage({ width: 1280, height: 900 });
