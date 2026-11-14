@@ -86,7 +86,7 @@ try {
       await p.setViewportSize({ width, height: 844 });
       assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     }
-    await p.addScriptTag({ path: new URL('../node_modules/axe-core/axe.min.js', import.meta.url).pathname });
+    await p.addScriptTag({ path: process.env.AXE_PATH || new URL('../node_modules/axe-core/axe.min.js', import.meta.url).pathname });
     assert.deepEqual(await p.evaluate(async () => (await axe.run(document.querySelector('.service-dialog'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } })).violations.map(v => v.id)), []);
     await p.locator('[data-choice-action]').click(); await p.waitForLoadState('load');
     assert.equal(await p.locator('#sqft').inputValue(), '2800');
@@ -173,7 +173,7 @@ try {
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await p.locator('[data-intent="studio"]').click();
     assert.match(await p.locator('[data-choice-action]').getAttribute('href'), /creator-studios.*#sessions/);
-    await p.addScriptTag({ path: new URL('../node_modules/axe-core/axe.min.js', import.meta.url).pathname });
+    await p.addScriptTag({ path: process.env.AXE_PATH || new URL('../node_modules/axe-core/axe.min.js', import.meta.url).pathname });
     const accessibility = await p.evaluate(async () => (await axe.run(document.querySelector('.service-dialog'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } })).violations.map(v => v.id));
     assert.deepEqual(accessibility, []);
     assert.deepEqual(p.errors, []); await p.close();
