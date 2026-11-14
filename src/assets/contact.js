@@ -1,5 +1,6 @@
 // Custom inquiry form: validation, server submit, and an email fallback so no inquiry is lost.
 // Shared analytics helper from site.js (not re-imported: a second module instance would double-bind the menu and players).
+import { INQUIRY_LIMITS, inquiryLengthError } from './inquiry-core.js';
 const track = (name, props) => window.pgkTrack?.(name, props);
 
 const form = document.getElementById('inquiry');
@@ -15,20 +16,36 @@ const rules = {
   email: (v) => (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? '' : 'Please enter a valid email address, like name@company.com.'),
   type: (v) => (v ? '' : 'Please choose a project type.'),
 };
+for (const name of Object.keys(INQUIRY_LIMITS)) {
+  if (!form.elements[name]?.addEventListener) continue; // A radio group has no single focus target; its fixed values are checked server-side.
+  const required = rules[name];
+  rules[name] = value => (required ? required(value) : '') || inquiryLengthError(name, value);
+}
+
+const details = form.elements.deliverables;
+const detailsCount = document.getElementById('i-deliverables-count');
+function updateDetailsCount() {
+  if (detailsCount) detailsCount.textContent = `${details.value.length.toLocaleString('en-US')} / ${INQUIRY_LIMITS.deliverables.toLocaleString('en-US')} characters`;
+}
+details.addEventListener('input', updateDetailsCount);
+updateDetailsCount();
 
 function fieldError(el, msg) {
   const id = `${el.id}-err`;
+  const described = new Set((el.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
   let p = document.getElementById(id);
   if (msg) {
     if (!p) { p = document.createElement('p'); p.id = id; p.className = 'field__error'; el.insertAdjacentElement('afterend', p); }
     p.textContent = msg;
     el.setAttribute('aria-invalid', 'true');
-    el.setAttribute('aria-describedby', id);
+    described.add(id);
   } else {
     p?.remove();
     el.removeAttribute('aria-invalid');
-    el.removeAttribute('aria-describedby');
+    described.delete(id);
   }
+  if (described.size) el.setAttribute('aria-describedby', [...described].join(' '));
+  else el.removeAttribute('aria-describedby');
 }
 
 function validate() {
@@ -43,7 +60,11 @@ function validate() {
 }
 
 for (const name of Object.keys(rules)) {
-  form.elements[name].addEventListener('blur', (e) => { if (e.target.value) fieldError(e.target, rules[name](e.target.value)); });
+  form.elements[name].addEventListener('input', (e) => {
+    // Validate on Submit, then clear errors as the visitor corrects them. Inserting/removing a blur error can
+    // move the next button or optional-details control between pointer-down and click, swallowing that click.
+    if (e.target.getAttribute('aria-invalid') === 'true') fieldError(e.target, rules[name](e.target.value));
+  });
 }
 
 function summary(data) {
@@ -67,6 +88,9 @@ form.addEventListener('submit', async (e) => {
   if (invalid) {
     errBox.textContent = 'Please fix the highlighted fields.';
     errBox.hidden = false;
+    for (let parent = invalid.parentElement; parent && parent !== form; parent = parent.parentElement) {
+      if (parent.tagName === 'DETAILS') parent.open = true;
+    }
     invalid.focus();
     track('form_error', { form: 'inquiry', field: invalid.name });
     return;

@@ -4,11 +4,10 @@
 // Secrets stay server-side. No inquiry content is logged.
 
 import { cleanVisit } from '../src/lib/guidance-core.js';
+import { INQUIRY_LIMITS, inquiryLengthErrors } from '../src/lib/inquiry-core.js';
 
 const TO = process.env.INQUIRY_TO || 'info@photografikstudios.com';
 const FROM = process.env.INQUIRY_FROM || 'Photografik Website <website@photografikstudios.com>';
-const MAX = 4000;
-
 const clean = (v, n = 300) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n);
 const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -20,10 +19,13 @@ export default async function handler(req, res) {
 
   if (body.website) return res.status(200).json({ ok: true }); // honeypot: pretend success
 
+  const tooLong = inquiryLengthErrors(body);
+  if (tooLong.length) return res.status(400).json({ ok: false, errors: tooLong });
+
   const data = {
-    name: clean(body.name, 120), email: clean(body.email, 200), phone: clean(body.phone, 40), company: clean(body.company, 160),
-    type: clean(body.type, 60), location: clean(body.location), timing: clean(body.timing), budget: clean(body.budget, 80),
-    deliverables: clean(body.deliverables, MAX), agency: clean(body.agency, 10), decision: clean(body.decision), source: clean(body.source),
+    ...Object.fromEntries(Object.entries(INQUIRY_LIMITS).map(([name, limit]) => [name, clean(body[name], limit)])),
+    // Keep the paragraph structure the visitor entered; other fields still strip header/control characters.
+    deliverables: String(body.deliverables ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, ' ').trim(),
     ...cleanVisit(body),
   };
   const errors = [];

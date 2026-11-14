@@ -1595,7 +1595,7 @@ ${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('ab
             <option value="creator-studios">Creator Studios session</option>
             <option value="other">Something else</option>
           </select></div>
-        <div class="field field--full"><label for="i-deliverables">What do you need, and where will it be used?</label><textarea id="i-deliverables" name="deliverables" rows="3" placeholder="Deliverables, channels and intended usage. For example: 20 photos and a 60-second film for our website and award submissions."></textarea></div>
+        <div class="field field--full"><label for="i-deliverables">What do you need, and where will it be used?</label><textarea id="i-deliverables" name="deliverables" rows="3" aria-describedby="i-deliverables-count" placeholder="Deliverables, channels and intended usage. For example: 20 photos and a 60-second film for our website and award submissions."></textarea><p class="small muted" id="i-deliverables-count">Up to 4,000 characters</p></div>
         <details class="field field--full more" id="more-details">
           <summary>Add timing, budget and other details <span class="muted">(optional)</span></summary>
           <div class="form__grid">

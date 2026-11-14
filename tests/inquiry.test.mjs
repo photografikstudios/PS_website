@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import handler from '../api/inquiry.js';
+import { INQUIRY_LIMITS } from '../src/lib/inquiry-core.js';
 
 const res = () => { const r = { code: 0, body: null, headers: {} }; r.status = (c) => { r.code = c; return r; }; r.json = (b) => { r.body = b; return r; }; r.setHeader = (k, v) => { r.headers[k] = v; }; return r; };
 const brief = { name: 'Pat Test', email: 'pat@example.com', type: 'architecture-design', deliverables: 'TEST brief' };
@@ -32,4 +33,34 @@ test('inquiry: no key -> 503 mailto fallback; provider error -> 502; network err
     r = res(); await handler({ method: 'POST', body: { ...brief, email: 'not-an-email' } }, r);
     assert.equal(r.code, 400);
   } finally { globalThis.fetch = realFetch; console.error = realErr; if (realKey === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = realKey; }
+});
+
+test('inquiry refuses oversized fields without sending or silently truncating them', async () => {
+  const realFetch = globalThis.fetch, realKey = process.env.RESEND_API_KEY;
+  let calls = 0;
+  try {
+    process.env.RESEND_API_KEY = 'qc-mocked-not-real';
+    globalThis.fetch = async () => { calls++; return { ok: true, status: 200 }; };
+    for (const [name, limit] of Object.entries(INQUIRY_LIMITS)) {
+      const r = res(); await handler({ method: 'POST', body: { ...brief, [name]: 'x'.repeat(limit + 1) } }, r);
+      assert.equal(r.code, 400, name); assert.deepEqual(r.body.errors, [name]);
+    }
+    assert.equal(calls, 0, 'do not deliver an incomplete brief');
+    const r = res(); await handler({ method: 'POST', body: { ...brief, deliverables: 'x'.repeat(INQUIRY_LIMITS.deliverables) } }, r);
+    assert.equal(r.code, 200); assert.equal(calls, 1, 'the exact limit is accepted');
+  } finally { globalThis.fetch = realFetch; if (realKey === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = realKey; }
+});
+
+test('inquiry email preserves project paragraphs and escapes their HTML', async () => {
+  const realFetch = globalThis.fetch, realKey = process.env.RESEND_API_KEY;
+  try {
+    process.env.RESEND_API_KEY = 'qc-mocked-not-real'; let payload;
+    globalThis.fetch = async (url, init) => { payload = JSON.parse(init.body); return { ok: true, status: 200 }; };
+    const details = 'Project overview.\r\n\r\nWebsite & social.\n<script>not markup</script>';
+    const r = res(); await handler({ method: 'POST', body: { ...brief, deliverables: details } }, r);
+    assert.equal(r.code, 200);
+    assert.ok(payload.text.includes('Project overview.\n\nWebsite & social.\n<script>not markup</script>'));
+    assert.ok(payload.html.includes('Website &amp; social.\n&lt;script&gt;not markup&lt;/script&gt;'));
+    assert.ok(!payload.html.includes('<script>'));
+  } finally { globalThis.fetch = realFetch; if (realKey === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = realKey; }
 });
