@@ -55,6 +55,20 @@ const assert = (c, m) => { if (!c) throw new Error(m); };
 
 await check('prerequisite: dist/ is built from the current content and code', async () => { assert(!staleDist, `${staleDist}. Run npm run build, then rerun npm run test:e2e.`); });
 
+await check('a11y: Skip to content moves keyboard focus into the main landmark', async () => {
+  for (const width of [1440, 390]) for (const route of ['/', '/contact']) {
+    const p = await newPage({ width, height: 900 }, { reducedMotion: 'reduce' });
+    await p.goto(base + route);
+    await p.keyboard.press('Tab');
+    assert(await p.evaluate(() => document.activeElement.classList.contains('skip')), 'skip link is the first keyboard stop');
+    await p.keyboard.press('Enter');
+    await p.waitForFunction(() => document.activeElement.id === 'main');
+    await p.keyboard.press('Tab');
+    assert(await p.locator('main').evaluate((main) => main.contains(document.activeElement)), 'next Tab stays in content instead of repeating header navigation');
+    await p.context().close();
+  }
+});
+
 // ---------- Pricing ----------
 await check('pricing: starting prices shown before entry', async () => {
   const p = await newPage();

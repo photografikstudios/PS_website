@@ -70,7 +70,7 @@ ${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</stro
     </nav>
   </div>
 </header>
-<main id="main">
+<main id="main" tabindex="-1">
 ${body}
 </main>
 <footer class="site-footer">

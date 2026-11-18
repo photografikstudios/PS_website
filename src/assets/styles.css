@@ -54,6 +54,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: absolute; left: 12px; top: -60px; z-index: 100; background: var(--charcoal); color: var(--ivory); padding: 10px 14px; font: 400 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
 .skip:focus { top: 12px; }
+#main:focus { outline: none; }
 .wrap { width: min(100% - 2 * var(--gutter), var(--wrap)); margin-inline: auto; }
 .narrow { max-width: 860px; }
 .muted { color: var(--muted); }
@@ -131,8 +132,10 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .menu-toggle[aria-expanded="true"] .menu-toggle__bars::before { top: 0; transform: rotate(45deg); }
 .menu-toggle[aria-expanded="true"] .menu-toggle__bars::after { top: 0; transform: rotate(-45deg); }
 
-/* Header over a full-bleed image: transparent until scrolled */
-.has-overlay .site-header { position: fixed; left: 0; right: 0; background: transparent; border-color: transparent; color: var(--ivory); backdrop-filter: none; -webkit-backdrop-filter: none; }
+/* Header over a full-bleed image: shaded navigation, ivory once scrolled. */
+/* A fixed shade keeps navigation readable even when the selected hero frame is nearly white. */
+.has-overlay .site-header { position: fixed; left: 0; right: 0; background: rgba(21,24,22,.78); border-color: transparent; color: var(--ivory); backdrop-filter: none; -webkit-backdrop-filter: none; }
+.has-overlay:not(.menu-open) .site-header:not(.is-scrolled) :focus-visible { outline-color: var(--ivory); }
 .has-overlay .site-header.is-scrolled, .has-overlay.menu-open .site-header { background: rgba(244, 242, 235, 0.95); border-color: var(--line); color: var(--charcoal); backdrop-filter: saturate(1.3) blur(12px); -webkit-backdrop-filter: saturate(1.3) blur(12px); }
 /* Review builds: the review strip sits in the page flow above the header, so it never covers content (Codex, Sep 27). */
 .has-overlay .review-bar + .site-header { top: var(--rb-top, 34px); transition: top .25s var(--ease), background-color .4s var(--ease), border-color .4s var(--ease), color .4s var(--ease); }
@@ -172,6 +175,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .hero__media::after, .page-hero__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(21,24,22,.45) 0%, rgba(21,24,22,0) 22%), linear-gradient(90deg, rgba(21,24,22,.78) 0%, rgba(21,24,22,.5) 42%, rgba(21,24,22,.08) 75%), linear-gradient(180deg, rgba(21,24,22,0) 45%, rgba(21,24,22,.7) 100%); }
 @media (max-width: 700px) { .hero__media::after, .page-hero__media::after { background: linear-gradient(180deg, rgba(21,24,22,.5) 0%, rgba(21,24,22,.25) 35%, rgba(21,24,22,.88) 78%); } }
 .hero__inner, .page-hero__inner { position: relative; padding-block: 140px clamp(56px, 8vh, 96px); }
+.hero .eyebrow, .page-hero--image .eyebrow, .page-hero--video .eyebrow { width: fit-content; max-width: 100%; color: var(--ivory); background: rgba(21,24,22,.8); box-shadow: 0 0 0 6px rgba(21,24,22,.8); }
 .hero__foot { display: flex; justify-content: space-between; align-items: end; gap: 32px; flex-wrap: wrap; }
 .hero__meta { font: 400 11px/1.6 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--on-dark-muted); text-align: right; }
 .page-hero { position: relative; background: var(--charcoal); color: var(--ivory); overflow: hidden; }
@@ -341,7 +345,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 
 /* ---------- Closing CTA ---------- */
 .closing { position: relative; overflow: hidden; background: var(--charcoal-3); color: var(--ivory); }
-.closing__media { position: absolute; inset: 0; opacity: .38; }
+.closing__media { position: absolute; inset: 0; opacity: .2; }
 .closing__media img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, 50% 50%); }
 .closing__inner { position: relative; padding-block: var(--space); }
 .closing--bleed .closing__media { opacity: 1; }
@@ -548,7 +552,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; 
 .quick__media img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.4s var(--ease); }
 .quick__tile:hover .quick__media img { transform: scale(1.03); }
 .quick__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(21,24,22,.1) 0%, rgba(21,24,22,.45) 35%, rgba(21,24,22,.92) 100%); }
-.quick__body { padding: clamp(24px, 2.5vw, 36px); max-width: 640px; }
+.quick__body { padding: clamp(24px, 2.5vw, 36px); max-width: 640px; background: rgba(21,24,22,.76); }
 .quick__title { font: 400 clamp(34px, 3.2vw, 46px)/1 var(--serif); letter-spacing: -0.015em; margin: 0 0 14px; color: #fff; }
 .quick__body p:not(.eyebrow) { color: rgba(244,242,235,.86); margin: 0 0 20px; max-width: 30.36em; }
 .quick .actions { gap: 12px; margin: 0; }
