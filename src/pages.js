@@ -200,7 +200,7 @@ export function buildPages(ctx) {
   // James, Sep 28 2026: an image above each step or service block, and full-bleed image footers with a legible overlay.
   const blockFig = (src, alt, { thumb, cls = '', sizes = '(min-width: 900px) 30vw, 100vw', pos } = {}) => (src ? `<figure class="block-fig ${cls}"${pos ? ` style="--pos:${pos}"` : ''}>${img(src, { alt, thumb, sizes })}</figure>` : '');
   // A Page Media item in a block figure: library items as mediaFig always drew them, files with their own description.
-  const pmFig = (it, opts = {}) => (!it ? '' : pmSized(it, it.media ? mediaFig(it.media, { ...(it.alt ? { alt: it.alt } : {}), ...(it.position ? { pos: it.position } : {}), ...opts }) : blockFig(it.src, it.alt || '', opts)));
+  const pmFig = (it, opts = {}) => (!it ? '' : pmSized(it, it.media ? mediaFig(it.media, { ...(it.alt ? { alt: it.alt } : {}), ...(it.position ? { pos: it.position } : {}), ...opts }) : blockFig(it.src, it.alt || '', opts), opts.layout || 'frame'));
   const mediaFig = (id, opts = {}) => { const m = allMediaById[id]; if (!m) return ''; return blockFig(m.type === 'video' ? m.poster : m.src, opts.alt || (m.type === 'video' ? `Frame from ${m.title}` : (m.alt || m.title)), { thumb: m.thumb, ...opts }); };
   const bleedCta = ({ title, text, cta, image, alt = '', eyebrow = '', item }) => `
 <section class="closing closing--bleed on-dark"${pmAttrs(item, 'background')}>
@@ -1077,10 +1077,10 @@ ${bleedCta({ title: 'Finished something worth showing?', text: 'Share the projec
       </div>
     </div>
     <div class="features features--4">
-      <div class="feature reveal">${pmFig(pmv('commercial', 'featureBrand'))}<h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
-      <div class="feature reveal">${pmFig(pmv('commercial', 'featureFilm'))}<h3 class="h3">Film and short-form</h3><p>Brand films, project showcases and short cuts for every channel you use.</p></div>
-      <div class="feature reveal">${pmFig(pmv('commercial', 'featureStudio'))}<h3 class="h3">Podcasts and studio days</h3><p>Recorded at <a href="/creator-studios">LI Creator Studios</a> or on location.</p></div>
-      <div class="feature reveal">${pmFig(pmv('commercial', 'featureRecurring'))}<h3 class="h3">Recurring production</h3><p>A monthly cadence so content keeps coming without hiring several separate roles.</p></div>
+      <div class="feature reveal">${pmFig(pmv('commercial', 'featureBrand'), { layout: 'card' })}<h3 class="h3">Brand and team photography</h3><p>People, spaces and services, photographed to match how you want to be seen.</p></div>
+      <div class="feature reveal">${pmFig(pmv('commercial', 'featureFilm'), { layout: 'card' })}<h3 class="h3">Film and short-form</h3><p>Brand films, project showcases and short cuts for every channel you use.</p></div>
+      <div class="feature reveal">${pmFig(pmv('commercial', 'featureStudio'), { layout: 'card' })}<h3 class="h3">Podcasts and studio days</h3><p>Recorded at <a href="/creator-studios">LI Creator Studios</a> or on location.</p></div>
+      <div class="feature reveal">${pmFig(pmv('commercial', 'featureRecurring'), { layout: 'card' })}<h3 class="h3">Recurring production</h3><p>A monthly cadence so content keeps coming without hiring several separate roles.</p></div>
     </div>
   </div>
 </section>
@@ -1204,9 +1204,9 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   // with no captions beneath them (each keeps its alt text or accessible name).
   const csById = Object.fromEntries(media.filter((m) => m.category === 'creator-studios').map((m) => [m.id, m]));
   const visibleMediaById = Object.fromEntries(media.map((m) => [m.id, m]));
-  const csFig = (it, sizes = '(min-width: 900px) 40vw, 100vw') => {
-    if (it?.src) return `<figure class="cs-fig cs-fig--horizontal"${pmAttrs(it)}>${img(it.src, { alt: it.alt || '', sizes })}</figure>`;
-    const m = it && (csById[it.media] || visibleMediaById[it.media]); return m ? `<figure class="cs-fig cs-fig--${m.orientation}"${pmAttrs(it)}>${img(m.src, { alt: it.alt || m.alt || m.title, thumb: m.thumb, sizes })}</figure>` : '';
+  const csFig = (it, sizes = '(min-width: 900px) 40vw, 100vw', layout = 'frame') => {
+    if (it?.src) return `<figure class="cs-fig cs-fig--horizontal"${pmAttrs(it, layout)}>${img(it.src, { alt: it.alt || '', sizes })}</figure>`;
+    const m = it && (csById[it.media] || visibleMediaById[it.media]); return m ? `<figure class="cs-fig cs-fig--${m.orientation}"${pmAttrs(it, layout)}>${img(m.src, { alt: it.alt || m.alt || m.title, thumb: m.thumb, sizes })}</figure>` : '';
   };
   // Opening section: three current vertical examples, quietly looping in place (muted excerpts, 25 s each).
   // Page Media: a photo in the list shows as a still; anything else is a playing example with its spoken label.
@@ -1223,11 +1223,11 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     .map(([k, slot]) => { const it = pmv('creator-studios', slot); return [k, it && omitIds.has(it.media) ? { media: 'ph-network-effect' } : it]; }));
   const csFormatFig = (key) => {
     const it = csFormatImg[key];
-    if (it?.src) return `<figure class="cs-format__img"${pmAttrs(it)}>${img(it.src, { alt: it.alt || '', sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
+    if (it?.src) return `<figure class="cs-format__img"${pmAttrs(it, 'card')}>${img(it.src, { alt: it.alt || '', sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
     const m = it && (csById[it.media] || visibleMediaById[it.media]); if (!m) return '';
     const src = m.type === 'video' ? m.poster : m.src;
     const alt = it.alt || (m.type === 'video' ? `Frame from ${m.title}` : (m.alt || m.title));
-    return `<figure class="cs-format__img"${pmAttrs(it)}>${img(src, { alt, thumb: m.thumb, sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
+    return `<figure class="cs-format__img"${pmAttrs(it, 'card')}>${img(src, { alt, thumb: m.thumb, sizes: '(min-width: 900px) 30vw, 100vw' })}</figure>`;
   };
   const csSessionPhoto = { 'podcast-session': pmv('creator-studios', 'sessionPodcast'), 'content-session': pmv('creator-studios', 'sessionContent'), 'monthly-content': pmv('creator-studios', 'sessionMonthly') };
   // James, Sep 26 2026: How it works and FAQ follow licreatorstudios.com/how-it-works.
@@ -1276,7 +1276,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     <p class="eyebrow">Sessions</p>
     <h2 class="h2 reveal" id="cs-sessions-h">Choose how you want to work.</h2>
     <div class="cs-sessions cs-sessions--${sessions.length}">${join(sessions, (s) => `<div class="plan plan--media reveal" data-session="${esc(s.id)}">
-      ${csFig(csSessionPhoto[s.id] || pmv('creator-studios', 'sessionOther'))}
+      ${csFig(csSessionPhoto[s.id] || pmv('creator-studios', 'sessionOther'), '(min-width: 900px) 30vw, 100vw', 'card')}
       <h3 class="h3">${esc(s.name)} ${needsApproval(s, s.reviewNote)}</h3>
       ${s.priced === false ? `<p class="plan__q">${esc(s.question || '')}</p>` : `<p class="plan__price">${approvedPrice(s, `<span class="plan__from">Starting at</span> <strong>${formatUSD(s.amount)}</strong>${s.unit ? ` <span class="plan__unit">${esc(s.unit)}</span>` : ''}${s.minimum ? `<span class="plan__min">${esc(s.minimum)}</span>` : ''}`, 'Price being confirmed')}</p>`}
       <p>${esc(s.detail)}</p>
