@@ -54,9 +54,8 @@ ${(() => { const m = body.match(/<picture class="hero-still"><source media="([^"
 ${ga4Tag(site, reviewMode)}
 ${join([].concat(jsonLd || []), (j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`)}
 </head>
-<body class="${[dark ? 'page--dark' : '', overlay ? 'has-overlay' : '', reviewMode ? 'has-review-bar' : ''].join(' ').trim()}">
+<body class="${[dark ? 'page--dark' : '', overlay ? 'has-overlay' : ''].join(' ').trim()}">
 <a class="skip" href="#main">Skip to content</a>
-${reviewMode ? `<div class="review-bar" role="note"><strong>Review version</strong> · Not live<span class="review-bar__long">. Items tagged <span class="needs-approval">Needs approval</span> are still awaiting sign-off</span>.</div>` : ''}
 <header class="site-header">
   <div class="wrap site-header__inner">
     <a class="brand" href="/" aria-label="Photografik Studios, home">
