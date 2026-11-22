@@ -198,7 +198,7 @@ export function buildPages(ctx) {
 </section>`;
 
   // James, Sep 28 2026: an image above each step or service block, and full-bleed image footers with a legible overlay.
-  const blockFig = (src, alt, { thumb, cls = '', sizes = '(min-width: 900px) 30vw, 100vw', pos } = {}) => (src ? `<figure class="block-fig ${cls}"${pos ? ` style="--pos:${pos}"` : ''}>${img(src, { alt, thumb, sizes })}</figure>` : '');
+  const blockFig = (src, alt, { thumb, cls = '', sizes = '(min-width: 900px) 30vw, 100vw', pos, eager = false } = {}) => (src ? `<figure class="block-fig ${cls}"${pos ? ` style="--pos:${pos}"` : ''}>${img(src, { alt, thumb, sizes, eager })}</figure>` : '');
   // A Page Media item in a block figure: library items as mediaFig always drew them, files with their own description.
   const pmFig = (it, opts = {}) => (!it ? '' : pmSized(it, it.media ? mediaFig(it.media, { ...(it.alt ? { alt: it.alt } : {}), ...(it.position ? { pos: it.position } : {}), ...opts }) : blockFig(it.src, it.alt || '', opts), opts.layout || 'frame'));
   const mediaFig = (id, opts = {}) => { const m = allMediaById[id]; if (!m) return ''; return blockFig(m.type === 'video' ? m.poster : m.src, opts.alt || (m.type === 'video' ? `Frame from ${m.title}` : (m.alt || m.title)), { thumb: m.thumb, ...opts }); };
@@ -1154,7 +1154,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   };
 
   // ---------- AGENCY ----------
-  const agencyImage = (key, cls = '', layout = 'card', sizes = '(min-width: 1000px) 25vw, (min-width: 600px) 50vw, 100vw') => pmFig(pmv('agency-partnerships', key), { cls, layout, sizes });
+  const agencyImage = (key, cls = '', layout = 'card', sizes = '(min-width: 1000px) 25vw, (min-width: 600px) 50vw, 100vw') => pmFig(pmv('agency-partnerships', key), { cls, layout, sizes, eager: key === 'hero' });
   const agencyHero = heroText('/agency-partnerships');
   const agencyHeroPhotos = pmList('agency-partnerships', 'heroPhotos');
   pages['/agency-partnerships'] = {
@@ -1170,7 +1170,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
       <div class="actions"><a class="btn btn--rust" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_hero">Talk through a client project</a><a class="link-arrow" href="/creator-studios">Explore the studio ${arrow}</a></div>
     </div>
     <div class="partner-hero__photos partner-hero__photos--${agencyHeroPhotos.length}" role="group" aria-label="Recording and production at LI Creator Studios">
-      ${agencyImage('hero', 'partner-hero__main', 'inset', '(min-width: 1000px) 30vw, 100vw')}
+      ${agencyImage('hero', 'partner-hero__main', 'inset', '(min-width: 1000px) 50vw, 100vw')}
       ${join(agencyHeroPhotos, (it) => pmFig(it, { cls: 'partner-hero__detail', layout: 'inset', sizes: '(min-width: 1000px) 20vw, 50vw' }))}
     </div>
   </div>
