@@ -1136,13 +1136,15 @@ ${cp.length || b2b.length ? `<section class="section">
   </div>
 </section>` : ''}
 <section class="section" id="agencies" aria-labelledby="agency-h">
-  <div class="wrap two-col two-col--top">
-    <div>
-      <p class="eyebrow">For agencies</p>
-      <h2 class="h2 reveal" id="agency-h">Production capacity for <em>advertising and marketing agencies.</em></h2>
-      ${pmFig(pmv('commercial', 'agencyPhoto'), { cls: 'agency-fig' })}
+  <div class="wrap agency-feature">
+    <div class="agency-feature__visual">
+      ${pmFig(pmv('commercial', 'agencyPhoto'), { cls: 'agency-feature__photo', layout: 'inset', sizes: '(min-width: 900px) 50vw, 100vw' })}
+      <div class="agency-feature__heading">
+        <p class="eyebrow">For agencies</p>
+        <h2 class="h2 reveal" id="agency-h">Production capacity for <em>advertising and marketing agencies.</em></h2>
+      </div>
     </div>
-    <div>
+    <div class="agency-feature__copy">
       <p>Crew, studio or on-location production, filming, editing and project management for your clients. Client-facing, behind the scenes, collaborative or white-label, with roles and approvals agreed before we start.</p>
       <div class="actions"><a class="btn btn--ink" href="/agency-partnerships" data-track="partnership_click" data-track-location="com_agency">Agency partnerships</a><a class="link-arrow" href="/contact?type=agency" data-track="partnership_click" data-track-location="com_agency">Send an Agency Brief ${arrow}</a></div>
     </div>
