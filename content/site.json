@@ -34,7 +34,7 @@
       "href": "https://book.squareup.com/appointments/5wbvt8o7eansfd/location/LPK0R2B9CGFQE/services",
       "label": "LI Creator Studios booking",
       "verified": true,
-      "note": "James, Sep 25 2026: Square services page is the studio booking/pricing destination. Some Square listings say 'Price varies'; never claim Square shows $250/$500 or that booking carries over a Photografik selection."
+      "note": "James, Sep 25 2026: Square services page is the studio booking/pricing destination. Some Square listings say 'Price varies'; never claim Square shows $250/$500 or that booking carries over a Photografik Studios selection."
     },
     "creatorInquiry": {
       "href": "/contact?type=creator-studios",
@@ -147,7 +147,7 @@
     }
   },
   "analytics": {
-    "_readme": "Google Analytics 4, existing Photografik web stream (James, Oct 13 2026; stream read by Codex in GA: account 203030935, property 376436984, stream 5220249519 \"photografikstudios.com - GA4\"). Production builds load it for every visitor. Review previews load nothing unless a tester opens a page with ?ga_debug=1 (kept for that browser tab only): those hits carry debug_mode and traffic_type=internal and come from the vercel.app hostname, so they show in DebugView and can be told apart from photografikstudios.com traffic. Events send allow-listed, non-personal properties only.",
+    "_readme": "Google Analytics 4, existing Photografik Studios web stream (James, Oct 13 2026; stream read by Codex in GA: account 203030935, property 376436984, stream 5220249519 \"photografikstudios.com - GA4\"). Production builds load it for every visitor. Review previews load nothing unless a tester opens a page with ?ga_debug=1 (kept for that browser tab only): those hits carry debug_mode and traffic_type=internal and come from the vercel.app hostname, so they show in DebugView and can be told apart from photografikstudios.com traffic. Events send allow-listed, non-personal properties only.",
     "ga4MeasurementId": "G-BT3BZQBFS5",
     "ga4PropertyId": "376436984",
     "ga4StreamId": "5220249519"

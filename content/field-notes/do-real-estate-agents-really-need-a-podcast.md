@@ -16,7 +16,7 @@
     "href": "/creator-studios",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Do Real Estate Agents Need a Podcast? | Photografik",
+  "seoTitle": "Do Real Estate Agents Need a Podcast? | Photografik Studios",
   "seoDescription": "Decide whether a podcast fits your audience, conversation style and available time before committing to a recurring show.",
   "slug": "do-real-estate-agents-really-need-a-podcast",
   "sources": [

@@ -1,7 +1,7 @@
 // A small, safe Markdown renderer for Field Notes (zero dependencies).
 // Supports what the CMS editor produces: ## / ### headings, paragraphs, - / * / + and 1. lists,
 // > notes, **bold**, *italic* / _italic_, [links](url), standalone ![images](src "caption"),
-// hard breaks, backslash escapes, and the ::media[id] block for Photografik library media.
+// hard breaks, backslash escapes, and the ::media[id] block for Photografik Studios library media.
 // Raw HTML is never passed through: everything is escaped first.
 import { esc } from './html.js';
 

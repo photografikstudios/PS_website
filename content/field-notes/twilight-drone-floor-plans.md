@@ -13,7 +13,7 @@
     "href": "/real-estate/pricing"
   },
   "relatedService": "/real-estate",
-  "seoTitle": "When are twilight, drone and floor plans worth it? | Photografik",
+  "seoTitle": "Twilight, Drone & Floor Plans: When to Add Them | Photografik Studios",
   "seoDescription": "What twilight photos, drone and a floor plan show buyers, when each adds value to a listing, and which packages include them.",
   "approvedBy": "James, Sep 30 2026 (Wednesday implementation pass, item 7: the three Day 1 articles are approved for launch)",
   "legacyUrls": [
@@ -22,7 +22,7 @@
     "/articles/2023/9/25/soaring-to-new-heights-the-popularity-and-importance-of-drone-photography-and-videography-in-real-estate"
   ],
   "sources": [
-    "Photografik Real Estate page copy (approved)",
+    "Photografik Studios Real Estate page copy (approved)",
     "HD Photo Hub package inclusions (read 2026-09-23)"
   ]
 }

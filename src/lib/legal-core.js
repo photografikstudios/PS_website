@@ -7,7 +7,7 @@ export function validateLegal(legal) {
   for (const [key, page] of Object.entries(legal.pages || {})) {
     if (!page.route || !page.title) errors.push(`${key}: route and title are required`);
     const ids = page.groups.map((g) => g.id);
-    if (ids[0] !== 'general') errors.push(`${key}: the Photografik general group must come first`);
+    if (ids[0] !== 'general') errors.push(`${key}: the Photografik Studios general group must come first`);
     for (const g of page.groups) for (const s of g.sections) {
       for (const b of s.blocks || []) if (!BLOCK_TYPES.has(b.type)) errors.push(`${key}: "${s.title}" has an unknown block type ${b.type}`);
     }

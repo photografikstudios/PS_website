@@ -1,5 +1,5 @@
 // Vercel Function: GET /api/cms-auth — starts GitHub sign-in for the site dashboard (/admin, Decap CMS).
-// Needs a GitHub OAuth App owned by Photografik (not created by this code) with its callback set to
+// Needs a GitHub OAuth App owned by Photografik Studios (not created by this code) with its callback set to
 // https://<site>/api/cms-callback, and two server-side environment variables:
 //   CMS_GITHUB_CLIENT_ID, CMS_GITHUB_CLIENT_SECRET
 // Without them the editor shows a plain "not configured" message and nothing else happens.

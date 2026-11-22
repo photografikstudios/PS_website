@@ -3,12 +3,12 @@
   "published": false,
   "date": "2026-11-11",
   "category": "production",
-  "excerpt": "See how Photografik’s location and project media connects with Creator Studios’ interviews, educational videos and client conversations.",
-  "answer": "See how Photografik’s location and project media connects with Creator Studios’ interviews, educational videos and client conversations.",
+  "excerpt": "See how Photografik Studios’ location and project media connects with Creator Studios’ interviews, educational videos and client conversations.",
+  "answer": "See how Photografik Studios’ location and project media connects with Creator Studios’ interviews, educational videos and client conversations.",
   "hero": "/v/cs-ph-island-federal.webp",
   "heroAlt": "Two-person podcast set with the Island Federal logo on screen and the switching desk in the foreground",
   "author": "Photografik Studios",
-  "editorialNotes": "Imported article 15 of 15 from the supplied article collection. Original source byline: By James Calandrino | Photografik Studios. Website byline follows the existing Photografik Studios setting.\n\nImage selection notes:\nAll images show actual location/studio work, James or the actual testimonial. James’s photo is used where the source suggests his explanation video; an exact video about the connection between the businesses remains to be chosen.\n\nOriginal media suggestions:\nMEDIA 1: Hero photo: the actual Creator Studios interior, with recognizable brand details.\n\nMEDIA 2: Photo pair: an approved on-location Photografik production and an actual in-studio recording.\n\nMEDIA 3: Video: James explaining the connection between the businesses in his own words.\n\nMEDIA 4: Gallery: actual setups for a podcast, a single-person educational video, and a testimonial interview.",
+  "editorialNotes": "Imported article 15 of 15 from the supplied article collection. Original source byline: By James Calandrino | Photografik Studios. Website byline follows the existing Photografik Studios setting.\n\nImage selection notes:\nAll images show actual location/studio work, James or the actual testimonial. James’s photo is used where the source suggests his explanation video; an exact video about the connection between the businesses remains to be chosen.\n\nOriginal media suggestions:\nMEDIA 1: Hero photo: the actual Creator Studios interior, with recognizable brand details.\n\nMEDIA 2: Photo pair: an approved on-location Photografik Studios production and an actual in-studio recording.\n\nMEDIA 3: Video: James explaining the connection between the businesses in his own words.\n\nMEDIA 4: Gallery: actual setups for a podcast, a single-person educational video, and a testimonial interview.",
   "featured": false,
   "relatedService": "/creator-studios",
   "cta": {
@@ -16,8 +16,8 @@
     "href": "/creator-studios",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Why We Created Creator Studios | Photografik",
-  "seoDescription": "See how Photografik’s location and project media connects with Creator Studios’ interviews, educational videos and client conversations.",
+  "seoTitle": "Why We Created Creator Studios | Photografik Studios",
+  "seoDescription": "See how Photografik Studios’ location and project media connects with Creator Studios’ interviews, educational videos and client conversations.",
   "slug": "why-we-created-creator-studios-making-room-for-the-people-behind-the-business",
   "sources": [
     "1-Photografik_Studios_15_Blog_Articles.docx",
@@ -100,7 +100,7 @@ You don't need to book both.
 
 ![Speaker talking to camera from a white sofa, with a microphone on a boom arm](/v/cs-ph-solo-couch.webp)
 
-![Jack Richardson speaking during his recorded Photografik testimonial](/v/testimonial-jack-richardson.webp)
+![Jack Richardson speaking during his recorded Photografik Studios testimonial](/v/testimonial-jack-richardson.webp)
 
 ## Start with the conversation you already know how to have
 

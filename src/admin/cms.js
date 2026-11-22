@@ -1,5 +1,5 @@
 /* global CMS, h, createClass */
-// Site dashboard setup: site styles in the preview pane, a block for Photografik library media, and previews that
+// Site dashboard setup: site styles in the preview pane, a block for Photografik Studios library media, and previews that
 // follow the live article and project templates closely enough to proofread (the real check is the Vercel preview).
 (function () {
   var config = window.PHOTOGRAFIK_CMS_CONFIG;
@@ -18,7 +18,7 @@
 
   CMS.registerEditorComponent({
     id: 'libraryMedia',
-    label: 'Photografik library photo or film',
+    label: 'Photografik Studios library photo or film',
     fields: [{ name: 'id', label: 'Library item', widget: 'select', options: library }],
     pattern: /^::media\[([a-z0-9-]+)\]$/m,
     fromBlock: function (m) { return { id: m[1] }; },

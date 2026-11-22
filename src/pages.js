@@ -380,7 +380,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
     const catsUsed = fn.categories.filter((c) => fnPublished.some((a) => a.category === c.id));
     const filters = catsUsed.length >= 2;
     pages['/field-notes'] = {
-      seo: { title: 'Field Notes | Practical answers before the shoot | Photografik', description: 'Short guides on what to book, how to prepare, where the finished media will be used and what is worth adding, from the Photografik Studios team.' },
+      seo: { title: 'Field Notes | Practical answers before the shoot | Photografik Studios', description: 'Short guides on what to book, how to prepare, where the finished media will be used and what is worth adding, from the Photografik Studios team.' },
       overlay: true,
       scripts: filters ? ['field-notes.js'] : undefined,
       body: `${(() => {
@@ -429,7 +429,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
     const related = fnPublished.filter((x) => x.slug !== a.slug && x.category === a.category).slice(0, 2);
     const draft = !a.published;
     pages[`/field-notes/${a.slug}`] = {
-      seo: { title: a.seo?.title || `${a.title} | Photografik`, description: a.seo?.description || a.summary, image: social },
+      seo: { title: a.seo?.title || `${a.title} | Photografik Studios`, description: a.seo?.description || a.summary, image: social },
       ogType: 'article',
       articleDates: { published: a.datePublished, modified: a.dateModified || a.datePublished },
       jsonLd: [
@@ -1441,7 +1441,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
     const goal = isCom ? (p.blurbApproved && p.goal ? esc(p.goal) : blurb(p.goal, 'Project goal')) : '';
     const desc = p.summary || `${p.client || p.title}: ${catLabel[p.category].toLowerCase()} by Photografik Studios.`;
     pages[projectPath(p)] = {
-      seo: { title: `${p.title} | ${catLabel[p.category]} | Photografik`, description: desc, image: p.hero || rep?.poster || rep?.src },
+      seo: { title: `${p.title} | ${catLabel[p.category]} | Photografik Studios`, description: desc, image: p.hero || rep?.poster || rep?.src },
       scripts: projectPhotos.length ? ['project-gallery.js'] : [],
       body: `
 <article class="project${isCom ? ' project--commercial' : ''}"${photoLightbox ? ' data-project-lightbox' : ''}>
@@ -1527,7 +1527,7 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
 <section class="section" aria-labelledby="about-james-h">
   <div class="wrap two-col two-col--top">
     <div>
-      <p class="eyebrow">The people behind Photografik</p>
+      <p class="eyebrow">The people behind Photografik Studios</p>
       <h2 class="h2 reveal" id="about-james-h">Led by James Calandrino.</h2>
       <p>James brings his experience in real estate and business marketing to the creative direction at Photografik Studios. He works with clients to understand what they want to be known for, who they want to reach and how to communicate it.</p>
       <p>Our team brings that plan into the photography, filming, editing and client experience. From the first conversation through delivery, the work is guided by the same goal: help your audience understand what you do, why it matters and who they would be working with.</p>
@@ -1558,14 +1558,14 @@ ${aboutReviews}
 <section class="section about-details" aria-label="Service area and usage">
   <div class="wrap two-col two-col--top">
     <div><h2 class="eyebrow">Where we work</h2><p>${esc(site.serviceArea)}</p></div>
-    <div data-page-copy-locked><h2 class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</h2><p>Photografik keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p></div>
+    <div data-page-copy-locked><h2 class="eyebrow">Usage and licensing ${ctx.legal?.ready ? '' : needsApproval({ approval: 'pending' }, 'Public licensing language requires legal review')}</h2><p>Photografik Studios keeps the copyright in the media we create. Each client receives a license for the agreed use. If you want to share the work with someone else, ask us first and we will make it simple.${ctx.legal && (ctx.legal.ready || reviewMode) ? ' <a href="/licensing">Licensing &amp; Usage Rights Policy</a>' : ''}</p></div>
   </div>
 </section>
 ${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('about', 'closing'))?.src, undefined, false, pmv('about', 'closing')?.alt, pmv('about', 'closing'))}`,
   };
 
   // ---------- LEGAL: /terms and /licensing ----------
-  // Text comes only from Photografik_Studios_Website_Terms_and_Licensing.docx (content/legal.json). Photografik's
+  // Text comes only from Photografik_Studios_Website_Terms_and_Licensing.docx (content/legal.json). Photografik Studios’
   // general policies come first; Creator Studios provisions follow as a labelled supplement of the same document.
   const legal = ctx.legal;
   if (legal && (legal.ready || reviewMode)) {
@@ -1667,11 +1667,11 @@ ${splitCta('Let’s talk about <em>who you want to reach.</em>', pmStill(pmv('ab
       </div>
       <p class="form__error" id="form-error" role="alert" hidden></p>
       <button class="btn btn--solid" type="submit">Send Project Brief</button>
-      <p class="small muted">A member of the Photografik team will review the brief and follow up about scope, timing and next steps. We use these details only for that. Prefer email? Write to <a href="mailto:${site.email}">${site.email}</a> or call <a href="${site.phoneHref}">${site.phone}</a>.</p>
+      <p class="small muted">A member of the Photografik Studios team will review the brief and follow up about scope, timing and next steps. We use these details only for that. Prefer email? Write to <a href="mailto:${site.email}">${site.email}</a> or call <a href="${site.phoneHref}">${site.phone}</a>.</p>
     </form>
     <div class="form-done" id="form-done" hidden tabindex="-1">
       <h2 class="h2">Thank you. We have your details.</h2>
-      <p>A member of the Photografik team will review the brief and follow up about scope, timing and next steps.</p>
+      <p>A member of the Photografik Studios team will review the brief and follow up about scope, timing and next steps.</p>
     </div>
     <div class="form-done" id="form-fallback" hidden tabindex="-1">
       <h2 class="h2">Your brief has not been sent yet.</h2>

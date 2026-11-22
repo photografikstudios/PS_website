@@ -16,7 +16,7 @@
     "href": "/commercial",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "One Commercial Shoot, Multiple Useful Stories | Photografik",
+  "seoTitle": "One Commercial Shoot, Multiple Useful Stories | Photografik Studios",
   "seoDescription": "Plan setting, detail, product and people stories before a commercial shoot, with each finished piece assigned a clear use.",
   "slug": "one-shoot-multiple-stories-getting-more-value-from-commercial-content",
   "sources": [

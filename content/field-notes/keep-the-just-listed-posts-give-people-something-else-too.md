@@ -16,7 +16,7 @@
     "href": "/agent-content",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Content Ideas Beyond Just-Listed Posts | Photografik",
+  "seoTitle": "Content Ideas Beyond Just-Listed Posts | Photografik Studios",
   "seoDescription": "Keep listing announcements and add useful answers, process explanations, property stories and local context between transactions.",
   "slug": "keep-the-just-listed-posts-give-people-something-else-too",
   "sources": [

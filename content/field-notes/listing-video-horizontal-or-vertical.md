@@ -13,14 +13,14 @@
     "href": "/real-estate#compare"
   },
   "relatedService": "/real-estate#compare",
-  "seoTitle": "Horizontal film or vertical reel for a listing? | Photografik",
-  "seoDescription": "When a listing needs horizontal film, a vertical reel or both, where each plays, and which Photografik packages include them.",
+  "seoTitle": "Horizontal film or vertical reel for a listing? | Photografik Studios",
+  "seoDescription": "When a listing needs horizontal film, a vertical reel or both, where each plays, and which Photografik Studios packages include them.",
   "approvedBy": "James, Sep 30 2026 (Wednesday implementation pass, item 7: the three Day 1 articles are approved for launch)",
   "legacyUrls": [
     "/articles/2026/2/12/your-listing-isnt-just-a-home-its-an-experience-are-you-showing-it"
   ],
   "sources": [
-    "Photografik Real Estate page copy (approved)",
+    "Photografik Studios Real Estate page copy (approved)",
     "HD Photo Hub package inclusions (read 2026-09-23)"
   ]
 }

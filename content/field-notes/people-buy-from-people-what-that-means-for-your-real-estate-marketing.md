@@ -16,7 +16,7 @@
     "href": "/agent-content",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "People Buy From People in Real Estate Marketing | Photografik",
+  "seoTitle": "People Buy From People in Real Estate Marketing | Photografik Studios",
   "seoDescription": "Make your expertise, personality and approach easier for future clients to recognize through useful answers, introductions and client stories.",
   "slug": "people-buy-from-people-what-that-means-for-your-real-estate-marketing",
   "sources": [

@@ -16,7 +16,7 @@
     "href": "/agent-content",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Real Estate Agents on Camera Without Acting | Photografik",
+  "seoTitle": "Real Estate Agents on Camera Without Acting | Photografik Studios",
   "seoDescription": "Use natural scripts, prompts, teleprompter support or an interview format to make on-camera content feel more like a real conversation.",
   "slug": "youre-a-real-estate-agent-not-an-actor-stop-trying-to-be-one",
   "sources": [

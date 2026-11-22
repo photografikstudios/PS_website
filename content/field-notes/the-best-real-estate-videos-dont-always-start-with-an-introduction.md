@@ -16,7 +16,7 @@
     "href": "/real-estate",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Better Openings for Real Estate Videos | Photografik",
+  "seoTitle": "Better Openings for Real Estate Videos | Photografik Studios",
   "seoDescription": "Lead a property video with a truthful feature, useful question or clear observation, then introduce the agent where it naturally fits.",
   "slug": "the-best-real-estate-videos-dont-always-start-with-an-introduction",
   "sources": [

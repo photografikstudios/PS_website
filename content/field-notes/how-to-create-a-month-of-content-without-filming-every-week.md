@@ -16,7 +16,7 @@
     "href": "/creator-studios",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Plan a Month of Content Without Weekly Filming | Photografik",
+  "seoTitle": "Plan a Month of Content Without Weekly Filming | Photografik Studios",
   "seoDescription": "Separate planning, recording and publishing so a focused content session supports a realistic calendar instead of a new shoot every week.",
   "slug": "how-to-create-a-month-of-content-without-filming-every-week",
   "sources": [

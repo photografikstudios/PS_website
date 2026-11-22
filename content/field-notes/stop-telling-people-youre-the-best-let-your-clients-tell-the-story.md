@@ -6,7 +6,7 @@
   "excerpt": "Create testimonial interviews around a client’s real experience, specific concerns and honest answers, with the original meaning kept intact.",
   "answer": "Create testimonial interviews around a client’s real experience, specific concerns and honest answers, with the original meaning kept intact.",
   "hero": "/v/testimonial-jack-richardson.webp",
-  "heroAlt": "Jack Richardson speaking during his recorded Photografik testimonial",
+  "heroAlt": "Jack Richardson speaking during his recorded Photografik Studios testimonial",
   "author": "Photografik Studios",
   "editorialNotes": "Imported article 6 of 15 from the supplied article collection. Original source byline: By James Calandrino | Photografik Studios. Website byline follows the existing Photografik Studios setting.\n\nImage selection notes:\nJack Richardson is the actual testimonial example. The later property photo is a general portfolio example and is not identified as Jack’s listing. The original media note asks for a verified excerpt/quote card; no new quote or outcome has been invented.\n\nOriginal media suggestions:\nMEDIA 1: Hero photo: a real client interview with documented permission.\n\nMEDIA 2: Video: a complete approved testimonial, followed by a short text summary that stays faithful to the actual interview.\n\nMEDIA 3: Photo or quote card: a verified verbatim excerpt and relevant project image, approved for this use.",
   "featured": false,
@@ -16,7 +16,7 @@
     "href": "/creator-studios",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Client Testimonial Stories That Build Trust | Photografik",
+  "seoTitle": "Client Testimonial Stories That Build Trust | Photografik Studios",
   "seoDescription": "Create testimonial interviews around a client’s real experience, specific concerns and honest answers, with the original meaning kept intact.",
   "slug": "stop-telling-people-youre-the-best-let-your-clients-tell-the-story",
   "sources": [

@@ -16,7 +16,7 @@
     "href": "/architecture-design",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Property Photography vs Designer Photography | Photografik",
+  "seoTitle": "Property Photography vs Designer Photography | Photografik Studios",
   "seoDescription": "Plan photography around its purpose: explaining a listing’s layout or showing the materials, compositions and decisions in design work.",
   "slug": "the-difference-between-photographing-a-property-and-photographing-a-designers-work",
   "sources": [

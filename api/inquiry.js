@@ -7,7 +7,7 @@ import { cleanVisit } from '../src/lib/guidance-core.js';
 import { INQUIRY_LIMITS, inquiryLengthErrors } from '../src/lib/inquiry-core.js';
 
 const TO = process.env.INQUIRY_TO || 'info@photografikstudios.com';
-const FROM = process.env.INQUIRY_FROM || 'Photografik Website <website@photografikstudios.com>';
+const FROM = process.env.INQUIRY_FROM || 'Photografik Studios Website <website@photografikstudios.com>';
 const clean = (v, n = 300) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, n);
 const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 

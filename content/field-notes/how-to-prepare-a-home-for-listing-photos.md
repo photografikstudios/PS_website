@@ -13,7 +13,7 @@
     "href": "/real-estate/pricing"
   },
   "relatedService": "/real-estate",
-  "seoTitle": "How to prepare a home for listing photos and video | Photografik",
+  "seoTitle": "Prepare a Home for Listing Photos & Video | Photografik Studios",
   "seoDescription": "A room-by-room checklist for listing photos: exterior, lighting and blinds, kitchen, bedrooms, bathrooms and pool, plus what changes for a twilight shoot.",
   "approvedBy": "James, Sep 30 2026 (Wednesday implementation pass, item 7: the three Day 1 articles are approved for launch)",
   "legacyUrls": [
@@ -21,7 +21,7 @@
     "/articles/so-now-are-we-doing-the-lights-off"
   ],
   "sources": [
-    "Photografik's original article, How to prep a home for photos (photografikstudios.com/articles/how-to-prep-a-home-for-photos), from Codex's source notes, HOME_PREP_SOURCE_NOTES.md, Sep 24 2026"
+    "Photografik Studios’ original article, How to prep a home for photos (photografikstudios.com/articles/how-to-prep-a-home-for-photos), from Codex's source notes, HOME_PREP_SOURCE_NOTES.md, Sep 24 2026"
   ]
 }
 ## The whole house

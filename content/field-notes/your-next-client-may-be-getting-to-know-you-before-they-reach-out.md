@@ -16,7 +16,7 @@
     "href": "/agent-content",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Help Prospects Get to Know You Before They Call | Photografik",
+  "seoTitle": "Help Prospects Get to Know You Before They Call | Photografik Studios",
   "seoDescription": "Answer early client questions and show what the first step looks like, so useful content supports the conversation before an inquiry.",
   "slug": "your-next-client-may-be-getting-to-know-you-before-they-reach-out",
   "sources": [
@@ -86,7 +86,7 @@ None of that proves one video caused a booking. It gives you better questions to
 
 And when someone does contact you, their actual questions are more useful than a guess about what an anonymous viewer might be thinking.
 
-![The existing Photografik Field Notes page with three published practical guides](/images/field-notes/field-notes-resource-page.webp)
+![The existing Photografik Studios Field Notes page with three published practical guides](/images/field-notes/field-notes-resource-page.webp)
 
 ## Make the next step easy, without pushing
 

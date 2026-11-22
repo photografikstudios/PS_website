@@ -16,7 +16,7 @@
     "href": "/contact",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Who Owns Your Real Estate Photos? | Photografik",
+  "seoTitle": "Who Owns Your Real Estate Photos? | Photografik Studios",
   "seoDescription": "Understand the distinction between receiving photo files, owning copyright and licensing media for agreed users and purposes.",
   "slug": "who-owns-your-real-estate-photos-and-who-can-use-them",
   "sources": [
@@ -40,7 +40,7 @@ This isn't about making a friendly request difficult. It's about making sure the
 
 Under U.S. copyright law, the photographer is generally the initial author and copyright owner. Work-made-for-hire arrangements and written transfers can change ownership. Paying for a commissioned shoot does not, by itself, mean the client receives the copyright. The [U.S. Copyright Office explains these distinctions](https://www.copyright.gov/engage/photographers/).
 
-For Photografik projects, our [published terms and conditions](/terms) distinguish company ownership from the client's usage license. The terms also explain that raw materials are not included unless separately purchased or licensed.
+For Photografik Studios projects, our [published terms and conditions](/terms) distinguish company ownership from the client's usage license. The terms also explain that raw materials are not included unless separately purchased or licensed.
 
 Your written project agreement matters. Read it alongside the applicable terms rather than assuming every photographer or every type of booking uses the same arrangement.
 
@@ -58,7 +58,7 @@ It helps to think of licensing as part of the brief, not something added after p
 
 Don't assume that someone else's license covers them.
 
-Photografik's published terms provide a limited, non-exclusive, non-transferable license for the agreed purpose after full payment. They also explain that third-party rights are not automatically included and that providing media to others requires written approval.
+Photografik Studios’ published terms provide a limited, non-exclusive, non-transferable license for the agreed purpose after full payment. They also explain that third-party rights are not automatically included and that providing media to others requires written approval.
 
 So when a builder or designer asks for images, introduce them to us and explain the proposed use. We can review the request and discuss the appropriate permission or separate license. That is much clearer than forwarding a download link and leaving everyone to guess.
 
@@ -84,7 +84,7 @@ Include the proposed platforms, the businesses using the media, and any publicat
 
 Don't worry about arriving with legal terminology. A clear description of what you want to do is a good starting point.
 
-![An empty Photografik project brief form showing the information requested before a shoot](/images/field-notes/project-brief-form.webp)
+![An empty Photografik Studios project brief form showing the information requested before a shoot](/images/field-notes/project-brief-form.webp)
 
 ## Keep the paperwork with the files
 

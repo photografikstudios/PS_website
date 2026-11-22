@@ -16,7 +16,7 @@
     "href": "/agent-content",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Let Your Personal Brand Work Beyond the Listing | Photografik",
+  "seoTitle": "Let Your Personal Brand Work Beyond the Listing | Photografik Studios",
   "seoDescription": "Plan listing media for the current property while giving future sellers a clearer picture of your preparation, judgment and approach.",
   "slug": "your-listing-will-sell-your-personal-brand-should-keep-working",
   "sources": [

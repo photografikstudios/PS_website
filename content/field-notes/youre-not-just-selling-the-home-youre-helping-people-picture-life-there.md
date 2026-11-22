@@ -16,7 +16,7 @@
     "href": "/real-estate",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "Help Buyers Picture Life in a Home | Photografik",
+  "seoTitle": "Help Buyers Picture Life in a Home | Photografik Studios",
   "seoDescription": "Show how a home’s spaces and setting work together, while keeping amenities, nearby places and historical details accurate.",
   "slug": "youre-not-just-selling-the-home-youre-helping-people-picture-life-there",
   "sources": [

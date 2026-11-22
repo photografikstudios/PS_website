@@ -16,7 +16,7 @@
     "href": "/real-estate",
     "lead": "Learn how we can help with the content you are planning."
   },
-  "seoTitle": "A Real Estate Video Is a Tease, Not a Tour | Photografik",
+  "seoTitle": "A Real Estate Video Is a Tease, Not a Tour | Photografik Studios",
   "seoDescription": "Use a listing film to create interest, with photography, floor plans and tours providing the detail buyers need for their next decision.",
   "slug": "your-real-estate-video-is-a-tease-not-a-tour",
   "sources": [
