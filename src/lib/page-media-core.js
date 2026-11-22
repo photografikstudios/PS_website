@@ -136,7 +136,13 @@ export const PAGES = [
   {
     file: 'agency-partnerships', route: '/agency-partnerships', label: 'Agency Partnerships',
     slots: [
-      S('hero', 'Top of the page: photo', 'photo', { alt: 'required' }),
+      S('hero', 'Top of the page: main studio photo', 'photo', { alt: 'required' }),
+      L('heroPhotos', 'Top of the page: supporting studio photos', 'photo', 0, 2),
+      S('modelClientFacing', 'Working model: Client-facing photo', 'still', OPTIONAL),
+      S('modelBehindScenes', 'Working model: Behind the scenes photo', 'still', OPTIONAL),
+      S('modelCollaborative', 'Working model: Collaborative photo', 'still', OPTIONAL),
+      S('modelWhiteLabel', 'Working model: White-label photo', 'still', OPTIONAL),
+      S('productionPhoto', 'Campaign content: studio or location photo', 'still', OPTIONAL),
       S('askFirstMedia', '“What we ask first”: optional photo or film', 'photoOrFilm', OPTIONAL),
     ],
   },

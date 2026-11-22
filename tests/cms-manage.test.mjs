@@ -74,7 +74,7 @@ test('Page Media: the committed choices pass, and each rule refuses what it shou
 
   assert.match(bad((x) => { x.home.hero = { media: 'ph-dan-dan' }; }), /no moving background/);
   assert.match(bad((x) => { x['real-estate'].coverageFilm = { media: 're-hamptons-beachfront' }; }), /screen reader/);
-  assert.match(bad((x) => { x['agency-partnerships'].hero = { src: x['agency-partnerships'].hero.src, alt: '' }; }), /describe the photo/);
+  assert.match(bad((x) => { x['agency-partnerships'].hero = { src: '/images/photografik-2027/curated/home-path-on-location.webp', alt: '' }; }), /describe the photo/);
   assert.match(bad((x) => { x['agent-content'].whyFilm = { media: 're-lloyd-harbor-front' }; }), /is a photo; this section needs a film/);
   assert.match(bad((x) => { x.commercial.featureFilm = { media: 'not-in-library' }; }), /not in the library/);
   assert.match(bad((x) => { x.home.extra = { media: 'ph-dan-dan' }; }), /not a section of this page/);

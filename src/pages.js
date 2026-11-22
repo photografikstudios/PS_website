@@ -1154,40 +1154,86 @@ ${bleedCta({ title: 'Tell us what you need to make.', text: 'A short call is the
   };
 
   // ---------- AGENCY ----------
+  const agencyImage = (key, cls = '', layout = 'card', sizes = '(min-width: 1000px) 25vw, (min-width: 600px) 50vw, 100vw') => pmFig(pmv('agency-partnerships', key), { cls, layout, sizes });
+  const agencyHero = heroText('/agency-partnerships');
+  const agencyHeroPhotos = pmList('agency-partnerships', 'heroPhotos');
   pages['/agency-partnerships'] = {
-    overlay: true,
-    body: `${pageHero({
-      ...heroText('/agency-partnerships'),
-      cta: `<a class="btn btn--solid" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_hero">Send an Agency Brief</a>`,
-      image: pmStill(pmv('agency-partnerships', 'hero'))?.src, imageAlt: pmv('agency-partnerships', 'hero')?.alt || pmStill(pmv('agency-partnerships', 'hero'))?.alt || '', item: pmv('agency-partnerships', 'hero'),
-    })}
-<section class="section">
-  <div class="wrap">
-    <p class="eyebrow">Ways to work together</p>
-    <h2 class="h2 reveal">Pick the model that fits the client.</h2>
-    <div class="features features--4">
-      <div class="feature reveal"><h3 class="h3">Client-facing</h3><p>We work directly with your client on set, under your creative lead.</p></div>
-      <div class="feature reveal"><h3 class="h3">Behind the scenes</h3><p>You own the relationship. We handle production and hand over the files.</p></div>
-      <div class="feature reveal"><h3 class="h3">Collaborative</h3><p>We contribute concepts, scripting and direction alongside your team.</p></div>
-      <div class="feature reveal"><h3 class="h3">White-label</h3><p>Delivered under your brand, with confidentiality agreed in writing.</p></div>
+    overlay: false,
+    body: `
+<section class="partner-hero" id="top" aria-labelledby="partner-hero-h">
+  <div class="wrap partner-hero__grid">
+    <div class="partner-hero__copy">
+      <p class="eyebrow">${esc(agencyHero.eyebrow)}</p>
+      <h1 class="display" id="partner-hero-h">${agencyHero.title}</h1>
+      <p class="lede">${esc(agencyHero.lede)}</p>
+      <p>Keep the client relationship and creative lead. We handle the agreed production, so your team can focus on the campaign.</p>
+      <div class="actions"><a class="btn btn--rust" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_hero">Talk through a client project</a><a class="link-arrow" href="/creator-studios">Explore the studio ${arrow}</a></div>
+    </div>
+    <div class="partner-hero__photos partner-hero__photos--${agencyHeroPhotos.length}" role="group" aria-label="Recording and production at LI Creator Studios">
+      ${agencyImage('hero', 'partner-hero__main', 'inset', '(min-width: 1000px) 30vw, 100vw')}
+      ${join(agencyHeroPhotos, (it) => pmFig(it, { cls: 'partner-hero__detail', layout: 'inset', sizes: '(min-width: 1000px) 20vw, 50vw' }))}
     </div>
   </div>
 </section>
-<section class="section section--tint" id="agency-ask">
-  <div class="wrap narrow">
-    <p class="eyebrow">What we ask first</p>
-    <h2 class="h2 reveal">So we can quote accurately.</h2>
-    <ul class="checks checks--cols">
-      <li>Locations, dates and geography</li><li>Deliverables and channels</li><li>Crew and studio needs</li><li>Post-production scope</li><li>Approval chain and review rounds</li><li>Usage and licensing</li><li>Client-facing or white-label</li>
-    </ul>
-    <p class="aside-line">Every agency engagement is scoped individually. We do not publish a one-size retainer.</p>${pmExtra(pmv('agency-partnerships', 'askFirstMedia'))}
+<section class="section partner-section" id="agency-support" aria-labelledby="agency-support-h">
+  <div class="wrap">
+    <div class="partner-section__head">
+      <p class="eyebrow">What we take off your plate</p>
+      <h2 class="h2" id="agency-support-h">Keep your team focused <em>on the client.</em></h2>
+      <p class="lede">An approved idea still needs a shoot plan, equipment, people on set and time in the edit. We bring those pieces together around your brief.</p>
+    </div>
+    <div class="partner-benefits">
+      <div><span class="partner-number" aria-hidden="true">01</span><h3 class="h3">Production coordination</h3><p>One contact to work through the shoot plan, studio or location needs, speakers and deliverables with your account team.</p></div>
+      <div><span class="partner-number" aria-hidden="true">02</span><h3 class="h3">A studio and crew</h3><p>Sets, cameras, lighting, microphones and people to run them. Your team can concentrate on the message and the client experience.</p></div>
+      <div><span class="partner-number" aria-hidden="true">03</span><h3 class="h3">Support on camera</h3><p>Help with interview questions, prompting and pacing, so your clients can explain their expertise in their own words.</p></div>
+      <div><span class="partner-number" aria-hidden="true">04</span><h3 class="h3">Editing for the intended use</h3><p>Full conversations, shorter edits, captions and platform formats, with the required versions and review rounds agreed in the brief.</p></div>
+    </div>
   </div>
 </section>
-<section class="section section--brand on-dark">
-  <div class="wrap cta-band">
-    <h2 class="h2 reveal">Bring us your next brief.</h2>
-    <a class="btn btn--gold" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_final">Send an Agency Brief</a>
+<section class="section section--tint partner-section" id="agency-models" aria-labelledby="agency-models-h">
+  <div class="wrap">
+    <div class="partner-section__head"><p class="eyebrow">Ways to work together</p><h2 class="h2" id="agency-models-h">Choose our role <em>in your team.</em></h2><p class="lede">Choose how we work with your agency and your client, from a visible production partner to a team working under your brand.</p></div>
+    <div class="features features--4 partner-models">
+      <div class="feature">${agencyImage('modelClientFacing')}<h3 class="h3">Client-facing</h3><p>Introduce us as your production partner. We support your client on set and coordinate the shoot with your account team, under your creative lead.</p></div>
+      <div class="feature">${agencyImage('modelBehindScenes')}<h3 class="h3">Behind the scenes</h3><p>You lead client communication. Send us the approved brief and direction; we handle the agreed production and editing, then hand the work back to your team.</p></div>
+      <div class="feature">${agencyImage('modelCollaborative')}<h3 class="h3">Collaborative</h3><p>Bring us in while the idea is taking shape. We help develop interview questions, scripts and coverage with your strategists, then plan how to make it.</p></div>
+      <div class="feature">${agencyImage('modelWhiteLabel')}<h3 class="h3">White-label</h3><p>Use our studio, crew and post-production within your agency’s service. Branding, client contact, file handoff and confidentiality are agreed before production.</p></div>
+    </div>
   </div>
+</section>
+<section class="section partner-section" id="agency-output" aria-labelledby="agency-output-h">
+  <div class="wrap partner-output">
+    <div class="partner-output__image">${agencyImage('productionPhoto', '', 'card', '(min-width: 900px) 45vw, 100vw')}<p class="small">Record at LI Creator Studios in Bohemia, or plan a production on location.</p><a class="link-arrow" href="/creator-studios">See the studio and session options ${arrow}</a></div>
+    <div>
+      <p class="eyebrow">Built around the campaign</p><h2 class="h2" id="agency-output-h">Make content your team <em>can put to work.</em></h2>
+      <ul class="partner-deliverables">
+        <li><h3 class="h3">Podcasts and expert interviews</h3><p>Conversations that let clients explain what they know, with full episodes and shorter cuts scoped around the channels you manage.</p></li>
+        <li><h3 class="h3">Campaign and social content</h3><p>Educational pieces, executive messages, product demonstrations and client stories, planned around the audience and the next step you want them to take.</p></li>
+        <li><h3 class="h3">People, spaces and testimonials</h3><p>Photography and film that show who is behind the business, how the work happens and what customers have to say.</p></li>
+      </ul>
+      <p class="small">Choose the deliverables you need. We set out the production, editing and usage in a written scope before the shoot.</p>
+    </div>
+  </div>
+</section>
+<section class="section section--tint partner-section" id="agency-process" aria-labelledby="agency-process-h">
+  <div class="wrap">
+    <div class="partner-section__head"><p class="eyebrow">From brief to handoff</p><h2 class="h2" id="agency-process-h">A clear plan, <em>then the production.</em></h2></div>
+    <ol class="partner-process">
+      <li><span class="partner-number" aria-hidden="true">01 / Brief</span><h3 class="h3">Share the client’s goal.</h3><p>The audience, the message, where the content will appear and the dates you are working toward. Tell us what your team already has covered.</p></li>
+      <li><span class="partner-number" aria-hidden="true">02 / Plan</span><h3 class="h3">Agree who handles what.</h3><p>We recommend the production setup and confirm the working model, deliverables, estimate, review rounds and approval contact.</p></li>
+      <li><span class="partner-number" aria-hidden="true">03 / Produce</span><h3 class="h3">Create, review and hand over.</h3><p>We handle the agreed shoot and post-production, coordinate feedback and deliver the formats your team needs for the campaign.</p></li>
+    </ol>
+    <p class="aside-line">Start with one client project, or build a recurring studio and content schedule around your agency’s calendar.</p>
+  </div>
+</section>
+<section class="section partner-section" id="agency-ask" aria-labelledby="agency-ask-h">
+  <div class="wrap partner-brief">
+    <div><p class="eyebrow">What we ask first</p><h2 class="h2" id="agency-ask-h">Tell us what your client <em>needs next.</em></h2><p>A working brief is enough to start the conversation. We will help identify the production details that still need a decision.</p></div>
+    <div><ul class="checks"><li>The audience and campaign goal</li><li>Deliverables and channels</li><li>Studio or location, dates and geography</li><li>Speakers, crew and post-production needs</li><li>Your preferred working model</li><li>Approval contact, review rounds and timing</li><li>Usage, licensing and budget</li></ul><p class="small">Every agency engagement is scoped individually.</p>${pmExtra(pmv('agency-partnerships', 'askFirstMedia'))}</div>
+  </div>
+</section>
+<section class="section section--brand on-dark partner-section" id="agency-next" aria-labelledby="agency-next-h">
+  <div class="wrap partner-next"><div><p class="eyebrow">Your next client project</p><h2 class="h2" id="agency-next-h">Bring us into <em>the production.</em></h2><p>Tell us what you are making, who it is for and where your team could use support.</p></div><a class="btn btn--gold" href="/contact?type=agency" data-track="partnership_click" data-track-location="agency_final">Talk through a client project</a></div>
 </section>`,
   };
 

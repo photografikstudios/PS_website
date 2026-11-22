@@ -1948,7 +1948,8 @@ await check('copy pass: no generic marketing phrases, intent CTAs, contact makes
   const home = await (await fetch(base + '/')).text();
   for (const t of ['Different briefs.', 'Explore Real Estate', 'Explore Creator Studios', 'Price a Listing', 'Send a Project Brief', 'Choose a package, then adjust the coverage']) assert(home.includes(t), 'Home: ' + t);
   const ag = await (await fetch(base + '/agency-partnerships')).text();
-  assert(/Add production capacity/.test(ag) && (ag.match(/Send an Agency Brief/g) || []).length >= 2 && /Client-facing[\s\S]*Behind the scenes[\s\S]*Collaborative[\s\S]*White-label/.test(ag), 'Agency hero, CTAs and four models');
+  assert(/Your creative direction/.test(ag) && /LI Creator Studios/.test(ag) && (ag.match(/Talk through a client project/g) || []).length >= 2 && /Client-facing[\s\S]*Behind the scenes[\s\S]*Collaborative[\s\S]*White-label/.test(ag), 'Agency studio positioning, CTAs and four models');
+  assert((ag.match(/class="block-fig partner-hero__/g) || []).length === 3 && (ag.match(/data-page-media="agency-partnerships.model/g) || []).length === 4, 'studio photos in hero and all four working models');
   const ct = await (await fetch(base + '/contact')).text();
   assert(/Send Project Brief/.test(ct) && /What do you need, and where will it be used\?/.test(ct) && /has not been sent yet/.test(ct), 'Contact submit, intake question, unsent state');
   const js = await (await fetch(base + '/assets/contact.js')).text(); assert(/'Send Project Brief'/.test(js) && !/Send inquiry/.test(js), 'contact.js resets to Send Project Brief');
