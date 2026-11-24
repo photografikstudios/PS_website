@@ -84,16 +84,19 @@ if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: 
 
 // ---------- Inline video ----------
 // Card thumbnails can fall back to the full approved still. A missing thumbnail must not hide the media action.
-document.addEventListener('error', (e) => {
-  const image = e.target;
+function recoverImage(image) {
   if (!(image instanceof HTMLImageElement) || !image.hasAttribute('data-fallback-src')) return;
+  // An earlier request can fail before this module loads, or its error can arrive while the original is loading.
+  if (!image.complete || image.naturalWidth > 0) return;
   const fallback = image.dataset.fallbackSrc;
   if (!image.dataset.fallbackTried && fallback && new URL(fallback, location.href).href !== image.src) {
     image.dataset.fallbackTried = '1'; image.removeAttribute('srcset'); image.src = fallback;
   } else {
     image.style.visibility = 'hidden'; image.parentElement.classList.add('media-fallback');
   }
-}, true);
+}
+document.addEventListener('error', (e) => recoverImage(e.target), true);
+document.querySelectorAll('img[data-fallback-src]').forEach(recoverImage);
 
 // Network failures keep the poster and offer an explicit retry instead of leaving a blank player.
 function videoRecovery(v) {
