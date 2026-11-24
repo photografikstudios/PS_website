@@ -24,24 +24,26 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {}, ima
   const isLocal = (p) => typeof p === 'string' && (p.startsWith('/v/') || p.startsWith('/images/library/'));
   const mediaUrl = (p) => (!p ? '' : /^https?:/.test(p) || isLocal(p) ? p : site.media.base + p);
 
-  // Vercel Image Optimization for remote sources. Locally we fall back to the original URL.
-  const WIDTHS = [480, 768, 1080, 1600, 2200];
+  // Resize both library and other photographs for the actual display. Originals stay available to viewers.
+  // A local build uses committed originals; Vercel negotiates AVIF/WebP and caches the resized responses.
+  const WIDTHS = [320, 480, 640, 768, 1080, 1600, 2200];
   const optimized = (p, w, q = 75) => {
     const u = mediaUrl(p);
-    if (!onVercel || isLocal(p)) return u;
+    if (!onVercel) return u;
     return `/_vercel/image?url=${encodeURIComponent(u)}&w=${w}&q=${q}`;
   };
-  const srcset = (p, widths = WIDTHS) => (onVercel && !isLocal(p) ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
+  const srcset = (p, widths = WIDTHS) => (onVercel ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
 
   const imageDimensions = (p) => { const d = imageInfo(p); return d ? attrs({ width: d.width, height: d.height }) : ''; };
 
-  function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height, thumb, focal } = {}) {
+  function img(p, { alt = '', sizes = '100vw', cls = '', eager = false, widths, width, height, thumb, focal, fallback } = {}) {
     // Build-encoded stills ship a smaller copy; use actual widths, including portrait photos.
-    const local = isLocal(p) && thumb;
+    const local = !onVercel && isLocal(p) && thumb;
     const size = imageInfo(p);
     width ??= size?.width; height ??= size?.height;
     return `<img ${attrs({
-      src: local ? thumb : optimized(p, 1080), srcset: local ? `${thumb} ${imageInfo(thumb)?.width || 900}w, ${p} ${size?.width || 2000}w` : srcset(p, widths), sizes: local || (onVercel && !isLocal(p)) ? sizes : null, alt,
+      src: local ? thumb : optimized(p, 1080), srcset: local ? `${thumb} ${imageInfo(thumb)?.width || 900}w, ${p} ${size?.width || 2000}w` : srcset(p, widths), sizes: local || onVercel ? sizes : null, alt,
+      'data-fallback-src': fallback || (onVercel ? mediaUrl(p) : null),
       class: cls || null, loading: eager ? 'eager' : 'lazy', decoding: 'async',
       fetchpriority: eager ? 'high' : null, width, height, style: focalPosition(focal) ? `object-position: ${focalPosition(focal)}` : null,
     })}>`;
@@ -56,12 +58,12 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {}, ima
 
   /** Inline video player: poster + start button, then native controls inside the frame. No dialog. */
   function videoPlayer(m, { sizes = '(min-width: 900px) 30vw, 90vw', eagerPoster = false } = {}) {
-    const posterSrc = m.poster ? optimized(m.poster, 1080) : null;
+    const posterSrc = m.poster ? optimized(m.poster, 768) : null;
     const durationLabel = m.duration ? `${Math.floor(m.duration / 60)}:${String(m.duration % 60).padStart(2, '0')}` : '';
     const label = `Play ${m.title}${durationLabel ? `, ${durationLabel} (${m.duration} seconds)` : ''}`;
     const src = mediaUrl(m.src) + (m.poster ? '' : `#t=${m.posterTime ?? 0.5}`);
     return `<div class="vplayer vplayer--${esc(m.orientation)}" data-video data-id="${esc(m.id)}" data-title="${esc(m.title)}">
-  <video ${attrs({ src, poster: posterSrc, playsinline: true, preload: 'none', 'aria-label': m.title, 'webkit-playsinline': true })}>
+  <video ${attrs({ src, poster: eagerPoster ? posterSrc : null, 'data-video-poster': !eagerPoster ? posterSrc : null, playsinline: true, preload: 'none', 'aria-label': m.title, 'webkit-playsinline': true })}>
     ${m.captions && m.captions !== 'burned-in' ? `<track kind="captions" srclang="en" label="English" src="${esc(mediaUrl(m.captions))}"${m.openCaptions ? '' : ' default'}>` : ''}
   </video>
   ${!m.poster ? `<div class="vplayer__frame" aria-hidden="true"></div>` : ''}

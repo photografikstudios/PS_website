@@ -137,6 +137,7 @@ addEventListener('scroll', () => {
 
 function loadSource(player) {
   const v = player.querySelector('video');
+  if (v.dataset.videoPoster && !v.poster) v.poster = v.dataset.videoPoster;
   if (v.preload === 'none') {
     v.addEventListener('loadeddata', () => player.classList.add('has-frame'), { once: true });
     v.preload = 'metadata';
@@ -187,13 +188,17 @@ export function initVideos(root = document) {
     v.addEventListener('ended', () => track('video_complete', { video: player.dataset.id }));
   });
 
-  if (!('IntersectionObserver' in window)) return;
+  if (!('IntersectionObserver' in window)) {
+    root.querySelectorAll('[data-video] video[data-video-poster]').forEach((v) => { v.poster = v.dataset.videoPoster; });
+    return;
+  }
   // Lazy-load a frame when a no-poster video approaches the viewport.
   const near = new IntersectionObserver((entries) => {
     for (const e of entries) {
       if (!e.isIntersecting) continue;
       const v = e.target.querySelector('video');
-      if (!v.poster) loadSource(e.target);
+      if (v.dataset.videoPoster) v.poster = v.dataset.videoPoster;
+      else if (!v.poster) loadSource(e.target);
       near.unobserve(e.target);
     }
   }, { rootMargin: '300px 0px' });

@@ -470,10 +470,22 @@ test('Oct 19 client media: 180 source photos, canonical reuse, usable thumbnails
     const a = imageSize(full), b = imageSize(small);
     assert.ok(Math.max(a.width, a.height) <= 2500); assert.ok(Math.max(b.width, b.height) <= 900);
     assert.ok(b.width < a.width && b.height < a.height);
-    const ctx = createContext({ site, reviewMode: true, onVercel: true, imageInfo: u => u === m.src ? a : u === m.thumb ? b : null });
+    const imageInfo = u => u === m.src ? a : u === m.thumb ? b : null;
+    const ctx = createContext({ site, reviewMode: true, onVercel: false, imageInfo });
     const html = ctx.img(m.src, { thumb: m.thumb });
     assert.ok(html.includes(`${m.thumb} ${b.width}w, ${m.src} ${a.width}w`));
     assert.ok(!html.includes('/_vercel/image'));
+    const deployed = createContext({ site, reviewMode: true, onVercel: true, imageInfo }).img(m.src, { thumb: m.thumb });
+    const allowed = (await read('vercel.json')).images.sizes;
+    for (const candidate of deployed.match(/srcset="([^"]+)"/)[1].split(', ')) {
+      const [, url, width] = candidate.match(/^(.*) (\d+)w$/);
+      const request = new URL(url.replaceAll('&amp;', '&'), 'https://example.test');
+      assert.equal(request.pathname, '/_vercel/image');
+      assert.equal(request.searchParams.get('url'), m.src, 'resize the original, never an optimizer URL');
+      assert.equal(Number(request.searchParams.get('w')), Number(width));
+      assert.ok(allowed.includes(Number(width)), 'every declared size can be served');
+    }
+    assert.ok(deployed.includes(`data-fallback-src="${m.src}"`), 'original remains available if resizing fails');
   }
   assert.equal(pack.videos.filter(v => v.action === 'imported').length, 10);
   assert.equal(pack.videos.filter(v => v.action === 'reused existing film').length, 1);

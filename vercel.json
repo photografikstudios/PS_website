@@ -8,7 +8,9 @@
   "trailingSlash": false,
   "images": {
     "sizes": [
+      320,
       480,
+      640,
       768,
       1080,
       1600,

@@ -155,8 +155,11 @@ export function buildPages(ctx) {
   // the full 1280px poster. Oct 13 2026: on phones the full posters cost ~0.7 MB for Home's six default film cards, and the
   // Beachfront card's lazy poster (same file as the desktop hero still) sometimes arrived before load.
   const posterFull = (m) => (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080));
-  const cardPoster = (m) => { const p = `/images/posters-sm/${m.asset || m.id}.webp`; return existsSync(fileURLToPath(new URL(`../static${p}`, import.meta.url))) ? p : posterFull(m); };
-  const galThumb = (m) => (m.type === 'video' ? cardPoster(m) : (m.thumb || ctx.optimized(m.src, 1080)));
+  const cardPoster = (m) => { const p = `/images/posters-sm/${m.asset || m.id}.webp`; return existsSync(fileURLToPath(new URL(`../static${p}`, import.meta.url))) ? p : m.poster; };
+  const galleryImage = (m, sizes, alt, focus = focalAttr(m.focal)) => img(
+    m.type === 'video' ? cardPoster(m) : (m.thumb || m.src),
+    { alt, sizes, fallback: m.type === 'video' ? m.poster : m.src },
+  ).replace(/>$/, `${focus}>`);
   const galFull = (m) => (m.type === 'video' ? ctx.mediaUrl(m.src) : ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
   const galleryItem = (m) => ({
     id: m.id, title: m.title, sub: [m.client, m.location].filter(Boolean).join(' · '), src: galFull(m),
@@ -289,7 +292,7 @@ export function buildPages(ctx) {
     </div>
     <div class="showcase__grid" id="sw-grid">
       ${join(showcase, (m, i) => `<button type="button" class="sw-card" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" data-category="${esc(m.category)}" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}"${!homeInitial.has(m.id) ? ' hidden' : ''}>
-        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="" loading="lazy" decoding="async"${showcaseFocus(m)}>
+        ${galleryImage(m, '(min-width: 1100px) 18vw, (min-width: 701px) 30vw, 45vw', '', showcaseFocus(m))}
         ${m.type === 'video' ? playIcon : ''}
       </button>`)}
     </div>
@@ -558,7 +561,7 @@ ${splitCta(undefined, pmStill(pmv('home', 'closing'))?.src, undefined, true, pmv
   const typeCounts = optionCounts(reFacts, { pkg: '' }, 'type', TYPE_FILTERS.map((t) => t.id));
   const reCard = (m, i) => `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${m.type === 'video' ? 'video' : 'image'}" style="--photo-ratio:${m.width || 9}/${m.height || 16}"${i >= reBatch ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${m.type === 'video' ? 'Play' : 'View'} ${esc(m.title)}">
-        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="${m.type === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
+        ${galleryImage(m, '(min-width: 1001px) 30vw, (min-width: 621px) 45vw, 90vw', m.type === 'video' ? '' : (m.alt || m.title))}
         ${m.type === 'video' ? playIcon : ''}
       </button>
     </article>`;
@@ -927,7 +930,7 @@ ${agentMonthly.length ? `<section class="section section--tint">
     const kind = m.type === 'video' ? 'video' : 'image';
     return `<article class="gcard gcard--${m.orientation}" data-i="${i}" data-kind="${kind}" style="--photo-ratio:${m.width || 9}/${m.height || 16}" data-media="${esc(m.id)}"${pr ? ` data-project="${esc(pr.slug)}"` : ''}${i >= 6 ? ' hidden' : ''}>
       <button type="button" class="gcard__open" aria-label="${kind === 'video' ? 'Play' : 'View'} ${esc(pr ? (pr.client || pr.title) : m.title)}">
-        <img ${ctx.imageDimensions(galThumb(m))} data-fallback-src="${esc(m.type === 'video' ? posterFull(m) : m.src)}" src="${esc(galThumb(m))}" alt="${kind === 'video' ? '' : esc(m.alt || m.title)}" loading="lazy" decoding="async"${focalAttr(m.focal)}>
+        ${galleryImage(m, '(min-width: 1001px) 30vw, 45vw', kind === 'video' ? '' : (m.alt || m.title))}
         ${kind === 'video' ? playIcon : ''}
       </button>
     </article>`;
