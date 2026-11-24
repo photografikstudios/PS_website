@@ -484,6 +484,7 @@ test('Oct 19 client media: 180 source photos, canonical reuse, usable thumbnails
       assert.equal(request.searchParams.get('url'), m.src, 'resize the original, never an optimizer URL');
       assert.equal(Number(request.searchParams.get('w')), Number(width));
       assert.ok(allowed.includes(Number(width)), 'every declared size can be served');
+      assert.ok(Number(width) <= a.width, 'a source is never advertised wider than its real pixels');
     }
     assert.ok(deployed.includes(`data-fallback-src="${m.src}"`), 'original remains available if resizing fails');
   }

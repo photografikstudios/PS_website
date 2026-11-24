@@ -157,8 +157,8 @@ export function buildPages(ctx) {
   const posterFull = (m) => (ctx.isLocal(m.poster) ? m.poster : ctx.optimized(m.poster, 1080));
   const cardPoster = (m) => { const p = `/images/posters-sm/${m.asset || m.id}.webp`; return existsSync(fileURLToPath(new URL(`../static${p}`, import.meta.url))) ? p : m.poster; };
   const galleryImage = (m, sizes, alt, focus = focalAttr(m.focal)) => img(
-    m.type === 'video' ? cardPoster(m) : (m.thumb || m.src),
-    { alt, sizes, fallback: m.type === 'video' ? m.poster : m.src },
+    m.type === 'video' ? m.poster : m.src,
+    { alt, sizes, thumb: m.type === 'video' ? cardPoster(m) : m.thumb, fallback: m.type === 'video' ? m.poster : m.src },
   ).replace(/>$/, `${focus}>`);
   const galFull = (m) => (m.type === 'video' ? ctx.mediaUrl(m.src) : ctx.isLocal(m.src) ? m.src : ctx.optimized(m.src, 2200));
   const galleryItem = (m) => ({

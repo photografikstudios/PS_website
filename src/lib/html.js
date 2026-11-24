@@ -27,12 +27,15 @@ export function createContext({ site, reviewMode, onVercel, heroStills = {}, ima
   // Resize both library and other photographs for the actual display. Originals stay available to viewers.
   // A local build uses committed originals; Vercel negotiates AVIF/WebP and caches the resized responses.
   const WIDTHS = [320, 480, 640, 768, 1080, 1600, 2200];
+  const resizeWidths = (p, widths = WIDTHS) => widths.filter(w => w <= (imageInfo(p)?.width || Infinity));
   const optimized = (p, w, q = 75) => {
     const u = mediaUrl(p);
     if (!onVercel) return u;
-    return `/_vercel/image?url=${encodeURIComponent(u)}&w=${w}&q=${q}`;
+    const widths = resizeWidths(p);
+    if (!widths.length) return u;
+    return `/_vercel/image?url=${encodeURIComponent(u)}&w=${Math.min(w, widths.at(-1))}&q=${q}`;
   };
-  const srcset = (p, widths = WIDTHS) => (onVercel ? widths.map((w) => `${optimized(p, w)} ${w}w`).join(', ') : null);
+  const srcset = (p, widths = WIDTHS) => (onVercel ? resizeWidths(p, widths).map((w) => `${optimized(p, w)} ${w}w`).join(', ') || null : null);
 
   const imageDimensions = (p) => { const d = imageInfo(p); return d ? attrs({ width: d.width, height: d.height }) : ''; };
 
